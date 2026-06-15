@@ -1,23 +1,20 @@
-const { Pool } = require('pg');
-const { DATABASE_URL } = require('./env');
+const { PrismaClient } = require('@prisma/client');
 const { logInfo, logError } = require('./logger');
 
-const pool = new Pool({
-  connectionString: DATABASE_URL,
+const prisma = new PrismaClient({
+  log: ['query', 'info', 'warn', 'error'],
 });
 
 const testConnection = async () => {
   try {
-    const client = await pool.connect();
-    await client.query('SELECT 1');
-    client.release();
-    logInfo('Successfully connected to the database.');
+    await prisma.$connect();
+    logInfo('Successfully connected to the database via Prisma.');
   } catch (err) {
     logError('Database connection failed:', err.message);
   }
 };
 
 module.exports = {
-  pool,
+  prisma,
   testConnection
 };

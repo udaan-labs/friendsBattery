@@ -1,0 +1,170 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  SELLER
+}
+
+enum ProductUnitStatus {
+  IN_WAREHOUSE
+  IN_TRANSIT
+  WITH_SHOP
+  SOLD
+}
+
+enum OwnerType {
+  WHOLESALER
+  SHOP
+}
+
+enum TransactionType {
+  TRANSFER
+  SALE
+  RESTOCK_APPROVED
+}
+
+enum StockRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String
+  email         String    @unique
+  password_hash String
+  role          UserRole
+  shop_id       String?   @db.Uuid
+  created_at    DateTime? @default(now()) @db.Timestamptz()
+  updated_at    DateTime? @default(now()) @db.Timestamptz()
+
+  shop                        Shop?                @relation(fields: [shop_id], references: [id])
+  performed_transactions      InventoryTransaction[] @relation("PerformedTransactions")
+  sales                       Sale[]
+  requested_stock_requests    StockRequest[]       @relation("RequestedStockRequests")
+  reviewed_stock_requests     StockRequest[]       @relation("ReviewedStockRequests")
+
+  @@map("users")
+}
+
+model Shop {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String
+  address    String
+  created_at DateTime? @default(now()) @db.Timestamptz()
+  updated_at DateTime? @default(now()) @db.Timestamptz()
+
+  users          User[]
+  sales          Sale[]
+  stock_requests StockRequest[]
+
+  @@map("shops")
+}
+
+model ProductGroup {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String
+  created_at DateTime? @default(now()) @db.Timestamptz()
+
+  subgroups ProductSubgroup[]
+
+  @@map("product_groups")
+}
+
+model ProductSubgroup {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  product_group_id String    @db.Uuid
+  name             String
+  min_selling_price Decimal  @db.Decimal
+  created_at       DateTime? @default(now()) @db.Timestamptz()
+
+  group          ProductGroup   @relation(fields: [product_group_id], references: [id])
+  product_units  ProductUnit[]
+  stock_requests StockRequest[]
+
+  @@map("product_subgroups")
+}
+
+model ProductUnit {
+  id                  String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  serial_number       String             @unique
+  product_subgroup_id String             @db.Uuid
+  status              ProductUnitStatus  @default(IN_WAREHOUSE)
+  current_owner_type  OwnerType
+  current_owner_id    String?            @db.Uuid
+  created_at          DateTime?          @default(now()) @db.Timestamptz()
+  updated_at          DateTime?          @default(now()) @db.Timestamptz()
+
+  subgroup     ProductSubgroup        @relation(fields: [product_subgroup_id], references: [id])
+  transactions InventoryTransaction[]
+  sale         Sale?
+
+  @@index([serial_number])
+  @@index([status, current_owner_id])
+  @@map("product_units")
+}
+
+model InventoryTransaction {
+  id                   String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  product_unit_id      String          @db.Uuid
+  transaction_type     TransactionType
+  from_owner_type      OwnerType?
+  from_owner_id        String?         @db.Uuid
+  to_owner_type        OwnerType?
+  to_owner_id          String?         @db.Uuid
+  performed_by_user_id String          @db.Uuid
+  notes                String?
+  created_at           DateTime?       @default(now()) @db.Timestamptz()
+
+  product_unit   ProductUnit @relation(fields: [product_unit_id], references: [id])
+  performed_by   User        @relation("PerformedTransactions", fields: [performed_by_user_id], references: [id])
+
+  @@index([product_unit_id])
+  @@map("inventory_transactions")
+}
+
+model Sale {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  product_unit_id   String    @unique @db.Uuid
+  shop_id           String    @db.Uuid
+  sold_by_user_id   String    @db.Uuid
+  customer_name     String
+  customer_mobile   String
+  sale_price        Decimal   @db.Decimal
+  min_price_at_sale Decimal   @db.Decimal
+  sale_date         DateTime? @default(now()) @db.Timestamptz()
+
+  product_unit ProductUnit @relation(fields: [product_unit_id], references: [id])
+  shop         Shop        @relation(fields: [shop_id], references: [id])
+  sold_by      User        @relation(fields: [sold_by_user_id], references: [id])
+
+  @@index([shop_id])
+  @@map("sales")
+}
+
+model StockRequest {
+  id                   String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shop_id              String             @db.Uuid
+  product_subgroup_id  String             @db.Uuid
+  requested_quantity   Int
+  status               StockRequestStatus @default(PENDING)
+  requested_by_user_id String             @db.Uuid
+  reviewed_by_user_id  String?            @db.Uuid
+  created_at           DateTime?          @default(now()) @db.Timestamptz()
+  updated_at           DateTime?          @default(now()) @db.Timestamptz()
+
+  shop         Shop            @relation(fields: [shop_id], references: [id])
+  subgroup     ProductSubgroup @relation(fields: [product_subgroup_id], references: [id])
+  requested_by User            @relation("RequestedStockRequests", fields: [requested_by_user_id], references: [id])
+  reviewed_by  User?           @relation("ReviewedStockRequests", fields: [reviewed_by_user_id], references: [id])
+
+  @@map("stock_requests")
+}

@@ -29,8 +29,9 @@ The project follows a modular architecture:
    - **NEVER** UPDATE or DELETE rows in `inventory_transactions` after insertion.
 
 3. **Database Interactions**:
-   - We use raw SQL queries via the `pg` pool (`src/config/db.js`). Do not introduce ORMs (like Prisma, Sequelize) unless explicitly requested by the USER.
-   - Migrations are managed via standalone `.sql` scripts executed through `npm run migrate`.
+   - We use **Prisma ORM** for all database interactions to ensure type safety and maintainability.
+   - Use the Prisma Client instance from `src/config/db.js`.
+   - Migrations are managed via Prisma CLI (`npx prisma migrate dev`).
 
 4. **Authentication & Authorization**:
    - Endpoints are protected via `auth.middleware.js` (JWT parsing).
