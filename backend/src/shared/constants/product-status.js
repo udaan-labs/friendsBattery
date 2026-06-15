@@ -1,0 +1,6 @@
+module.exports = {
+  IN_WAREHOUSE: 'IN_WAREHOUSE',
+  IN_TRANSIT: 'IN_TRANSIT',
+  WITH_SHOP: 'WITH_SHOP',
+  SOLD: 'SOLD'
+};
