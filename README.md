@@ -20,7 +20,7 @@ friendsBattery/
 │
 ├── backend/
 │
-├── frontend/
+├── frontend/  
 │
 └── README.md
 ```
