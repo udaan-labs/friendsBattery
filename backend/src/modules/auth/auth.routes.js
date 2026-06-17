@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const authController = require('./auth.controller');
 const { validateRegister, validateLogin, validateActivate } = require('./auth.validation');
+const { authenticate } = require('../../shared/middleware/auth.middleware');
+const { requireAdmin } = require('../../shared/middleware/role.middleware');
 
 /**
  * @swagger
@@ -114,9 +116,13 @@ router.post('/login', validateLogin, authController.login);
  *         description: User status updated successfully
  *       400:
  *         description: Validation Error
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
  *       404:
  *         description: Invalid User ID
  */
-router.put('/activate', validateActivate, authController.activate);
+router.put('/activate', authenticate, requireAdmin, validateActivate, authController.activate);
 
 module.exports = router;

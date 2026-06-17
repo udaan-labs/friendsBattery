@@ -92,9 +92,10 @@ class AuthService {
 
     const payload = {
       id: Number(user.id),
+      userId: user.userId, // required by auth.middleware.js
       user_id: user.userId,
-      role: 'seller', // Using literal seller per spec
-      jti: crypto.randomUUID() // Ensures the JWT (auth_key) changes every single time even in the same millisecond
+      role: user.role, // Use actual role from DB (e.g. ADMIN or SELLER) instead of hardcoding 'seller'
+      jti: crypto.randomUUID()
     };
 
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
