@@ -3,13 +3,10 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 
-const authRoutes = require('./modules/auth/auth.routes');
+const { globalErrorHandler, notFoundHandler } = require('./shared/middleware/error.middleware');
 
-// For acceptance check testing
-const { authenticate } = require('./shared/middleware/auth.middleware');
-const { requireRole } = require('./shared/middleware/role.middleware');
-const { SUPER_ADMIN } = require('./shared/constants/roles');
-const { successResponse } = require('./shared/utils/response');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./config/swagger');
 
 const app = express();
 
@@ -19,12 +16,20 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 
-// Routes
-app.use('/auth', authRoutes);
+// Swagger Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Protected test route to verify Acceptance Check
-app.get('/test-protected', authenticate, requireRole(SUPER_ADMIN), (req, res) => {
-  return successResponse(res, 200, 'Access granted to SUPER_ADMIN', req.user);
+// Routes
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', message: 'Server is running' });
 });
+
+// Add your module routes here when they are ready...
+
+// 404 handler
+app.use(notFoundHandler);
+
+// Global Error Handler
+app.use(globalErrorHandler);
 
 module.exports = app;
