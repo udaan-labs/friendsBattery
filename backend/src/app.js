@@ -25,7 +25,8 @@ app.get('/health', (req, res) => {
 });
 
 // Add your module routes here when they are ready...
-
+const authRoutes = require('./modules/auth/auth.routes');
+app.use('/api/auth', authRoutes);
 // 404 handler
 app.use(notFoundHandler);
 
