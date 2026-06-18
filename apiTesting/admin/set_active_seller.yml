@@ -1,0 +1,27 @@
+info:
+  name: set_active_seller
+  type: http
+  seq: 1
+
+http:
+  method: PUT
+  url: "{{baseurl}}/auth/activate"
+  headers:
+    - name: auth-id
+      value: "{{authId}}"
+    - name: auth-key
+      value: "{{authKey}}"
+  body:
+    type: json
+    data: |-
+      {
+        "user_id": "SELLER001",
+        "is_active": true,
+        "is_verified": true
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
