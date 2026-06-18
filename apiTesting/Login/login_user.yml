@@ -19,10 +19,12 @@ runtime:
   scripts:
     - type: after-response
       code: |-
-        const res = bru.getResponseJson();
+        const body = res.body;
 
-        bru.setVar("authId", res.data.auth_id);
-        bru.setVar("authKey", res.data.auth_key);
+        if (body && body.data) {
+          bru.setEnvVar("authId", body.data.auth_id);
+          bru.setEnvVar("authKey", body.data.auth_key);
+        }
 
 settings:
   encodeUrl: true

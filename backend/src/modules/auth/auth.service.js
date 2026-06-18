@@ -111,7 +111,7 @@ class AuthService {
         username: user.userName,
         user_number: user.userNumber,
         shop_name: user.shopName,
-        role: 'seller'
+        role: user.role
       }
     };
   }

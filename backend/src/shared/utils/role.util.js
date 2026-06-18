@@ -1,7 +1,7 @@
 const ROLES = require('../constants/roles');
 
 const isAdmin = (user) => {
-  return !!(user && user.role === ROLES.SUPER_ADMIN);
+  return !!(user && (user.role === ROLES.ADMIN || user.role === ROLES.SUPER_ADMIN));
 };
 
 const isSeller = (user) => {
