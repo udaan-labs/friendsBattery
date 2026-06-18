@@ -1,6 +1,8 @@
 const swaggerJsdoc = require('swagger-jsdoc');
 const { PORT } = require('./env');
 
+const schemas = require('./swagger.schemas');
+
 const options = {
   definition: {
     openapi: '3.0.0',
@@ -19,6 +21,7 @@ const options = {
       },
     ],
     components: {
+      schemas: schemas,
       securitySchemes: {
         bearerAuth: {
           type: 'http',

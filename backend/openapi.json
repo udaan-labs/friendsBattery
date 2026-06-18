@@ -15,6 +15,441 @@
     }
   ],
   "components": {
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "message": {
+            "type": "string",
+            "example": "Error message"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User ID in BigInt format converted to string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "userName": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "SELLER"
+            ]
+          },
+          "userNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "shopName": {
+            "type": "string",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "isVerified": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Customer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Category": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "ProductName": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "ProductModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "productNameId": {
+            "type": "string"
+          },
+          "productModelId": {
+            "type": "string"
+          },
+          "minPrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "onSale": {
+            "type": "boolean"
+          },
+          "offerPrice": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "minQuantity": {
+            "type": "integer"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "category": {
+            "$ref": "#/components/schemas/Category"
+          },
+          "productName": {
+            "$ref": "#/components/schemas/ProductName"
+          },
+          "productModel": {
+            "$ref": "#/components/schemas/ProductModel"
+          }
+        }
+      },
+      "ProductUnit": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "productId": {
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "serialNumber": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "IN_STOCK",
+              "IN_TRANSIT",
+              "SOLD",
+              "RETURNED",
+              "DEFECTIVE"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "InventoryTransaction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "productUnitId": {
+            "type": "string"
+          },
+          "fromUserId": {
+            "type": "string",
+            "nullable": true
+          },
+          "toUserId": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "RECEIVED",
+              "SHIPPED",
+              "SOLD",
+              "RETURNED",
+              "TRANSFERRED"
+            ]
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "StockRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sellerId": {
+            "type": "string"
+          },
+          "requestTo": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED",
+              "SHIPPED",
+              "DELIVERED"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "approvedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StockRequestItem"
+            }
+          }
+        }
+      },
+      "StockRequestItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "stockRequestId": {
+            "type": "string"
+          },
+          "productId": {
+            "type": "string"
+          },
+          "requestedQuantity": {
+            "type": "integer"
+          }
+        }
+      },
+      "Shipment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "fromUserId": {
+            "type": "string"
+          },
+          "toUserId": {
+            "type": "string"
+          },
+          "totalProductsShipped": {
+            "type": "integer"
+          },
+          "shipmentPrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED",
+              "SHIPPED",
+              "DELIVERED"
+            ]
+          },
+          "shippedOn": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "deliveredOn": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentItem"
+            }
+          }
+        }
+      },
+      "ShipmentItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "shipmentId": {
+            "type": "string"
+          },
+          "productId": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "pricePerPiece": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "isShipmentRequested": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SalesTransaction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "productId": {
+            "type": "string"
+          },
+          "customerId": {
+            "type": "string",
+            "nullable": true
+          },
+          "sellerId": {
+            "type": "string"
+          },
+          "sellPrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "serialNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "productReplacedId": {
+            "type": "string",
+            "nullable": true
+          },
+          "soldAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ReturnProduct": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "transactionId": {
+            "type": "string",
+            "nullable": true
+          },
+          "productId": {
+            "type": "string",
+            "nullable": true
+          },
+          "serialNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "returnType": {
+            "type": "string",
+            "nullable": true
+          },
+          "returnById": {
+            "type": "string",
+            "nullable": true
+          },
+          "returnToId": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
     "securitySchemes": {
       "bearerAuth": {
         "type": "http",
@@ -92,7 +527,83 @@
         }
       }
     },
-    "/auth/register": {
+    "/api/inventory": {
+      "get": {
+        "summary": "Retrieve inventory transactions",
+        "tags": [
+          "Inventory"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of inventory transactions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InventoryTransaction"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/customers": {
+      "get": {
+        "summary": "Retrieve a list of customers",
+        "tags": [
+          "Customers"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of customers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Customer"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/register": {
       "post": {
         "summary": "Register a new user",
         "tags": [
@@ -105,24 +616,33 @@
               "schema": {
                 "type": "object",
                 "required": [
-                  "email",
-                  "password",
-                  "name"
+                  "user_id",
+                  "username",
+                  "user_number",
+                  "shop_name",
+                  "password"
                 ],
                 "properties": {
-                  "email": {
+                  "user_id": {
                     "type": "string",
-                    "format": "email",
-                    "example": "user@example.com"
+                    "example": "SELLER001"
+                  },
+                  "username": {
+                    "type": "string",
+                    "example": "seller123"
+                  },
+                  "user_number": {
+                    "type": "string",
+                    "example": "9876543210"
+                  },
+                  "shop_name": {
+                    "type": "string",
+                    "example": "ABC Battery Store"
                   },
                   "password": {
                     "type": "string",
                     "format": "password",
-                    "example": "securePassword123"
-                  },
-                  "name": {
-                    "type": "string",
-                    "example": "John Doe"
+                    "example": "password123"
                   }
                 }
               }
@@ -134,12 +654,15 @@
             "description": "User registered successfully"
           },
           "400": {
-            "description": "Bad request / validation failure"
+            "description": "Username, password and shop name are required"
+          },
+          "409": {
+            "description": "Username already exists"
           }
         }
       }
     },
-    "/auth/login": {
+    "/api/auth/login": {
       "post": {
         "summary": "Authenticate user and return token",
         "tags": [
@@ -152,19 +675,18 @@
               "schema": {
                 "type": "object",
                 "required": [
-                  "email",
+                  "user_id",
                   "password"
                 ],
                 "properties": {
-                  "email": {
+                  "user_id": {
                     "type": "string",
-                    "format": "email",
-                    "example": "user@example.com"
+                    "example": "SELLER001"
                   },
                   "password": {
                     "type": "string",
                     "format": "password",
-                    "example": "securePassword123"
+                    "example": "password123"
                   }
                 }
               }
@@ -175,8 +697,68 @@
           "200": {
             "description": "Login successful"
           },
+          "400": {
+            "description": "Validation Error"
+          },
           "401": {
-            "description": "Invalid credentials"
+            "description": "Invalid Credentials"
+          },
+          "403": {
+            "description": "Inactive / Unverified Account"
+          }
+        }
+      }
+    },
+    "/api/auth/activate": {
+      "put": {
+        "summary": "Activate and verify a user account",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "user_id",
+                  "is_active",
+                  "is_verified"
+                ],
+                "properties": {
+                  "user_id": {
+                    "type": "string",
+                    "example": "SELLER001"
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "is_verified": {
+                    "type": "boolean",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User status updated successfully"
+          },
+          "400": {
+            "description": "Validation Error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Invalid User ID"
           }
         }
       }
