@@ -1,0 +1,21 @@
+# friends_battery_api.model.ProductUnit
+
+## Load the model package
+```dart
+import 'package:friends_battery_api/api.dart';
+```
+
+## Properties
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**id** | **String** |  | [optional] 
+**productId** | **String** |  | [optional] 
+**ownerId** | **String** |  | [optional] 
+**serialNumber** | **String** |  | [optional] 
+**status** | **String** |  | [optional] 
+**createdAt** | [**DateTime**](DateTime.md) |  | [optional] 
+**updatedAt** | [**DateTime**](DateTime.md) |  | [optional] 
+
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
+

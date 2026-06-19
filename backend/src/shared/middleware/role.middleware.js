@@ -1,4 +1,5 @@
 const { errorResponse } = require('../utils/response');
+const { isAdmin, isSeller } = require('../utils/role.util');
 
 const requireRole = (...allowedRoles) => {
   return (req, res, next) => {
@@ -14,4 +15,18 @@ const requireRole = (...allowedRoles) => {
   };
 };
 
-module.exports = { requireRole };
+const requireAdmin = (req, res, next) => {
+  if (!req.user || !isAdmin(req.user)) {
+    return errorResponse(res, 403, 'Forbidden: Admin access required');
+  }
+  next();
+};
+
+const requireSeller = (req, res, next) => {
+  if (!req.user || !isSeller(req.user)) {
+    return errorResponse(res, 403, 'Forbidden: Seller access required');
+  }
+  next();
+};
+
+module.exports = { requireRole, requireAdmin, requireSeller };

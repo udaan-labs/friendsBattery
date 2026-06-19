@@ -1,9 +1,13 @@
 const express = require('express');
 const router = express.Router();
+const authController = require('./auth.controller');
+const { validateRegister, validateLogin, validateActivate } = require('./auth.validation');
+const { authenticate } = require('../../shared/middleware/auth.middleware');
+const { requireAdmin } = require('../../shared/middleware/role.middleware');
 
 /**
  * @swagger
- * /auth/register:
+ * /api/auth/register:
  *   post:
  *     summary: Register a new user
  *     tags: [Auth]
@@ -14,34 +18,41 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             required:
- *               - email
+ *               - user_id
+ *               - username
+ *               - user_number
+ *               - shop_name
  *               - password
- *               - name
  *             properties:
- *               email:
+ *               user_id:
  *                 type: string
- *                 format: email
- *                 example: user@example.com
+ *                 example: SELLER001
+ *               username:
+ *                 type: string
+ *                 example: seller123
+ *               user_number:
+ *                 type: string
+ *                 example: "9876543210"
+ *               shop_name:
+ *                 type: string
+ *                 example: ABC Battery Store
  *               password:
  *                 type: string
  *                 format: password
- *                 example: securePassword123
- *               name:
- *                 type: string
- *                 example: John Doe
+ *                 example: password123
  *     responses:
  *       201:
  *         description: User registered successfully
  *       400:
- *         description: Bad request / validation failure
+ *         description: Username, password and shop name are required
+ *       409:
+ *         description: Username already exists
  */
-router.post('/register', (req, res) => {
-  res.status(201).json({ message: 'User registered successfully (placeholder)' });
-});
+router.post('/register', validateRegister, authController.register);
 
 /**
  * @swagger
- * /auth/login:
+ * /api/auth/login:
  *   post:
  *     summary: Authenticate user and return token
  *     tags: [Auth]
@@ -52,25 +63,66 @@ router.post('/register', (req, res) => {
  *           schema:
  *             type: object
  *             required:
- *               - email
+ *               - user_id
  *               - password
  *             properties:
- *               email:
+ *               user_id:
  *                 type: string
- *                 format: email
- *                 example: user@example.com
+ *                 example: SELLER001
  *               password:
  *                 type: string
  *                 format: password
- *                 example: securePassword123
+ *                 example: password123
  *     responses:
  *       200:
  *         description: Login successful
+ *       400:
+ *         description: Validation Error
  *       401:
- *         description: Invalid credentials
+ *         description: Invalid Credentials
+ *       403:
+ *         description: Inactive / Unverified Account
  */
-router.post('/login', (req, res) => {
-  res.status(200).json({ token: 'dummy-jwt-token' });
-});
+router.post('/login', validateLogin, authController.login);
+
+/**
+ * @swagger
+ * /api/auth/activate:
+ *   put:
+ *     summary: Activate and verify a user account
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - user_id
+ *               - is_active
+ *               - is_verified
+ *             properties:
+ *               user_id:
+ *                 type: string
+ *                 example: SELLER001
+ *               is_active:
+ *                 type: boolean
+ *                 example: true
+ *               is_verified:
+ *                 type: boolean
+ *                 example: true
+ *     responses:
+ *       200:
+ *         description: User status updated successfully
+ *       400:
+ *         description: Validation Error
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Invalid User ID
+ */
+router.put('/activate', authenticate, requireAdmin, validateActivate, authController.activate);
 
 module.exports = router;

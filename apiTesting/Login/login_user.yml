@@ -1,0 +1,33 @@
+info:
+  name: login_user
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseurl}}/auth/login"
+  body:
+    type: json
+    data: |-
+      {
+        "user_id": "SELLER001",
+        "password": "password123"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const body = res.body;
+
+        if (body && body.data) {
+          bru.setEnvVar("authId", body.data.auth_id);
+          bru.setEnvVar("authKey", body.data.auth_key);
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
