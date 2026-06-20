@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'router/app_router.dart';
+import '../theme/app_theme.dart';
 
 class BatteryApp extends ConsumerWidget {
   const BatteryApp({super.key});
@@ -11,10 +12,7 @@ class BatteryApp extends ConsumerWidget {
 
     return MaterialApp.router(
       title: 'Battery Inventory',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
-      ),
+      theme: AppTheme.themeData,
       routerConfig: goRouter,
       debugShowCheckedModeBanner: false,
     );

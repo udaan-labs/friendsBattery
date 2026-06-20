@@ -1,0 +1,31 @@
+info:
+  name: transfer_inventory
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{baseurl}}/inventory/transfer"
+  headers:
+    - name: auth-id
+      value: "{{authId}}"
+    - name: auth-key
+      value: "{{authKey}}"
+  body:
+    type: json
+    data: |-
+      {
+        "seller_id": 2,
+        "products": [
+          {
+            "product_id": 1,
+            "quantity": 5
+          }
+        ]
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

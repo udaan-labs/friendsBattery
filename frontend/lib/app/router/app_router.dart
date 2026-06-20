@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/auth/screens/splash_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/admin/dashboard/screens/admin_dashboard_screen.dart';
 import '../../features/seller/dashboard/screens/seller_dashboard_screen.dart';
@@ -9,21 +10,27 @@ final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
 
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: '/splash',
     redirect: (context, state) {
       final isLoggingIn = state.uri.toString() == '/login';
+      final isSplash = state.uri.toString() == '/splash';
       
       if (!authState.isAuthenticated) {
-        return isLoggingIn ? null : '/login';
+        if (isSplash || isLoggingIn) return null;
+        return '/login';
       }
 
-      if (isLoggingIn && authState.isAuthenticated) {
+      if ((isLoggingIn || isSplash) && authState.isAuthenticated) {
         return authState.role == UserRole.admin ? '/admin/dashboard' : '/seller/dashboard';
       }
 
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),

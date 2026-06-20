@@ -1,0 +1,27 @@
+info:
+  name: adjust_inventory
+  type: http
+  seq: 4
+
+http:
+  method: PATCH
+  url: "{{baseurl}}/inventory/adjust"
+  headers:
+    - name: auth-id
+      value: "{{authId}}"
+    - name: auth-key
+      value: "{{authKey}}"
+  body:
+    type: json
+    data: |-
+      {
+        "product_id": 1,
+        "user_id": 1,
+        "adjustment_quantity": 10
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
