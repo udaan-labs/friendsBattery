@@ -44,9 +44,42 @@ const createProductSchema = z.object({
   })
 });
 
+/**
+ * Validation schema for getting product names by category
+ */
+const getProductNamesRequest = z.object({
+  body: z.object({
+    category_id: z.number().int().positive('Category ID is required')
+  })
+});
+
+/**
+ * Validation schema for getting product models by category and product name
+ */
+const getProductModelsRequest = z.object({
+  body: z.object({
+    category_id: z.number().int().positive('Category ID is required'),
+    product_name_id: z.number().int().positive('Product Name ID is required')
+  })
+});
+
+/**
+ * Validation schema for getting products by filters
+ */
+const getProductsRequest = z.object({
+  body: z.object({
+    category_id: z.number().int().positive('Category ID is required'),
+    product_name_id: z.number().int().positive('Product Name ID is required'),
+    product_model_id: z.number().int().positive('Product Model ID is required')
+  })
+});
+
 module.exports = {
   createCategorySchema,
   createProductNameSchema,
   createProductModelSchema,
-  createProductSchema
+  createProductSchema,
+  getProductNamesRequest,
+  getProductModelsRequest,
+  getProductsRequest
 };

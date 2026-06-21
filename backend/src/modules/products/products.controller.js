@@ -58,10 +58,13 @@ class ProductsController {
    */
   async getProductNamesByCategory(req, res) {
     try {
-      const { categoryId } = req.params;
-      const productNames = await productsService.getProductNamesByCategory(Number(categoryId));
+      const { category_id } = req.body;
+      const productNames = await productsService.getProductNamesByCategory(category_id);
       return successResponse(res, 200, 'Product names fetched successfully', productNames);
     } catch (error) {
+      if (error.statusCode) {
+        return errorResponse(res, error.statusCode, error.message);
+      }
       console.error('Get Product Names Error:', error);
       return errorResponse(res, 500, 'Internal server error');
     }
@@ -88,10 +91,13 @@ class ProductsController {
    */
   async getProductModelsByProductName(req, res) {
     try {
-      const { productNameId } = req.params;
-      const productModels = await productsService.getProductModelsByProductName(Number(productNameId));
+      const { category_id, product_name_id } = req.body;
+      const productModels = await productsService.getProductModelsByProductName(category_id, product_name_id);
       return successResponse(res, 200, 'Product models fetched successfully', productModels);
     } catch (error) {
+      if (error.statusCode) {
+        return errorResponse(res, error.statusCode, error.message);
+      }
       console.error('Get Product Models Error:', error);
       return errorResponse(res, 500, 'Internal server error');
     }
@@ -118,9 +124,13 @@ class ProductsController {
    */
   async getProducts(req, res) {
     try {
-      const products = await productsService.getProducts();
+      const { category_id, product_name_id, product_model_id } = req.body;
+      const products = await productsService.getProducts(category_id, product_name_id, product_model_id);
       return successResponse(res, 200, 'Products fetched successfully', products);
     } catch (error) {
+      if (error.statusCode) {
+        return errorResponse(res, error.statusCode, error.message);
+      }
       console.error('Get Products Error:', error);
       return errorResponse(res, 500, 'Internal server error');
     }

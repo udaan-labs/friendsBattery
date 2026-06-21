@@ -17,6 +17,21 @@ class ProductsRepository {
   }
 
   /**
+   * Find a category by ID
+   *
+   * Input:
+   *  id
+   *
+   * Returns:
+   *  Category object or null
+   */
+  async findCategoryById(id) {
+    return prisma.category.findUnique({
+      where: { id }
+    });
+  }
+
+  /**
    * Create a new category
    */
   async createCategory(data) {
@@ -49,6 +64,21 @@ class ProductsRepository {
         categoryId,
         name
       }
+    });
+  }
+
+  /**
+   * Find a product name by ID
+   *
+   * Input:
+   *  id
+   *
+   * Returns:
+   *  Product name object or null
+   */
+  async findProductNameById(id) {
+    return prisma.productName.findUnique({
+      where: { id }
     });
   }
 
@@ -88,6 +118,21 @@ class ProductsRepository {
         productNameId,
         name
       }
+    });
+  }
+
+  /**
+   * Find a product model by ID
+   *
+   * Input:
+   *  id
+   *
+   * Returns:
+   *  Product model object or null
+   */
+  async findProductModelById(id) {
+    return prisma.productModel.findUnique({
+      where: { id }
     });
   }
 
@@ -136,9 +181,39 @@ class ProductsRepository {
 
   /**
    * Fetch all products
+   *
+   * Returns:
+   *  Array of all products
    */
   async getProducts() {
     return prisma.product.findMany({
+      include: {
+        category: true,
+        productName: true,
+        productModel: true
+      },
+      orderBy: {
+        id: 'desc'
+      }
+    });
+  }
+
+  /**
+   * Fetch products by category, product name, and product model
+   *
+   * Input:
+   *  categoryId, productNameId, productModelId
+   *
+   * Returns:
+   *  Array of matching products
+   */
+  async getProductsByFilters(categoryId, productNameId, productModelId) {
+    return prisma.product.findMany({
+      where: {
+        categoryId,
+        productNameId,
+        productModelId
+      },
       include: {
         category: true,
         productName: true,
