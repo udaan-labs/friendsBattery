@@ -5,7 +5,10 @@ const {
   createCategorySchema,
   createProductNameSchema,
   createProductModelSchema,
-  createProductSchema
+  createProductSchema,
+  getProductNamesRequest,
+  getProductModelsRequest,
+  getProductsRequest
 } = require('./products.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
 const { requireAdmin } = require('../../shared/middleware/role.middleware');
@@ -92,23 +95,27 @@ productRouter.post(
 
 /**
  * @swagger
- * /api/products/categories/{categoryId}/product-names:
- *   get:
+ * /api/products/product-names/list:
+ *   post:
  *     summary: Return all product names belonging to a category
  *     tags: [Products]
- *     parameters:
- *       - in: path
- *         name: categoryId
- *         required: true
- *         schema:
- *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               category_id:
+ *                 type: integer
  *     responses:
  *       200:
  *         description: Product names fetched successfully
  */
-productRouter.get(
-  '/categories/:categoryId/product-names',
+productRouter.post(
+  '/product-names/list',
   authenticate,
+  validateRequest(getProductNamesRequest),
   productsController.getProductNamesByCategory
 );
 
@@ -143,23 +150,29 @@ productRouter.post(
 
 /**
  * @swagger
- * /api/products/product-names/{productNameId}/product-models:
- *   get:
+ * /api/products/product-models/list:
+ *   post:
  *     summary: Return all models belonging to a product name
  *     tags: [Products]
- *     parameters:
- *       - in: path
- *         name: productNameId
- *         required: true
- *         schema:
- *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               category_id:
+ *                 type: integer
+ *               product_name_id:
+ *                 type: integer
  *     responses:
  *       200:
  *         description: Product models fetched successfully
  */
-productRouter.get(
-  '/product-names/:productNameId/product-models',
+productRouter.post(
+  '/product-models/list',
   authenticate,
+  validateRequest(getProductModelsRequest),
   productsController.getProductModelsByProductName
 );
 
@@ -204,17 +217,31 @@ productRouter.post(
 
 /**
  * @swagger
- * /api/products:
- *   get:
- *     summary: Return all products
+ * /api/products/list:
+ *   post:
+ *     summary: Return all products matching filters
  *     tags: [Products]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               category_id:
+ *                 type: integer
+ *               product_name_id:
+ *                 type: integer
+ *               product_model_id:
+ *                 type: integer
  *     responses:
  *       200:
  *         description: Products fetched successfully
  */
-productRouter.get(
-  '/',
+productRouter.post(
+  '/list',
   authenticate,
+  validateRequest(getProductsRequest),
   productsController.getProducts
 );
 

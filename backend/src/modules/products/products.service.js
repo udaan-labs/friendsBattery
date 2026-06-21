@@ -57,8 +57,22 @@ class ProductsService {
 
   /**
    * Get all product names for a category
+   * Validates if the category exists before querying
+   *
+   * Input:
+   *  categoryId
+   *
+   * Returns:
+   *  Array of product names.
    */
   async getProductNamesByCategory(categoryId) {
+    const category = await productsRepository.findCategoryById(categoryId);
+    if (!category) {
+      const error = new Error('Category not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
     const productNames = await productsRepository.getProductNamesByCategory(categoryId);
     return productNames.map(p => ({
       id: Number(p.id),
@@ -87,8 +101,29 @@ class ProductsService {
 
   /**
    * Get all product models for a product name
+   * Validates parent entities exist before querying
+   *
+   * Input:
+   *  categoryId, productNameId
+   *
+   * Returns:
+   *  Array of product models.
    */
-  async getProductModelsByProductName(productNameId) {
+  async getProductModelsByProductName(categoryId, productNameId) {
+    const category = await productsRepository.findCategoryById(categoryId);
+    if (!category) {
+      const error = new Error('Category not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const productName = await productsRepository.findProductNameById(productNameId);
+    if (!productName || productName.categoryId !== categoryId) {
+      const error = new Error('Product name not found or does not belong to the selected category');
+      error.statusCode = 404;
+      throw error;
+    }
+
     const models = await productsRepository.getProductModelsByProductName(productNameId);
     return models.map(m => ({
       id: Number(m.id),
@@ -115,29 +150,46 @@ class ProductsService {
   }
 
   /**
-   * Get all products
+   * Fetch matching products by category, product name, and product model
+   * Validates parent entities exist before querying child data
+   *
+   * Input:
+   *  categoryId, productNameId, productModelId
+   *
+   * Returns:
+   *  Array of products.
    */
-  async getProducts() {
-    const products = await productsRepository.getProducts();
+  async getProducts(categoryId, productNameId, productModelId) {
+    const category = await productsRepository.findCategoryById(categoryId);
+    if (!category) {
+      const error = new Error('Category not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const productName = await productsRepository.findProductNameById(productNameId);
+    if (!productName || productName.categoryId !== categoryId) {
+      const error = new Error('Product name not found or does not belong to the selected category');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const productModel = await productsRepository.findProductModelById(productModelId);
+    if (!productModel || productModel.productNameId !== productNameId) {
+      const error = new Error('Product model not found or does not belong to the selected product name');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const products = await productsRepository.getProductsByFilters(categoryId, productNameId, productModelId);
     return products.map(p => ({
       id: Number(p.id),
-      category: {
-        id: Number(p.category.id),
-        name: p.category.name
-      },
-      product_name: {
-        id: Number(p.productName.id),
-        name: p.productName.name
-      },
-      product_model: {
-        id: Number(p.productModel.id),
-        name: p.productModel.name
-      },
+      category: p.category.name,
+      product_name: p.productName.name,
+      product_model: p.productModel.name,
       min_price: p.minPrice,
       on_sale: p.onSale,
-      offer_price: p.offerPrice,
-      min_quantity: p.minQuantity,
-      created_at: p.createdAt
+      offer_price: p.offerPrice
     }));
   }
 }
