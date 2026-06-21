@@ -1,0 +1,26 @@
+info:
+  name: receive_transfer
+  type: http
+  seq: 4
+
+http:
+  method: PATCH
+  url: "{{baseurl}}/transfers/1/receive"
+  headers:
+    - name: auth-id
+      value: "{{authId}}"
+    - name: auth-key
+      value: "{{authKey}}"
+  body:
+    type: none
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+assert:
+  - res.status: eq 200
+  - res.body.success: eq true
+  - res.body.data.status: eq DELIVERED

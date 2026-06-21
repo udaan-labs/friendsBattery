@@ -31,7 +31,21 @@ class ShopsService {
    * Output: Seller details mapped to response format
    */
   async viewSeller(sellerId) {
-    const user = await shopsRepository.findSellerById(sellerId);
+    // We use Promise.all() to execute independent database queries in parallel.
+    // This reduces the total response time instead of waiting for each query sequentially.
+    const [
+      user,
+      stockCount,
+      productsCount,
+      salesCount,
+      returnsCount
+    ] = await Promise.all([
+      shopsRepository.findSellerById(sellerId),
+      shopsRepository.getSellerStock(sellerId),
+      shopsRepository.getSellerProductsCount(sellerId),
+      shopsRepository.getSellerSalesCount(sellerId),
+      shopsRepository.getSellerReturnsCount(sellerId)
+    ]);
 
     if (!user) {
       const error = new Error('Seller not found');
@@ -44,8 +58,14 @@ class ShopsService {
       user_name: user.userName,
       shop_name: user.shopName,
       user_number: user.userNumber,
-      is_verified: user.isVerified,
       is_active: user.isActive,
+      is_verified: user.isVerified,
+      statistics: {
+        stock: stockCount,
+        products: productsCount,
+        sales: salesCount,
+        returns: returnsCount
+      },
       created_at: user.createdAt
     };
   }
