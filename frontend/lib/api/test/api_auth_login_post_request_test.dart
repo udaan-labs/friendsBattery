@@ -1,21 +1,12 @@
-//
-// AUTO-GENERATED FILE, DO NOT MODIFY!
-//
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
-import 'package:friends_battery_api/api.dart';
 import 'package:test/test.dart';
+import 'package:friends_battery_api/friends_battery_api.dart';
 
 // tests for ApiAuthLoginPostRequest
 void main() {
-  // final instance = ApiAuthLoginPostRequest();
+  final instance = ApiAuthLoginPostRequestBuilder();
+  // TODO add properties to the builder and call build()
 
-  group('test ApiAuthLoginPostRequest', () {
+  group(ApiAuthLoginPostRequest, () {
     // String userId
     test('to test the property `userId`', () async {
       // TODO
@@ -26,7 +17,5 @@ void main() {
       // TODO
     });
 
-
   });
-
 }

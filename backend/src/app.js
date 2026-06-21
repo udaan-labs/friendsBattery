@@ -12,7 +12,12 @@ const app = express();
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+const corsOptions = {
+  origin: '*', // For development with Cloudflare Tunnel, allow all origins
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+app.use(cors(corsOptions));
 app.use(morgan('dev'));
 app.use(express.json());
 
@@ -24,9 +29,7 @@ app.get('/swagger.json', (req, res) => {
 });
 
 // Routes
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'Server is running' });
-});
+// Health check moved to /api/health via clean architecture
 
 // Module routes
 const safeMount = (path, router) => {
@@ -35,6 +38,7 @@ const safeMount = (path, router) => {
   }
 };
 
+safeMount('/api/health', require('./modules/health/health.routes'));
 safeMount('/api/audit', require('./modules/audit/audit.routes'));
 safeMount('/api/audit-logs', require('./modules/audit-logs/audit-logs.routes'));
 safeMount('/api/auth', require('./modules/auth/auth.routes'));

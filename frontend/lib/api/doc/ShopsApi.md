@@ -13,26 +13,20 @@ Method | HTTP request | Description
 
 
 # **shopsGet**
-> List<ShopsGet200ResponseInner> shopsGet()
+> BuiltList<ShopsGet200ResponseInner> shopsGet()
 
 Retrieve a list of shops
 
 ### Example
 ```dart
 import 'package:friends_battery_api/api.dart';
-// TODO Configure HTTP Bearer authorization: bearerAuth
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearerAuth').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearerAuth').setAccessToken(yourTokenGeneratorFunction);
 
-final api_instance = ShopsApi();
+final api = FriendsBatteryApi().getShopsApi();
 
 try {
-    final result = api_instance.shopsGet();
-    print(result);
-} catch (e) {
+    final response = api.shopsGet();
+    print(response);
+} on DioException catch (e) {
     print('Exception when calling ShopsApi->shopsGet: $e\n');
 }
 ```
@@ -42,7 +36,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**List<ShopsGet200ResponseInner>**](ShopsGet200ResponseInner.md)
+[**BuiltList&lt;ShopsGet200ResponseInner&gt;**](ShopsGet200ResponseInner.md)
 
 ### Authorization
 

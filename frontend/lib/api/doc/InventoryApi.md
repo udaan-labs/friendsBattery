@@ -13,26 +13,20 @@ Method | HTTP request | Description
 
 
 # **apiInventoryGet**
-> List<InventoryTransaction> apiInventoryGet()
+> BuiltList<InventoryTransaction> apiInventoryGet()
 
 Retrieve inventory transactions
 
 ### Example
 ```dart
 import 'package:friends_battery_api/api.dart';
-// TODO Configure HTTP Bearer authorization: bearerAuth
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearerAuth').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearerAuth').setAccessToken(yourTokenGeneratorFunction);
 
-final api_instance = InventoryApi();
+final api = FriendsBatteryApi().getInventoryApi();
 
 try {
-    final result = api_instance.apiInventoryGet();
-    print(result);
-} catch (e) {
+    final response = api.apiInventoryGet();
+    print(response);
+} on DioException catch (e) {
     print('Exception when calling InventoryApi->apiInventoryGet: $e\n');
 }
 ```
@@ -42,7 +36,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**List<InventoryTransaction>**](InventoryTransaction.md)
+[**BuiltList&lt;InventoryTransaction&gt;**](InventoryTransaction.md)
 
 ### Authorization
 

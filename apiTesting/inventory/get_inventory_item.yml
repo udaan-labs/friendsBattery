@@ -12,7 +12,8 @@ http:
     - name: auth-key
       value: "{{authKey}}"
   body:
-    type: none
+    type: json
+    data: ""
 
 settings:
   encodeUrl: true

@@ -1,9 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:friends_battery_api/api.dart';
+import 'package:friends_battery_api/friends_battery_api.dart';
+import 'api_client.dart';
+import 'api_config.dart';
 
-final apiClientProvider = Provider<ApiClient>((ref) {
-  final client = ApiClient(basePath: 'http://localhost:3000');
+final apiClientProvider = Provider<FriendsBatteryApi>((ref) {
+  // Use our centralized ApiClient that has dotenv, interceptors, and error handling configured
+  final dio = ApiClient().dio;
   
-  // Optionally async load headers here, or attach them in the repository.
-  return client;
+  return FriendsBatteryApi(dio: dio, basePathOverride: ApiConfig.baseUrl);
 });

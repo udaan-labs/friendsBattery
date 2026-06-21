@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/screens/splash_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
+import '../../features/auth/screens/register_screen.dart';
 import '../../features/admin/dashboard/screens/admin_dashboard_screen.dart';
 import '../../features/seller/dashboard/screens/seller_dashboard_screen.dart';
 import '../../shared/providers/auth_provider.dart';
@@ -16,11 +17,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isSplash = state.uri.toString() == '/splash';
       
       if (!authState.isAuthenticated) {
-        if (isSplash || isLoggingIn) return null;
+        if (isSplash || isLoggingIn || state.uri.toString() == '/register') return null;
         return '/login';
       }
 
-      if ((isLoggingIn || isSplash) && authState.isAuthenticated) {
+      if ((isLoggingIn || isSplash || state.uri.toString() == '/register') && authState.isAuthenticated) {
         return authState.role == UserRole.admin ? '/admin/dashboard' : '/seller/dashboard';
       }
 
@@ -34,6 +35,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/register',
+        builder: (context, state) => const RegisterScreen(),
       ),
       GoRoute(
         path: '/admin/dashboard',

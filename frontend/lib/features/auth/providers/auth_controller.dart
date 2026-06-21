@@ -1,12 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:friends_battery_api/api.dart';
+import 'package:friends_battery_api/friends_battery_api.dart';
 import '../repository/auth_repository.dart';
 import '../../../core/storage/secure_storage.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../core/network/api_client_provider.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return AuthRepository(api: AuthApi(ref.watch(apiClientProvider)));
+  return AuthRepository(api: ref.watch(apiClientProvider).getAuthApi());
 });
 
 final authControllerProvider = StateNotifierProvider<AuthController, AsyncValue<void>>((ref) {
@@ -35,6 +35,29 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
       state = const AsyncValue.data(null);
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
+    }
+  }
+
+  Future<void> register({
+    required String userId,
+    required String username,
+    required String userNumber,
+    required String shopName,
+    required String password,
+  }) async {
+    state = const AsyncValue.loading();
+    try {
+      await repository.register(
+        userId: userId,
+        username: username,
+        userNumber: userNumber,
+        shopName: shopName,
+        password: password,
+      );
+      state = const AsyncValue.data(null);
+    } catch (e, stack) {
+      state = AsyncValue.error(e, stack);
+      rethrow;
     }
   }
 }

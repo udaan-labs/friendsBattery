@@ -1,0 +1,25 @@
+info:
+  name: register
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseurl}}/auth/register"
+  body:
+    type: json
+    data: |-
+      {
+        "user_id": "NEWUSER001",
+        "username": "New Test User",
+        "user_number": "9876543210",
+        "shop_name": "Test Battery Shop",
+        "password": "password123"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

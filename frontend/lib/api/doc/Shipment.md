@@ -17,7 +17,7 @@ Name | Type | Description | Notes
 **shippedOn** | [**DateTime**](DateTime.md) |  | [optional] 
 **deliveredOn** | [**DateTime**](DateTime.md) |  | [optional] 
 **createdAt** | [**DateTime**](DateTime.md) |  | [optional] 
-**items** | [**List<ShipmentItem>**](ShipmentItem.md) |  | [optional] [default to const []]
+**items** | [**BuiltList&lt;ShipmentItem&gt;**](ShipmentItem.md) |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

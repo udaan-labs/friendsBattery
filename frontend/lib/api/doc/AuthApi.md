@@ -22,19 +22,13 @@ Activate and verify a user account
 ### Example
 ```dart
 import 'package:friends_battery_api/api.dart';
-// TODO Configure HTTP Bearer authorization: bearerAuth
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearerAuth').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearerAuth').setAccessToken(yourTokenGeneratorFunction);
 
-final api_instance = AuthApi();
-final apiAuthActivatePutRequest = ApiAuthActivatePutRequest(); // ApiAuthActivatePutRequest | 
+final api = FriendsBatteryApi().getAuthApi();
+final ApiAuthActivatePutRequest apiAuthActivatePutRequest = ; // ApiAuthActivatePutRequest | 
 
 try {
-    api_instance.apiAuthActivatePut(apiAuthActivatePutRequest);
-} catch (e) {
+    api.apiAuthActivatePut(apiAuthActivatePutRequest);
+} on DioException catch (e) {
     print('Exception when calling AuthApi->apiAuthActivatePut: $e\n');
 }
 ```
@@ -68,19 +62,13 @@ Authenticate user and return token
 ### Example
 ```dart
 import 'package:friends_battery_api/api.dart';
-// TODO Configure HTTP Bearer authorization: bearerAuth
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearerAuth').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearerAuth').setAccessToken(yourTokenGeneratorFunction);
 
-final api_instance = AuthApi();
-final apiAuthLoginPostRequest = ApiAuthLoginPostRequest(); // ApiAuthLoginPostRequest | 
+final api = FriendsBatteryApi().getAuthApi();
+final ApiAuthLoginPostRequest apiAuthLoginPostRequest = ; // ApiAuthLoginPostRequest | 
 
 try {
-    api_instance.apiAuthLoginPost(apiAuthLoginPostRequest);
-} catch (e) {
+    api.apiAuthLoginPost(apiAuthLoginPostRequest);
+} on DioException catch (e) {
     print('Exception when calling AuthApi->apiAuthLoginPost: $e\n');
 }
 ```
@@ -114,19 +102,13 @@ Register a new user
 ### Example
 ```dart
 import 'package:friends_battery_api/api.dart';
-// TODO Configure HTTP Bearer authorization: bearerAuth
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearerAuth').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearerAuth').setAccessToken(yourTokenGeneratorFunction);
 
-final api_instance = AuthApi();
-final apiAuthRegisterPostRequest = ApiAuthRegisterPostRequest(); // ApiAuthRegisterPostRequest | 
+final api = FriendsBatteryApi().getAuthApi();
+final ApiAuthRegisterPostRequest apiAuthRegisterPostRequest = ; // ApiAuthRegisterPostRequest | 
 
 try {
-    api_instance.apiAuthRegisterPost(apiAuthRegisterPostRequest);
-} catch (e) {
+    api.apiAuthRegisterPost(apiAuthRegisterPostRequest);
+} on DioException catch (e) {
     print('Exception when calling AuthApi->apiAuthRegisterPost: $e\n');
 }
 ```

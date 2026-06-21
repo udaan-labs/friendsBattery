@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_controller.dart';
 import '../../../theme/app_theme.dart';
+import 'package:go_router/go_router.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -11,8 +12,9 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _usernameController = TextEditingController();
+  final _userIdController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
 
   @override
   Widget build(BuildContext context) {
@@ -70,14 +72,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     TextField(
-                      controller: _usernameController,
-                      decoration: const InputDecoration(labelText: 'Username'),
+                      controller: _userIdController,
+                      decoration: const InputDecoration(labelText: 'User ID'),
                     ),
                     const SizedBox(height: 16),
                     TextField(
                       controller: _passwordController,
-                      decoration: const InputDecoration(labelText: 'Password'),
-                      obscureText: true,
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                        ),
+                      ),
+                      obscureText: _obscurePassword,
                     ),
                     const SizedBox(height: 32),
                     if (authState.isLoading)
@@ -86,7 +100,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ElevatedButton(
                         onPressed: () {
                           ref.read(authControllerProvider.notifier).login(
-                            _usernameController.text,
+                            _userIdController.text,
                             _passwordController.text,
                           );
                         },
@@ -99,6 +113,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ),
                       ),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () {
+                        context.push('/register');
+                      },
+                      child: const Text('New here? Sign up for the first time'),
+                    ),
                     if (authState.hasError)
                       Padding(
                         padding: const EdgeInsets.only(top: 16),

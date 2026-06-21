@@ -5,14 +5,19 @@ info:
 
 http:
   method: GET
-  url: "{{baseurl}}/shops/sellers"
+  url: "{{baseurl}}/shops/sellers?authId={{authId}}&authKey={{authKey}}"
   headers:
     - name: auth-id
       value: "{{authId}}"
     - name: auth-key
       value: "{{authKey}}"
-  body:
-    type: none
+  params:
+    - name: authId
+      value: "{{authId}}"
+      type: query
+    - name: authKey
+      value: "{{authKey}}"
+      type: query
 
 settings:
   encodeUrl: true

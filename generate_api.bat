@@ -16,7 +16,7 @@ echo.
 echo ==============================================
 echo 2. Generating Flutter Models...
 echo ==============================================
-call npx @openapitools/openapi-generator-cli generate -i ./backend/openapi.json -g dart -o ./frontend/lib/api --additional-properties=pubName=friends_battery_api
+call npx @openapitools/openapi-generator-cli generate -i ./backend/openapi.json -g dart-dio -o ./frontend/lib/api --additional-properties=pubName=friends_battery_api
 if %errorlevel% neq 0 (
     echo [ERROR] Failed to generate Flutter models.
     pause

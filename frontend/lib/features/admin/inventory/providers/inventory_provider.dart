@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:friends_battery_api/api.dart';
+import 'package:friends_battery_api/friends_battery_api.dart';
 import '../repository/inventory_repository.dart';
 import '../../../../../core/network/api_client_provider.dart';
 
 final inventoryRepositoryProvider = Provider<InventoryRepository>((ref) {
-  return InventoryRepository(api: InventoryApi(ref.watch(apiClientProvider)));
+  return InventoryRepository(api: ref.watch(apiClientProvider).getInventoryApi());
 });
 
 final inventoryListProvider = FutureProvider<List<InventoryItemModel>>((ref) async {

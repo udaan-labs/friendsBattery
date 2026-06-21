@@ -1,21 +1,12 @@
-//
-// AUTO-GENERATED FILE, DO NOT MODIFY!
-//
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
-import 'package:friends_battery_api/api.dart';
 import 'package:test/test.dart';
+import 'package:friends_battery_api/friends_battery_api.dart';
 
 // tests for StockRequest
 void main() {
-  // final instance = StockRequest();
+  final instance = StockRequestBuilder();
+  // TODO add properties to the builder and call build()
 
-  group('test StockRequest', () {
+  group(StockRequest, () {
     // String id
     test('to test the property `id`', () async {
       // TODO
@@ -46,12 +37,10 @@ void main() {
       // TODO
     });
 
-    // List<StockRequestItem> items (default value: const [])
+    // BuiltList<StockRequestItem> items
     test('to test the property `items`', () async {
       // TODO
     });
 
-
   });
-
 }

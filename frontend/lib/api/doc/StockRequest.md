@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 **status** | **String** |  | [optional] 
 **createdAt** | [**DateTime**](DateTime.md) |  | [optional] 
 **approvedAt** | [**DateTime**](DateTime.md) |  | [optional] 
-**items** | [**List<StockRequestItem>**](StockRequestItem.md) |  | [optional] [default to const []]
+**items** | [**BuiltList&lt;StockRequestItem&gt;**](StockRequestItem.md) |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

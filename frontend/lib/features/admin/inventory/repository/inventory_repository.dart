@@ -1,4 +1,4 @@
-import 'package:friends_battery_api/api.dart'; // Use the correct import for your generated api
+import 'package:friends_battery_api/friends_battery_api.dart'; // Use the correct import for your generated api
 
 class InventoryItemModel {
   final String id;
