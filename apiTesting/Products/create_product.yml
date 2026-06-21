@@ -1,0 +1,36 @@
+info:
+  name: create_product
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: "{{baseurl}}/products"
+  headers:
+    - name: auth-id
+      value: "{{authId}}"
+    - name: auth-key
+      value: "{{authKey}}"
+  body:
+    type: json
+    data: |-
+      {
+        "category_id": 1,
+        "product_name_id": 1,
+        "product_model_id": 1,
+        "min_price": 45000,
+        "on_sale": true,
+        "offer_price": 40000,
+        "min_quantity": 5
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+assert:
+  - res.status: eq 201
+  - res.body.success: eq true
+  - res.body.data.min_price: eq 45000

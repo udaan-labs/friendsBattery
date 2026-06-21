@@ -34,6 +34,65 @@ class ShopsRepository {
       }
     });
   }
+
+  /**
+   * Fetch total stock count for a seller.
+   * Input: sellerId (Number or BigInt)
+   * Output: Number representing total available stock
+   */
+  async getSellerStock(sellerId) {
+    return prisma.productUnit.count({
+      where: {
+        ownerId: sellerId,
+        status: 'IN_STOCK'
+      }
+    });
+  }
+
+  /**
+   * Fetch total unique products count for a seller.
+   * Input: sellerId (Number or BigInt)
+   * Output: Number representing count of unique products
+   */
+  async getSellerProductsCount(sellerId) {
+    const products = await prisma.productUnit.findMany({
+      where: {
+        ownerId: sellerId,
+        status: 'IN_STOCK'
+      },
+      distinct: ['productId'],
+      select: {
+        productId: true
+      }
+    });
+    return products.length;
+  }
+
+  /**
+   * Fetch total sales count for a seller.
+   * Input: sellerId (Number or BigInt)
+   * Output: Number representing total sales transactions
+   */
+  async getSellerSalesCount(sellerId) {
+    return prisma.salesTransaction.count({
+      where: {
+        sellerId: sellerId
+      }
+    });
+  }
+
+  /**
+   * Fetch total returns count for a seller.
+   * Input: sellerId (Number or BigInt)
+   * Output: Number representing total returned products
+   */
+  async getSellerReturnsCount(sellerId) {
+    return prisma.returnProduct.count({
+      where: {
+        returnById: sellerId
+      }
+    });
+  }
 }
 
 module.exports = new ShopsRepository();
