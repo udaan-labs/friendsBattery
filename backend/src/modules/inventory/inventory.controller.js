@@ -165,6 +165,27 @@ class InventoryController {
       return errorResponse(res, 500, 'Internal server error');
     }
   }
+
+  /**
+   * Fetch available serial numbers for a product owned by the logged-in user.
+   */
+  async getAvailableSerials(req, res) {
+    try {
+      const userId = Number(req.user.id);
+      const { category_id, product_name_id, product_model_id } = req.query;
+
+      const serials = await inventoryService.getAvailableSerials(userId, {
+        categoryId: Number(category_id),
+        productNameId: Number(product_name_id),
+        productModelId: Number(product_model_id)
+      });
+
+      return successResponse(res, 200, 'Available serials fetched successfully', serials);
+    } catch (error) {
+      console.error('Get Available Serials Error:', error);
+      return errorResponse(res, 500, 'Internal server error');
+    }
+  }
 }
 
 module.exports = new InventoryController();

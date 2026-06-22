@@ -20,6 +20,7 @@ import 'package:friends_battery_api/src/model/api_auth_register_post_request.dar
 import 'package:friends_battery_api/src/model/api_dashboard_stats_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_dashboard_stats_get200_response_data.dart';
 import 'package:friends_battery_api/src/model/api_inventory_adjust_patch_request.dart';
+import 'package:friends_battery_api/src/model/api_inventory_available_serials_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_inventory_product_details_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_inventory_product_details_get200_response_data.dart';
 import 'package:friends_battery_api/src/model/api_inventory_product_id_get200_response.dart';
@@ -37,8 +38,15 @@ import 'package:friends_battery_api/src/model/api_products_product_models_post_r
 import 'package:friends_battery_api/src/model/api_products_product_names_list_post_request.dart';
 import 'package:friends_battery_api/src/model/api_products_product_names_post_request.dart';
 import 'package:friends_battery_api/src/model/api_sales_post_request.dart';
+import 'package:friends_battery_api/src/model/api_seller_dashboard_pending_shipments_get200_response.dart';
+import 'package:friends_battery_api/src/model/api_seller_dashboard_pending_shipments_get200_response_data.dart';
 import 'package:friends_battery_api/src/model/api_seller_dashboard_stats_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_seller_dashboard_stats_get200_response_data.dart';
+import 'package:friends_battery_api/src/model/api_seller_shipments_get200_response.dart';
+import 'package:friends_battery_api/src/model/api_seller_shipments_get200_response_data_inner.dart';
+import 'package:friends_battery_api/src/model/api_seller_shipments_get200_response_data_inner_items_inner.dart';
+import 'package:friends_battery_api/src/model/api_shipments_post_request.dart';
+import 'package:friends_battery_api/src/model/api_shipments_post_request_items_inner.dart';
 import 'package:friends_battery_api/src/model/api_transfers_post_request.dart';
 import 'package:friends_battery_api/src/model/api_transfers_post_request_items_inner.dart';
 import 'package:friends_battery_api/src/model/category.dart';
@@ -66,6 +74,7 @@ part 'serializers.g.dart';
   ApiDashboardStatsGet200Response,
   ApiDashboardStatsGet200ResponseData,
   ApiInventoryAdjustPatchRequest,
+  ApiInventoryAvailableSerialsGet200Response,
   ApiInventoryProductDetailsGet200Response,
   ApiInventoryProductDetailsGet200ResponseData,
   ApiInventoryProductIdGet200Response,
@@ -83,8 +92,15 @@ part 'serializers.g.dart';
   ApiProductsProductNamesListPostRequest,
   ApiProductsProductNamesPostRequest,
   ApiSalesPostRequest,
+  ApiSellerDashboardPendingShipmentsGet200Response,
+  ApiSellerDashboardPendingShipmentsGet200ResponseData,
   ApiSellerDashboardStatsGet200Response,
   ApiSellerDashboardStatsGet200ResponseData,
+  ApiSellerShipmentsGet200Response,
+  ApiSellerShipmentsGet200ResponseDataInner,
+  ApiSellerShipmentsGet200ResponseDataInnerItemsInner,
+  ApiShipmentsPostRequest,
+  ApiShipmentsPostRequestItemsInner,
   ApiTransfersPostRequest,
   ApiTransfersPostRequestItemsInner,
   Category,

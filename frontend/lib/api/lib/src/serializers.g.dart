@@ -14,6 +14,7 @@ Serializers _$serializers =
           ..add(ApiDashboardStatsGet200Response.serializer)
           ..add(ApiDashboardStatsGet200ResponseData.serializer)
           ..add(ApiInventoryAdjustPatchRequest.serializer)
+          ..add(ApiInventoryAvailableSerialsGet200Response.serializer)
           ..add(ApiInventoryProductDetailsGet200Response.serializer)
           ..add(ApiInventoryProductDetailsGet200ResponseData.serializer)
           ..add(ApiInventoryProductIdGet200Response.serializer)
@@ -31,8 +32,15 @@ Serializers _$serializers =
           ..add(ApiProductsProductNamesListPostRequest.serializer)
           ..add(ApiProductsProductNamesPostRequest.serializer)
           ..add(ApiSalesPostRequest.serializer)
+          ..add(ApiSellerDashboardPendingShipmentsGet200Response.serializer)
+          ..add(ApiSellerDashboardPendingShipmentsGet200ResponseData.serializer)
           ..add(ApiSellerDashboardStatsGet200Response.serializer)
           ..add(ApiSellerDashboardStatsGet200ResponseData.serializer)
+          ..add(ApiSellerShipmentsGet200Response.serializer)
+          ..add(ApiSellerShipmentsGet200ResponseDataInner.serializer)
+          ..add(ApiSellerShipmentsGet200ResponseDataInnerItemsInner.serializer)
+          ..add(ApiShipmentsPostRequest.serializer)
+          ..add(ApiShipmentsPostRequestItemsInner.serializer)
           ..add(ApiTransfersPostRequest.serializer)
           ..add(ApiTransfersPostRequestItemsInner.serializer)
           ..add(Category.serializer)
@@ -63,6 +71,29 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(ApiSellerShipmentsGet200ResponseDataInner),
+            ]),
+            () => ListBuilder<ApiSellerShipmentsGet200ResponseDataInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                ApiSellerShipmentsGet200ResponseDataInnerItemsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  ApiSellerShipmentsGet200ResponseDataInnerItemsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(ApiShipmentsPostRequestItemsInner),
+            ]),
+            () => ListBuilder<ApiShipmentsPostRequestItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(ApiTransfersPostRequestItemsInner),
             ]),
             () => ListBuilder<ApiTransfersPostRequestItemsInner>(),
@@ -78,6 +109,10 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(StockRequestItem)]),
             () => ListBuilder<StockRequestItem>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           ))
         .build();
 

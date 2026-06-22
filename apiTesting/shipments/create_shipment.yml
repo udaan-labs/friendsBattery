@@ -19,9 +19,21 @@ http:
         "items": [
           {
             "productCategoryId": 1,
-            "productNameId": 1,
-            "productModelId": 1,
+            "productNameId": 10,
+            "productModelId": 25,
             "quantity": 20
+          },
+          {
+            "productCategoryId": 1,
+            "productNameId": 11,
+            "productModelId": 30,
+            "quantity": 15
           }
         ]
       }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

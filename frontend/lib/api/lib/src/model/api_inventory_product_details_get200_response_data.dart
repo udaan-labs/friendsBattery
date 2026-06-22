@@ -11,10 +11,14 @@ part 'api_inventory_product_details_get200_response_data.g.dart';
 /// ApiInventoryProductDetailsGet200ResponseData
 ///
 /// Properties:
+/// * [productId] 
 /// * [currentStock] 
 /// * [minSellPrice] 
 @BuiltValue()
 abstract class ApiInventoryProductDetailsGet200ResponseData implements Built<ApiInventoryProductDetailsGet200ResponseData, ApiInventoryProductDetailsGet200ResponseDataBuilder> {
+  @BuiltValueField(wireName: r'productId')
+  int? get productId;
+
   @BuiltValueField(wireName: r'currentStock')
   int? get currentStock;
 
@@ -44,6 +48,13 @@ class _$ApiInventoryProductDetailsGet200ResponseDataSerializer implements Primit
     ApiInventoryProductDetailsGet200ResponseData object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.productId != null) {
+      yield r'productId';
+      yield serializers.serialize(
+        object.productId,
+        specifiedType: const FullType(int),
+      );
+    }
     if (object.currentStock != null) {
       yield r'currentStock';
       yield serializers.serialize(
@@ -81,6 +92,13 @@ class _$ApiInventoryProductDetailsGet200ResponseDataSerializer implements Primit
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'productId':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.productId = valueDes;
+          break;
         case r'currentStock':
           final valueDes = serializers.deserialize(
             value,

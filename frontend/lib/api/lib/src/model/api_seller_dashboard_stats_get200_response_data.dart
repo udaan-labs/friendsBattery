@@ -13,6 +13,7 @@ part 'api_seller_dashboard_stats_get200_response_data.g.dart';
 /// Properties:
 /// * [totalStock] 
 /// * [todaySales] 
+/// * [pendingShipments] 
 @BuiltValue()
 abstract class ApiSellerDashboardStatsGet200ResponseData implements Built<ApiSellerDashboardStatsGet200ResponseData, ApiSellerDashboardStatsGet200ResponseDataBuilder> {
   @BuiltValueField(wireName: r'totalStock')
@@ -20,6 +21,9 @@ abstract class ApiSellerDashboardStatsGet200ResponseData implements Built<ApiSel
 
   @BuiltValueField(wireName: r'todaySales')
   int? get todaySales;
+
+  @BuiltValueField(wireName: r'pendingShipments')
+  int? get pendingShipments;
 
   ApiSellerDashboardStatsGet200ResponseData._();
 
@@ -55,6 +59,13 @@ class _$ApiSellerDashboardStatsGet200ResponseDataSerializer implements Primitive
       yield r'todaySales';
       yield serializers.serialize(
         object.todaySales,
+        specifiedType: const FullType(int),
+      );
+    }
+    if (object.pendingShipments != null) {
+      yield r'pendingShipments';
+      yield serializers.serialize(
+        object.pendingShipments,
         specifiedType: const FullType(int),
       );
     }
@@ -94,6 +105,13 @@ class _$ApiSellerDashboardStatsGet200ResponseDataSerializer implements Primitive
             specifiedType: const FullType(int),
           ) as int;
           result.todaySales = valueDes;
+          break;
+        case r'pendingShipments':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.pendingShipments = valueDes;
           break;
         default:
           unhandled.add(key);

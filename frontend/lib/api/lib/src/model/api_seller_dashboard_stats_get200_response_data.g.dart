@@ -12,6 +12,8 @@ class _$ApiSellerDashboardStatsGet200ResponseData
   final int? totalStock;
   @override
   final int? todaySales;
+  @override
+  final int? pendingShipments;
 
   factory _$ApiSellerDashboardStatsGet200ResponseData([
     void Function(ApiSellerDashboardStatsGet200ResponseDataBuilder)? updates,
@@ -21,6 +23,7 @@ class _$ApiSellerDashboardStatsGet200ResponseData
   _$ApiSellerDashboardStatsGet200ResponseData._({
     this.totalStock,
     this.todaySales,
+    this.pendingShipments,
   }) : super._();
   @override
   ApiSellerDashboardStatsGet200ResponseData rebuild(
@@ -36,7 +39,8 @@ class _$ApiSellerDashboardStatsGet200ResponseData
     if (identical(other, this)) return true;
     return other is ApiSellerDashboardStatsGet200ResponseData &&
         totalStock == other.totalStock &&
-        todaySales == other.todaySales;
+        todaySales == other.todaySales &&
+        pendingShipments == other.pendingShipments;
   }
 
   @override
@@ -44,6 +48,7 @@ class _$ApiSellerDashboardStatsGet200ResponseData
     var _$hash = 0;
     _$hash = $jc(_$hash, totalStock.hashCode);
     _$hash = $jc(_$hash, todaySales.hashCode);
+    _$hash = $jc(_$hash, pendingShipments.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -54,7 +59,8 @@ class _$ApiSellerDashboardStatsGet200ResponseData
             r'ApiSellerDashboardStatsGet200ResponseData',
           )
           ..add('totalStock', totalStock)
-          ..add('todaySales', todaySales))
+          ..add('todaySales', todaySales)
+          ..add('pendingShipments', pendingShipments))
         .toString();
   }
 }
@@ -75,6 +81,11 @@ class ApiSellerDashboardStatsGet200ResponseDataBuilder
   int? get todaySales => _$this._todaySales;
   set todaySales(int? todaySales) => _$this._todaySales = todaySales;
 
+  int? _pendingShipments;
+  int? get pendingShipments => _$this._pendingShipments;
+  set pendingShipments(int? pendingShipments) =>
+      _$this._pendingShipments = pendingShipments;
+
   ApiSellerDashboardStatsGet200ResponseDataBuilder() {
     ApiSellerDashboardStatsGet200ResponseData._defaults(this);
   }
@@ -84,6 +95,7 @@ class ApiSellerDashboardStatsGet200ResponseDataBuilder
     if ($v != null) {
       _totalStock = $v.totalStock;
       _todaySales = $v.todaySales;
+      _pendingShipments = $v.pendingShipments;
       _$v = null;
     }
     return this;
@@ -110,6 +122,7 @@ class ApiSellerDashboardStatsGet200ResponseDataBuilder
         _$ApiSellerDashboardStatsGet200ResponseData._(
           totalStock: totalStock,
           todaySales: todaySales,
+          pendingShipments: pendingShipments,
         );
     replace(_$result);
     return _$result;

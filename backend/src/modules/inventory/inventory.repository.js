@@ -221,6 +221,40 @@ class InventoryRepository {
       data
     });
   }
+
+  /**
+   * Find available serial numbers for a product owned by a specific user.
+   * Input: userId, categoryId, productNameId, productModelId
+   * Output: Array of strings representing serial numbers.
+   */
+  async findAvailableSerials(userId, { categoryId, productNameId, productModelId }) {
+    // 1. Find product
+    const product = await prisma.product.findFirst({
+      where: {
+        categoryId: BigInt(categoryId),
+        productNameId: BigInt(productNameId),
+        productModelId: BigInt(productModelId)
+      }
+    });
+
+    if (!product) {
+      return [];
+    }
+
+    // 2. Find units that are IN_STOCK
+    const units = await prisma.productUnit.findMany({
+      where: {
+        productId: product.id,
+        ownerId: BigInt(userId),
+        status: 'IN_STOCK'
+      },
+      select: {
+        serialNumber: true
+      }
+    });
+
+    return units.map(u => u.serialNumber);
+  }
 }
 
 module.exports = new InventoryRepository();

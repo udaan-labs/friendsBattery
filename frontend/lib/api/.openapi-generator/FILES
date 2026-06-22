@@ -7,6 +7,7 @@ doc/ApiAuthRegisterPostRequest.md
 doc/ApiDashboardStatsGet200Response.md
 doc/ApiDashboardStatsGet200ResponseData.md
 doc/ApiInventoryAdjustPatchRequest.md
+doc/ApiInventoryAvailableSerialsGet200Response.md
 doc/ApiInventoryProductDetailsGet200Response.md
 doc/ApiInventoryProductDetailsGet200ResponseData.md
 doc/ApiInventoryProductIdGet200Response.md
@@ -24,8 +25,15 @@ doc/ApiProductsProductModelsPostRequest.md
 doc/ApiProductsProductNamesListPostRequest.md
 doc/ApiProductsProductNamesPostRequest.md
 doc/ApiSalesPostRequest.md
+doc/ApiSellerDashboardPendingShipmentsGet200Response.md
+doc/ApiSellerDashboardPendingShipmentsGet200ResponseData.md
 doc/ApiSellerDashboardStatsGet200Response.md
 doc/ApiSellerDashboardStatsGet200ResponseData.md
+doc/ApiSellerShipmentsGet200Response.md
+doc/ApiSellerShipmentsGet200ResponseDataInner.md
+doc/ApiSellerShipmentsGet200ResponseDataInnerItemsInner.md
+doc/ApiShipmentsPostRequest.md
+doc/ApiShipmentsPostRequestItemsInner.md
 doc/ApiTransfersPostRequest.md
 doc/ApiTransfersPostRequestItemsInner.md
 doc/AuthApi.md
@@ -46,6 +54,7 @@ doc/SalesApi.md
 doc/SalesTransaction.md
 doc/Shipment.md
 doc/ShipmentItem.md
+doc/ShipmentsApi.md
 doc/ShopsApi.md
 doc/StockRequest.md
 doc/StockRequestItem.md
@@ -59,6 +68,7 @@ lib/src/api/dashboard_api.dart
 lib/src/api/inventory_api.dart
 lib/src/api/products_api.dart
 lib/src/api/sales_api.dart
+lib/src/api/shipments_api.dart
 lib/src/api/shops_api.dart
 lib/src/api/transfers_api.dart
 lib/src/api_util.dart
@@ -74,6 +84,7 @@ lib/src/model/api_auth_register_post_request.dart
 lib/src/model/api_dashboard_stats_get200_response.dart
 lib/src/model/api_dashboard_stats_get200_response_data.dart
 lib/src/model/api_inventory_adjust_patch_request.dart
+lib/src/model/api_inventory_available_serials_get200_response.dart
 lib/src/model/api_inventory_product_details_get200_response.dart
 lib/src/model/api_inventory_product_details_get200_response_data.dart
 lib/src/model/api_inventory_product_id_get200_response.dart
@@ -91,8 +102,15 @@ lib/src/model/api_products_product_models_post_request.dart
 lib/src/model/api_products_product_names_list_post_request.dart
 lib/src/model/api_products_product_names_post_request.dart
 lib/src/model/api_sales_post_request.dart
+lib/src/model/api_seller_dashboard_pending_shipments_get200_response.dart
+lib/src/model/api_seller_dashboard_pending_shipments_get200_response_data.dart
 lib/src/model/api_seller_dashboard_stats_get200_response.dart
 lib/src/model/api_seller_dashboard_stats_get200_response_data.dart
+lib/src/model/api_seller_shipments_get200_response.dart
+lib/src/model/api_seller_shipments_get200_response_data_inner.dart
+lib/src/model/api_seller_shipments_get200_response_data_inner_items_inner.dart
+lib/src/model/api_shipments_post_request.dart
+lib/src/model/api_shipments_post_request_items_inner.dart
 lib/src/model/api_transfers_post_request.dart
 lib/src/model/api_transfers_post_request_items_inner.dart
 lib/src/model/category.dart
@@ -113,5 +131,4 @@ lib/src/model/stock_request_item.dart
 lib/src/model/user.dart
 lib/src/serializers.dart
 pubspec.yaml
-test/api_seller_dashboard_stats_get200_response_data_test.dart
-test/api_seller_dashboard_stats_get200_response_test.dart
+test/api_inventory_available_serials_get200_response_test.dart

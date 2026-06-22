@@ -9,6 +9,8 @@ part of 'api_inventory_product_details_get200_response_data.dart';
 class _$ApiInventoryProductDetailsGet200ResponseData
     extends ApiInventoryProductDetailsGet200ResponseData {
   @override
+  final int? productId;
+  @override
   final int? currentStock;
   @override
   final num? minSellPrice;
@@ -19,6 +21,7 @@ class _$ApiInventoryProductDetailsGet200ResponseData
       ._build();
 
   _$ApiInventoryProductDetailsGet200ResponseData._({
+    this.productId,
     this.currentStock,
     this.minSellPrice,
   }) : super._();
@@ -35,6 +38,7 @@ class _$ApiInventoryProductDetailsGet200ResponseData
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is ApiInventoryProductDetailsGet200ResponseData &&
+        productId == other.productId &&
         currentStock == other.currentStock &&
         minSellPrice == other.minSellPrice;
   }
@@ -42,6 +46,7 @@ class _$ApiInventoryProductDetailsGet200ResponseData
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, productId.hashCode);
     _$hash = $jc(_$hash, currentStock.hashCode);
     _$hash = $jc(_$hash, minSellPrice.hashCode);
     _$hash = $jf(_$hash);
@@ -53,6 +58,7 @@ class _$ApiInventoryProductDetailsGet200ResponseData
     return (newBuiltValueToStringHelper(
             r'ApiInventoryProductDetailsGet200ResponseData',
           )
+          ..add('productId', productId)
           ..add('currentStock', currentStock)
           ..add('minSellPrice', minSellPrice))
         .toString();
@@ -66,6 +72,10 @@ class ApiInventoryProductDetailsGet200ResponseDataBuilder
           ApiInventoryProductDetailsGet200ResponseDataBuilder
         > {
   _$ApiInventoryProductDetailsGet200ResponseData? _$v;
+
+  int? _productId;
+  int? get productId => _$this._productId;
+  set productId(int? productId) => _$this._productId = productId;
 
   int? _currentStock;
   int? get currentStock => _$this._currentStock;
@@ -82,6 +92,7 @@ class ApiInventoryProductDetailsGet200ResponseDataBuilder
   ApiInventoryProductDetailsGet200ResponseDataBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _productId = $v.productId;
       _currentStock = $v.currentStock;
       _minSellPrice = $v.minSellPrice;
       _$v = null;
@@ -108,6 +119,7 @@ class ApiInventoryProductDetailsGet200ResponseDataBuilder
     final _$result =
         _$v ??
         _$ApiInventoryProductDetailsGet200ResponseData._(
+          productId: productId,
           currentStock: currentStock,
           minSellPrice: minSellPrice,
         );

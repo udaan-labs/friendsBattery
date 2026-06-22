@@ -39,6 +39,9 @@ const { requireSeller } = require('../../shared/middleware/role.middleware');
  *                     todaySales:
  *                       type: integer
  *                       example: 14
+ *                     pendingShipments:
+ *                       type: integer
+ *                       example: 4
  *       401:
  *         description: Unauthorized
  *       403:

@@ -10,6 +10,7 @@ All URIs are relative to *http://localhost:3000*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**apiInventoryAdjustPatch**](InventoryApi.md#apiinventoryadjustpatch) | **PATCH** /api/inventory/adjust | Adjust inventory stock levels
+[**apiInventoryAvailableSerialsGet**](InventoryApi.md#apiinventoryavailableserialsget) | **GET** /api/inventory/available-serials | Fetch available serial numbers for a product owned by the logged-in seller
 [**apiInventoryGet**](InventoryApi.md#apiinventoryget) | **GET** /api/inventory | Return logged-in user&#39;s inventory
 [**apiInventoryHistoryGet**](InventoryApi.md#apiinventoryhistoryget) | **GET** /api/inventory/history | Return inventory movement history
 [**apiInventoryProductDetailsGet**](InventoryApi.md#apiinventoryproductdetailsget) | **GET** /api/inventory/product-details | Fetch details of a product (stock count &amp; min sell price) by category, product name, and model IDs
@@ -55,6 +56,51 @@ void (empty response body)
 
  - **Content-Type**: application/json
  - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiInventoryAvailableSerialsGet**
+> ApiInventoryAvailableSerialsGet200Response apiInventoryAvailableSerialsGet(categoryId, productNameId, productModelId)
+
+Fetch available serial numbers for a product owned by the logged-in seller
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getInventoryApi();
+final String categoryId = categoryId_example; // String | 
+final String productNameId = productNameId_example; // String | 
+final String productModelId = productModelId_example; // String | 
+
+try {
+    final response = api.apiInventoryAvailableSerialsGet(categoryId, productNameId, productModelId);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling InventoryApi->apiInventoryAvailableSerialsGet: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **categoryId** | **String**|  | 
+ **productNameId** | **String**|  | 
+ **productModelId** | **String**|  | 
+
+### Return type
+
+[**ApiInventoryAvailableSerialsGet200Response**](ApiInventoryAvailableSerialsGet200Response.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

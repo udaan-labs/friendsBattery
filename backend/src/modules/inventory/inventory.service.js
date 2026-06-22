@@ -374,6 +374,7 @@ class InventoryService {
 
     if (!product) {
       return {
+        productId: null,
         currentStock: 0,
         minSellPrice: 0
       };
@@ -389,9 +390,17 @@ class InventoryService {
     });
 
     return {
+      productId: Number(product.id),
       currentStock: stockCount,
       minSellPrice: Number(product.minPrice)
     };
+  }
+
+  /**
+   * Fetch available serial numbers for a product owned by a specific user.
+   */
+  async getAvailableSerials(userId, { categoryId, productNameId, productModelId }) {
+    return inventoryRepository.findAvailableSerials(userId, { categoryId, productNameId, productModelId });
   }
 }
 

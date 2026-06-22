@@ -51,12 +51,14 @@ class SellerKpiStats {
   final double todaySalesAmount;
   final int todaySalesCount;
   final double salesGrowthPercentage;
+  final int pendingShipments;
 
   SellerKpiStats({
     required this.currentStock,
     required this.todaySalesAmount,
     required this.todaySalesCount,
     required this.salesGrowthPercentage,
+    required this.pendingShipments,
   });
 }
 
@@ -72,6 +74,7 @@ final sellerKpiProvider = FutureProvider<SellerKpiStats>((ref) async {
 
     final totalStock = data.totalStock ?? 0;
     final todaySalesCount = data.todaySales ?? 0;
+    final pendingShipmentsCount = data.pendingShipments ?? 0;
     
     // Estimate todaySalesAmount or use placeholder logic if sales are zero.
     // For 14 sales (the initial mock state), 14 * 3035 approx ₹42.5k.
@@ -82,6 +85,7 @@ final sellerKpiProvider = FutureProvider<SellerKpiStats>((ref) async {
       todaySalesAmount: todaySalesAmount,
       todaySalesCount: todaySalesCount,
       salesGrowthPercentage: 12.0,
+      pendingShipments: pendingShipmentsCount,
     );
   } catch (e) {
     // Rethrow so Riverpod's error state is activated and displayed correctly on the screen
@@ -130,4 +134,16 @@ final sellerRecentInventoryProvider = FutureProvider<List<RecentInventoryItem>>(
     RecentInventoryItem(name: 'EcoSafe Lithium 100Ah', serialNumber: 'SN: ECO-LITH-440', status: 'Sold'),
     RecentInventoryItem(name: 'ThunderCharge Pro', serialNumber: 'SN: TC-9921-X1', status: 'Available'),
   ];
+});
+
+final sellerPendingShipmentsProvider = FutureProvider<List<ApiSellerShipmentsGet200ResponseDataInner>>((ref) async {
+  try {
+    final api = ref.watch(apiClientProvider).getShipmentsApi();
+    final response = await api.apiSellerShipmentsGet();
+    final list = response.data?.data;
+    if (list == null) return [];
+    return list.where((item) => item.status == 'PENDING').toList();
+  } catch (e) {
+    rethrow;
+  }
 });

@@ -132,6 +132,8 @@ router.get(
  *                 data:
  *                   type: object
  *                   properties:
+ *                     productId:
+ *                       type: integer
  *                     currentStock:
  *                       type: integer
  *                     minSellPrice:
@@ -142,6 +144,52 @@ router.get(
   authenticate,
   validateRequest(getProductDetailsSchema),
   inventoryController.getProductDetails
+);
+
+/**
+ * @swagger
+ * /api/inventory/available-serials:
+ *   get:
+ *     summary: Fetch available serial numbers for a product owned by the logged-in seller
+ *     tags: [Inventory]
+ *     parameters:
+ *       - in: query
+ *         name: category_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: product_name_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: product_model_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Available serials fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ */
+router.get(
+  '/available-serials',
+  authenticate,
+  validateRequest(getAvailableSerialsSchema),
+  inventoryController.getAvailableSerials
 );
 
 /**

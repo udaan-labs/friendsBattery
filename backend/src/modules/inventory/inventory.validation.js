@@ -77,6 +77,15 @@ const getProductDetailsSchema = z.object({
   })
 });
 
+// Schema for GET /inventory/available-serials
+const getAvailableSerialsSchema = z.object({
+  query: z.object({
+    category_id: z.string().regex(/^\d+$/).transform(Number),
+    product_name_id: z.string().regex(/^\d+$/).transform(Number),
+    product_model_id: z.string().regex(/^\d+$/).transform(Number),
+  })
+});
+
 module.exports = {
   getInventorySchema,
   getInventoryItemSchema,
@@ -84,5 +93,6 @@ module.exports = {
   transferInventorySchema,
   getHistorySchema,
   updateStockSchema,
-  getProductDetailsSchema
+  getProductDetailsSchema,
+  getAvailableSerialsSchema
 };
