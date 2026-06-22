@@ -1,0 +1,9 @@
+{
+  "name": "friends-battery-workspace",
+  "version": "1.0.0",
+  "scripts": {
+    "gen": ".\\generate_api.bat",
+    "build-models": "cd frontend/lib/api && dart pub get && dart run build_runner build --delete-conflicting-outputs",
+    "tunnel": "ngrok http --url=flannels-battering-paralyses.ngrok-free.dev 3000"
+  }
+}

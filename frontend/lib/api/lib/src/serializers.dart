@@ -17,6 +17,21 @@ import 'package:friends_battery_api/src/model/date.dart';
 import 'package:friends_battery_api/src/model/api_auth_activate_put_request.dart';
 import 'package:friends_battery_api/src/model/api_auth_login_post_request.dart';
 import 'package:friends_battery_api/src/model/api_auth_register_post_request.dart';
+import 'package:friends_battery_api/src/model/api_dashboard_stats_get200_response.dart';
+import 'package:friends_battery_api/src/model/api_dashboard_stats_get200_response_data.dart';
+import 'package:friends_battery_api/src/model/api_inventory_adjust_patch_request.dart';
+import 'package:friends_battery_api/src/model/api_inventory_transfer_post_request.dart';
+import 'package:friends_battery_api/src/model/api_inventory_transfer_post_request_products_inner.dart';
+import 'package:friends_battery_api/src/model/api_products_categories_post_request.dart';
+import 'package:friends_battery_api/src/model/api_products_list_post_request.dart';
+import 'package:friends_battery_api/src/model/api_products_post_request.dart';
+import 'package:friends_battery_api/src/model/api_products_product_models_list_post_request.dart';
+import 'package:friends_battery_api/src/model/api_products_product_models_post_request.dart';
+import 'package:friends_battery_api/src/model/api_products_product_names_list_post_request.dart';
+import 'package:friends_battery_api/src/model/api_products_product_names_post_request.dart';
+import 'package:friends_battery_api/src/model/api_sales_post_request.dart';
+import 'package:friends_battery_api/src/model/api_transfers_post_request.dart';
+import 'package:friends_battery_api/src/model/api_transfers_post_request_items_inner.dart';
 import 'package:friends_battery_api/src/model/category.dart';
 import 'package:friends_battery_api/src/model/customer.dart';
 import 'package:friends_battery_api/src/model/error.dart';
@@ -29,7 +44,6 @@ import 'package:friends_battery_api/src/model/return_product.dart';
 import 'package:friends_battery_api/src/model/sales_transaction.dart';
 import 'package:friends_battery_api/src/model/shipment.dart';
 import 'package:friends_battery_api/src/model/shipment_item.dart';
-import 'package:friends_battery_api/src/model/shops_get200_response_inner.dart';
 import 'package:friends_battery_api/src/model/stock_request.dart';
 import 'package:friends_battery_api/src/model/stock_request_item.dart';
 import 'package:friends_battery_api/src/model/user.dart';
@@ -40,6 +54,21 @@ part 'serializers.g.dart';
   ApiAuthActivatePutRequest,
   ApiAuthLoginPostRequest,
   ApiAuthRegisterPostRequest,
+  ApiDashboardStatsGet200Response,
+  ApiDashboardStatsGet200ResponseData,
+  ApiInventoryAdjustPatchRequest,
+  ApiInventoryTransferPostRequest,
+  ApiInventoryTransferPostRequestProductsInner,
+  ApiProductsCategoriesPostRequest,
+  ApiProductsListPostRequest,
+  ApiProductsPostRequest,
+  ApiProductsProductModelsListPostRequest,
+  ApiProductsProductModelsPostRequest,
+  ApiProductsProductNamesListPostRequest,
+  ApiProductsProductNamesPostRequest,
+  ApiSalesPostRequest,
+  ApiTransfersPostRequest,
+  ApiTransfersPostRequestItemsInner,
   Category,
   Customer,
   Error,
@@ -52,20 +81,11 @@ part 'serializers.g.dart';
   SalesTransaction,
   Shipment,
   ShipmentItem,
-  ShopsGet200ResponseInner,
   StockRequest,
   StockRequestItem,
   User,
 ])
 Serializers serializers = (_$serializers.toBuilder()
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(InventoryTransaction)]),
-        () => ListBuilder<InventoryTransaction>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(ShopsGet200ResponseInner)]),
-        () => ListBuilder<ShopsGet200ResponseInner>(),
-      )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Customer)]),
         () => ListBuilder<Customer>(),

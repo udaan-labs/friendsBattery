@@ -16,13 +16,16 @@ class _$StockRequestItem extends StockRequestItem {
   @override
   final int? requestedQuantity;
 
-  factory _$StockRequestItem(
-          [void Function(StockRequestItemBuilder)? updates]) =>
-      (StockRequestItemBuilder()..update(updates))._build();
+  factory _$StockRequestItem([
+    void Function(StockRequestItemBuilder)? updates,
+  ]) => (StockRequestItemBuilder()..update(updates))._build();
 
-  _$StockRequestItem._(
-      {this.id, this.stockRequestId, this.productId, this.requestedQuantity})
-      : super._();
+  _$StockRequestItem._({
+    this.id,
+    this.stockRequestId,
+    this.productId,
+    this.requestedQuantity,
+  }) : super._();
   @override
   StockRequestItem rebuild(void Function(StockRequestItemBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -115,7 +118,8 @@ class StockRequestItemBuilder
   StockRequestItem build() => _build();
 
   _$StockRequestItem _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$StockRequestItem._(
           id: id,
           stockRequestId: stockRequestId,

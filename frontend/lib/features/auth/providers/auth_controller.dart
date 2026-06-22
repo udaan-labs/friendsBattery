@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import '../repository/auth_repository.dart';
 import '../../../core/storage/secure_storage.dart';
+import '../../../core/storage/local_storage.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../core/network/api_client_provider.dart';
 
@@ -28,8 +29,9 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
       final response = await repository.login(username, password);
       
       await SecureStorage.saveAuthData(response.authId, response.authKey);
+      await LocalStorage.put('user', response.user);
       
-      final role = response.role == 'admin' ? UserRole.admin : UserRole.seller;
+      final role = response.role.toLowerCase() == 'admin' ? UserRole.admin : UserRole.seller;
       ref.read(authProvider.notifier).setAuthenticated(role);
       
       state = const AsyncValue.data(null);

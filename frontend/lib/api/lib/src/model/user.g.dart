@@ -20,11 +20,9 @@ UserRoleEnum _$userRoleEnumValueOf(String name) {
   }
 }
 
-final BuiltSet<UserRoleEnum> _$userRoleEnumValues =
-    BuiltSet<UserRoleEnum>(const <UserRoleEnum>[
-  _$userRoleEnum_ADMIN,
-  _$userRoleEnum_SELLER,
-]);
+final BuiltSet<UserRoleEnum> _$userRoleEnumValues = BuiltSet<UserRoleEnum>(
+  const <UserRoleEnum>[_$userRoleEnum_ADMIN, _$userRoleEnum_SELLER],
+);
 
 Serializer<UserRoleEnum> _$userRoleEnumSerializer = _$UserRoleEnumSerializer();
 
@@ -44,15 +42,20 @@ class _$UserRoleEnumSerializer implements PrimitiveSerializer<UserRoleEnum> {
   final String wireName = 'UserRoleEnum';
 
   @override
-  Object serialize(Serializers serializers, UserRoleEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    UserRoleEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
-  UserRoleEnum deserialize(Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      UserRoleEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+  UserRoleEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => UserRoleEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 class _$User extends User {
@@ -80,18 +83,18 @@ class _$User extends User {
   factory _$User([void Function(UserBuilder)? updates]) =>
       (UserBuilder()..update(updates))._build();
 
-  _$User._(
-      {this.id,
-      this.userId,
-      this.userName,
-      this.role,
-      this.userNumber,
-      this.shopName,
-      this.isActive,
-      this.isVerified,
-      this.createdAt,
-      this.updatedAt})
-      : super._();
+  _$User._({
+    this.id,
+    this.userId,
+    this.userName,
+    this.role,
+    this.userNumber,
+    this.shopName,
+    this.isActive,
+    this.isVerified,
+    this.createdAt,
+    this.updatedAt,
+  }) : super._();
   @override
   User rebuild(void Function(UserBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -228,7 +231,8 @@ class UserBuilder implements Builder<User, UserBuilder> {
   User build() => _build();
 
   _$User _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$User._(
           id: id,
           userId: userId,

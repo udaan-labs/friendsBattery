@@ -87,11 +87,7 @@ class ProductModelBuilder
   ProductModel build() => _build();
 
   _$ProductModel _build() {
-    final _$result = _$v ??
-        _$ProductModel._(
-          id: id,
-          name: name,
-        );
+    final _$result = _$v ?? _$ProductModel._(id: id, name: name);
     replace(_$result);
     return _$result;
   }

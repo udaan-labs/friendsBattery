@@ -5,7 +5,9 @@ import '../../../theme/app_theme.dart';
 import '../providers/auth_controller.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
-  const RegisterScreen({super.key});
+  final bool isAdminFlow;
+
+  const RegisterScreen({super.key, this.isAdminFlow = false});
 
   @override
   ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
@@ -51,9 +53,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration successful! Please login.')),
+          SnackBar(
+            content: Text(widget.isAdminFlow 
+                ? 'Seller created successfully' 
+                : 'Registration successful! Please login.'),
+          ),
         );
-        context.pop(); // Go back to login
+        context.pop(); // Go back to login or seller list
       }
     } catch (e) {
       if (mounted) {
@@ -71,7 +77,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sign Up'),
+        title: Text(widget.isAdminFlow ? 'Add Seller' : 'Sign Up'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -90,10 +96,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 color: AppTheme.primary,
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Create Account',
+              Text(
+                widget.isAdminFlow ? 'Create Seller Account' : 'Create Account',
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 32,
                   fontWeight: FontWeight.w600,
@@ -178,9 +184,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       onPressed: isLoading ? null : _register,
                       child: isLoading 
                         ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Text(
-                        'Sign Up',
-                        style: TextStyle(
+                        : Text(
+                        widget.isAdminFlow ? 'Add Seller' : 'Sign Up',
+                        style: const TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 16,
                           fontWeight: FontWeight.w600,

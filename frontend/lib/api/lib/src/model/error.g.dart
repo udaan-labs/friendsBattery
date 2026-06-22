@@ -101,7 +101,8 @@ class ErrorBuilder implements Builder<Error, ErrorBuilder> {
   _$Error _build() {
     _$Error _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$Error._(
             success: success,
             message: message,

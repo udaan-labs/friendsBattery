@@ -36,12 +36,12 @@ ShipmentStatusEnum _$shipmentStatusEnumValueOf(String name) {
 
 final BuiltSet<ShipmentStatusEnum> _$shipmentStatusEnumValues =
     BuiltSet<ShipmentStatusEnum>(const <ShipmentStatusEnum>[
-  _$shipmentStatusEnum_PENDING,
-  _$shipmentStatusEnum_APPROVED,
-  _$shipmentStatusEnum_REJECTED,
-  _$shipmentStatusEnum_SHIPPED,
-  _$shipmentStatusEnum_DELIVERED,
-]);
+      _$shipmentStatusEnum_PENDING,
+      _$shipmentStatusEnum_APPROVED,
+      _$shipmentStatusEnum_REJECTED,
+      _$shipmentStatusEnum_SHIPPED,
+      _$shipmentStatusEnum_DELIVERED,
+    ]);
 
 Serializer<ShipmentStatusEnum> _$shipmentStatusEnumSerializer =
     _$ShipmentStatusEnumSerializer();
@@ -69,15 +69,20 @@ class _$ShipmentStatusEnumSerializer
   final String wireName = 'ShipmentStatusEnum';
 
   @override
-  Object serialize(Serializers serializers, ShipmentStatusEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    ShipmentStatusEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
-  ShipmentStatusEnum deserialize(Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      ShipmentStatusEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+  ShipmentStatusEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => ShipmentStatusEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 class _$Shipment extends Shipment {
@@ -105,18 +110,18 @@ class _$Shipment extends Shipment {
   factory _$Shipment([void Function(ShipmentBuilder)? updates]) =>
       (ShipmentBuilder()..update(updates))._build();
 
-  _$Shipment._(
-      {this.id,
-      this.fromUserId,
-      this.toUserId,
-      this.totalProductsShipped,
-      this.shipmentPrice,
-      this.status,
-      this.shippedOn,
-      this.deliveredOn,
-      this.createdAt,
-      this.items})
-      : super._();
+  _$Shipment._({
+    this.id,
+    this.fromUserId,
+    this.toUserId,
+    this.totalProductsShipped,
+    this.shipmentPrice,
+    this.status,
+    this.shippedOn,
+    this.deliveredOn,
+    this.createdAt,
+    this.items,
+  }) : super._();
   @override
   Shipment rebuild(void Function(ShipmentBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -258,7 +263,8 @@ class ShipmentBuilder implements Builder<Shipment, ShipmentBuilder> {
   _$Shipment _build() {
     _$Shipment _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$Shipment._(
             id: id,
             fromUserId: fromUserId,
@@ -278,7 +284,10 @@ class ShipmentBuilder implements Builder<Shipment, ShipmentBuilder> {
         _items?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'Shipment', _$failedField, e.toString());
+          r'Shipment',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

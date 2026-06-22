@@ -14,17 +14,19 @@ class _$ApiAuthActivatePutRequest extends ApiAuthActivatePutRequest {
   @override
   final bool isVerified;
 
-  factory _$ApiAuthActivatePutRequest(
-          [void Function(ApiAuthActivatePutRequestBuilder)? updates]) =>
-      (ApiAuthActivatePutRequestBuilder()..update(updates))._build();
+  factory _$ApiAuthActivatePutRequest([
+    void Function(ApiAuthActivatePutRequestBuilder)? updates,
+  ]) => (ApiAuthActivatePutRequestBuilder()..update(updates))._build();
 
-  _$ApiAuthActivatePutRequest._(
-      {required this.userId, required this.isActive, required this.isVerified})
-      : super._();
+  _$ApiAuthActivatePutRequest._({
+    required this.userId,
+    required this.isActive,
+    required this.isVerified,
+  }) : super._();
   @override
   ApiAuthActivatePutRequest rebuild(
-          void Function(ApiAuthActivatePutRequestBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(ApiAuthActivatePutRequestBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   ApiAuthActivatePutRequestBuilder toBuilder() =>
@@ -105,14 +107,24 @@ class ApiAuthActivatePutRequestBuilder
   ApiAuthActivatePutRequest build() => _build();
 
   _$ApiAuthActivatePutRequest _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$ApiAuthActivatePutRequest._(
           userId: BuiltValueNullFieldError.checkNotNull(
-              userId, r'ApiAuthActivatePutRequest', 'userId'),
+            userId,
+            r'ApiAuthActivatePutRequest',
+            'userId',
+          ),
           isActive: BuiltValueNullFieldError.checkNotNull(
-              isActive, r'ApiAuthActivatePutRequest', 'isActive'),
+            isActive,
+            r'ApiAuthActivatePutRequest',
+            'isActive',
+          ),
           isVerified: BuiltValueNullFieldError.checkNotNull(
-              isVerified, r'ApiAuthActivatePutRequest', 'isVerified'),
+            isVerified,
+            r'ApiAuthActivatePutRequest',
+            'isVerified',
+          ),
         );
     replace(_$result);
     return _$result;

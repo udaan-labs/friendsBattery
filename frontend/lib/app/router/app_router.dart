@@ -25,6 +25,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         return authState.role == UserRole.admin ? '/admin/dashboard' : '/seller/dashboard';
       }
 
+      if (authState.isAuthenticated) {
+        final path = state.uri.toString();
+        if (path.startsWith('/admin') && authState.role != UserRole.admin) {
+          return '/seller/dashboard';
+        }
+        if (path.startsWith('/seller') && authState.role != UserRole.seller) {
+          return '/admin/dashboard';
+        }
+      }
+
       return null;
     },
     routes: [
@@ -43,6 +53,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/admin/dashboard',
         builder: (context, state) => const AdminDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/admin/add-seller',
+        builder: (context, state) => const RegisterScreen(isAdminFlow: true),
       ),
       GoRoute(
         path: '/seller/dashboard',

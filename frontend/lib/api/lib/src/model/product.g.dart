@@ -35,20 +35,20 @@ class _$Product extends Product {
   factory _$Product([void Function(ProductBuilder)? updates]) =>
       (ProductBuilder()..update(updates))._build();
 
-  _$Product._(
-      {this.id,
-      this.categoryId,
-      this.productNameId,
-      this.productModelId,
-      this.minPrice,
-      this.onSale,
-      this.offerPrice,
-      this.minQuantity,
-      this.createdAt,
-      this.category,
-      this.productName,
-      this.productModel})
-      : super._();
+  _$Product._({
+    this.id,
+    this.categoryId,
+    this.productNameId,
+    this.productModelId,
+    this.minPrice,
+    this.onSale,
+    this.offerPrice,
+    this.minQuantity,
+    this.createdAt,
+    this.category,
+    this.productName,
+    this.productModel,
+  }) : super._();
   @override
   Product rebuild(void Function(ProductBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -209,7 +209,8 @@ class ProductBuilder implements Builder<Product, ProductBuilder> {
   _$Product _build() {
     _$Product _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$Product._(
             id: id,
             categoryId: categoryId,
@@ -235,7 +236,10 @@ class ProductBuilder implements Builder<Product, ProductBuilder> {
         _productModel?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'Product', _$failedField, e.toString());
+          r'Product',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

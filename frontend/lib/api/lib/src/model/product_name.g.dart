@@ -86,11 +86,7 @@ class ProductNameBuilder implements Builder<ProductName, ProductNameBuilder> {
   ProductName build() => _build();
 
   _$ProductName _build() {
-    final _$result = _$v ??
-        _$ProductName._(
-          id: id,
-          name: name,
-        );
+    final _$result = _$v ?? _$ProductName._(id: id, name: name);
     replace(_$result);
     return _$result;
   }

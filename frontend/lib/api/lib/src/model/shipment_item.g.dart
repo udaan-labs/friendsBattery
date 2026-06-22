@@ -23,14 +23,14 @@ class _$ShipmentItem extends ShipmentItem {
   factory _$ShipmentItem([void Function(ShipmentItemBuilder)? updates]) =>
       (ShipmentItemBuilder()..update(updates))._build();
 
-  _$ShipmentItem._(
-      {this.id,
-      this.shipmentId,
-      this.productId,
-      this.quantity,
-      this.pricePerPiece,
-      this.isShipmentRequested})
-      : super._();
+  _$ShipmentItem._({
+    this.id,
+    this.shipmentId,
+    this.productId,
+    this.quantity,
+    this.pricePerPiece,
+    this.isShipmentRequested,
+  }) : super._();
   @override
   ShipmentItem rebuild(void Function(ShipmentItemBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -138,7 +138,8 @@ class ShipmentItemBuilder
   ShipmentItem build() => _build();
 
   _$ShipmentItem _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$ShipmentItem._(
           id: id,
           shipmentId: shipmentId,

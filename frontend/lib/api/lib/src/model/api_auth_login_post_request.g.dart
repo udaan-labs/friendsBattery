@@ -12,16 +12,16 @@ class _$ApiAuthLoginPostRequest extends ApiAuthLoginPostRequest {
   @override
   final String password;
 
-  factory _$ApiAuthLoginPostRequest(
-          [void Function(ApiAuthLoginPostRequestBuilder)? updates]) =>
-      (ApiAuthLoginPostRequestBuilder()..update(updates))._build();
+  factory _$ApiAuthLoginPostRequest([
+    void Function(ApiAuthLoginPostRequestBuilder)? updates,
+  ]) => (ApiAuthLoginPostRequestBuilder()..update(updates))._build();
 
   _$ApiAuthLoginPostRequest._({required this.userId, required this.password})
-      : super._();
+    : super._();
   @override
   ApiAuthLoginPostRequest rebuild(
-          void Function(ApiAuthLoginPostRequestBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(ApiAuthLoginPostRequestBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   ApiAuthLoginPostRequestBuilder toBuilder() =>
@@ -94,12 +94,19 @@ class ApiAuthLoginPostRequestBuilder
   ApiAuthLoginPostRequest build() => _build();
 
   _$ApiAuthLoginPostRequest _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$ApiAuthLoginPostRequest._(
           userId: BuiltValueNullFieldError.checkNotNull(
-              userId, r'ApiAuthLoginPostRequest', 'userId'),
+            userId,
+            r'ApiAuthLoginPostRequest',
+            'userId',
+          ),
           password: BuiltValueNullFieldError.checkNotNull(
-              password, r'ApiAuthLoginPostRequest', 'password'),
+            password,
+            r'ApiAuthLoginPostRequest',
+            'password',
+          ),
         );
     replace(_$result);
     return _$result;

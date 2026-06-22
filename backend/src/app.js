@@ -43,6 +43,7 @@ safeMount('/api/audit', require('./modules/audit/audit.routes'));
 safeMount('/api/audit-logs', require('./modules/audit-logs/audit-logs.routes'));
 safeMount('/api/auth', require('./modules/auth/auth.routes'));
 safeMount('/api/customers', require('./modules/customers/customers.routes'));
+safeMount('/api/dashboard', require('./modules/dashboard/dashboard.routes'));
 safeMount('/api/inventory', require('./modules/inventory/inventory.routes'));
 safeMount('/api/notifications', require('./modules/notifications/notifications.routes'));
 safeMount('/api/product-units', require('./modules/product-units/product-units.routes'));

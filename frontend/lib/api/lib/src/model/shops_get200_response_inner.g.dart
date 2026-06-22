@@ -12,15 +12,15 @@ class _$ShopsGet200ResponseInner extends ShopsGet200ResponseInner {
   @override
   final String? name;
 
-  factory _$ShopsGet200ResponseInner(
-          [void Function(ShopsGet200ResponseInnerBuilder)? updates]) =>
-      (ShopsGet200ResponseInnerBuilder()..update(updates))._build();
+  factory _$ShopsGet200ResponseInner([
+    void Function(ShopsGet200ResponseInnerBuilder)? updates,
+  ]) => (ShopsGet200ResponseInnerBuilder()..update(updates))._build();
 
   _$ShopsGet200ResponseInner._({this.id, this.name}) : super._();
   @override
   ShopsGet200ResponseInner rebuild(
-          void Function(ShopsGet200ResponseInnerBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(ShopsGet200ResponseInnerBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   ShopsGet200ResponseInnerBuilder toBuilder() =>
@@ -93,11 +93,7 @@ class ShopsGet200ResponseInnerBuilder
   ShopsGet200ResponseInner build() => _build();
 
   _$ShopsGet200ResponseInner _build() {
-    final _$result = _$v ??
-        _$ShopsGet200ResponseInner._(
-          id: id,
-          name: name,
-        );
+    final _$result = _$v ?? _$ShopsGet200ResponseInner._(id: id, name: name);
     replace(_$result);
     return _$result;
   }

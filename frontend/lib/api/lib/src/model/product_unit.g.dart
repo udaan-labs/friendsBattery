@@ -36,12 +36,12 @@ ProductUnitStatusEnum _$productUnitStatusEnumValueOf(String name) {
 
 final BuiltSet<ProductUnitStatusEnum> _$productUnitStatusEnumValues =
     BuiltSet<ProductUnitStatusEnum>(const <ProductUnitStatusEnum>[
-  _$productUnitStatusEnum_IN_STOCK,
-  _$productUnitStatusEnum_IN_TRANSIT,
-  _$productUnitStatusEnum_SOLD,
-  _$productUnitStatusEnum_RETURNED,
-  _$productUnitStatusEnum_DEFECTIVE,
-]);
+      _$productUnitStatusEnum_IN_STOCK,
+      _$productUnitStatusEnum_IN_TRANSIT,
+      _$productUnitStatusEnum_SOLD,
+      _$productUnitStatusEnum_RETURNED,
+      _$productUnitStatusEnum_DEFECTIVE,
+    ]);
 
 Serializer<ProductUnitStatusEnum> _$productUnitStatusEnumSerializer =
     _$ProductUnitStatusEnumSerializer();
@@ -69,15 +69,20 @@ class _$ProductUnitStatusEnumSerializer
   final String wireName = 'ProductUnitStatusEnum';
 
   @override
-  Object serialize(Serializers serializers, ProductUnitStatusEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    ProductUnitStatusEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
-  ProductUnitStatusEnum deserialize(Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      ProductUnitStatusEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+  ProductUnitStatusEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => ProductUnitStatusEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 class _$ProductUnit extends ProductUnit {
@@ -99,15 +104,15 @@ class _$ProductUnit extends ProductUnit {
   factory _$ProductUnit([void Function(ProductUnitBuilder)? updates]) =>
       (ProductUnitBuilder()..update(updates))._build();
 
-  _$ProductUnit._(
-      {this.id,
-      this.productId,
-      this.ownerId,
-      this.serialNumber,
-      this.status,
-      this.createdAt,
-      this.updatedAt})
-      : super._();
+  _$ProductUnit._({
+    this.id,
+    this.productId,
+    this.ownerId,
+    this.serialNumber,
+    this.status,
+    this.createdAt,
+    this.updatedAt,
+  }) : super._();
   @override
   ProductUnit rebuild(void Function(ProductUnitBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -220,7 +225,8 @@ class ProductUnitBuilder implements Builder<ProductUnit, ProductUnitBuilder> {
   ProductUnit build() => _build();
 
   _$ProductUnit _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$ProductUnit._(
           id: id,
           productId: productId,

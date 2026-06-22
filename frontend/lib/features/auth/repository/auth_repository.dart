@@ -5,8 +5,9 @@ class AuthResponse {
   final String authId;
   final String authKey;
   final String role; // 'admin' or 'seller'
+  final Map<String, dynamic> user; // Full user details
   
-  AuthResponse({required this.authId, required this.authKey, required this.role});
+  AuthResponse({required this.authId, required this.authKey, required this.role, required this.user});
 }
 
 class AuthRepository {
@@ -33,11 +34,12 @@ class AuthRepository {
           authId: data['auth_id']?.toString() ?? '123',
           authKey: data['auth_key']?.toString() ?? 'abc',
           role: user['role']?.toString().toLowerCase() ?? 'seller',
+          user: user,
         );
       } else if (responseData != null && responseData is Map<String, dynamic>) {
          throw Exception(responseData['message'] ?? 'Login failed');
       }
-      return AuthResponse(authId: '123', authKey: 'abc', role: 'seller');
+      return AuthResponse(authId: '123', authKey: 'abc', role: 'seller', user: {});
     } catch (e) {
       String errorMessage = 'Login failed';
       if (e is DioException) {

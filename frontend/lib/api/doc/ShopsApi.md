@@ -9,13 +9,14 @@ All URIs are relative to *http://localhost:3000*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**shopsGet**](ShopsApi.md#shopsget) | **GET** /shops | Retrieve a list of shops
+[**apiShopsSellersGet**](ShopsApi.md#apishopssellersget) | **GET** /api/shops/sellers | Return all sellers
+[**apiShopsSellersSellerIdGet**](ShopsApi.md#apishopssellersselleridget) | **GET** /api/shops/sellers/{sellerId} | Return one seller
 
 
-# **shopsGet**
-> BuiltList<ShopsGet200ResponseInner> shopsGet()
+# **apiShopsSellersGet**
+> apiShopsSellersGet()
 
-Retrieve a list of shops
+Return all sellers
 
 ### Example
 ```dart
@@ -24,10 +25,9 @@ import 'package:friends_battery_api/api.dart';
 final api = FriendsBatteryApi().getShopsApi();
 
 try {
-    final response = api.shopsGet();
-    print(response);
+    api.apiShopsSellersGet();
 } on DioException catch (e) {
-    print('Exception when calling ShopsApi->shopsGet: $e\n');
+    print('Exception when calling ShopsApi->apiShopsSellersGet: $e\n');
 }
 ```
 
@@ -36,7 +36,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**BuiltList&lt;ShopsGet200ResponseInner&gt;**](ShopsGet200ResponseInner.md)
+void (empty response body)
 
 ### Authorization
 
@@ -45,7 +45,47 @@ This endpoint does not need any parameter.
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/json
+ - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiShopsSellersSellerIdGet**
+> apiShopsSellersSellerIdGet(sellerId)
+
+Return one seller
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getShopsApi();
+final int sellerId = 56; // int | 
+
+try {
+    api.apiShopsSellersSellerIdGet(sellerId);
+} on DioException catch (e) {
+    print('Exception when calling ShopsApi->apiShopsSellersSellerIdGet: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **sellerId** | **int**|  | 
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

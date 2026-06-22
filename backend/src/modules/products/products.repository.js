@@ -27,7 +27,7 @@ class ProductsRepository {
    */
   async findCategoryById(id) {
     return prisma.category.findUnique({
-      where: { id }
+      where: { id: BigInt(id) }
     });
   }
 
@@ -61,7 +61,7 @@ class ProductsRepository {
   async findProductNameByNameAndCategory(categoryId, name) {
     return prisma.productName.findFirst({
       where: {
-        categoryId,
+        categoryId: BigInt(categoryId),
         name
       }
     });
@@ -78,7 +78,7 @@ class ProductsRepository {
    */
   async findProductNameById(id) {
     return prisma.productName.findUnique({
-      where: { id }
+      where: { id: BigInt(id) }
     });
   }
 
@@ -88,7 +88,7 @@ class ProductsRepository {
   async createProductName(data) {
     return prisma.productName.create({
       data: {
-        categoryId: data.category_id,
+        categoryId: BigInt(data.category_id),
         name: data.name
       }
     });
@@ -100,7 +100,7 @@ class ProductsRepository {
   async getProductNamesByCategory(categoryId) {
     return prisma.productName.findMany({
       where: {
-        categoryId
+        categoryId: BigInt(categoryId)
       },
       orderBy: {
         name: 'asc'
@@ -115,7 +115,7 @@ class ProductsRepository {
   async findProductModelByNameAndProductName(productNameId, name) {
     return prisma.productModel.findFirst({
       where: {
-        productNameId,
+        productNameId: BigInt(productNameId),
         name
       }
     });
@@ -132,7 +132,7 @@ class ProductsRepository {
    */
   async findProductModelById(id) {
     return prisma.productModel.findUnique({
-      where: { id }
+      where: { id: BigInt(id) }
     });
   }
 
@@ -142,7 +142,7 @@ class ProductsRepository {
   async createProductModel(data) {
     return prisma.productModel.create({
       data: {
-        productNameId: data.product_name_id,
+        productNameId: BigInt(data.product_name_id),
         name: data.name
       }
     });
@@ -154,7 +154,7 @@ class ProductsRepository {
   async getProductModelsByProductName(productNameId) {
     return prisma.productModel.findMany({
       where: {
-        productNameId
+        productNameId: BigInt(productNameId)
       },
       orderBy: {
         name: 'asc'
@@ -168,9 +168,9 @@ class ProductsRepository {
   async createProduct(data) {
     return prisma.product.create({
       data: {
-        categoryId: data.category_id,
-        productNameId: data.product_name_id,
-        productModelId: data.product_model_id,
+        categoryId: BigInt(data.category_id),
+        productNameId: BigInt(data.product_name_id),
+        productModelId: BigInt(data.product_model_id),
         minPrice: data.min_price,
         onSale: data.on_sale,
         offerPrice: data.offer_price,
@@ -210,9 +210,9 @@ class ProductsRepository {
   async getProductsByFilters(categoryId, productNameId, productModelId) {
     return prisma.product.findMany({
       where: {
-        categoryId,
-        productNameId,
-        productModelId
+        categoryId: BigInt(categoryId),
+        productNameId: BigInt(productNameId),
+        productModelId: BigInt(productModelId)
       },
       include: {
         category: true,

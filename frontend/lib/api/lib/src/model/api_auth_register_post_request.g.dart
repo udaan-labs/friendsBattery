@@ -18,21 +18,21 @@ class _$ApiAuthRegisterPostRequest extends ApiAuthRegisterPostRequest {
   @override
   final String password;
 
-  factory _$ApiAuthRegisterPostRequest(
-          [void Function(ApiAuthRegisterPostRequestBuilder)? updates]) =>
-      (ApiAuthRegisterPostRequestBuilder()..update(updates))._build();
+  factory _$ApiAuthRegisterPostRequest([
+    void Function(ApiAuthRegisterPostRequestBuilder)? updates,
+  ]) => (ApiAuthRegisterPostRequestBuilder()..update(updates))._build();
 
-  _$ApiAuthRegisterPostRequest._(
-      {required this.userId,
-      required this.username,
-      required this.userNumber,
-      required this.shopName,
-      required this.password})
-      : super._();
+  _$ApiAuthRegisterPostRequest._({
+    required this.userId,
+    required this.username,
+    required this.userNumber,
+    required this.shopName,
+    required this.password,
+  }) : super._();
   @override
   ApiAuthRegisterPostRequest rebuild(
-          void Function(ApiAuthRegisterPostRequestBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(ApiAuthRegisterPostRequestBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   ApiAuthRegisterPostRequestBuilder toBuilder() =>
@@ -129,18 +129,34 @@ class ApiAuthRegisterPostRequestBuilder
   ApiAuthRegisterPostRequest build() => _build();
 
   _$ApiAuthRegisterPostRequest _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$ApiAuthRegisterPostRequest._(
           userId: BuiltValueNullFieldError.checkNotNull(
-              userId, r'ApiAuthRegisterPostRequest', 'userId'),
+            userId,
+            r'ApiAuthRegisterPostRequest',
+            'userId',
+          ),
           username: BuiltValueNullFieldError.checkNotNull(
-              username, r'ApiAuthRegisterPostRequest', 'username'),
+            username,
+            r'ApiAuthRegisterPostRequest',
+            'username',
+          ),
           userNumber: BuiltValueNullFieldError.checkNotNull(
-              userNumber, r'ApiAuthRegisterPostRequest', 'userNumber'),
+            userNumber,
+            r'ApiAuthRegisterPostRequest',
+            'userNumber',
+          ),
           shopName: BuiltValueNullFieldError.checkNotNull(
-              shopName, r'ApiAuthRegisterPostRequest', 'shopName'),
+            shopName,
+            r'ApiAuthRegisterPostRequest',
+            'shopName',
+          ),
           password: BuiltValueNullFieldError.checkNotNull(
-              password, r'ApiAuthRegisterPostRequest', 'password'),
+            password,
+            r'ApiAuthRegisterPostRequest',
+            'password',
+          ),
         );
     replace(_$result);
     return _$result;

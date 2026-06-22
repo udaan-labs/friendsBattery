@@ -108,13 +108,9 @@ class CustomerBuilder implements Builder<Customer, CustomerBuilder> {
   Customer build() => _build();
 
   _$Customer _build() {
-    final _$result = _$v ??
-        _$Customer._(
-          id: id,
-          name: name,
-          phone: phone,
-          createdAt: createdAt,
-        );
+    final _$result =
+        _$v ??
+        _$Customer._(id: id, name: name, phone: phone, createdAt: createdAt);
     replace(_$result);
     return _$result;
   }

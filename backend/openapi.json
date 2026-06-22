@@ -465,27 +465,36 @@
     }
   ],
   "paths": {
-    "/shops": {
-      "get": {
-        "summary": "Retrieve a list of shops",
+    "/api/transfers": {
+      "post": {
+        "summary": "Create a new shipment from Admin to Seller",
         "tags": [
-          "Shops"
+          "Transfers"
         ],
-        "responses": {
-          "200": {
-            "description": "A list of shops",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "seller_id": {
+                    "type": "integer"
+                  },
                   "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "string"
-                      },
-                      "name": {
-                        "type": "string"
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "product_id": {
+                          "type": "integer"
+                        },
+                        "quantity": {
+                          "type": "integer"
+                        },
+                        "price_per_piece": {
+                          "type": "number"
+                        }
                       }
                     }
                   }
@@ -493,45 +502,721 @@
               }
             }
           }
+        },
+        "responses": {
+          "201": {
+            "description": "Shipment created successfully"
+          },
+          "403": {
+            "description": "Admin access required"
+          }
+        }
+      },
+      "get": {
+        "summary": "Return all shipments (Admin gets all, Seller gets own)",
+        "tags": [
+          "Transfers"
+        ],
+        "responses": {
+          "200": {
+            "description": "Shipments fetched successfully"
+          }
         }
       }
     },
-    "/products": {
+    "/api/transfers/{shipmentId}": {
       "get": {
-        "summary": "Retrieve a list of products",
+        "summary": "Return complete shipment details by ID",
+        "tags": [
+          "Transfers"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shipmentId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shipment details fetched successfully"
+          },
+          "403": {
+            "description": "Unauthorized access"
+          },
+          "404": {
+            "description": "Shipment not found"
+          }
+        }
+      }
+    },
+    "/api/transfers/{shipmentId}/receive": {
+      "patch": {
+        "summary": "Seller receives and confirms a shipment delivery",
+        "tags": [
+          "Transfers"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shipmentId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shipment received successfully"
+          },
+          "400": {
+            "description": "Shipment is not in PENDING status"
+          },
+          "403": {
+            "description": "Seller access required or shipment not assigned"
+          },
+          "404": {
+            "description": "Shipment not found"
+          }
+        }
+      }
+    },
+    "/api/transfers/{shipmentId}/cancel": {
+      "patch": {
+        "summary": "Admin cancels a pending shipment",
+        "tags": [
+          "Transfers"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shipmentId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shipment cancelled successfully"
+          },
+          "400": {
+            "description": "Shipment is not in PENDING status"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Shipment not found"
+          }
+        }
+      }
+    },
+    "/api/shops/sellers": {
+      "get": {
+        "summary": "Return all sellers",
+        "tags": [
+          "Shops"
+        ],
+        "responses": {
+          "200": {
+            "description": "Sellers fetched successfully"
+          }
+        }
+      }
+    },
+    "/api/shops/sellers/{sellerId}": {
+      "get": {
+        "summary": "Return one seller",
+        "tags": [
+          "Shops"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sellerId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Seller fetched successfully"
+          },
+          "404": {
+            "description": "Seller not found"
+          }
+        }
+      }
+    },
+    "/api/sales": {
+      "post": {
+        "summary": "Create a new sale transaction",
+        "tags": [
+          "Sales"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "product_id": {
+                    "type": "integer"
+                  },
+                  "serial_number": {
+                    "type": "string"
+                  },
+                  "customer_name": {
+                    "type": "string"
+                  },
+                  "customer_number": {
+                    "type": "string"
+                  },
+                  "vehicle_number": {
+                    "type": "string"
+                  },
+                  "sell_price": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Sale transaction created successfully"
+          }
+        }
+      },
+      "get": {
+        "summary": "Return all sales based on role (Admin sees all, Seller sees own)",
+        "tags": [
+          "Sales"
+        ],
+        "responses": {
+          "200": {
+            "description": "Sales fetched successfully"
+          }
+        }
+      }
+    },
+    "/api/sales/{transactionId}": {
+      "get": {
+        "summary": "Return a single sale's details by ID",
+        "tags": [
+          "Sales"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transactionId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sale details fetched successfully"
+          },
+          "404": {
+            "description": "Transaction not found"
+          }
+        }
+      }
+    },
+    "/api/sales/customer/{mobile}": {
+      "get": {
+        "summary": "Return complete purchase history for a customer mobile",
+        "tags": [
+          "Sales"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "mobile",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer history fetched successfully"
+          }
+        }
+      }
+    },
+    "/api/products/categories": {
+      "post": {
+        "summary": "Create a new product category",
+        "tags": [
+          "Products"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Category created successfully"
+          }
+        }
+      },
+      "get": {
+        "summary": "Return all categories",
         "tags": [
           "Products"
         ],
         "responses": {
           "200": {
-            "description": "A list of products",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "string"
-                      },
-                      "name": {
-                        "type": "string"
-                      }
-                    }
+            "description": "Categories fetched successfully"
+          }
+        }
+      }
+    },
+    "/api/products/product-names": {
+      "post": {
+        "summary": "Create a product name under a category",
+        "tags": [
+          "Products"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "category_id": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
                   }
                 }
               }
             }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product name created successfully"
+          }
+        }
+      }
+    },
+    "/api/products/product-names/list": {
+      "post": {
+        "summary": "Return all product names belonging to a category",
+        "tags": [
+          "Products"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "category_id": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product names fetched successfully"
+          }
+        }
+      }
+    },
+    "/api/products/product-models": {
+      "post": {
+        "summary": "Create a product model",
+        "tags": [
+          "Products"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "product_name_id": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product model created successfully"
+          }
+        }
+      }
+    },
+    "/api/products/product-models/list": {
+      "post": {
+        "summary": "Return all models belonging to a product name",
+        "tags": [
+          "Products"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "category_id": {
+                    "type": "integer"
+                  },
+                  "product_name_id": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product models fetched successfully"
+          }
+        }
+      }
+    },
+    "/api/products": {
+      "post": {
+        "summary": "Create a new product",
+        "tags": [
+          "Products"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "category_id": {
+                    "type": "integer"
+                  },
+                  "product_name_id": {
+                    "type": "integer"
+                  },
+                  "product_model_id": {
+                    "type": "integer"
+                  },
+                  "min_price": {
+                    "type": "number"
+                  },
+                  "on_sale": {
+                    "type": "boolean"
+                  },
+                  "offer_price": {
+                    "type": "number"
+                  },
+                  "min_quantity": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product created successfully"
+          }
+        }
+      }
+    },
+    "/api/products/list": {
+      "post": {
+        "summary": "Return all products matching filters",
+        "tags": [
+          "Products"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "category_id": {
+                    "type": "integer"
+                  },
+                  "product_name_id": {
+                    "type": "integer"
+                  },
+                  "product_model_id": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Products fetched successfully"
           }
         }
       }
     },
     "/api/inventory": {
       "get": {
-        "summary": "Retrieve inventory transactions",
+        "summary": "Return logged-in user's inventory",
         "tags": [
           "Inventory"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Inventory fetched successfully"
+          }
+        }
+      }
+    },
+    "/api/inventory/history": {
+      "get": {
+        "summary": "Return inventory movement history",
+        "tags": [
+          "Inventory"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "from_date",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to_date",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "in": "query",
+            "name": "product_id",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "seller_id",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Inventory history fetched successfully"
+          }
+        }
+      }
+    },
+    "/api/inventory/{productId}": {
+      "get": {
+        "summary": "Return one inventory item",
+        "tags": [
+          "Inventory"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Inventory item fetched successfully"
+          },
+          "404": {
+            "description": "Inventory item not found"
+          }
+        }
+      }
+    },
+    "/api/inventory/adjust": {
+      "patch": {
+        "summary": "Adjust inventory stock levels",
+        "tags": [
+          "Inventory"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "product_id",
+                  "user_id",
+                  "adjustment_quantity"
+                ],
+                "properties": {
+                  "product_id": {
+                    "type": "integer"
+                  },
+                  "user_id": {
+                    "type": "integer"
+                  },
+                  "adjustment_quantity": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Inventory adjusted successfully"
+          },
+          "400": {
+            "description": "Not enough stock to decrease"
+          }
+        }
+      }
+    },
+    "/api/inventory/transfer": {
+      "post": {
+        "summary": "Transfer inventory from admin to seller",
+        "tags": [
+          "Inventory"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "seller_id",
+                  "products"
+                ],
+                "properties": {
+                  "seller_id": {
+                    "type": "integer"
+                  },
+                  "products": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "product_id": {
+                          "type": "integer"
+                        },
+                        "quantity": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Inventory transferred successfully"
+          },
+          "400": {
+            "description": "Invalid seller or insufficient stock"
+          }
+        }
+      }
+    },
+    "/api/dashboard/stats": {
+      "get": {
+        "summary": "Get dashboard statistics",
+        "description": "Retrieves total available stock, today's sales, pending seller requests, and total sellers. Only accessible by Admin users.",
+        "tags": [
+          "Dashboard"
         ],
         "security": [
           {
@@ -540,27 +1225,54 @@
         ],
         "responses": {
           "200": {
-            "description": "A list of inventory transactions",
+            "description": "Dashboard statistics retrieved successfully",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/InventoryTransaction"
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Dashboard stats retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "totalStock": {
+                          "type": "integer",
+                          "example": 120
+                        },
+                        "todaySales": {
+                          "type": "integer",
+                          "example": 35
+                        },
+                        "pendingRequests": {
+                          "type": "integer",
+                          "example": 8
+                        },
+                        "totalSellers": {
+                          "type": "integer",
+                          "example": 12
+                        }
+                      }
+                    }
                   }
                 }
               }
             }
           },
           "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden (Admin access required)"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         }
       }
@@ -764,5 +1476,26 @@
       }
     }
   },
-  "tags": []
+  "tags": [
+    {
+      "name": "Transfers",
+      "description": "Shipment / Transfer management APIs"
+    },
+    {
+      "name": "Shops",
+      "description": "Shops management"
+    },
+    {
+      "name": "Sales",
+      "description": "Sales management APIs"
+    },
+    {
+      "name": "Products",
+      "description": "Products management APIs"
+    },
+    {
+      "name": "Inventory",
+      "description": "Inventory management"
+    }
+  ]
 }

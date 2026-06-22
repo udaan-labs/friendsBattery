@@ -15,11 +15,12 @@ const InventoryTransactionActionEnum _$inventoryTransactionActionEnum_SOLD =
 const InventoryTransactionActionEnum _$inventoryTransactionActionEnum_RETURNED =
     const InventoryTransactionActionEnum._('RETURNED');
 const InventoryTransactionActionEnum
-    _$inventoryTransactionActionEnum_TRANSFERRED =
+_$inventoryTransactionActionEnum_TRANSFERRED =
     const InventoryTransactionActionEnum._('TRANSFERRED');
 
 InventoryTransactionActionEnum _$inventoryTransactionActionEnumValueOf(
-    String name) {
+  String name,
+) {
   switch (name) {
     case 'RECEIVED':
       return _$inventoryTransactionActionEnum_RECEIVED;
@@ -37,17 +38,19 @@ InventoryTransactionActionEnum _$inventoryTransactionActionEnumValueOf(
 }
 
 final BuiltSet<InventoryTransactionActionEnum>
-    _$inventoryTransactionActionEnumValues = BuiltSet<
-        InventoryTransactionActionEnum>(const <InventoryTransactionActionEnum>[
-  _$inventoryTransactionActionEnum_RECEIVED,
-  _$inventoryTransactionActionEnum_SHIPPED,
-  _$inventoryTransactionActionEnum_SOLD,
-  _$inventoryTransactionActionEnum_RETURNED,
-  _$inventoryTransactionActionEnum_TRANSFERRED,
-]);
+_$inventoryTransactionActionEnumValues =
+    BuiltSet<InventoryTransactionActionEnum>(
+      const <InventoryTransactionActionEnum>[
+        _$inventoryTransactionActionEnum_RECEIVED,
+        _$inventoryTransactionActionEnum_SHIPPED,
+        _$inventoryTransactionActionEnum_SOLD,
+        _$inventoryTransactionActionEnum_RETURNED,
+        _$inventoryTransactionActionEnum_TRANSFERRED,
+      ],
+    );
 
 Serializer<InventoryTransactionActionEnum>
-    _$inventoryTransactionActionEnumSerializer =
+_$inventoryTransactionActionEnumSerializer =
     _$InventoryTransactionActionEnumSerializer();
 
 class _$InventoryTransactionActionEnumSerializer
@@ -74,16 +77,19 @@ class _$InventoryTransactionActionEnumSerializer
 
   @override
   Object serialize(
-          Serializers serializers, InventoryTransactionActionEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+    Serializers serializers,
+    InventoryTransactionActionEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
   InventoryTransactionActionEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      InventoryTransactionActionEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => InventoryTransactionActionEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 class _$InventoryTransaction extends InventoryTransaction {
@@ -100,22 +106,22 @@ class _$InventoryTransaction extends InventoryTransaction {
   @override
   final DateTime? timestamp;
 
-  factory _$InventoryTransaction(
-          [void Function(InventoryTransactionBuilder)? updates]) =>
-      (InventoryTransactionBuilder()..update(updates))._build();
+  factory _$InventoryTransaction([
+    void Function(InventoryTransactionBuilder)? updates,
+  ]) => (InventoryTransactionBuilder()..update(updates))._build();
 
-  _$InventoryTransaction._(
-      {this.id,
-      this.productUnitId,
-      this.fromUserId,
-      this.toUserId,
-      this.action,
-      this.timestamp})
-      : super._();
+  _$InventoryTransaction._({
+    this.id,
+    this.productUnitId,
+    this.fromUserId,
+    this.toUserId,
+    this.action,
+    this.timestamp,
+  }) : super._();
   @override
   InventoryTransaction rebuild(
-          void Function(InventoryTransactionBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(InventoryTransactionBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   InventoryTransactionBuilder toBuilder() =>
@@ -220,7 +226,8 @@ class InventoryTransactionBuilder
   InventoryTransaction build() => _build();
 
   _$InventoryTransaction _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$InventoryTransaction._(
           id: id,
           productUnitId: productUnitId,

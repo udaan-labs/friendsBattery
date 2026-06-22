@@ -11,9 +11,12 @@ import 'package:friends_battery_api/src/auth/bearer_auth.dart';
 import 'package:friends_battery_api/src/auth/oauth.dart';
 import 'package:friends_battery_api/src/api/auth_api.dart';
 import 'package:friends_battery_api/src/api/customers_api.dart';
+import 'package:friends_battery_api/src/api/dashboard_api.dart';
 import 'package:friends_battery_api/src/api/inventory_api.dart';
 import 'package:friends_battery_api/src/api/products_api.dart';
+import 'package:friends_battery_api/src/api/sales_api.dart';
 import 'package:friends_battery_api/src/api/shops_api.dart';
+import 'package:friends_battery_api/src/api/transfers_api.dart';
 
 class FriendsBatteryApi {
   static const String basePath = r'http://localhost:3000';
@@ -121,6 +124,12 @@ class FriendsBatteryApi {
     return CustomersApi(dio, serializers);
   }
 
+  /// Get DashboardApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  DashboardApi getDashboardApi() {
+    return DashboardApi(dio, serializers);
+  }
+
   /// Get InventoryApi instance, base route and serializer can be overridden by a given but be careful,
   /// by doing that all interceptors will not be executed
   InventoryApi getInventoryApi() {
@@ -133,9 +142,21 @@ class FriendsBatteryApi {
     return ProductsApi(dio, serializers);
   }
 
+  /// Get SalesApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  SalesApi getSalesApi() {
+    return SalesApi(dio, serializers);
+  }
+
   /// Get ShopsApi instance, base route and serializer can be overridden by a given but be careful,
   /// by doing that all interceptors will not be executed
   ShopsApi getShopsApi() {
     return ShopsApi(dio, serializers);
+  }
+
+  /// Get TransfersApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  TransfersApi getTransfersApi() {
+    return TransfersApi(dio, serializers);
   }
 }

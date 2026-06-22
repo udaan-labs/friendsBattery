@@ -36,12 +36,12 @@ StockRequestStatusEnum _$stockRequestStatusEnumValueOf(String name) {
 
 final BuiltSet<StockRequestStatusEnum> _$stockRequestStatusEnumValues =
     BuiltSet<StockRequestStatusEnum>(const <StockRequestStatusEnum>[
-  _$stockRequestStatusEnum_PENDING,
-  _$stockRequestStatusEnum_APPROVED,
-  _$stockRequestStatusEnum_REJECTED,
-  _$stockRequestStatusEnum_SHIPPED,
-  _$stockRequestStatusEnum_DELIVERED,
-]);
+      _$stockRequestStatusEnum_PENDING,
+      _$stockRequestStatusEnum_APPROVED,
+      _$stockRequestStatusEnum_REJECTED,
+      _$stockRequestStatusEnum_SHIPPED,
+      _$stockRequestStatusEnum_DELIVERED,
+    ]);
 
 Serializer<StockRequestStatusEnum> _$stockRequestStatusEnumSerializer =
     _$StockRequestStatusEnumSerializer();
@@ -69,15 +69,20 @@ class _$StockRequestStatusEnumSerializer
   final String wireName = 'StockRequestStatusEnum';
 
   @override
-  Object serialize(Serializers serializers, StockRequestStatusEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    StockRequestStatusEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
-  StockRequestStatusEnum deserialize(Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      StockRequestStatusEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+  StockRequestStatusEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => StockRequestStatusEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 class _$StockRequest extends StockRequest {
@@ -99,15 +104,15 @@ class _$StockRequest extends StockRequest {
   factory _$StockRequest([void Function(StockRequestBuilder)? updates]) =>
       (StockRequestBuilder()..update(updates))._build();
 
-  _$StockRequest._(
-      {this.id,
-      this.sellerId,
-      this.requestTo,
-      this.status,
-      this.createdAt,
-      this.approvedAt,
-      this.items})
-      : super._();
+  _$StockRequest._({
+    this.id,
+    this.sellerId,
+    this.requestTo,
+    this.status,
+    this.createdAt,
+    this.approvedAt,
+    this.items,
+  }) : super._();
   @override
   StockRequest rebuild(void Function(StockRequestBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -224,7 +229,8 @@ class StockRequestBuilder
   _$StockRequest _build() {
     _$StockRequest _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$StockRequest._(
             id: id,
             sellerId: sellerId,
@@ -241,7 +247,10 @@ class StockRequestBuilder
         _items?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'StockRequest', _$failedField, e.toString());
+          r'StockRequest',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

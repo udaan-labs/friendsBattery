@@ -29,17 +29,17 @@ class _$ReturnProduct extends ReturnProduct {
   factory _$ReturnProduct([void Function(ReturnProductBuilder)? updates]) =>
       (ReturnProductBuilder()..update(updates))._build();
 
-  _$ReturnProduct._(
-      {this.id,
-      this.transactionId,
-      this.productId,
-      this.serialNumber,
-      this.reason,
-      this.returnType,
-      this.returnById,
-      this.returnToId,
-      this.createdAt})
-      : super._();
+  _$ReturnProduct._({
+    this.id,
+    this.transactionId,
+    this.productId,
+    this.serialNumber,
+    this.reason,
+    this.returnType,
+    this.returnById,
+    this.returnToId,
+    this.createdAt,
+  }) : super._();
   @override
   ReturnProduct rebuild(void Function(ReturnProductBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -170,7 +170,8 @@ class ReturnProductBuilder
   ReturnProduct build() => _build();
 
   _$ReturnProduct _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$ReturnProduct._(
           id: id,
           transactionId: transactionId,

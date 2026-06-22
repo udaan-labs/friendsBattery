@@ -24,20 +24,20 @@ class _$SalesTransaction extends SalesTransaction {
   @override
   final DateTime? soldAt;
 
-  factory _$SalesTransaction(
-          [void Function(SalesTransactionBuilder)? updates]) =>
-      (SalesTransactionBuilder()..update(updates))._build();
+  factory _$SalesTransaction([
+    void Function(SalesTransactionBuilder)? updates,
+  ]) => (SalesTransactionBuilder()..update(updates))._build();
 
-  _$SalesTransaction._(
-      {this.id,
-      this.productId,
-      this.customerId,
-      this.sellerId,
-      this.sellPrice,
-      this.serialNumber,
-      this.productReplacedId,
-      this.soldAt})
-      : super._();
+  _$SalesTransaction._({
+    this.id,
+    this.productId,
+    this.customerId,
+    this.sellerId,
+    this.sellPrice,
+    this.serialNumber,
+    this.productReplacedId,
+    this.soldAt,
+  }) : super._();
   @override
   SalesTransaction rebuild(void Function(SalesTransactionBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -161,7 +161,8 @@ class SalesTransactionBuilder
   SalesTransaction build() => _build();
 
   _$SalesTransaction _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$SalesTransaction._(
           id: id,
           productId: productId,
