@@ -25,8 +25,15 @@ export 'package:friends_battery_api/src/model/api_auth_register_post_request.dar
 export 'package:friends_battery_api/src/model/api_dashboard_stats_get200_response.dart';
 export 'package:friends_battery_api/src/model/api_dashboard_stats_get200_response_data.dart';
 export 'package:friends_battery_api/src/model/api_inventory_adjust_patch_request.dart';
+export 'package:friends_battery_api/src/model/api_inventory_product_details_get200_response.dart';
+export 'package:friends_battery_api/src/model/api_inventory_product_details_get200_response_data.dart';
+export 'package:friends_battery_api/src/model/api_inventory_product_id_get200_response.dart';
+export 'package:friends_battery_api/src/model/api_inventory_product_id_get200_response_data.dart';
 export 'package:friends_battery_api/src/model/api_inventory_transfer_post_request.dart';
 export 'package:friends_battery_api/src/model/api_inventory_transfer_post_request_products_inner.dart';
+export 'package:friends_battery_api/src/model/api_inventory_update_stock_post200_response.dart';
+export 'package:friends_battery_api/src/model/api_inventory_update_stock_post200_response_data.dart';
+export 'package:friends_battery_api/src/model/api_inventory_update_stock_post_request.dart';
 export 'package:friends_battery_api/src/model/api_products_categories_post_request.dart';
 export 'package:friends_battery_api/src/model/api_products_list_post_request.dart';
 export 'package:friends_battery_api/src/model/api_products_post_request.dart';
@@ -35,6 +42,8 @@ export 'package:friends_battery_api/src/model/api_products_product_models_post_r
 export 'package:friends_battery_api/src/model/api_products_product_names_list_post_request.dart';
 export 'package:friends_battery_api/src/model/api_products_product_names_post_request.dart';
 export 'package:friends_battery_api/src/model/api_sales_post_request.dart';
+export 'package:friends_battery_api/src/model/api_seller_dashboard_stats_get200_response.dart';
+export 'package:friends_battery_api/src/model/api_seller_dashboard_stats_get200_response_data.dart';
 export 'package:friends_battery_api/src/model/api_transfers_post_request.dart';
 export 'package:friends_battery_api/src/model/api_transfers_post_request_items_inner.dart';
 export 'package:friends_battery_api/src/model/category.dart';

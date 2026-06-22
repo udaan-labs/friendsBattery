@@ -69,11 +69,14 @@ Class | Method | HTTP request | Description
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthRegisterPost**](doc/AuthApi.md#apiauthregisterpost) | **POST** /api/auth/register | Register a new user
 [*CustomersApi*](doc/CustomersApi.md) | [**apiCustomersGet**](doc/CustomersApi.md#apicustomersget) | **GET** /api/customers | Retrieve a list of customers
 [*DashboardApi*](doc/DashboardApi.md) | [**apiDashboardStatsGet**](doc/DashboardApi.md#apidashboardstatsget) | **GET** /api/dashboard/stats | Get dashboard statistics
+[*DashboardApi*](doc/DashboardApi.md) | [**apiSellerDashboardStatsGet**](doc/DashboardApi.md#apisellerdashboardstatsget) | **GET** /api/seller/dashboard/stats | Get seller dashboard statistics
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryAdjustPatch**](doc/InventoryApi.md#apiinventoryadjustpatch) | **PATCH** /api/inventory/adjust | Adjust inventory stock levels
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryGet**](doc/InventoryApi.md#apiinventoryget) | **GET** /api/inventory | Return logged-in user&#39;s inventory
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryHistoryGet**](doc/InventoryApi.md#apiinventoryhistoryget) | **GET** /api/inventory/history | Return inventory movement history
+[*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryProductDetailsGet**](doc/InventoryApi.md#apiinventoryproductdetailsget) | **GET** /api/inventory/product-details | Fetch details of a product (stock count &amp; min sell price) by category, product name, and model IDs
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryProductIdGet**](doc/InventoryApi.md#apiinventoryproductidget) | **GET** /api/inventory/{productId} | Return one inventory item
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryTransferPost**](doc/InventoryApi.md#apiinventorytransferpost) | **POST** /api/inventory/transfer | Transfer inventory from admin to seller
+[*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryUpdateStockPost**](doc/InventoryApi.md#apiinventoryupdatestockpost) | **POST** /api/inventory/update-stock | Update admin&#39;s own inventory stock (Admin only)
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsCategoriesGet**](doc/ProductsApi.md#apiproductscategoriesget) | **GET** /api/products/categories | Return all categories
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsCategoriesPost**](doc/ProductsApi.md#apiproductscategoriespost) | **POST** /api/products/categories | Create a new product category
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsListPost**](doc/ProductsApi.md#apiproductslistpost) | **POST** /api/products/list | Return all products matching filters
@@ -103,8 +106,15 @@ Class | Method | HTTP request | Description
  - [ApiDashboardStatsGet200Response](doc/ApiDashboardStatsGet200Response.md)
  - [ApiDashboardStatsGet200ResponseData](doc/ApiDashboardStatsGet200ResponseData.md)
  - [ApiInventoryAdjustPatchRequest](doc/ApiInventoryAdjustPatchRequest.md)
+ - [ApiInventoryProductDetailsGet200Response](doc/ApiInventoryProductDetailsGet200Response.md)
+ - [ApiInventoryProductDetailsGet200ResponseData](doc/ApiInventoryProductDetailsGet200ResponseData.md)
+ - [ApiInventoryProductIdGet200Response](doc/ApiInventoryProductIdGet200Response.md)
+ - [ApiInventoryProductIdGet200ResponseData](doc/ApiInventoryProductIdGet200ResponseData.md)
  - [ApiInventoryTransferPostRequest](doc/ApiInventoryTransferPostRequest.md)
  - [ApiInventoryTransferPostRequestProductsInner](doc/ApiInventoryTransferPostRequestProductsInner.md)
+ - [ApiInventoryUpdateStockPost200Response](doc/ApiInventoryUpdateStockPost200Response.md)
+ - [ApiInventoryUpdateStockPost200ResponseData](doc/ApiInventoryUpdateStockPost200ResponseData.md)
+ - [ApiInventoryUpdateStockPostRequest](doc/ApiInventoryUpdateStockPostRequest.md)
  - [ApiProductsCategoriesPostRequest](doc/ApiProductsCategoriesPostRequest.md)
  - [ApiProductsListPostRequest](doc/ApiProductsListPostRequest.md)
  - [ApiProductsPostRequest](doc/ApiProductsPostRequest.md)
@@ -113,6 +123,8 @@ Class | Method | HTTP request | Description
  - [ApiProductsProductNamesListPostRequest](doc/ApiProductsProductNamesListPostRequest.md)
  - [ApiProductsProductNamesPostRequest](doc/ApiProductsProductNamesPostRequest.md)
  - [ApiSalesPostRequest](doc/ApiSalesPostRequest.md)
+ - [ApiSellerDashboardStatsGet200Response](doc/ApiSellerDashboardStatsGet200Response.md)
+ - [ApiSellerDashboardStatsGet200ResponseData](doc/ApiSellerDashboardStatsGet200ResponseData.md)
  - [ApiTransfersPostRequest](doc/ApiTransfersPostRequest.md)
  - [ApiTransfersPostRequestItemsInner](doc/ApiTransfersPostRequestItemsInner.md)
  - [Category](doc/Category.md)

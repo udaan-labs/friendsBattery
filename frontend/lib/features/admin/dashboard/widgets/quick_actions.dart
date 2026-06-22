@@ -31,7 +31,9 @@ class QuickActions extends StatelessWidget {
                 icon: Icons.add_box,
                 bgColor: const Color(0xFFD5E0F8), // secondary-container
                 textColor: const Color(0xFF586377), // on-secondary-container
-                onTap: () {},
+                onTap: () {
+                  context.push('/admin/add-stock');
+                },
               ),
               _ActionButton(
                 title: 'Assign Stock',
@@ -54,7 +56,9 @@ class QuickActions extends StatelessWidget {
                 icon: Icons.local_shipping,
                 bgColor: const Color(0xFFDBE1FF), // tertiary-fixed
                 textColor: const Color(0xFF003EA8), // on-tertiary-fixed-variant
-                onTap: () {},
+                onTap: () {
+                  context.push('/admin/shipments');
+                },
               ),
             ],
           ),

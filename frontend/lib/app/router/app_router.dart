@@ -4,6 +4,9 @@ import '../../features/auth/screens/splash_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
 import '../../features/admin/dashboard/screens/admin_dashboard_screen.dart';
+import '../../features/admin/inventory/screens/add_stock_screen.dart';
+import '../../features/admin/shipments/screens/shipment_list_screen.dart';
+import '../../features/admin/shipments/screens/create_shipment_screen.dart';
 import '../../features/seller/dashboard/screens/seller_dashboard_screen.dart';
 import '../../shared/providers/auth_provider.dart';
 
@@ -48,7 +51,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/register',
-        builder: (context, state) => const RegisterScreen(),
+        builder: (context, state) => const RegisterScreen(isAdminFlow: false),
       ),
       GoRoute(
         path: '/admin/dashboard',
@@ -59,9 +62,22 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const RegisterScreen(isAdminFlow: true),
       ),
       GoRoute(
+        path: '/admin/add-stock',
+        builder: (context, state) => const AddStockScreen(),
+      ),
+      GoRoute(
+        path: '/admin/shipments',
+        builder: (context, state) => const ShipmentListScreen(),
+      ),
+      GoRoute(
+        path: '/admin/shipments/create',
+        builder: (context, state) => const CreateShipmentScreen(),
+      ),
+      GoRoute(
         path: '/seller/dashboard',
         builder: (context, state) => const SellerDashboardScreen(),
       ),
     ],
   );
 });
+

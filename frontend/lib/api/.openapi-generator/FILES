@@ -7,8 +7,15 @@ doc/ApiAuthRegisterPostRequest.md
 doc/ApiDashboardStatsGet200Response.md
 doc/ApiDashboardStatsGet200ResponseData.md
 doc/ApiInventoryAdjustPatchRequest.md
+doc/ApiInventoryProductDetailsGet200Response.md
+doc/ApiInventoryProductDetailsGet200ResponseData.md
+doc/ApiInventoryProductIdGet200Response.md
+doc/ApiInventoryProductIdGet200ResponseData.md
 doc/ApiInventoryTransferPostRequest.md
 doc/ApiInventoryTransferPostRequestProductsInner.md
+doc/ApiInventoryUpdateStockPost200Response.md
+doc/ApiInventoryUpdateStockPost200ResponseData.md
+doc/ApiInventoryUpdateStockPostRequest.md
 doc/ApiProductsCategoriesPostRequest.md
 doc/ApiProductsListPostRequest.md
 doc/ApiProductsPostRequest.md
@@ -17,6 +24,8 @@ doc/ApiProductsProductModelsPostRequest.md
 doc/ApiProductsProductNamesListPostRequest.md
 doc/ApiProductsProductNamesPostRequest.md
 doc/ApiSalesPostRequest.md
+doc/ApiSellerDashboardStatsGet200Response.md
+doc/ApiSellerDashboardStatsGet200ResponseData.md
 doc/ApiTransfersPostRequest.md
 doc/ApiTransfersPostRequestItemsInner.md
 doc/AuthApi.md
@@ -65,8 +74,15 @@ lib/src/model/api_auth_register_post_request.dart
 lib/src/model/api_dashboard_stats_get200_response.dart
 lib/src/model/api_dashboard_stats_get200_response_data.dart
 lib/src/model/api_inventory_adjust_patch_request.dart
+lib/src/model/api_inventory_product_details_get200_response.dart
+lib/src/model/api_inventory_product_details_get200_response_data.dart
+lib/src/model/api_inventory_product_id_get200_response.dart
+lib/src/model/api_inventory_product_id_get200_response_data.dart
 lib/src/model/api_inventory_transfer_post_request.dart
 lib/src/model/api_inventory_transfer_post_request_products_inner.dart
+lib/src/model/api_inventory_update_stock_post200_response.dart
+lib/src/model/api_inventory_update_stock_post200_response_data.dart
+lib/src/model/api_inventory_update_stock_post_request.dart
 lib/src/model/api_products_categories_post_request.dart
 lib/src/model/api_products_list_post_request.dart
 lib/src/model/api_products_post_request.dart
@@ -75,6 +91,8 @@ lib/src/model/api_products_product_models_post_request.dart
 lib/src/model/api_products_product_names_list_post_request.dart
 lib/src/model/api_products_product_names_post_request.dart
 lib/src/model/api_sales_post_request.dart
+lib/src/model/api_seller_dashboard_stats_get200_response.dart
+lib/src/model/api_seller_dashboard_stats_get200_response_data.dart
 lib/src/model/api_transfers_post_request.dart
 lib/src/model/api_transfers_post_request_items_inner.dart
 lib/src/model/category.dart
@@ -95,3 +113,5 @@ lib/src/model/stock_request_item.dart
 lib/src/model/user.dart
 lib/src/serializers.dart
 pubspec.yaml
+test/api_seller_dashboard_stats_get200_response_data_test.dart
+test/api_seller_dashboard_stats_get200_response_test.dart
