@@ -1,0 +1,19 @@
+info:
+  name: get_dashboard_stats
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{baseurl}}/seller/dashboard/stats"
+  headers:
+    - name: auth-id
+      value: "{{authId}}"
+    - name: auth-key
+      value: "{{authKey}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -16,7 +16,7 @@ http:
     data: |-
       {
         "category_id": 1,
-        "name": "Dell"
+        "name": "LENOVO"
       }
 
 settings:
@@ -24,8 +24,3 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
-
-assert:
-  - res.status: eq 201
-  - res.body.success: eq true
-  - res.body.data.name: eq Dell

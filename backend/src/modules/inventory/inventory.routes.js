@@ -6,7 +6,9 @@ const {
   getInventoryItemSchema, 
   adjustInventorySchema, 
   transferInventorySchema, 
-  getHistorySchema 
+  getHistorySchema,
+  updateStockSchema,
+  getProductDetailsSchema
 } = require('./inventory.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
 const { requireAdmin } = require('../../shared/middleware/role.middleware');
@@ -95,6 +97,55 @@ router.get(
 
 /**
  * @swagger
+ * /api/inventory/product-details:
+ *   get:
+ *     summary: Fetch details of a product (stock count & min sell price) by category, product name, and model IDs
+ *     tags: [Inventory]
+ *     parameters:
+ *       - in: query
+ *         name: category_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: product_name_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: product_model_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Product details fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     currentStock:
+ *                       type: integer
+ *                     minSellPrice:
+ *                       type: number
+ */
+router.get(
+  '/product-details',
+  authenticate,
+  validateRequest(getProductDetailsSchema),
+  inventoryController.getProductDetails
+);
+
+/**
+ * @swagger
  * /api/inventory/{productId}:
  *   get:
  *     summary: Return one inventory item
@@ -108,6 +159,32 @@ router.get(
  *     responses:
  *       200:
  *         description: Inventory item fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     product_id:
+ *                       type: integer
+ *                     category:
+ *                       type: string
+ *                     brand:
+ *                       type: string
+ *                     model:
+ *                       type: string
+ *                     quantity:
+ *                       type: integer
+ *                     min_price:
+ *                       type: number
+ *                     offer_price:
+ *                       type: number
  *       404:
  *         description: Inventory item not found
  */
@@ -196,4 +273,81 @@ router.post(
   inventoryController.transferInventory
 );
 
+/**
+ * @swagger
+ * /api/inventory/update-stock:
+ *   post:
+ *     summary: Update admin's own inventory stock (Admin only)
+ *     tags: [Inventory]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - productCategoryId
+ *               - productNameId
+ *               - productModelId
+ *               - quantity
+ *             properties:
+ *               productCategoryId:
+ *                 type: integer
+ *                 example: 1
+ *               productNameId:
+ *                 type: integer
+ *                 example: 10
+ *               productModelId:
+ *                 type: integer
+ *                 example: 25
+ *               quantity:
+ *                 type: integer
+ *                 example: 50
+ *               minSellPrice:
+ *                 type: number
+ *                 example: 1200
+ *     responses:
+ *       200:
+ *         description: Stock updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Stock updated successfully
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     productCategoryId:
+ *                       type: integer
+ *                       example: 1
+ *                     productNameId:
+ *                       type: integer
+ *                       example: 10
+ *                     productModelId:
+ *                       type: integer
+ *                       example: 25
+ *                     quantity:
+ *                       type: integer
+ *                       example: 125
+ *                     minSellPrice:
+ *                       type: number
+ *                       example: 1200
+ *       400:
+ *         description: Invalid request payload
+ *       404:
+ *         description: Category, product name, or product model not found
+ */
+router.post(
+  '/update-stock',
+  authenticate,
+  requireAdmin,
+  validateRequest(updateStockSchema),
+  inventoryController.updateStock
+);
 module.exports = router;

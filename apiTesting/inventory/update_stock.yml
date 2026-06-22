@@ -1,0 +1,29 @@
+info:
+  name: update_stock
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{baseurl}}/inventory/update-stock"
+  headers:
+    - name: auth-id
+      value: "{{authId}}"
+    - name: auth-key
+      value: "{{authKey}}"
+  body:
+    type: json
+    data: |-
+      {
+        "productCategoryId": 1,
+        "productNameId": 1,
+        "productModelId": 2,
+        "quantity": 10,
+        "minSellPrice": 1200
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

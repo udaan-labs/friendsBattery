@@ -118,7 +118,7 @@ class ProductsService {
     }
 
     const productName = await productsRepository.findProductNameById(productNameId);
-    if (!productName || productName.categoryId !== categoryId) {
+    if (!productName || Number(productName.categoryId) !== categoryId) {
       const error = new Error('Product name not found or does not belong to the selected category');
       error.statusCode = 404;
       throw error;
@@ -168,14 +168,14 @@ class ProductsService {
     }
 
     const productName = await productsRepository.findProductNameById(productNameId);
-    if (!productName || productName.categoryId !== categoryId) {
+    if (!productName || Number(productName.categoryId) !== categoryId) {
       const error = new Error('Product name not found or does not belong to the selected category');
       error.statusCode = 404;
       throw error;
     }
 
     const productModel = await productsRepository.findProductModelById(productModelId);
-    if (!productModel || productModel.productNameId !== productNameId) {
+    if (!productModel || Number(productModel.productNameId) !== productNameId) {
       const error = new Error('Product model not found or does not belong to the selected product name');
       error.statusCode = 404;
       throw error;

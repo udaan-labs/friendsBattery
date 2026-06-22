@@ -16,8 +16,8 @@ http:
     data: |-
       {
         "category_id": 1,
-        "product_name_id": 5,
-        "product_model_id": 2
+        "product_name_id": 1,
+        "product_model_id": 1
       }
 
 settings:

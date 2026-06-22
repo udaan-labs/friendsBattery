@@ -57,10 +57,32 @@ const getHistorySchema = z.object({
   })
 });
 
+// Schema for POST /inventory/update-stock
+const updateStockSchema = z.object({
+  body: z.object({
+    productCategoryId: z.number().int().positive({ message: 'Invalid product category id' }),
+    productNameId: z.number().int().positive({ message: 'Invalid product name id' }),
+    productModelId: z.number().int().positive({ message: 'Invalid product model id' }),
+    quantity: z.number().int().positive({ message: 'Quantity must be greater than 0' }),
+    minSellPrice: z.number().nonnegative({ message: 'minSellPrice must be greater than or equal to 0' }).optional()
+  })
+});
+
+// Schema for GET /inventory/product-details
+const getProductDetailsSchema = z.object({
+  query: z.object({
+    category_id: z.string().regex(/^\d+$/).transform(Number),
+    product_name_id: z.string().regex(/^\d+$/).transform(Number),
+    product_model_id: z.string().regex(/^\d+$/).transform(Number),
+  })
+});
+
 module.exports = {
   getInventorySchema,
   getInventoryItemSchema,
   adjustInventorySchema,
   transferInventorySchema,
-  getHistorySchema
+  getHistorySchema,
+  updateStockSchema,
+  getProductDetailsSchema
 };

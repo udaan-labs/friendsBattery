@@ -14,6 +14,19 @@ class DashboardController {
       return errorResponse(res, 500, 'Internal server error while fetching dashboard stats');
     }
   }
+
+  /**
+   * Get seller dashboard stats.
+   */
+  async getSellerStats(req, res) {
+    try {
+      const stats = await dashboardService.getSellerStats(req.user.id);
+      return successResponse(res, 200, 'Seller dashboard stats retrieved successfully', stats);
+    } catch (error) {
+      console.error('Error in DashboardController.getSellerStats:', error);
+      return errorResponse(res, 500, 'Internal server error while fetching seller dashboard stats');
+    }
+  }
 }
 
 module.exports = new DashboardController();

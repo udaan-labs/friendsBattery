@@ -1,0 +1,27 @@
+info:
+  name: create_shipment
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseurl}}/shipments"
+  headers:
+    - name: auth-id
+      value: "{{authId}}"
+    - name: auth-key
+      value: "{{authKey}}"
+  body:
+    type: json
+    data: |-
+      {
+        "sellerId": 5,
+        "items": [
+          {
+            "productCategoryId": 1,
+            "productNameId": 1,
+            "productModelId": 1,
+            "quantity": 20
+          }
+        ]
+      }

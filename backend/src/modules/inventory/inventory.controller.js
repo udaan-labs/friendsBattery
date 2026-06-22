@@ -116,6 +116,55 @@ class InventoryController {
       return errorResponse(res, 500, 'Internal server error');
     }
   }
+
+  /**
+   * Update stock (Admin only).
+   */
+  async updateStock(req, res) {
+    try {
+      const adminId = Number(req.user.id);
+      const { productCategoryId, productNameId, productModelId, quantity, minSellPrice } = req.body;
+
+      // Call business layer
+      const result = await inventoryService.updateStock(adminId, {
+        productCategoryId,
+        productNameId,
+        productModelId,
+        quantity,
+        minSellPrice
+      });
+
+      // Return standardized success response
+      return successResponse(res, 200, 'Stock updated successfully', result);
+    } catch (error) {
+      if (error.statusCode === 400 || error.statusCode === 404) {
+        return errorResponse(res, error.statusCode, error.message);
+      }
+      console.error('Update Stock Error:', error);
+      return errorResponse(res, 500, 'Internal server error');
+    }
+  }
+
+  /**
+   * Fetch details of a product (stock count & min sell price) by category, product name, and model IDs
+   */
+  async getProductDetails(req, res) {
+    try {
+      const userId = Number(req.user.id);
+      const { category_id, product_name_id, product_model_id } = req.query;
+
+      const details = await inventoryService.getProductDetails(userId, {
+        categoryId: Number(category_id),
+        productNameId: Number(product_name_id),
+        productModelId: Number(product_model_id)
+      });
+
+      return successResponse(res, 200, 'Product details fetched successfully', details);
+    } catch (error) {
+      console.error('Get Product Details Error:', error);
+      return errorResponse(res, 500, 'Internal server error');
+    }
+  }
 }
 
 module.exports = new InventoryController();

@@ -1,0 +1,15 @@
+info:
+  name: get_seller_pending_shipments
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{baseurl}}/seller/dashboard/pending-shipments"
+  headers:
+    - name: auth-id
+      value: "{{authId}}"
+    - name: auth-key
+      value: "{{authKey}}"
+  body:
+    type: none

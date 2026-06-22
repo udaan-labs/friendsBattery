@@ -249,6 +249,150 @@ class InventoryService {
       timestamp: record.timestamp
     }));
   }
+
+  /**
+   * Update stock (Admin only).
+   * Input: adminId, payload
+   * Output: updated stock details
+   */
+  async updateStock(adminId, { productCategoryId, productNameId, productModelId, quantity, minSellPrice }) {
+    // 1. Validate category existence
+    const category = await prisma.category.findUnique({
+      where: { id: BigInt(productCategoryId) }
+    });
+    if (!category) {
+      const error = new Error('Category not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    // 2. Validate product name existence and that it belongs to the category
+    const productName = await prisma.productName.findUnique({
+      where: { id: BigInt(productNameId) }
+    });
+    if (!productName || Number(productName.categoryId) !== productCategoryId) {
+      const error = new Error('Product name not found or does not belong to the selected category');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    // 3. Validate product model existence and that it belongs to the product name
+    const productModel = await prisma.productModel.findUnique({
+      where: { id: BigInt(productModelId) }
+    });
+    if (!productModel || Number(productModel.productNameId) !== productNameId) {
+      const error = new Error('Product model not found or does not belong to the selected product name');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    return prisma.$transaction(async (tx) => {
+      // Find or create product
+      let product = await tx.product.findFirst({
+        where: {
+          categoryId: BigInt(productCategoryId),
+          productNameId: BigInt(productNameId),
+          productModelId: BigInt(productModelId)
+        }
+      });
+
+      if (!product) {
+        // Create new product
+        product = await tx.product.create({
+          data: {
+            categoryId: BigInt(productCategoryId),
+            productNameId: BigInt(productNameId),
+            productModelId: BigInt(productModelId),
+            minPrice: minSellPrice !== undefined ? minSellPrice : 0,
+            onSale: false,
+            minQuantity: 1
+          }
+        });
+      } else if (minSellPrice !== undefined) {
+        // Update minPrice
+        product = await tx.product.update({
+          where: { id: product.id },
+          data: { minPrice: minSellPrice }
+        });
+      }
+
+      // Count existing units for this admin
+      const existingQuantity = await tx.productUnit.count({
+        where: {
+          productId: product.id,
+          ownerId: BigInt(adminId),
+          status: 'IN_STOCK'
+        }
+      });
+
+      // Create new product units
+      const unitsData = Array.from({ length: quantity }).map(() => ({
+        productId: product.id,
+        ownerId: BigInt(adminId),
+        serialNumber: `STOCK-${Date.now()}-${crypto.randomUUID()}`,
+        status: 'IN_STOCK'
+      }));
+
+      const createdUnits = await tx.productUnit.createManyAndReturn({
+        data: unitsData
+      });
+
+      // Create inventory transactions for the immutable ledger
+      const transactionLogs = createdUnits.map(unit => ({
+        productUnitId: unit.id,
+        fromUserId: null,
+        toUserId: BigInt(adminId),
+        action: 'RECEIVED'
+      }));
+
+      await tx.inventoryTransaction.createMany({
+        data: transactionLogs
+      });
+
+      return {
+        productCategoryId,
+        productNameId,
+        productModelId,
+        quantity: existingQuantity + quantity,
+        minSellPrice: Number(product.minPrice)
+      };
+    });
+  }
+
+  /**
+   * Fetch details of a product (stock count & min sell price) by category, product name, and model IDs
+   */
+  async getProductDetails(userId, { categoryId, productNameId, productModelId }) {
+    // 1. Find product
+    const product = await prisma.product.findFirst({
+      where: {
+        categoryId: BigInt(categoryId),
+        productNameId: BigInt(productNameId),
+        productModelId: BigInt(productModelId)
+      }
+    });
+
+    if (!product) {
+      return {
+        currentStock: 0,
+        minSellPrice: 0
+      };
+    }
+
+    // 2. Count stock
+    const stockCount = await prisma.productUnit.count({
+      where: {
+        productId: product.id,
+        ownerId: BigInt(userId),
+        status: 'IN_STOCK'
+      }
+    });
+
+    return {
+      currentStock: stockCount,
+      minSellPrice: Number(product.minPrice)
+    };
+  }
 }
 
 module.exports = new InventoryService();

@@ -1,0 +1,17 @@
+info:
+  name: accept_shipment
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{baseurl}}/shipments/1/accept"
+  headers:
+    - name: auth-id
+      value: "{{authId}}"
+    - name: auth-key
+      value: "{{authKey}}"
+  body:
+    type: json
+    data: |-
+      {}

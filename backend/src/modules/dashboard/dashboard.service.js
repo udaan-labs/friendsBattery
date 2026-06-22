@@ -20,6 +20,25 @@ class DashboardService {
       totalSellers
     };
   }
+
+  /**
+   * Get seller dashboard stats concurrently.
+   * @param {string|number|bigint} sellerId
+   * @returns {Promise<Object>}
+   */
+  async getSellerStats(sellerId) {
+    const [totalStock, todaySales, pendingShipments] = await Promise.all([
+      dashboardRepository.getSellerTotalStock(sellerId),
+      dashboardRepository.getSellerTodaySales(sellerId),
+      dashboardRepository.getSellerPendingShipmentsCount(sellerId)
+    ]);
+
+    return {
+      totalStock,
+      todaySales,
+      pendingShipments
+    };
+  }
 }
 
 module.exports = new DashboardService();
