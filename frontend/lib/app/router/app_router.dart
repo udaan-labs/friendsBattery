@@ -8,6 +8,8 @@ import '../../features/admin/inventory/screens/add_stock_screen.dart';
 import '../../features/admin/shipments/screens/shipment_list_screen.dart';
 import '../../features/admin/shipments/screens/create_shipment_screen.dart';
 import '../../features/seller/dashboard/screens/seller_dashboard_screen.dart';
+import '../../features/seller/dashboard/screens/create_bill_screen.dart';
+import '../../features/seller/dashboard/screens/shipment_details_screen.dart';
 import '../../shared/providers/auth_provider.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -76,6 +78,17 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/seller/dashboard',
         builder: (context, state) => const SellerDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/seller/create-bill',
+        builder: (context, state) => const CreateBillScreen(),
+      ),
+      GoRoute(
+        path: '/seller/shipments/:shipmentId',
+        builder: (context, state) {
+          final shipmentIdStr = state.pathParameters['shipmentId']!;
+          return ShipmentDetailsScreen(shipmentId: int.parse(shipmentIdStr));
+        },
       ),
     ],
   );

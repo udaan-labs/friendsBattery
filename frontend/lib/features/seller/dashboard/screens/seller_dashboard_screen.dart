@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/widgets/common_pull_to_refresh.dart';
 import '../providers/seller_dashboard_controller.dart';
@@ -7,6 +8,7 @@ import '../providers/seller_dashboard_providers.dart';
 import '../widgets/seller_kpi_grid.dart';
 import '../widgets/seller_quick_actions.dart';
 import '../widgets/recent_inventory_list.dart';
+import '../widgets/pending_shipments_list.dart';
 
 class SellerDashboardScreen extends ConsumerWidget {
   const SellerDashboardScreen({super.key});
@@ -152,6 +154,8 @@ class SellerDashboardScreen extends ConsumerWidget {
                           flex: 8,
                           sliver: SliverMainAxisGroup(
                             slivers: [
+                              PendingShipmentsList(),
+                              SliverToBoxAdapter(child: SizedBox(height: 32)),
                               RecentInventoryList(),
                             ],
                           ),
@@ -175,6 +179,8 @@ class SellerDashboardScreen extends ConsumerWidget {
                       slivers: const [
                         SellerQuickActions(),
                         SliverToBoxAdapter(child: SizedBox(height: 32)),
+                        PendingShipmentsList(),
+                        SliverToBoxAdapter(child: SizedBox(height: 32)),
                         RecentInventoryList(),
                       ],
                     ),
@@ -186,9 +192,7 @@ class SellerDashboardScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('New Bill tapped')),
-          );
+          context.push('/seller/create-bill');
         },
         backgroundColor: const Color(0xFF16A34A),
         foregroundColor: Colors.white,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class SellerQuickActions extends StatelessWidget {
   const SellerQuickActions({super.key});
@@ -33,9 +34,7 @@ class SellerQuickActions extends StatelessWidget {
                 iconBgColor: const Color(0xFFD5E0F8),
                 iconColor: const Color(0xFF16A34A),
                 onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Create Bill tapped')),
-                  );
+                  context.push('/seller/create-bill');
                 },
               ),
               _ActionButton(

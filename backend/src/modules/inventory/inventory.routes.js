@@ -8,7 +8,8 @@ const {
   transferInventorySchema, 
   getHistorySchema,
   updateStockSchema,
-  getProductDetailsSchema
+  getProductDetailsSchema,
+  getAvailableSerialsSchema
 } = require('./inventory.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
 const { requireAdmin } = require('../../shared/middleware/role.middleware');
