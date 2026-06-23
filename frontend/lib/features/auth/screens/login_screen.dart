@@ -120,15 +120,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       },
                       child: const Text('New here? Sign up for the first time'),
                     ),
-                    if (authState.hasError)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 16),
-                        child: Text(
-                          'Error: ${authState.error}',
-                          style: const TextStyle(color: AppTheme.error),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
                   ],
                 ),
               ),

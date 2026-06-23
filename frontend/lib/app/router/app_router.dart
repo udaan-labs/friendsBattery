@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/screens/splash_screen.dart';
@@ -12,10 +13,13 @@ import '../../features/seller/dashboard/screens/create_bill_screen.dart';
 import '../../features/seller/dashboard/screens/shipment_details_screen.dart';
 import '../../shared/providers/auth_provider.dart';
 
+final rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
 
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: '/splash',
     redirect: (context, state) {
       final isLoggingIn = state.uri.toString() == '/login';

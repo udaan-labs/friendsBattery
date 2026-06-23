@@ -5,6 +5,7 @@ import 'package:friends_battery_api/friends_battery_api.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../core/network/api_client_provider.dart';
 import '../providers/seller_dashboard_controller.dart';
+import '../../../../shared/widgets/snackbar_helper.dart';
 
 class CreateBillScreen extends ConsumerStatefulWidget {
   const CreateBillScreen({super.key});
@@ -81,7 +82,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
         });
       }
     } catch (e) {
-      _showError('Failed to load categories: $e');
+      // Handled automatically by ApiInterceptor
     } finally {
       setState(() {
         _isLoadingCategories = false;
@@ -121,7 +122,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
         });
       }
     } catch (e) {
-      _showError('Failed to load product names: $e');
+      // Handled automatically by ApiInterceptor
     } finally {
       setState(() {
         _isLoadingNames = false;
@@ -161,7 +162,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
         });
       }
     } catch (e) {
-      _showError('Failed to load product models: $e');
+      // Handled automatically by ApiInterceptor
     } finally {
       setState(() {
         _isLoadingModels = false;
@@ -210,7 +211,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
         });
       }
     } catch (e) {
-      _showError('Failed to load product details/serials: $e');
+      // Handled automatically by ApiInterceptor
     } finally {
       setState(() {
         _isLoadingSerials = false;
@@ -224,11 +225,11 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
         _selectedProductNameId == null ||
         _selectedProductModelId == null ||
         _selectedSerial == null) {
-      _showError('Please select all product fields and serial number');
+      context.showErrorSnackBar('Please select all product fields and serial number');
       return;
     }
     if (_productId == null) {
-      _showError('Product ID could not be resolved');
+      context.showErrorSnackBar('Product ID could not be resolved');
       return;
     }
 
@@ -251,18 +252,15 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
       await api.apiSalesPost(apiSalesPostRequest: request);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Sale recorded successfully'),
-            backgroundColor: AppTheme.primary,
-          ),
-        );
+        context.showSuccessSnackBar('Sale recorded successfully');
         // Refresh dashboard statistics, recent inventories & current stock
         await ref.read(sellerDashboardControllerProvider).refreshAllData();
-        context.pop();
+        if (mounted) {
+          context.pop();
+        }
       }
     } catch (e) {
-      _showError('Failed to record sale: $e');
+      // Handled automatically by ApiInterceptor
     } finally {
       setState(() {
         _isSubmitting = false;
@@ -270,16 +268,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
     }
   }
 
-  void _showError(String message) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: AppTheme.error,
-        ),
-      );
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {

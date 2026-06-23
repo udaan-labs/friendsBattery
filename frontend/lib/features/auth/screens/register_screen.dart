@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../theme/app_theme.dart';
 import '../providers/auth_controller.dart';
+import '../../../shared/widgets/snackbar_helper.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   final bool isAdminFlow;
@@ -36,9 +37,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   Future<void> _register() async {
     if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match')),
-      );
+      context.showErrorSnackBar('Passwords do not match');
       return;
     }
 
@@ -52,21 +51,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       );
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(widget.isAdminFlow 
-                ? 'Seller created successfully' 
-                : 'Registration successful! Please login.'),
-          ),
-        );
+        context.showSuccessSnackBar(widget.isAdminFlow 
+            ? 'Seller created successfully' 
+            : 'Registration successful! Please login.');
         context.pop(); // Go back to login or seller list
       }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
-        );
-      }
+    } catch (_) {
+      // Errors are handled automatically by ApiInterceptor
     }
   }
 

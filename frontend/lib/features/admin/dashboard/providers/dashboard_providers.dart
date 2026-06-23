@@ -14,17 +14,6 @@ final kpiProvider = FutureProvider<DashboardStats>((ref) async {
   return ref.watch(dashboardApiServiceProvider).getDashboardStats();
 });
 
-final pendingRequestsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  await Future.delayed(const Duration(seconds: 1));
-  return [
-    {
-      'shopName': 'Rahul Batteries',
-      'itemsCount': 3,
-      'timeAgo': '2h ago',
-    }
-  ];
-});
-
 final lowStockAlertsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   await Future.delayed(const Duration(seconds: 1));
   return [

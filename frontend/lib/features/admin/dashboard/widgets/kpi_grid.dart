@@ -11,10 +11,10 @@ class KpiGrid extends ConsumerWidget {
     final isDesktop = MediaQuery.of(context).size.width > 768;
     final kpiData = ref.watch(kpiProvider);
 
-    Widget buildGrid(String totalStock, String todaySales, String pendingRequests, String totalSellers) {
+    Widget buildGrid(String totalStock, String todaySales, String totalSellers) {
       return SliverGrid(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: isDesktop ? 4 : 2,
+          crossAxisCount: isDesktop ? 3 : 2,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
           childAspectRatio: 1.5,
@@ -32,11 +32,6 @@ class KpiGrid extends ConsumerWidget {
               color: const Color(0xFF006B2C),
             ),
             _KpiCard(
-              title: 'PENDING REQUESTS',
-              value: pendingRequests,
-              color: const Color(0xFF0051D5),
-            ),
-            _KpiCard(
               title: 'TOTAL SELLERS',
               value: totalSellers,
               color: const Color(0xFF545F73),
@@ -50,10 +45,9 @@ class KpiGrid extends ConsumerWidget {
       data: (stats) => buildGrid(
         stats.totalStock.toString(),
         stats.todaySales.toString(),
-        stats.pendingRequests.toString(),
         stats.totalSellers.toString(),
       ),
-      loading: () => buildGrid('--', '--', '--', '--'),
+      loading: () => buildGrid('--', '--', '--'),
       error: (e, st) => SliverToBoxAdapter(
         child: Padding(
           padding: const EdgeInsets.all(16.0),

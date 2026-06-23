@@ -9,6 +9,7 @@ import '../widgets/seller_kpi_grid.dart';
 import '../widgets/seller_quick_actions.dart';
 import '../widgets/recent_inventory_list.dart';
 import '../widgets/pending_shipments_list.dart';
+import '../../../../shared/widgets/snackbar_helper.dart';
 
 class SellerDashboardScreen extends ConsumerWidget {
   const SellerDashboardScreen({super.key});
@@ -130,9 +131,7 @@ class SellerDashboardScreen extends ConsumerWidget {
                             suffixIcon: IconButton(
                               icon: const Icon(Icons.qr_code_scanner, color: Color(0xFF16A34A)),
                               onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('QR Code scanner tapped')),
-                                );
+                                context.showInfoSnackBar('QR Code scanner tapped');
                               },
                             ),
                             border: InputBorder.none,
@@ -214,13 +213,9 @@ class SellerDashboardScreen extends ConsumerWidget {
                 if (index == 3) {
                   ref.read(authProvider.notifier).logout();
                 } else if (index == 1) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Stock Screen coming soon')),
-                  );
+                  context.showInfoSnackBar('Stock Screen coming soon');
                 } else if (index == 2) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Sales Screen coming soon')),
-                  );
+                  context.showInfoSnackBar('Sales Screen coming soon');
                 }
               },
               items: const [

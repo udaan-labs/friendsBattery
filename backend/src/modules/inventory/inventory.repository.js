@@ -255,6 +255,122 @@ class InventoryRepository {
 
     return units.map(u => u.serialNumber);
   }
+
+  /**
+   * Retrieves products for the inventory details summary, based on filters.
+   */
+  async findInventoryDetails({ categoryId, subcategoryId, search, skip, take }) {
+    const whereClause = {};
+
+    if (categoryId) {
+      whereClause.categoryId = BigInt(categoryId);
+    }
+    if (subcategoryId) {
+      whereClause.productNameId = BigInt(subcategoryId);
+    }
+    if (search) {
+      whereClause.OR = [
+        { productName: { name: { contains: search, mode: 'insensitive' } } },
+        { productModel: { name: { contains: search, mode: 'insensitive' } } }
+      ];
+    }
+
+    const queryOptions = {
+      where: whereClause,
+      include: {
+        category: true,
+        productName: true,
+        productModel: true
+      },
+      orderBy: {
+        id: 'asc'
+      }
+    };
+
+    if (skip !== undefined && take !== undefined) {
+      queryOptions.skip = skip;
+      queryOptions.take = take;
+    }
+
+    return prisma.product.findMany(queryOptions);
+  }
+
+  /**
+   * Counts the total number of products matching inventory details filters.
+   */
+  async countInventoryDetails({ categoryId, subcategoryId, search }) {
+    const whereClause = {};
+
+    if (categoryId) {
+      whereClause.categoryId = BigInt(categoryId);
+    }
+    if (subcategoryId) {
+      whereClause.productNameId = BigInt(subcategoryId);
+    }
+    if (search) {
+      whereClause.OR = [
+        { productName: { name: { contains: search, mode: 'insensitive' } } },
+        { productModel: { name: { contains: search, mode: 'insensitive' } } }
+      ];
+    }
+
+    return prisma.product.count({ where: whereClause });
+  }
+
+  /**
+   * Aggregates unit counts for product IDs grouped by status, filtered by owner.
+   */
+  async aggregateUnitCounts(productIds, ownerFilter) {
+    return prisma.productUnit.groupBy({
+      by: ['productId', 'status'],
+      where: {
+        productId: { in: productIds },
+        ...ownerFilter
+      },
+      _count: {
+        id: true
+      }
+    });
+  }
+
+  /**
+   * Counts total products and total available inventory units in a category.
+   */
+  async getCategoryStats(categoryId, ownerFilter) {
+    const [totalProducts, totalInventory] = await Promise.all([
+      prisma.product.count({
+        where: { categoryId: BigInt(categoryId) }
+      }),
+      prisma.productUnit.count({
+        where: {
+          product: { categoryId: BigInt(categoryId) },
+          status: 'IN_STOCK',
+          ...ownerFilter
+        }
+      })
+    ]);
+    return { totalProducts, totalInventory };
+  }
+
+  /**
+   * Counts total products and total available inventory units in a subcategory.
+   */
+  async getSubcategoryStats(subcategoryId, ownerFilter) {
+    const [totalProducts, totalInventory] = await Promise.all([
+      prisma.product.count({
+        where: { productNameId: BigInt(subcategoryId) }
+      }),
+      prisma.productUnit.count({
+        where: {
+          product: { productNameId: BigInt(subcategoryId) },
+          status: 'IN_STOCK',
+          ...ownerFilter
+        }
+      })
+    ]);
+    return { totalProducts, totalInventory };
+  }
 }
 
 module.exports = new InventoryRepository();
+

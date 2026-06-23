@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/seller_dashboard_providers.dart';
+import '../../../../shared/widgets/snackbar_helper.dart';
 
 class RecentInventoryList extends ConsumerWidget {
   const RecentInventoryList({super.key});
@@ -26,9 +27,7 @@ class RecentInventoryList extends ConsumerWidget {
               ),
               TextButton(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('View All Inventory tapped')),
-                  );
+                  context.showInfoSnackBar('View All Inventory tapped');
                 },
                 child: const Text(
                   'View All',

@@ -5,6 +5,7 @@ import '../providers/seller_dashboard_providers.dart';
 import '../providers/seller_dashboard_controller.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../core/network/api_client_provider.dart';
+import '../../../../shared/widgets/snackbar_helper.dart';
 
 class PendingShipmentsList extends ConsumerStatefulWidget {
   const PendingShipmentsList({super.key});
@@ -77,24 +78,12 @@ class _PendingShipmentsListState extends ConsumerState<PendingShipmentsList> {
       await api.apiShipmentsShipmentIdAcceptPost(shipmentId: shipmentId);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Shipment accepted successfully'),
-            backgroundColor: AppTheme.primary,
-          ),
-        );
+        context.showSuccessSnackBar('Shipment accepted successfully');
         // Refresh stats, pending shipments list, and main inventory
         await ref.read(sellerDashboardControllerProvider).refreshAllData();
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to accept shipment: $e'),
-            backgroundColor: AppTheme.error,
-          ),
-        );
-      }
+      // Handled automatically by ApiInterceptor
     } finally {
       if (mounted) {
         setState(() {

@@ -49,6 +49,7 @@ dependencies:
   logger: ^2.7.0
   friends_battery_api:
     path: lib/api
+  top_snackbar_flutter: ^3.3.0
 
 dev_dependencies:
   flutter_test:

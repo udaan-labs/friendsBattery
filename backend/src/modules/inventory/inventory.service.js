@@ -402,6 +402,147 @@ class InventoryService {
   async getAvailableSerials(userId, { categoryId, productNameId, productModelId }) {
     return inventoryRepository.findAvailableSerials(userId, { categoryId, productNameId, productModelId });
   }
+
+  /**
+   * Fetch inventory details grouped by Category -> Subcategory -> Product.
+   * Input: userId, role, filters
+   * Output: Grouped inventory details and pagination
+   */
+  async getInventoryDetails(userId, role, { category_id, subcategory_id, search, page = 1, limit = 10, seller_id }) {
+    const skip = (page - 1) * limit;
+
+    // Apply role-based filtering
+    const ownerFilter = {};
+    if (role === 'SELLER') {
+      ownerFilter.ownerId = BigInt(userId);
+    } else if (role === 'ADMIN' && seller_id) {
+      ownerFilter.ownerId = BigInt(seller_id);
+    }
+
+    const filters = {
+      categoryId: category_id,
+      subcategoryId: subcategory_id,
+      search,
+      skip,
+      take: limit
+    };
+
+    // 1. Fetch paginated products and total product count
+    const [products, total] = await Promise.all([
+      inventoryRepository.findInventoryDetails(filters),
+      inventoryRepository.countInventoryDetails(filters)
+    ]);
+
+    if (products.length === 0) {
+      return {
+        categories: [],
+        pagination: {
+          total,
+          page: Number(page),
+          limit: Number(limit),
+          total_pages: Math.ceil(total / limit)
+        }
+      };
+    }
+
+    // 2. Extract unique product, category, and subcategory IDs in the current page
+    const productIds = products.map(p => p.id);
+    const categoryIds = [...new Set(products.map(p => p.categoryId))];
+    const subcategoryIds = [...new Set(products.map(p => p.productNameId))];
+
+    // 3. Fetch product unit aggregates (total, sold, remaining)
+    const unitGroups = await inventoryRepository.aggregateUnitCounts(productIds, ownerFilter);
+    const countMap = {};
+    for (const group of unitGroups) {
+      const pid = Number(group.productId);
+      const status = group.status;
+      const count = group._count.id;
+
+      if (!countMap[pid]) {
+        countMap[pid] = { total: 0, sold: 0, remaining: 0 };
+      }
+
+      countMap[pid].total += count;
+
+      if (status === 'SOLD') {
+        countMap[pid].sold += count;
+      } else if (status === 'IN_STOCK') {
+        countMap[pid].remaining += count;
+      }
+    }
+
+    // 4. Fetch Category and Subcategory Stats (Total products and total available inventory)
+    const [categoryStats, subcategoryStats] = await Promise.all([
+      Promise.all(categoryIds.map(async (catId) => {
+        const stats = await inventoryRepository.getCategoryStats(catId, ownerFilter);
+        return { categoryId: catId, ...stats };
+      })),
+      Promise.all(subcategoryIds.map(async (subCatId) => {
+        const stats = await inventoryRepository.getSubcategoryStats(subCatId, ownerFilter);
+        return { subcategoryId: subCatId, ...stats };
+      }))
+    ]);
+
+    const categoryMap = new Map(categoryStats.map(s => [s.categoryId, s]));
+    const subcategoryMap = new Map(subcategoryStats.map(s => [s.subcategoryId, s]));
+
+    // 5. Build hierarchy: Category -> Subcategory -> Product
+    const categories = [];
+    for (const product of products) {
+      const catId = product.categoryId;
+      const subcatId = product.productNameId;
+      const prodId = product.id;
+
+      // Find or create Category node
+      let catNode = categories.find(c => c.categoryId === Number(catId));
+      if (!catNode) {
+        const catStats = categoryMap.get(catId) || { totalProducts: 0, totalInventory: 0 };
+        catNode = {
+          categoryId: Number(catId),
+          categoryName: product.category.name,
+          totalProducts: catStats.totalProducts,
+          totalInventory: catStats.totalInventory,
+          subcategories: []
+        };
+        categories.push(catNode);
+      }
+
+      // Find or create Subcategory node
+      let subcatNode = catNode.subcategories.find(s => s.subcategoryId === Number(subcatId));
+      if (!subcatNode) {
+        const subcatStats = subcategoryMap.get(subcatId) || { totalProducts: 0, totalInventory: 0 };
+        subcatNode = {
+          subcategoryId: Number(subcatId),
+          subcategoryName: product.productName.name,
+          totalProducts: subcatStats.totalProducts,
+          totalInventory: subcatStats.totalInventory,
+          products: []
+        };
+        catNode.subcategories.push(subcatNode);
+      }
+
+      // Add Product node
+      const counts = countMap[Number(prodId)] || { total: 0, sold: 0, remaining: 0 };
+      subcatNode.products.push({
+        productId: Number(prodId),
+        productName: product.productModel.name,
+        totalQuantity: counts.total,
+        soldQuantity: counts.sold,
+        remainingQuantity: counts.remaining
+      });
+    }
+
+    return {
+      categories,
+      pagination: {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        total_pages: Math.ceil(total / limit)
+      }
+    };
+  }
 }
 
 module.exports = new InventoryService();
+

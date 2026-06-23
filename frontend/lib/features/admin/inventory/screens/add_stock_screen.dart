@@ -6,6 +6,7 @@ import '../../../../theme/app_theme.dart';
 import '../../../../core/network/api_client_provider.dart';
 import '../providers/inventory_provider.dart';
 import '../../dashboard/providers/dashboard_controller.dart';
+import '../../../../shared/widgets/snackbar_helper.dart';
 
 class AddStockScreen extends ConsumerStatefulWidget {
   const AddStockScreen({super.key});
@@ -69,7 +70,7 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
         });
       }
     } catch (e) {
-      _showError('Failed to load categories: $e');
+      // Handled automatically by ApiInterceptor
     } finally {
       setState(() {
         _isLoadingCategories = false;
@@ -107,7 +108,7 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
         });
       }
     } catch (e) {
-      _showError('Failed to load product names: $e');
+      // Handled automatically by ApiInterceptor
     } finally {
       setState(() {
         _isLoadingNames = false;
@@ -145,7 +146,7 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
         });
       }
     } catch (e) {
-      _showError('Failed to load product models: $e');
+      // Handled automatically by ApiInterceptor
     } finally {
       setState(() {
         _isLoadingModels = false;
@@ -176,7 +177,7 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
         });
       }
     } catch (e) {
-      _showError('Failed to load product inventory details: $e');
+      // Handled automatically by ApiInterceptor
     } finally {
       setState(() {
         _isLoadingDetails = false;
@@ -187,7 +188,7 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedCategoryId == null || _selectedProductNameId == null || _selectedProductModelId == null) {
-      _showError('Please select all product fields');
+      context.showErrorSnackBar('Please select all product fields');
       return;
     }
 
@@ -212,12 +213,7 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Stock updated successfully'),
-            backgroundColor: AppTheme.primary,
-          ),
-        );
+        context.showSuccessSnackBar('Stock updated successfully');
         // Refresh dashboard statistics
         ref.read(dashboardControllerProvider).refreshAllData();
         // Refresh inventory list
@@ -225,7 +221,7 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
         context.pop();
       }
     } catch (e) {
-      _showError('Failed to update stock: $e');
+      // Handled automatically by ApiInterceptor
     } finally {
       setState(() {
         _isSubmitting = false;
@@ -233,16 +229,7 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
     }
   }
 
-  void _showError(String message) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: AppTheme.error,
-        ),
-      );
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {

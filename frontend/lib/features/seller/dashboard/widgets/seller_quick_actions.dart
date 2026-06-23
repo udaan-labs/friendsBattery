@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../shared/widgets/snackbar_helper.dart';
 
 class SellerQuickActions extends StatelessWidget {
   const SellerQuickActions({super.key});
@@ -44,9 +45,7 @@ class SellerQuickActions extends StatelessWidget {
                 iconBgColor: const Color(0xFFD5E0F8),
                 iconColor: const Color(0xFF16A34A),
                 onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Request Stock tapped')),
-                  );
+                  context.showInfoSnackBar('Request Stock tapped');
                 },
               ),
               _ActionButton(
@@ -56,9 +55,7 @@ class SellerQuickActions extends StatelessWidget {
                 iconBgColor: const Color(0xFFD5E0F8),
                 iconColor: const Color(0xFF16A34A),
                 onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Sales History tapped')),
-                  );
+                  context.showInfoSnackBar('Sales History tapped');
                 },
               ),
               _ActionButton(
@@ -68,9 +65,7 @@ class SellerQuickActions extends StatelessWidget {
                 iconBgColor: const Color(0xFFD5E0F8),
                 iconColor: const Color(0xFF16A34A),
                 onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Stock Details tapped')),
-                  );
+                  context.showInfoSnackBar('Stock Details tapped');
                 },
               ),
             ],

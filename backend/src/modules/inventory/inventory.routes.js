@@ -9,7 +9,8 @@ const {
   getHistorySchema,
   updateStockSchema,
   getProductDetailsSchema,
-  getAvailableSerialsSchema
+  getAvailableSerialsSchema,
+  getInventoryDetailsSchema
 } = require('./inventory.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
 const { requireAdmin } = require('../../shared/middleware/role.middleware');
@@ -51,6 +52,129 @@ router.get(
   validateRequest(getInventorySchema), 
   inventoryController.getInventory
 );
+
+/**
+ * @swagger
+ * /api/inventory/details:
+ *   get:
+ *     summary: Return a complete inventory summary grouped by Category, Subcategory, and Product Name
+ *     tags: [Inventory]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: category_id
+ *         schema:
+ *           type: integer
+ *         description: Filter by Category ID
+ *       - in: query
+ *         name: subcategory_id
+ *         schema:
+ *           type: integer
+ *         description: Filter by Subcategory (Product Name) ID
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search by Product Model Name or Product Name
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of items per page
+ *       - in: query
+ *         name: seller_id
+ *         schema:
+ *           type: integer
+ *         description: Seller ID (Admin only, filters inventory by seller)
+ *     responses:
+ *       200:
+ *         description: Inventory details summary fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Inventory details fetched successfully
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     categories:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           categoryId:
+ *                             type: integer
+ *                           categoryName:
+ *                             type: string
+ *                           totalProducts:
+ *                             type: integer
+ *                           totalInventory:
+ *                             type: integer
+ *                           subcategories:
+ *                             type: array
+ *                             items:
+ *                               type: object
+ *                               properties:
+ *                                 subcategoryId:
+ *                                   type: integer
+ *                                 subcategoryName:
+ *                                   type: string
+ *                                 totalProducts:
+ *                                   type: integer
+ *                                 totalInventory:
+ *                                   type: integer
+ *                                 products:
+ *                                   type: array
+ *                                   items:
+ *                                     type: object
+ *                                     properties:
+ *                                       productId:
+ *                                         type: integer
+ *                                       productName:
+ *                                         type: string
+ *                                       totalQuantity:
+ *                                         type: integer
+ *                                       soldQuantity:
+ *                                         type: integer
+ *                                       remainingQuantity:
+ *                                         type: integer
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         total:
+ *                           type: integer
+ *                         page:
+ *                           type: integer
+ *                         limit:
+ *                           type: integer
+ *                         total_pages:
+ *                           type: integer
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
+router.get(
+  '/details',
+  authenticate,
+  validateRequest(getInventoryDetailsSchema),
+  inventoryController.getInventoryDetails
+);
+
 
 /**
  * @swagger

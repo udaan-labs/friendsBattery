@@ -8,6 +8,7 @@ import '../../../../core/network/api_client_provider.dart';
 import '../providers/shipment_provider.dart';
 import '../repository/shipment_repository.dart';
 import '../../dashboard/providers/dashboard_controller.dart';
+import '../../../../shared/widgets/snackbar_helper.dart';
 
 class TransferRowState {
   String? categoryId;
@@ -120,7 +121,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
         _categories = categoriesList;
       });
     } catch (e) {
-      _showError('Failed to load initial data: $e');
+      // Handled automatically by ApiInterceptor
     } finally {
       setState(() {
         _isLoadingSellers = false;
@@ -160,7 +161,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
         });
       }
     } catch (e) {
-      _showError('Failed to load product names: $e');
+      // Handled automatically by ApiInterceptor
     } finally {
       setState(() {
         row.isLoadingNames = false;
@@ -199,7 +200,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
         });
       }
     } catch (e) {
-      _showError('Failed to load product models: $e');
+      // Handled automatically by ApiInterceptor
     } finally {
       setState(() {
         row.isLoadingModels = false;
@@ -250,7 +251,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
         row.productId = resolvedProdId;
       });
     } catch (e) {
-      _showError('Failed to load product details: $e');
+      // Handled automatically by ApiInterceptor
     } finally {
       setState(() {
         row.isLoadingDetails = false;
@@ -302,15 +303,15 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_selectedSellerId == null) {
-      _showError('Seller is required');
+      context.showErrorSnackBar('Seller is required');
       return;
     }
     if (_dispatchDate == null) {
-      _showError('Dispatch Date is required');
+      context.showErrorSnackBar('Dispatch Date is required');
       return;
     }
     if (_expectedArrivalDate == null) {
-      _showError('Expected Arrival Date is required');
+      context.showErrorSnackBar('Expected Arrival Date is required');
       return;
     }
 
@@ -321,12 +322,12 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
     for (int i = 0; i < _rows.length; i++) {
       final row = _rows[i];
       if (row.productId == null) {
-        _showError('Please complete product selection on row ${i + 1}');
+        context.showErrorSnackBar('Please complete product selection on row ${i + 1}');
         return;
       }
 
       if (productIds.contains(row.productId!)) {
-        _showError('Duplicate products are not allowed in the same shipment');
+        context.showErrorSnackBar('Duplicate products are not allowed in the same shipment');
         return;
       }
       productIds.add(row.productId!);
@@ -335,17 +336,17 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
       final price = double.tryParse(row.priceController.text) ?? 0.0;
 
       if (quantity <= 0) {
-        _showError('Quantity must be greater than zero on row ${i + 1}');
+        context.showErrorSnackBar('Quantity must be greater than zero on row ${i + 1}');
         return;
       }
 
       if (row.availableStock != null && quantity > row.availableStock!) {
-        _showError('Quantity exceeds available stock on row ${i + 1}');
+        context.showErrorSnackBar('Quantity exceeds available stock on row ${i + 1}');
         return;
       }
 
       if (price <= 0) {
-        _showError('Price must be greater than zero on row ${i + 1}');
+        context.showErrorSnackBar('Price must be greater than zero on row ${i + 1}');
         return;
       }
 
@@ -368,12 +369,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Shipment created successfully'),
-            backgroundColor: AppTheme.primary,
-          ),
-        );
+        context.showSuccessSnackBar('Shipment created successfully');
 
         // Refresh list provider and dashboard data
         ref.invalidate(shipmentsListProvider);
@@ -383,7 +379,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
         context.pop();
       }
     } catch (e) {
-      _showError('Failed to create shipment: $e');
+      // Handled automatically by ApiInterceptor
     } finally {
       setState(() {
         _isSubmitting = false;
@@ -391,16 +387,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
     }
   }
 
-  void _showError(String message) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: AppTheme.error,
-        ),
-      );
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {

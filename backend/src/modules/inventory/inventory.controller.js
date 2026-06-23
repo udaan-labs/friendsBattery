@@ -186,6 +186,34 @@ class InventoryController {
       return errorResponse(res, 500, 'Internal server error');
     }
   }
+
+  /**
+   * Fetch inventory details summary grouped by Category -> Subcategory -> Product.
+   */
+  async getInventoryDetails(req, res) {
+    try {
+      const userId = Number(req.user.id);
+      const role = req.user.role;
+      const { category_id, subcategory_id, search, page, limit, seller_id } = req.query;
+
+      // Call business layer
+      const details = await inventoryService.getInventoryDetails(userId, role, {
+        category_id,
+        subcategory_id,
+        search,
+        page,
+        limit,
+        seller_id
+      });
+
+      // Return standardized success response
+      return successResponse(res, 200, 'Inventory details fetched successfully', details);
+    } catch (error) {
+      console.error('Get Inventory Details Error:', error);
+      return errorResponse(res, 500, 'Internal server error');
+    }
+  }
 }
 
 module.exports = new InventoryController();
+

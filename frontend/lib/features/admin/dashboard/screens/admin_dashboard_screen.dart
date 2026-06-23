@@ -5,7 +5,6 @@ import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/widgets/common_pull_to_refresh.dart';
 import '../providers/dashboard_controller.dart';
 import '../widgets/kpi_grid.dart';
-import '../widgets/pending_requests_section.dart';
 import '../widgets/low_stock_alerts.dart';
 import '../widgets/quick_actions.dart';
 
@@ -87,8 +86,6 @@ class AdminDashboardScreen extends ConsumerWidget {
                           flex: 8,
                           sliver: SliverMainAxisGroup(
                             slivers: const [
-                              PendingRequestsSection(),
-                              SliverToBoxAdapter(child: SizedBox(height: 32)),
                               LowStockAlerts(),
                             ],
                           ),
@@ -110,8 +107,6 @@ class AdminDashboardScreen extends ConsumerWidget {
                   else
                     SliverMainAxisGroup(
                       slivers: const [
-                        PendingRequestsSection(),
-                        SliverToBoxAdapter(child: SizedBox(height: 32)),
                         LowStockAlerts(),
                         SliverToBoxAdapter(child: SizedBox(height: 32)),
                         QuickActions(),
