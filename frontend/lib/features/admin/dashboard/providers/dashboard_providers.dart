@@ -15,49 +15,38 @@ final kpiProvider = FutureProvider<DashboardStats>((ref) async {
 });
 
 final lowStockAlertsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  await Future.delayed(const Duration(seconds: 1));
+  await Future.delayed(const Duration(milliseconds: 500));
   return [
     {
       'product': 'Exide InvaTubular 150Ah',
+      'sku': 'EX150',
       'stock': 5,
-      'threshold': 10,
+      'threshold': 15,
     },
     {
       'product': 'Amaron Go 35Ah',
+      'sku': 'AG35',
       'stock': 2,
-      'threshold': 5,
+      'threshold': 10,
     },
     {
       'product': 'Luminous RedCharge 150Ah',
+      'sku': 'LR150',
       'stock': 8,
-      'threshold': 15,
+      'threshold': 20,
     },
   ];
 });
 
 final recentActivityProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  await Future.delayed(const Duration(seconds: 1));
+  await Future.delayed(const Duration(milliseconds: 500));
   return [
     {
-      'title': 'New seller registered',
-      'subtitle': 'Kumar Auto Electricals joined',
-      'time': '10:30 AM',
-      'icon': 'person_add',
-      'color': 0xFF006B2C,
-    },
-    {
-      'title': 'Stock updated',
-      'subtitle': 'Added 50 units of Exide 150Ah',
-      'time': '09:15 AM',
+      'title': 'Stock assigned to Shop A',
+      'subtitle': 'Exide InvaTubular 150Ah • 20 units',
+      'time': 'Today, 10:30 AM',
       'icon': 'inventory_2',
-      'color': 0xFF006E1C,
-    },
-    {
-      'title': 'Order delivered',
-      'subtitle': 'Order #4892 completed',
-      'time': 'Yesterday',
-      'icon': 'local_shipping',
-      'color': 0xFF3E4A3D,
+      'color': 0xFF006B2C,
     },
   ];
 });

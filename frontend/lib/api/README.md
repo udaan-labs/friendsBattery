@@ -72,6 +72,7 @@ Class | Method | HTTP request | Description
 [*DashboardApi*](doc/DashboardApi.md) | [**apiSellerDashboardStatsGet**](doc/DashboardApi.md#apisellerdashboardstatsget) | **GET** /api/seller/dashboard/stats | Get seller dashboard statistics
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryAdjustPatch**](doc/InventoryApi.md#apiinventoryadjustpatch) | **PATCH** /api/inventory/adjust | Adjust inventory stock levels
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryAvailableSerialsGet**](doc/InventoryApi.md#apiinventoryavailableserialsget) | **GET** /api/inventory/available-serials | Fetch available serial numbers for a product owned by the logged-in seller
+[*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryDetailsGet**](doc/InventoryApi.md#apiinventorydetailsget) | **GET** /api/inventory/details | Return a complete inventory summary grouped by Category, Subcategory, and Product Name
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryGet**](doc/InventoryApi.md#apiinventoryget) | **GET** /api/inventory | Return logged-in user&#39;s inventory
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryHistoryGet**](doc/InventoryApi.md#apiinventoryhistoryget) | **GET** /api/inventory/history | Return inventory movement history
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryProductDetailsGet**](doc/InventoryApi.md#apiinventoryproductdetailsget) | **GET** /api/inventory/product-details | Fetch details of a product (stock count &amp; min sell price) by category, product name, and model IDs
@@ -112,6 +113,12 @@ Class | Method | HTTP request | Description
  - [ApiDashboardStatsGet200ResponseData](doc/ApiDashboardStatsGet200ResponseData.md)
  - [ApiInventoryAdjustPatchRequest](doc/ApiInventoryAdjustPatchRequest.md)
  - [ApiInventoryAvailableSerialsGet200Response](doc/ApiInventoryAvailableSerialsGet200Response.md)
+ - [ApiInventoryDetailsGet200Response](doc/ApiInventoryDetailsGet200Response.md)
+ - [ApiInventoryDetailsGet200ResponseData](doc/ApiInventoryDetailsGet200ResponseData.md)
+ - [ApiInventoryDetailsGet200ResponseDataCategoriesInner](doc/ApiInventoryDetailsGet200ResponseDataCategoriesInner.md)
+ - [ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner](doc/ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner.md)
+ - [ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner](doc/ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner.md)
+ - [ApiInventoryDetailsGet200ResponseDataPagination](doc/ApiInventoryDetailsGet200ResponseDataPagination.md)
  - [ApiInventoryProductDetailsGet200Response](doc/ApiInventoryProductDetailsGet200Response.md)
  - [ApiInventoryProductDetailsGet200ResponseData](doc/ApiInventoryProductDetailsGet200ResponseData.md)
  - [ApiInventoryProductIdGet200Response](doc/ApiInventoryProductIdGet200Response.md)

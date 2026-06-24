@@ -1,0 +1,21 @@
+info:
+  name: get_inventory_details
+  type: http
+  seq: 8
+
+http:
+  method: GET
+  url: "{{baseurl}}/inventory/details?page=1&limit=5"
+  headers:
+    - name: auth-id
+      value: "{{authId}}"
+    - name: auth-key
+      value: "{{authKey}}"
+  body:
+    type: none
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

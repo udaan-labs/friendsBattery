@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/dashboard_providers.dart';
 
@@ -10,17 +9,57 @@ class RecentActivityTimeline extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final activityState = ref.watch(recentActivityProvider);
 
+    IconData getIconData(String iconName) {
+      switch (iconName) {
+        case 'inventory_2':
+          return Icons.inventory_2_outlined;
+        case 'person_add':
+          return Icons.person_add_alt_1_outlined;
+        case 'local_shipping':
+          return Icons.local_shipping_outlined;
+        default:
+          return Icons.notifications_outlined;
+      }
+    }
+
     return SliverToBoxAdapter(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Recent Activity',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF191C1E),
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Recent Activity',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF191C1E),
+                ),
+              ),
+              InkWell(
+                onTap: () {},
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'View all',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF006B2C),
+                      ),
+                    ),
+                    SizedBox(width: 2),
+                    Icon(
+                      Icons.chevron_right,
+                      color: Color(0xFF006B2C),
+                      size: 16,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           activityState.when(
@@ -28,30 +67,19 @@ class RecentActivityTimeline extends ConsumerWidget {
               if (activities.isEmpty) {
                 return const Text('No recent activity.');
               }
-              return Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  children: List.generate(activities.length, (index) {
-                    final item = activities[index];
-                    return _TimelineItem(
-                      title: item['title'],
-                      time: item['time'],
-                      color: Color(item['color']),
-                      isLast: index == activities.length - 1,
-                    );
-                  }),
-                ),
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: activities.length,
+                itemBuilder: (context, index) {
+                  final item = activities[index];
+                  return _ActivityItem(
+                    title: item['title'] ?? '',
+                    subtitle: item['subtitle'] ?? '',
+                    time: item['time'] ?? '',
+                    icon: getIconData(item['icon'] ?? ''),
+                  );
+                },
               );
             },
             loading: () => const Center(child: CircularProgressIndicator()),
@@ -63,68 +91,91 @@ class RecentActivityTimeline extends ConsumerWidget {
   }
 }
 
-class _TimelineItem extends StatelessWidget {
+class _ActivityItem extends StatelessWidget {
   final String title;
+  final String subtitle;
   final String time;
-  final Color color;
-  final bool isLast;
+  final IconData icon;
 
-  const _TimelineItem({
+  const _ActivityItem({
     required this.title,
+    required this.subtitle,
     required this.time,
-    required this.color,
-    required this.isLast,
+    required this.icon,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Column(
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 6),
-              width: 10,
-              height: 10,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-              ),
-            ),
-            if (!isLast)
-              Container(
-                margin: const EdgeInsets.symmetric(vertical: 4),
-                width: 2,
-                height: 30,
-                color: const Color(0xFFBDCABA), // outline-variant
-              ),
-          ],
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFF191C1E),
-                ),
-              ),
-              Text(
-                time,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF3E4A3D),
-                ),
-              ),
-              if (!isLast) const SizedBox(height: 16),
-            ],
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFECEEF0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-        ),
-      ],
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: const BoxDecoration(
+              color: Color(0xFFE8F5E9), // light green
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              color: const Color(0xFF006B2C), // dark green
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF191C1E),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF586377),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            time,
+            style: const TextStyle(
+              fontSize: 10,
+              color: Color(0xFF586377),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

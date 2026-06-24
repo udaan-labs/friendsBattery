@@ -8,6 +8,12 @@ doc/ApiDashboardStatsGet200Response.md
 doc/ApiDashboardStatsGet200ResponseData.md
 doc/ApiInventoryAdjustPatchRequest.md
 doc/ApiInventoryAvailableSerialsGet200Response.md
+doc/ApiInventoryDetailsGet200Response.md
+doc/ApiInventoryDetailsGet200ResponseData.md
+doc/ApiInventoryDetailsGet200ResponseDataCategoriesInner.md
+doc/ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner.md
+doc/ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner.md
+doc/ApiInventoryDetailsGet200ResponseDataPagination.md
 doc/ApiInventoryProductDetailsGet200Response.md
 doc/ApiInventoryProductDetailsGet200ResponseData.md
 doc/ApiInventoryProductIdGet200Response.md
@@ -85,6 +91,12 @@ lib/src/model/api_dashboard_stats_get200_response.dart
 lib/src/model/api_dashboard_stats_get200_response_data.dart
 lib/src/model/api_inventory_adjust_patch_request.dart
 lib/src/model/api_inventory_available_serials_get200_response.dart
+lib/src/model/api_inventory_details_get200_response.dart
+lib/src/model/api_inventory_details_get200_response_data.dart
+lib/src/model/api_inventory_details_get200_response_data_categories_inner.dart
+lib/src/model/api_inventory_details_get200_response_data_categories_inner_subcategories_inner.dart
+lib/src/model/api_inventory_details_get200_response_data_categories_inner_subcategories_inner_products_inner.dart
+lib/src/model/api_inventory_details_get200_response_data_pagination.dart
 lib/src/model/api_inventory_product_details_get200_response.dart
 lib/src/model/api_inventory_product_details_get200_response_data.dart
 lib/src/model/api_inventory_product_id_get200_response.dart
@@ -131,4 +143,3 @@ lib/src/model/stock_request_item.dart
 lib/src/model/user.dart
 lib/src/serializers.dart
 pubspec.yaml
-test/api_inventory_available_serials_get200_response_test.dart

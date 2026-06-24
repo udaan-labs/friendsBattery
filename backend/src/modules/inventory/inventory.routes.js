@@ -89,11 +89,6 @@ router.get(
  *           type: integer
  *           default: 10
  *         description: Number of items per page
- *       - in: query
- *         name: seller_id
- *         schema:
- *           type: integer
- *         description: Seller ID (Admin only, filters inventory by seller)
  *     responses:
  *       200:
  *         description: Inventory details summary fetched successfully

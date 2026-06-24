@@ -94,7 +94,6 @@ const getInventoryDetailsSchema = z.object({
     search: z.string().optional(),
     page: z.string().regex(/^\d+$/).transform(Number).refine(val => val > 0, { message: 'Page must be positive' }).optional(),
     limit: z.string().regex(/^\d+$/).transform(Number).refine(val => val > 0, { message: 'Limit must be positive' }).optional(),
-    seller_id: z.string().regex(/^\d+$/).transform(Number).optional(),
   })
 });
 

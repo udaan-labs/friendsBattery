@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/dashboard_providers.dart';
 
@@ -8,37 +7,62 @@ class KpiGrid extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDesktop = MediaQuery.of(context).size.width > 768;
+    final isDesktop = MediaQuery.of(context).size.width > 1024;
     final kpiData = ref.watch(kpiProvider);
 
-    Widget buildGrid(String totalStock, String todaySales, String totalSellers) {
-      return SliverGrid(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: isDesktop ? 3 : 2,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio: 1.5,
-        ),
-        delegate: SliverChildListDelegate(
-          [
-            _KpiCard(
-              title: 'TOTAL STOCK',
-              value: totalStock,
-              color: const Color(0xFF006B2C),
-            ),
-            _KpiCard(
-              title: 'TOTAL SALES',
-              value: todaySales,
-              color: const Color(0xFF006B2C),
-            ),
-            _KpiCard(
-              title: 'TOTAL SELLERS',
-              value: totalSellers,
-              color: const Color(0xFF545F73),
-            ),
-          ],
-        ),
+    String formatNumber(String val) {
+      if (val == '--') return '--';
+      final parsed = int.tryParse(val.replaceAll(RegExp(r'[^0-9]'), ''));
+      if (parsed == null) return val;
+      final str = parsed.toString();
+      if (str.length > 3) {
+        return '${str.substring(0, str.length - 3)},${str.substring(str.length - 3)}';
+      }
+      return str;
+    }
+
+    Widget buildCard(String title, String value, String subtitle, IconData icon) {
+      return _KpiCard(
+        title: title,
+        value: formatNumber(value),
+        subtitle: subtitle,
+        icon: icon,
+        color: const Color(0xFF006B2C),
       );
+    }
+
+    Widget buildGrid(String totalStock, String todaySales, String totalSellers) {
+      if (isDesktop) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: GridView.count(
+            crossAxisCount: 3,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 2.2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            children: [
+              buildCard('TOTAL STOCK', totalStock, 'Units', Icons.inventory_2_outlined),
+              buildCard('TOTAL SALES', todaySales, 'Units', Icons.trending_up_outlined),
+              buildCard('TOTAL SELLERS', totalSellers, 'Active', Icons.group_outlined),
+            ],
+          ),
+        );
+      } else {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Row(
+            children: [
+              Expanded(child: buildCard('TOTAL STOCK', totalStock, 'Units', Icons.inventory_2_outlined)),
+              const SizedBox(width: 8),
+              Expanded(child: buildCard('TOTAL SALES', todaySales, 'Units', Icons.trending_up_outlined)),
+              const SizedBox(width: 8),
+              Expanded(child: buildCard('TOTAL SELLERS', totalSellers, 'Active', Icons.group_outlined)),
+            ],
+          ),
+        );
+      }
     }
 
     return kpiData.when(
@@ -48,11 +72,9 @@ class KpiGrid extends ConsumerWidget {
         stats.totalSellers.toString(),
       ),
       loading: () => buildGrid('--', '--', '--'),
-      error: (e, st) => SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text('Error: $e', style: const TextStyle(color: Colors.red)),
-        ),
+      error: (e, st) => Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Text('Error: $e', style: const TextStyle(color: Colors.red)),
       ),
     );
   }
@@ -61,11 +83,15 @@ class KpiGrid extends ConsumerWidget {
 class _KpiCard extends StatelessWidget {
   final String title;
   final String value;
+  final String subtitle;
+  final IconData icon;
   final Color color;
 
   const _KpiCard({
     required this.title,
     required this.value,
+    required this.subtitle,
+    required this.icon,
     required this.color,
   });
 
@@ -75,35 +101,70 @@ class _KpiCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFECEEF0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
+      padding: const EdgeInsets.all(8),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF3E4A3D),
-              letterSpacing: 1.2,
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.08),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 16,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: color,
+          const SizedBox(width: 6),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF586377),
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF191C1E),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 9,
+                    color: Color(0xFF586377),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
           ),
         ],

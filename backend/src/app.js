@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const path = require('path');
 
 const { globalErrorHandler, notFoundHandler } = require('./shared/middleware/error.middleware');
 
@@ -20,6 +21,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(morgan('dev'));
 app.use(express.json());
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Swagger Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

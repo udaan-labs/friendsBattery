@@ -11,6 +11,7 @@ import 'package:dio/dio.dart';
 import 'package:friends_battery_api/src/api_util.dart';
 import 'package:friends_battery_api/src/model/api_inventory_adjust_patch_request.dart';
 import 'package:friends_battery_api/src/model/api_inventory_available_serials_get200_response.dart';
+import 'package:friends_battery_api/src/model/api_inventory_details_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_inventory_product_details_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_inventory_product_id_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_inventory_transfer_post_request.dart';
@@ -180,6 +181,104 @@ class InventoryApi {
     }
 
     return Response<ApiInventoryAvailableSerialsGet200Response>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// Return a complete inventory summary grouped by Category, Subcategory, and Product Name
+  /// 
+  ///
+  /// Parameters:
+  /// * [categoryId] - Filter by Category ID
+  /// * [subcategoryId] - Filter by Subcategory (Product Name) ID
+  /// * [search] - Search by Product Model Name or Product Name
+  /// * [page] - Page number for pagination
+  /// * [limit] - Number of items per page
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [ApiInventoryDetailsGet200Response] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<ApiInventoryDetailsGet200Response>> apiInventoryDetailsGet({ 
+    int? categoryId,
+    int? subcategoryId,
+    String? search,
+    int? page = 1,
+    int? limit = 10,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/api/inventory/details';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      if (categoryId != null) r'category_id': encodeQueryParameter(_serializers, categoryId, const FullType(int)),
+      if (subcategoryId != null) r'subcategory_id': encodeQueryParameter(_serializers, subcategoryId, const FullType(int)),
+      if (search != null) r'search': encodeQueryParameter(_serializers, search, const FullType(String)),
+      if (page != null) r'page': encodeQueryParameter(_serializers, page, const FullType(int)),
+      if (limit != null) r'limit': encodeQueryParameter(_serializers, limit, const FullType(int)),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    ApiInventoryDetailsGet200Response? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(ApiInventoryDetailsGet200Response),
+      ) as ApiInventoryDetailsGet200Response;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<ApiInventoryDetailsGet200Response>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

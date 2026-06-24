@@ -11,6 +11,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**apiInventoryAdjustPatch**](InventoryApi.md#apiinventoryadjustpatch) | **PATCH** /api/inventory/adjust | Adjust inventory stock levels
 [**apiInventoryAvailableSerialsGet**](InventoryApi.md#apiinventoryavailableserialsget) | **GET** /api/inventory/available-serials | Fetch available serial numbers for a product owned by the logged-in seller
+[**apiInventoryDetailsGet**](InventoryApi.md#apiinventorydetailsget) | **GET** /api/inventory/details | Return a complete inventory summary grouped by Category, Subcategory, and Product Name
 [**apiInventoryGet**](InventoryApi.md#apiinventoryget) | **GET** /api/inventory | Return logged-in user&#39;s inventory
 [**apiInventoryHistoryGet**](InventoryApi.md#apiinventoryhistoryget) | **GET** /api/inventory/history | Return inventory movement history
 [**apiInventoryProductDetailsGet**](InventoryApi.md#apiinventoryproductdetailsget) | **GET** /api/inventory/product-details | Fetch details of a product (stock count &amp; min sell price) by category, product name, and model IDs
@@ -92,6 +93,55 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**ApiInventoryAvailableSerialsGet200Response**](ApiInventoryAvailableSerialsGet200Response.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiInventoryDetailsGet**
+> ApiInventoryDetailsGet200Response apiInventoryDetailsGet(categoryId, subcategoryId, search, page, limit)
+
+Return a complete inventory summary grouped by Category, Subcategory, and Product Name
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getInventoryApi();
+final int categoryId = 56; // int | Filter by Category ID
+final int subcategoryId = 56; // int | Filter by Subcategory (Product Name) ID
+final String search = search_example; // String | Search by Product Model Name or Product Name
+final int page = 56; // int | Page number for pagination
+final int limit = 56; // int | Number of items per page
+
+try {
+    final response = api.apiInventoryDetailsGet(categoryId, subcategoryId, search, page, limit);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling InventoryApi->apiInventoryDetailsGet: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **categoryId** | **int**| Filter by Category ID | [optional] 
+ **subcategoryId** | **int**| Filter by Subcategory (Product Name) ID | [optional] 
+ **search** | **String**| Search by Product Model Name or Product Name | [optional] 
+ **page** | **int**| Page number for pagination | [optional] [default to 1]
+ **limit** | **int**| Number of items per page | [optional] [default to 10]
+
+### Return type
+
+[**ApiInventoryDetailsGet200Response**](ApiInventoryDetailsGet200Response.md)
 
 ### Authorization
 

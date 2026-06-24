@@ -408,23 +408,22 @@ class InventoryService {
    * Input: userId, role, filters
    * Output: Grouped inventory details and pagination
    */
-  async getInventoryDetails(userId, role, { category_id, subcategory_id, search, page = 1, limit = 10, seller_id }) {
-    const skip = (page - 1) * limit;
+  async getInventoryDetails(userId, role, { category_id, subcategory_id, search, page = 1, limit = 10 }) {
+    const pageNum = Number(page);
+    const limitNum = Number(limit);
+    const skip = (pageNum - 1) * limitNum;
 
-    // Apply role-based filtering
-    const ownerFilter = {};
-    if (role === 'SELLER') {
-      ownerFilter.ownerId = BigInt(userId);
-    } else if (role === 'ADMIN' && seller_id) {
-      ownerFilter.ownerId = BigInt(seller_id);
-    }
+    // Filter stock counts to only show the logged-in user's own stock
+    const ownerFilter = {
+      ownerId: BigInt(userId)
+    };
 
     const filters = {
       categoryId: category_id,
       subcategoryId: subcategory_id,
       search,
       skip,
-      take: limit
+      take: limitNum
     };
 
     // 1. Fetch paginated products and total product count
