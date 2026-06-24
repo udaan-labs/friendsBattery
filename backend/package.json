@@ -12,7 +12,8 @@
     "migrate": "npx prisma migrate dev",
     "prisma:generate": "npx prisma generate",
     "postinstall": "npm run prisma:generate",
-    "swagger:export": "node scripts/export-swagger.js"
+    "swagger:export": "node scripts/export-swagger.js",
+    "build": "npm run prisma:generate"
   },
   "keywords": [],
   "author": "",
