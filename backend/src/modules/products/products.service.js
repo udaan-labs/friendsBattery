@@ -8,10 +8,46 @@ const productsRepository = require('./products.repository');
  */
 class ProductsService {
   /**
+   * Create a new group
+   * Ensures the group name is unique before creating
+   */
+  async createGroup(data) {
+    const existing = await productsRepository.findGroupByName(data.name);
+    if (existing) {
+      const error = new Error('Group already exists');
+      error.statusCode = 409;
+      throw error;
+    }
+    const group = await productsRepository.createGroup(data);
+    return {
+      id: Number(group.id),
+      name: group.name
+    };
+  }
+
+  /**
+   * Get all groups
+   */
+  async getGroups() {
+    const groups = await productsRepository.getGroups();
+    return groups.map(g => ({
+      id: Number(g.id),
+      name: g.name
+    }));
+  }
+
+  /**
    * Create a new category
    * Ensures the category name is unique before creating
    */
   async createCategory(data) {
+    const group = await productsRepository.findGroupById(data.group_id);
+    if (!group) {
+      const error = new Error('Group not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
     const existing = await productsRepository.findCategoryByName(data.name);
     if (existing) {
       const error = new Error('Category already exists');
@@ -21,7 +57,8 @@ class ProductsService {
     const category = await productsRepository.createCategory(data);
     return {
       id: Number(category.id),
-      name: category.name
+      name: category.name,
+      group_id: Number(category.groupId)
     };
   }
 
@@ -30,6 +67,31 @@ class ProductsService {
    */
   async getCategories() {
     const categories = await productsRepository.getCategories();
+    return categories.map(c => ({
+      id: Number(c.id),
+      name: c.name
+    }));
+  }
+
+  /**
+   * Get all categories for a given group
+   * Validates if the group exists before querying
+   *
+   * Input:
+   *  groupId
+   *
+   * Returns:
+   *  Array of categories.
+   */
+  async getCategoriesByGroup(groupId) {
+    const group = await productsRepository.findGroupById(groupId);
+    if (!group) {
+      const error = new Error('Group not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const categories = await productsRepository.getCategoriesByGroup(groupId);
     return categories.map(c => ({
       id: Number(c.id),
       name: c.name
@@ -144,7 +206,8 @@ class ProductsService {
       min_price: product.minPrice,
       on_sale: product.onSale,
       offer_price: product.offerPrice,
-      min_quantity: product.minQuantity,
+      min_unit_count_admin: product.minUnitCountAdmin,
+      min_unit_count_seller: product.minUnitCountSeller,
       created_at: product.createdAt
     };
   }

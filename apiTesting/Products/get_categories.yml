@@ -4,15 +4,19 @@ info:
   seq: 2
 
 http:
-  method: GET
-  url: "{{baseurl}}/products/categories"
+  method: POST
+  url: "{{baseurl}}/products/categories/list"
   headers:
     - name: auth-id
       value: "{{authId}}"
     - name: auth-key
       value: "{{authKey}}"
   body:
-    type: none
+    type: json
+    data: |-
+      {
+        "group_id": 1
+      }
 
 settings:
   encodeUrl: true

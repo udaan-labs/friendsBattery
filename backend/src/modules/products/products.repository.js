@@ -8,6 +8,47 @@ const { prisma } = require('../../config/db');
  */
 class ProductsRepository {
   /**
+   * Find a group by name to prevent duplicates
+   */
+  async findGroupByName(name) {
+    return prisma.group.findUnique({
+      where: { name }
+    });
+  }
+
+  /**
+   * Find a group by ID
+   */
+  async findGroupById(id) {
+    return prisma.group.findUnique({
+      where: { id: BigInt(id) }
+    });
+  }
+
+  /**
+   * Create a new group
+   */
+  async createGroup(data) {
+    return prisma.group.create({
+      data: {
+        name: data.name
+      }
+    });
+  }
+
+  /**
+   * Fetch all groups
+   * Ordered alphabetically by name
+   */
+  async getGroups() {
+    return prisma.group.findMany({
+      orderBy: {
+        name: 'asc'
+      }
+    });
+  }
+
+  /**
    * Find a category by name to prevent duplicates
    */
   async findCategoryByName(name) {
@@ -37,6 +78,7 @@ class ProductsRepository {
   async createCategory(data) {
     return prisma.category.create({
       data: {
+        groupId: BigInt(data.group_id),
         name: data.name
       }
     });
@@ -48,6 +90,20 @@ class ProductsRepository {
    */
   async getCategories() {
     return prisma.category.findMany({
+      orderBy: {
+        name: 'asc'
+      }
+    });
+  }
+
+  /**
+   * Fetch all categories for a given group
+   */
+  async getCategoriesByGroup(groupId) {
+    return prisma.category.findMany({
+      where: {
+        groupId: BigInt(groupId)
+      },
       orderBy: {
         name: 'asc'
       }
@@ -174,7 +230,8 @@ class ProductsRepository {
         minPrice: data.min_price,
         onSale: data.on_sale,
         offerPrice: data.offer_price,
-        minQuantity: data.min_quantity
+        minUnitCountAdmin: data.min_unit_count_admin,
+        minUnitCountSeller: data.min_unit_count_seller
       }
     });
   }

@@ -1,0 +1,30 @@
+info:
+  name: create_group
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseurl}}/products/groups"
+  headers:
+    - name: auth-id
+      value: "{{authId}}"
+    - name: auth-key
+      value: "{{authKey}}"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Electronics"
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+assert:
+  - res.status: eq 201
+  - res.body.success: eq true
+  - res.body.data.name: eq Electronics

@@ -9,6 +9,35 @@ const { successResponse, errorResponse } = require('../../shared/utils/response'
  */
 class ProductsController {
   /**
+   * Create a new group
+   */
+  async createGroup(req, res) {
+    try {
+      const group = await productsService.createGroup(req.body);
+      return successResponse(res, 201, 'Group created successfully', group);
+    } catch (error) {
+      if (error.statusCode) {
+        return errorResponse(res, error.statusCode, error.message);
+      }
+      console.error('Create Group Error:', error);
+      return errorResponse(res, 500, 'Internal server error');
+    }
+  }
+
+  /**
+   * Get all groups
+   */
+  async getGroups(req, res) {
+    try {
+      const groups = await productsService.getGroups();
+      return successResponse(res, 200, 'Groups fetched successfully', groups);
+    } catch (error) {
+      console.error('Get Groups Error:', error);
+      return errorResponse(res, 500, 'Internal server error');
+    }
+  }
+
+  /**
    * Create a new category
    */
   async createCategory(req, res) {
@@ -33,6 +62,23 @@ class ProductsController {
       return successResponse(res, 200, 'Categories fetched successfully', categories);
     } catch (error) {
       console.error('Get Categories Error:', error);
+      return errorResponse(res, 500, 'Internal server error');
+    }
+  }
+
+  /**
+   * Get all categories for a given group
+   */
+  async getCategoriesByGroup(req, res) {
+    try {
+      const { group_id } = req.body;
+      const categories = await productsService.getCategoriesByGroup(group_id);
+      return successResponse(res, 200, 'Categories fetched successfully', categories);
+    } catch (error) {
+      if (error.statusCode) {
+        return errorResponse(res, error.statusCode, error.message);
+      }
+      console.error('Get Categories By Group Error:', error);
       return errorResponse(res, 500, 'Internal server error');
     }
   }

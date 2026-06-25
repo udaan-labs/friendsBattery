@@ -2,10 +2,12 @@ const express = require('express');
 const productRouter = express.Router();
 const productsController = require('./products.controller');
 const {
+  createGroupSchema,
   createCategorySchema,
   createProductNameSchema,
   createProductModelSchema,
   createProductSchema,
+  getCategoriesRequest,
   getProductNamesRequest,
   getProductModelsRequest,
   getProductsRequest
@@ -20,6 +22,45 @@ const { validateRequest } = require('../../shared/middleware/validation.middlewa
  *   name: Products
  *   description: Products management APIs
  */
+
+/**
+ * @swagger
+ * /api/products/groups:
+ *   post:
+ *     summary: Create a new product group
+ *     tags: [Products]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Group created successfully
+ *   get:
+ *     summary: Return all groups
+ *     tags: [Products]
+ *     responses:
+ *       200:
+ *         description: Groups fetched successfully
+ */
+productRouter.post(
+  '/groups',
+  authenticate,
+  requireAdmin,
+  validateRequest(createGroupSchema),
+  productsController.createGroup
+);
+
+productRouter.get(
+  '/groups',
+  authenticate,
+  productsController.getGroups
+);
 
 /**
  * @swagger
@@ -62,6 +103,32 @@ productRouter.get(
   '/categories',
   authenticate,
   productsController.getCategories
+);
+
+/**
+ * @swagger
+ * /api/products/categories/list:
+ *   post:
+ *     summary: Return all categories belonging to a group
+ *     tags: [Products]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               group_id:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Categories fetched successfully
+ */
+productRouter.post(
+  '/categories/list',
+  authenticate,
+  validateRequest(getCategoriesRequest),
+  productsController.getCategoriesByGroup
 );
 
 /**
@@ -201,7 +268,9 @@ productRouter.post(
  *                 type: boolean
  *               offer_price:
  *                 type: number
- *               min_quantity:
+ *               min_unit_count_admin:
+ *                 type: integer
+ *               min_unit_count_seller:
  *                 type: integer
  *     responses:
  *       201:

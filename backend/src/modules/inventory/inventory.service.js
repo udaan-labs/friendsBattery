@@ -305,7 +305,8 @@ class InventoryService {
             productModelId: BigInt(productModelId),
             minPrice: minSellPrice !== undefined ? minSellPrice : 0,
             onSale: false,
-            minQuantity: 1
+            minUnitCountAdmin: 0,
+            minUnitCountSeller: 0
           }
         });
       } else if (minSellPrice !== undefined) {

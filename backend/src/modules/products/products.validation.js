@@ -1,10 +1,20 @@
 const { z } = require('zod');
 
 /**
+ * Validation schema for creating a new group
+ */
+const createGroupSchema = z.object({
+  body: z.object({
+    name: z.string().min(1, 'Group name is required').max(100, 'Group name is too long')
+  })
+});
+
+/**
  * Validation schema for creating a new category
  */
 const createCategorySchema = z.object({
   body: z.object({
+    group_id: z.number().int().positive('Group ID is required'),
     name: z.string().min(1, 'Category name is required').max(100, 'Category name is too long')
   })
 });
@@ -40,7 +50,17 @@ const createProductSchema = z.object({
     min_price: z.number().positive('Min price must be a positive number'),
     on_sale: z.boolean().optional().default(false),
     offer_price: z.number().positive('Offer price must be a positive number').optional().nullable(),
-    min_quantity: z.number().int().positive('Min quantity must be a positive integer').optional().default(1)
+    min_unit_count_admin: z.number().int().min(0, 'Min unit count admin cannot be negative').optional().default(0),
+    min_unit_count_seller: z.number().int().min(0, 'Min unit count seller cannot be negative').optional().default(0)
+  })
+});
+
+/**
+ * Validation schema for getting categories by group
+ */
+const getCategoriesRequest = z.object({
+  body: z.object({
+    group_id: z.number().int().positive('Group ID is required')
   })
 });
 
@@ -75,10 +95,12 @@ const getProductsRequest = z.object({
 });
 
 module.exports = {
+  createGroupSchema,
   createCategorySchema,
   createProductNameSchema,
   createProductModelSchema,
   createProductSchema,
+  getCategoriesRequest,
   getProductNamesRequest,
   getProductModelsRequest,
   getProductsRequest
