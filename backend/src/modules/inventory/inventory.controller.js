@@ -123,7 +123,7 @@ class InventoryController {
   async updateStock(req, res) {
     try {
       const adminId = Number(req.user.id);
-      const { productCategoryId, productNameId, productModelId, quantity, minSellPrice } = req.body;
+      const { productCategoryId, productNameId, productModelId, quantity, minSellPrice, minUnitCountAdmin, minUnitCountSeller } = req.body;
 
       // Call business layer
       const result = await inventoryService.updateStock(adminId, {
@@ -131,7 +131,9 @@ class InventoryController {
         productNameId,
         productModelId,
         quantity,
-        minSellPrice
+        minSellPrice,
+        minUnitCountAdmin,
+        minUnitCountSeller
       });
 
       // Return standardized success response

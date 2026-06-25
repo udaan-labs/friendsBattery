@@ -10,10 +10,12 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **String** |  | [optional] 
 **productId** | **String** |  | [optional] 
+**productUnitId** | **String** |  | [optional] 
 **customerId** | **String** |  | [optional] 
 **sellerId** | **String** |  | [optional] 
 **sellPrice** | **double** |  | [optional] 
 **serialNumber** | **String** |  | [optional] 
+**vehicleNumber** | **String** |  | [optional] 
 **productReplacedId** | **String** |  | [optional] 
 **soldAt** | [**DateTime**](DateTime.md) |  | [optional] 
 

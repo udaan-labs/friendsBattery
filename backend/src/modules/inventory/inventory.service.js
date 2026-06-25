@@ -255,7 +255,7 @@ class InventoryService {
    * Input: adminId, payload
    * Output: updated stock details
    */
-  async updateStock(adminId, { productCategoryId, productNameId, productModelId, quantity, minSellPrice }) {
+  async updateStock(adminId, { productCategoryId, productNameId, productModelId, quantity, minSellPrice, minUnitCountAdmin, minUnitCountSeller }) {
     // 1. Validate category existence
     const category = await prisma.category.findUnique({
       where: { id: BigInt(productCategoryId) }
@@ -305,16 +305,22 @@ class InventoryService {
             productModelId: BigInt(productModelId),
             minPrice: minSellPrice !== undefined ? minSellPrice : 0,
             onSale: false,
-            minUnitCountAdmin: 0,
-            minUnitCountSeller: 0
+            minUnitCountAdmin: minUnitCountAdmin !== undefined ? minUnitCountAdmin : 0,
+            minUnitCountSeller: minUnitCountSeller !== undefined ? minUnitCountSeller : 0
           }
         });
-      } else if (minSellPrice !== undefined) {
-        // Update minPrice
-        product = await tx.product.update({
-          where: { id: product.id },
-          data: { minPrice: minSellPrice }
-        });
+      } else {
+        const updateData = {};
+        if (minSellPrice !== undefined) updateData.minPrice = minSellPrice;
+        if (minUnitCountAdmin !== undefined) updateData.minUnitCountAdmin = minUnitCountAdmin;
+        if (minUnitCountSeller !== undefined) updateData.minUnitCountSeller = minUnitCountSeller;
+        
+        if (Object.keys(updateData).length > 0) {
+          product = await tx.product.update({
+            where: { id: product.id },
+            data: updateData
+          });
+        }
       }
 
       // Count existing units for this admin

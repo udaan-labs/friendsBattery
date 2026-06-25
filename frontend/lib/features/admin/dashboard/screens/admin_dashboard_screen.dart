@@ -8,11 +8,13 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_client_provider.dart';
 import '../../../../core/storage/local_storage.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
+import '../../../../shared/widgets/logout_dialog_helper.dart';
 import '../providers/dashboard_controller.dart';
 import '../widgets/kpi_grid.dart';
 import '../widgets/low_stock_alerts.dart';
 import '../widgets/quick_actions.dart';
 import '../widgets/recent_activity_timeline.dart';
+import '../../inventory/screens/add_product_screen.dart';
 
 class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -82,8 +84,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
     if (tabId == 'dashboard') {
       ref.read(dashboardControllerProvider).refreshAllData();
-    } else if (tabId == 'view_stock') {
-      _fetchStock(1);
     } else if (tabId == 'manage_sellers') {
       _fetchSellers();
     } else if (tabId == 'add_product') {
@@ -409,44 +409,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     }
   }
 
-  // --- Show Confirmation Logout Dialog ---
-  void _showLogoutDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          backgroundColor: const Color(0xFFFFFFFF),
-          title: const Text(
-            'Confirm Logout',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF191C1E)),
-          ),
-          content: const Text(
-            'Are you sure you want to log out from the BatteryAdmin panel?',
-            style: TextStyle(color: Color(0xFF3E4A3D)),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel', style: TextStyle(color: Color(0xFF006B2C))),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                ref.read(authProvider.notifier).logout();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFBA1A1A),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
-              ),
-              child: const Text('Logout'),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   String _getInitials(String name) {
     if (name.isEmpty) return 'AD';
@@ -480,8 +442,15 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     final isDesktop = MediaQuery.of(context).size.width > 1024;
     final username = _getUserNameSafe();
 
-    return Scaffold(
-      key: _scaffoldKey,
+    return PopScope(
+      canPop: _currentTab == 'dashboard',
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) {
+          _switchTab('dashboard');
+        }
+      },
+      child: Scaffold(
+        key: _scaffoldKey,
       backgroundColor: const Color(0xFFF7F9FB), // bg-background
       appBar: AppBar(
         backgroundColor: const Color(0xFFFFFFFF), // White to match image
@@ -517,19 +486,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           IconButton(
             icon: const Icon(Icons.exit_to_app, color: Color(0xFF3E4A3D), size: 28),
             onPressed: () {
-              _showLogoutDialog();
+              showLogoutConfirmationDialog(context, ref);
             },
           ),
           const SizedBox(width: 8),
         ],
-        bottom: PreferredSize(
-          preferredSize: Size.fromHeight(isDesktop ? 120 : 90),
-          child: Container(
-            color: const Color(0xFFFFFFFF),
-            width: double.infinity,
-            child: const KpiGrid(),
-          ),
-        ),
       ),
       drawer: Drawer(
         backgroundColor: const Color(0xFFF7F9FB), // bg-surface
@@ -617,6 +578,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     activeIcon: Icons.inventory_2,
                     title: 'View Stock',
                     tabId: 'view_stock',
+                    onTap: () {
+                      context.pop(); // close drawer
+                      context.push('/shared/inventory');
+                    },
                   ),
                   _buildDrawerItem(
                     icon: Icons.people_outline,
@@ -664,7 +629,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
                 onTap: () {
                   context.pop(); // close drawer
-                  _showLogoutDialog();
+                  showLogoutConfirmationDialog(context, ref);
                 },
               ),
             ),
@@ -707,6 +672,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               ],
             )
           : null,
+      ),
     );
   }
 
@@ -715,6 +681,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     required IconData activeIcon,
     required String title,
     required String tabId,
+    VoidCallback? onTap,
   }) {
     final isActive = _currentTab == tabId;
     return Padding(
@@ -735,7 +702,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         selected: isActive,
         selectedTileColor: const Color(0xFFD5E0F8), // bg-secondary-container
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
-        onTap: () => _switchTab(tabId),
+        onTap: onTap ?? () => _switchTab(tabId),
       ),
     );
   }
@@ -767,7 +734,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         _switchTab('manage_sellers');
         break;
       case 2:
-        _switchTab('view_stock');
+        context.push('/shared/inventory');
         break;
       case 3:
       default:
@@ -801,6 +768,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       onRefresh: () => ref.read(dashboardControllerProvider).refreshAllData(),
       child: CustomScrollView(
         slivers: [
+          SliverToBoxAdapter(
+            child: Container(
+              color: const Color(0xFFF7F9FB),
+              width: double.infinity,
+              child: const KpiGrid(),
+            ),
+          ),
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
             sliver: SliverMainAxisGroup(
@@ -852,183 +826,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
   // --- Sub-View: Add Product Form ---
   Widget _buildAddProductTabView() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
-      child: Center(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 600),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x0A000000),
-                blurRadius: 12,
-                offset: Offset(0, 4),
-              ),
-            ],
-          ),
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _addStockFormKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Update Stock Levels',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF006B2C)),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Submit stock adjustments directly into the database inventory module.',
-                  style: TextStyle(fontSize: 14, color: Color(0xFF3E4A3D)),
-                ),
-                const SizedBox(height: 24),
-
-                // Category select
-                const Text('Product Category', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                const SizedBox(height: 8),
-                _isLoadingCategories
-                    ? const Center(child: CircularProgressIndicator())
-                    : DropdownButtonFormField<String>(
-                        decoration: const InputDecoration(border: OutlineInputBorder(), hintText: 'Select Category'),
-                        value: _selectedCategoryId,
-                        items: _categories.map((c) => DropdownMenuItem(value: c['id'], child: Text(c['name']!))).toList(),
-                        onChanged: (val) {
-                          if (val != null) {
-                            setState(() => _selectedCategoryId = val);
-                            _loadProductNames(val);
-                          }
-                        },
-                      ),
-                const SizedBox(height: 16),
-
-                // Subcategory Product Name Select
-                const Text('Product Name', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                const SizedBox(height: 8),
-                _isLoadingNames
-                    ? const Center(child: CircularProgressIndicator())
-                    : DropdownButtonFormField<String>(
-                        decoration: const InputDecoration(border: OutlineInputBorder(), hintText: 'Select Product Name'),
-                        value: _selectedProductNameId,
-                        disabledHint: const Text('Select a category first'),
-                        items: _productNames.map((n) => DropdownMenuItem(value: n['id'], child: Text(n['name']!))).toList(),
-                        onChanged: _selectedCategoryId == null ? null : (val) {
-                          if (val != null) {
-                            setState(() => _selectedProductNameId = val);
-                            _loadProductModels(val);
-                          }
-                        },
-                      ),
-                const SizedBox(height: 16),
-
-                // Product Model Select
-                const Text('Product Model', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                const SizedBox(height: 8),
-                _isLoadingModels
-                    ? const Center(child: CircularProgressIndicator())
-                    : DropdownButtonFormField<String>(
-                        decoration: const InputDecoration(border: OutlineInputBorder(), hintText: 'Select Product Model'),
-                        value: _selectedProductModelId,
-                        disabledHint: const Text('Select product name first'),
-                        items: _productModels.map((m) => DropdownMenuItem(value: m['id'], child: Text(m['name']!))).toList(),
-                        onChanged: _selectedProductNameId == null ? null : (val) {
-                          if (val != null) {
-                            setState(() => _selectedProductModelId = val);
-                            _loadProductDetails(val);
-                          }
-                        },
-                      ),
-                const SizedBox(height: 16),
-
-                // Display Stock Information if Selected
-                if (_selectedProductModelId != null) ...[
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFECEEF0),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: _isLoadingDetails
-                        ? const Center(child: CircularProgressIndicator())
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('Product Information', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                              const SizedBox(height: 8),
-                              Text('Current Stock: ${_currentDetailsStock ?? 0}', style: const TextStyle(fontSize: 13, color: Color(0xFF3E4A3D))),
-                              const SizedBox(height: 4),
-                              Text('Current Min Price: ₹${_currentMinPrice ?? 0}', style: const TextStyle(fontSize: 13, color: Color(0xFF3E4A3D))),
-                            ],
-                          ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-
-                // Quantity Input
-                const Text('Quantity', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _quantityController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(border: OutlineInputBorder(), hintText: 'Enter quantity'),
-                  validator: (val) {
-                    if (val == null || val.isEmpty) return 'Quantity is required';
-                    final numVal = int.tryParse(val);
-                    if (numVal == null || numVal <= 0) return 'Quantity must be greater than 0';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                // Min Price Input
-                const Text('Minimum Selling Price', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _minPriceController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(border: OutlineInputBorder(), prefixText: '₹ ', hintText: 'Enter minimum selling price'),
-                  validator: (val) {
-                    if (val != null && val.isNotEmpty) {
-                      final numVal = num.tryParse(val);
-                      if (numVal == null || numVal < 0) return 'Minimum price must be greater than or equal to 0';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 32),
-
-                // Submit Button
-                ElevatedButton(
-                  onPressed: _isSubmittingStock ? null : _submitStockUpdate,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF006B2C),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
-                  ),
-                  child: _isSubmittingStock
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.add_box),
-                            SizedBox(width: 8),
-                            Text('Update / Add Stock', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                          ],
-                        ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+    return const AddProductScreen();
   }
-
   // --- Sub-View: View Stock (Paginated Table) ---
   Widget _buildViewStockTabView() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // Header filters row
         Padding(
@@ -1104,6 +907,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   ElevatedButton(
                     onPressed: _stockPage <= 1 ? null : () => _fetchStock(_stockPage - 1),
                     style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(0, 48),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
                     ),
                     child: const Text('Previous'),
@@ -1112,6 +916,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   ElevatedButton(
                     onPressed: _stockPage >= _stockTotalPages ? null : () => _fetchStock(_stockPage + 1),
                     style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(0, 48),
                       backgroundColor: const Color(0xFF006B2C),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
@@ -1224,6 +1029,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                           ElevatedButton(
                                             onPressed: () => _updateSellerState(sellerId, true, true),
                                             style: ElevatedButton.styleFrom(
+                                              minimumSize: const Size(0, 48),
                                               backgroundColor: const Color(0xFF006B2C),
                                               foregroundColor: Colors.white,
                                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
@@ -1234,6 +1040,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                           ElevatedButton(
                                             onPressed: () => _updateSellerState(sellerId, !isActive, true),
                                             style: ElevatedButton.styleFrom(
+                                              minimumSize: const Size(0, 48),
                                               backgroundColor: isActive ? const Color(0xFFBA1A1A) : const Color(0xFF006B2C),
                                               foregroundColor: Colors.white,
                                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),

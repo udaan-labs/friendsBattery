@@ -474,6 +474,12 @@ router.post(
  *               minSellPrice:
  *                 type: number
  *                 example: 1200
+ *               minUnitCountAdmin:
+ *                 type: integer
+ *                 example: 0
+ *               minUnitCountSeller:
+ *                 type: integer
+ *                 example: 0
  *     responses:
  *       200:
  *         description: Stock updated successfully

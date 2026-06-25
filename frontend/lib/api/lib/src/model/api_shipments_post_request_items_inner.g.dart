@@ -15,6 +15,10 @@ class _$ApiShipmentsPostRequestItemsInner
   @override
   final int productModelId;
   @override
+  final int productId;
+  @override
+  final int productItemId;
+  @override
   final int quantity;
 
   factory _$ApiShipmentsPostRequestItemsInner([
@@ -25,6 +29,8 @@ class _$ApiShipmentsPostRequestItemsInner
     required this.productCategoryId,
     required this.productNameId,
     required this.productModelId,
+    required this.productId,
+    required this.productItemId,
     required this.quantity,
   }) : super._();
   @override
@@ -43,6 +49,8 @@ class _$ApiShipmentsPostRequestItemsInner
         productCategoryId == other.productCategoryId &&
         productNameId == other.productNameId &&
         productModelId == other.productModelId &&
+        productId == other.productId &&
+        productItemId == other.productItemId &&
         quantity == other.quantity;
   }
 
@@ -52,6 +60,8 @@ class _$ApiShipmentsPostRequestItemsInner
     _$hash = $jc(_$hash, productCategoryId.hashCode);
     _$hash = $jc(_$hash, productNameId.hashCode);
     _$hash = $jc(_$hash, productModelId.hashCode);
+    _$hash = $jc(_$hash, productId.hashCode);
+    _$hash = $jc(_$hash, productItemId.hashCode);
     _$hash = $jc(_$hash, quantity.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -63,6 +73,8 @@ class _$ApiShipmentsPostRequestItemsInner
           ..add('productCategoryId', productCategoryId)
           ..add('productNameId', productNameId)
           ..add('productModelId', productModelId)
+          ..add('productId', productId)
+          ..add('productItemId', productItemId)
           ..add('quantity', quantity))
         .toString();
   }
@@ -91,6 +103,15 @@ class ApiShipmentsPostRequestItemsInnerBuilder
   set productModelId(int? productModelId) =>
       _$this._productModelId = productModelId;
 
+  int? _productId;
+  int? get productId => _$this._productId;
+  set productId(int? productId) => _$this._productId = productId;
+
+  int? _productItemId;
+  int? get productItemId => _$this._productItemId;
+  set productItemId(int? productItemId) =>
+      _$this._productItemId = productItemId;
+
   int? _quantity;
   int? get quantity => _$this._quantity;
   set quantity(int? quantity) => _$this._quantity = quantity;
@@ -105,6 +126,8 @@ class ApiShipmentsPostRequestItemsInnerBuilder
       _productCategoryId = $v.productCategoryId;
       _productNameId = $v.productNameId;
       _productModelId = $v.productModelId;
+      _productId = $v.productId;
+      _productItemId = $v.productItemId;
       _quantity = $v.quantity;
       _$v = null;
     }
@@ -144,6 +167,16 @@ class ApiShipmentsPostRequestItemsInnerBuilder
             productModelId,
             r'ApiShipmentsPostRequestItemsInner',
             'productModelId',
+          ),
+          productId: BuiltValueNullFieldError.checkNotNull(
+            productId,
+            r'ApiShipmentsPostRequestItemsInner',
+            'productId',
+          ),
+          productItemId: BuiltValueNullFieldError.checkNotNull(
+            productItemId,
+            r'ApiShipmentsPostRequestItemsInner',
+            'productItemId',
           ),
           quantity: BuiltValueNullFieldError.checkNotNull(
             quantity,

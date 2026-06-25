@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../providers/dashboard_providers.dart';
 
 class KpiGrid extends ConsumerWidget {
@@ -21,13 +22,14 @@ class KpiGrid extends ConsumerWidget {
       return str;
     }
 
-    Widget buildCard(String title, String value, String subtitle, IconData icon) {
+    Widget buildCard(String title, String value, String subtitle, IconData icon, {VoidCallback? onTap}) {
       return _KpiCard(
         title: title,
         value: formatNumber(value),
         subtitle: subtitle,
         icon: icon,
         color: const Color(0xFF006B2C),
+        onTap: onTap,
       );
     }
 
@@ -43,7 +45,9 @@ class KpiGrid extends ConsumerWidget {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             children: [
-              buildCard('TOTAL STOCK', totalStock, 'Units', Icons.inventory_2_outlined),
+              buildCard('TOTAL STOCK', totalStock, 'Units', Icons.inventory_2_outlined, onTap: () {
+                context.push('/shared/inventory');
+              }),
               buildCard('TOTAL SALES', todaySales, 'Units', Icons.trending_up_outlined),
               buildCard('TOTAL SELLERS', totalSellers, 'Active', Icons.group_outlined),
             ],
@@ -54,7 +58,9 @@ class KpiGrid extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Row(
             children: [
-              Expanded(child: buildCard('TOTAL STOCK', totalStock, 'Units', Icons.inventory_2_outlined)),
+              Expanded(child: buildCard('TOTAL STOCK', totalStock, 'Units', Icons.inventory_2_outlined, onTap: () {
+                context.push('/shared/inventory');
+              })),
               const SizedBox(width: 8),
               Expanded(child: buildCard('TOTAL SALES', todaySales, 'Units', Icons.trending_up_outlined)),
               const SizedBox(width: 8),
@@ -86,6 +92,7 @@ class _KpiCard extends StatelessWidget {
   final String subtitle;
   final IconData icon;
   final Color color;
+  final VoidCallback? onTap;
 
   const _KpiCard({
     required this.title,
@@ -93,27 +100,31 @@ class _KpiCard extends StatelessWidget {
     required this.subtitle,
     required this.icon,
     required this.color,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFECEEF0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(8),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFECEEF0)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
           Container(
             width: 32,
             height: 32,
@@ -169,6 +180,6 @@ class _KpiCard extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 }

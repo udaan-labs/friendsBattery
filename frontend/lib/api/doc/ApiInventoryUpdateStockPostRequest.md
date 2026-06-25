@@ -13,6 +13,8 @@ Name | Type | Description | Notes
 **productModelId** | **int** |  | 
 **quantity** | **int** |  | 
 **minSellPrice** | **num** |  | [optional] 
+**minUnitCountAdmin** | **int** |  | [optional] 
+**minUnitCountSeller** | **int** |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

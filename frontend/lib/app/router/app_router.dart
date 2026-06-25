@@ -11,6 +11,7 @@ import '../../features/admin/shipments/screens/create_shipment_screen.dart';
 import '../../features/seller/dashboard/screens/seller_dashboard_screen.dart';
 import '../../features/seller/dashboard/screens/create_bill_screen.dart';
 import '../../features/seller/dashboard/screens/shipment_details_screen.dart';
+import '../../features/shared/inventory/screens/current_inventory_screen.dart';
 import '../../shared/providers/auth_provider.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -93,6 +94,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           final shipmentIdStr = state.pathParameters['shipmentId']!;
           return ShipmentDetailsScreen(shipmentId: int.parse(shipmentIdStr));
         },
+      ),
+      GoRoute(
+        path: '/shared/inventory',
+        builder: (context, state) => const CurrentInventoryScreen(),
       ),
     ],
   );

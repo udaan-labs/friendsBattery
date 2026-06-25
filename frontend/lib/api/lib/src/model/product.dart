@@ -21,7 +21,8 @@ part 'product.g.dart';
 /// * [minPrice] 
 /// * [onSale] 
 /// * [offerPrice] 
-/// * [minQuantity] 
+/// * [minUnitCountAdmin] 
+/// * [minUnitCountSeller] 
 /// * [createdAt] 
 /// * [category] 
 /// * [productName] 
@@ -49,8 +50,11 @@ abstract class Product implements Built<Product, ProductBuilder> {
   @BuiltValueField(wireName: r'offerPrice')
   double? get offerPrice;
 
-  @BuiltValueField(wireName: r'minQuantity')
-  int? get minQuantity;
+  @BuiltValueField(wireName: r'minUnitCountAdmin')
+  int? get minUnitCountAdmin;
+
+  @BuiltValueField(wireName: r'minUnitCountSeller')
+  int? get minUnitCountSeller;
 
   @BuiltValueField(wireName: r'createdAt')
   DateTime? get createdAt;
@@ -136,10 +140,17 @@ class _$ProductSerializer implements PrimitiveSerializer<Product> {
         specifiedType: const FullType.nullable(double),
       );
     }
-    if (object.minQuantity != null) {
-      yield r'minQuantity';
+    if (object.minUnitCountAdmin != null) {
+      yield r'minUnitCountAdmin';
       yield serializers.serialize(
-        object.minQuantity,
+        object.minUnitCountAdmin,
+        specifiedType: const FullType(int),
+      );
+    }
+    if (object.minUnitCountSeller != null) {
+      yield r'minUnitCountSeller';
+      yield serializers.serialize(
+        object.minUnitCountSeller,
         specifiedType: const FullType(int),
       );
     }
@@ -244,12 +255,19 @@ class _$ProductSerializer implements PrimitiveSerializer<Product> {
           if (valueDes == null) continue;
           result.offerPrice = valueDes;
           break;
-        case r'minQuantity':
+        case r'minUnitCountAdmin':
           final valueDes = serializers.deserialize(
             value,
             specifiedType: const FullType(int),
           ) as int;
-          result.minQuantity = valueDes;
+          result.minUnitCountAdmin = valueDes;
+          break;
+        case r'minUnitCountSeller':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.minUnitCountSeller = valueDes;
           break;
         case r'createdAt':
           final valueDes = serializers.deserialize(

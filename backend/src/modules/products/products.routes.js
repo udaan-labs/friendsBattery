@@ -75,6 +75,8 @@ productRouter.get(
  *           schema:
  *             type: object
  *             properties:
+ *               group_id:
+ *                 type: integer
  *               name:
  *                 type: string
  *     responses:

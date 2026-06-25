@@ -16,6 +16,8 @@ part 'api_inventory_update_stock_post_request.g.dart';
 /// * [productModelId] 
 /// * [quantity] 
 /// * [minSellPrice] 
+/// * [minUnitCountAdmin] 
+/// * [minUnitCountSeller] 
 @BuiltValue()
 abstract class ApiInventoryUpdateStockPostRequest implements Built<ApiInventoryUpdateStockPostRequest, ApiInventoryUpdateStockPostRequestBuilder> {
   @BuiltValueField(wireName: r'productCategoryId')
@@ -32,6 +34,12 @@ abstract class ApiInventoryUpdateStockPostRequest implements Built<ApiInventoryU
 
   @BuiltValueField(wireName: r'minSellPrice')
   num? get minSellPrice;
+
+  @BuiltValueField(wireName: r'minUnitCountAdmin')
+  int? get minUnitCountAdmin;
+
+  @BuiltValueField(wireName: r'minUnitCountSeller')
+  int? get minUnitCountSeller;
 
   ApiInventoryUpdateStockPostRequest._();
 
@@ -81,6 +89,20 @@ class _$ApiInventoryUpdateStockPostRequestSerializer implements PrimitiveSeriali
       yield serializers.serialize(
         object.minSellPrice,
         specifiedType: const FullType(num),
+      );
+    }
+    if (object.minUnitCountAdmin != null) {
+      yield r'minUnitCountAdmin';
+      yield serializers.serialize(
+        object.minUnitCountAdmin,
+        specifiedType: const FullType(int),
+      );
+    }
+    if (object.minUnitCountSeller != null) {
+      yield r'minUnitCountSeller';
+      yield serializers.serialize(
+        object.minUnitCountSeller,
+        specifiedType: const FullType(int),
       );
     }
   }
@@ -140,6 +162,20 @@ class _$ApiInventoryUpdateStockPostRequestSerializer implements PrimitiveSeriali
             specifiedType: const FullType(num),
           ) as num;
           result.minSellPrice = valueDes;
+          break;
+        case r'minUnitCountAdmin':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.minUnitCountAdmin = valueDes;
+          break;
+        case r'minUnitCountSeller':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.minUnitCountSeller = valueDes;
           break;
         default:
           unhandled.add(key);

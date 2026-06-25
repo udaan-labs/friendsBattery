@@ -14,6 +14,8 @@ part 'api_shipments_post_request_items_inner.g.dart';
 /// * [productCategoryId] 
 /// * [productNameId] 
 /// * [productModelId] 
+/// * [productId] 
+/// * [productItemId] 
 /// * [quantity] 
 @BuiltValue()
 abstract class ApiShipmentsPostRequestItemsInner implements Built<ApiShipmentsPostRequestItemsInner, ApiShipmentsPostRequestItemsInnerBuilder> {
@@ -25,6 +27,12 @@ abstract class ApiShipmentsPostRequestItemsInner implements Built<ApiShipmentsPo
 
   @BuiltValueField(wireName: r'productModelId')
   int get productModelId;
+
+  @BuiltValueField(wireName: r'productId')
+  int get productId;
+
+  @BuiltValueField(wireName: r'productItemId')
+  int get productItemId;
 
   @BuiltValueField(wireName: r'quantity')
   int get quantity;
@@ -65,6 +73,16 @@ class _$ApiShipmentsPostRequestItemsInnerSerializer implements PrimitiveSerializ
     yield r'productModelId';
     yield serializers.serialize(
       object.productModelId,
+      specifiedType: const FullType(int),
+    );
+    yield r'productId';
+    yield serializers.serialize(
+      object.productId,
+      specifiedType: const FullType(int),
+    );
+    yield r'productItemId';
+    yield serializers.serialize(
+      object.productItemId,
       specifiedType: const FullType(int),
     );
     yield r'quantity';
@@ -115,6 +133,20 @@ class _$ApiShipmentsPostRequestItemsInnerSerializer implements PrimitiveSerializ
             specifiedType: const FullType(int),
           ) as int;
           result.productModelId = valueDes;
+          break;
+        case r'productId':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.productId = valueDes;
+          break;
+        case r'productItemId':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.productItemId = valueDes;
           break;
         case r'quantity':
           final valueDes = serializers.deserialize(

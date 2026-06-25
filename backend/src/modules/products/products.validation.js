@@ -5,7 +5,7 @@ const { z } = require('zod');
  */
 const createGroupSchema = z.object({
   body: z.object({
-    name: z.string().min(1, 'Group name is required').max(100, 'Group name is too long')
+    name: z.string().trim().min(1, 'Group name is required').max(100, 'Group name is too long')
   })
 });
 
@@ -15,7 +15,7 @@ const createGroupSchema = z.object({
 const createCategorySchema = z.object({
   body: z.object({
     group_id: z.number().int().positive('Group ID is required'),
-    name: z.string().min(1, 'Category name is required').max(100, 'Category name is too long')
+    name: z.string().trim().min(1, 'Category name is required').max(100, 'Category name is too long')
   })
 });
 
@@ -25,7 +25,7 @@ const createCategorySchema = z.object({
 const createProductNameSchema = z.object({
   body: z.object({
     category_id: z.number().int().positive('Category ID must be a positive integer'),
-    name: z.string().min(1, 'Product name is required').max(100, 'Product name is too long')
+    name: z.string().trim().min(1, 'Product name is required').max(100, 'Product name is too long')
   })
 });
 
@@ -35,7 +35,7 @@ const createProductNameSchema = z.object({
 const createProductModelSchema = z.object({
   body: z.object({
     product_name_id: z.number().int().positive('Product Name ID must be a positive integer'),
-    name: z.string().min(1, 'Model name is required').max(100, 'Model name is too long')
+    name: z.string().trim().min(1, 'Model name is required').max(100, 'Model name is too long')
   })
 });
 
@@ -50,8 +50,8 @@ const createProductSchema = z.object({
     min_price: z.number().positive('Min price must be a positive number'),
     on_sale: z.boolean().optional().default(false),
     offer_price: z.number().positive('Offer price must be a positive number').optional().nullable(),
-    min_unit_count_admin: z.number().int().min(0, 'Min unit count admin cannot be negative').optional().default(0),
-    min_unit_count_seller: z.number().int().min(0, 'Min unit count seller cannot be negative').optional().default(0)
+    min_unit_count_admin: z.number().int().min(0, 'Min unit count admin cannot be negative'),
+    min_unit_count_seller: z.number().int().min(0, 'Min unit count seller cannot be negative')
   })
 });
 

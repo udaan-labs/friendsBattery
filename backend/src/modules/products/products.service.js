@@ -252,7 +252,9 @@ class ProductsService {
       product_model: p.productModel.name,
       min_price: p.minPrice,
       on_sale: p.onSale,
-      offer_price: p.offerPrice
+      offer_price: p.offerPrice,
+      min_unit_count_admin: p.minUnitCountAdmin,
+      min_unit_count_seller: p.minUnitCountSeller
     }));
   }
 }

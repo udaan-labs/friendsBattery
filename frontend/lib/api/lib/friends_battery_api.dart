@@ -42,7 +42,9 @@ export 'package:friends_battery_api/src/model/api_inventory_transfer_post_reques
 export 'package:friends_battery_api/src/model/api_inventory_update_stock_post200_response.dart';
 export 'package:friends_battery_api/src/model/api_inventory_update_stock_post200_response_data.dart';
 export 'package:friends_battery_api/src/model/api_inventory_update_stock_post_request.dart';
+export 'package:friends_battery_api/src/model/api_products_categories_list_post_request.dart';
 export 'package:friends_battery_api/src/model/api_products_categories_post_request.dart';
+export 'package:friends_battery_api/src/model/api_products_groups_post_request.dart';
 export 'package:friends_battery_api/src/model/api_products_list_post_request.dart';
 export 'package:friends_battery_api/src/model/api_products_post_request.dart';
 export 'package:friends_battery_api/src/model/api_products_product_models_list_post_request.dart';

@@ -22,7 +22,9 @@ class _$Product extends Product {
   @override
   final double? offerPrice;
   @override
-  final int? minQuantity;
+  final int? minUnitCountAdmin;
+  @override
+  final int? minUnitCountSeller;
   @override
   final DateTime? createdAt;
   @override
@@ -43,7 +45,8 @@ class _$Product extends Product {
     this.minPrice,
     this.onSale,
     this.offerPrice,
-    this.minQuantity,
+    this.minUnitCountAdmin,
+    this.minUnitCountSeller,
     this.createdAt,
     this.category,
     this.productName,
@@ -67,7 +70,8 @@ class _$Product extends Product {
         minPrice == other.minPrice &&
         onSale == other.onSale &&
         offerPrice == other.offerPrice &&
-        minQuantity == other.minQuantity &&
+        minUnitCountAdmin == other.minUnitCountAdmin &&
+        minUnitCountSeller == other.minUnitCountSeller &&
         createdAt == other.createdAt &&
         category == other.category &&
         productName == other.productName &&
@@ -84,7 +88,8 @@ class _$Product extends Product {
     _$hash = $jc(_$hash, minPrice.hashCode);
     _$hash = $jc(_$hash, onSale.hashCode);
     _$hash = $jc(_$hash, offerPrice.hashCode);
-    _$hash = $jc(_$hash, minQuantity.hashCode);
+    _$hash = $jc(_$hash, minUnitCountAdmin.hashCode);
+    _$hash = $jc(_$hash, minUnitCountSeller.hashCode);
     _$hash = $jc(_$hash, createdAt.hashCode);
     _$hash = $jc(_$hash, category.hashCode);
     _$hash = $jc(_$hash, productName.hashCode);
@@ -103,7 +108,8 @@ class _$Product extends Product {
           ..add('minPrice', minPrice)
           ..add('onSale', onSale)
           ..add('offerPrice', offerPrice)
-          ..add('minQuantity', minQuantity)
+          ..add('minUnitCountAdmin', minUnitCountAdmin)
+          ..add('minUnitCountSeller', minUnitCountSeller)
           ..add('createdAt', createdAt)
           ..add('category', category)
           ..add('productName', productName)
@@ -145,9 +151,15 @@ class ProductBuilder implements Builder<Product, ProductBuilder> {
   double? get offerPrice => _$this._offerPrice;
   set offerPrice(double? offerPrice) => _$this._offerPrice = offerPrice;
 
-  int? _minQuantity;
-  int? get minQuantity => _$this._minQuantity;
-  set minQuantity(int? minQuantity) => _$this._minQuantity = minQuantity;
+  int? _minUnitCountAdmin;
+  int? get minUnitCountAdmin => _$this._minUnitCountAdmin;
+  set minUnitCountAdmin(int? minUnitCountAdmin) =>
+      _$this._minUnitCountAdmin = minUnitCountAdmin;
+
+  int? _minUnitCountSeller;
+  int? get minUnitCountSeller => _$this._minUnitCountSeller;
+  set minUnitCountSeller(int? minUnitCountSeller) =>
+      _$this._minUnitCountSeller = minUnitCountSeller;
 
   DateTime? _createdAt;
   DateTime? get createdAt => _$this._createdAt;
@@ -183,7 +195,8 @@ class ProductBuilder implements Builder<Product, ProductBuilder> {
       _minPrice = $v.minPrice;
       _onSale = $v.onSale;
       _offerPrice = $v.offerPrice;
-      _minQuantity = $v.minQuantity;
+      _minUnitCountAdmin = $v.minUnitCountAdmin;
+      _minUnitCountSeller = $v.minUnitCountSeller;
       _createdAt = $v.createdAt;
       _category = $v.category?.toBuilder();
       _productName = $v.productName?.toBuilder();
@@ -219,7 +232,8 @@ class ProductBuilder implements Builder<Product, ProductBuilder> {
             minPrice: minPrice,
             onSale: onSale,
             offerPrice: offerPrice,
-            minQuantity: minQuantity,
+            minUnitCountAdmin: minUnitCountAdmin,
+            minUnitCountSeller: minUnitCountSeller,
             createdAt: createdAt,
             category: _category?.build(),
             productName: _productName?.build(),

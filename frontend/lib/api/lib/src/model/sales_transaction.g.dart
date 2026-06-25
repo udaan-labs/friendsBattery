@@ -12,6 +12,8 @@ class _$SalesTransaction extends SalesTransaction {
   @override
   final String? productId;
   @override
+  final String? productUnitId;
+  @override
   final String? customerId;
   @override
   final String? sellerId;
@@ -19,6 +21,8 @@ class _$SalesTransaction extends SalesTransaction {
   final double? sellPrice;
   @override
   final String? serialNumber;
+  @override
+  final String? vehicleNumber;
   @override
   final String? productReplacedId;
   @override
@@ -31,10 +35,12 @@ class _$SalesTransaction extends SalesTransaction {
   _$SalesTransaction._({
     this.id,
     this.productId,
+    this.productUnitId,
     this.customerId,
     this.sellerId,
     this.sellPrice,
     this.serialNumber,
+    this.vehicleNumber,
     this.productReplacedId,
     this.soldAt,
   }) : super._();
@@ -52,10 +58,12 @@ class _$SalesTransaction extends SalesTransaction {
     return other is SalesTransaction &&
         id == other.id &&
         productId == other.productId &&
+        productUnitId == other.productUnitId &&
         customerId == other.customerId &&
         sellerId == other.sellerId &&
         sellPrice == other.sellPrice &&
         serialNumber == other.serialNumber &&
+        vehicleNumber == other.vehicleNumber &&
         productReplacedId == other.productReplacedId &&
         soldAt == other.soldAt;
   }
@@ -65,10 +73,12 @@ class _$SalesTransaction extends SalesTransaction {
     var _$hash = 0;
     _$hash = $jc(_$hash, id.hashCode);
     _$hash = $jc(_$hash, productId.hashCode);
+    _$hash = $jc(_$hash, productUnitId.hashCode);
     _$hash = $jc(_$hash, customerId.hashCode);
     _$hash = $jc(_$hash, sellerId.hashCode);
     _$hash = $jc(_$hash, sellPrice.hashCode);
     _$hash = $jc(_$hash, serialNumber.hashCode);
+    _$hash = $jc(_$hash, vehicleNumber.hashCode);
     _$hash = $jc(_$hash, productReplacedId.hashCode);
     _$hash = $jc(_$hash, soldAt.hashCode);
     _$hash = $jf(_$hash);
@@ -80,10 +90,12 @@ class _$SalesTransaction extends SalesTransaction {
     return (newBuiltValueToStringHelper(r'SalesTransaction')
           ..add('id', id)
           ..add('productId', productId)
+          ..add('productUnitId', productUnitId)
           ..add('customerId', customerId)
           ..add('sellerId', sellerId)
           ..add('sellPrice', sellPrice)
           ..add('serialNumber', serialNumber)
+          ..add('vehicleNumber', vehicleNumber)
           ..add('productReplacedId', productReplacedId)
           ..add('soldAt', soldAt))
         .toString();
@@ -102,6 +114,11 @@ class SalesTransactionBuilder
   String? get productId => _$this._productId;
   set productId(String? productId) => _$this._productId = productId;
 
+  String? _productUnitId;
+  String? get productUnitId => _$this._productUnitId;
+  set productUnitId(String? productUnitId) =>
+      _$this._productUnitId = productUnitId;
+
   String? _customerId;
   String? get customerId => _$this._customerId;
   set customerId(String? customerId) => _$this._customerId = customerId;
@@ -117,6 +134,11 @@ class SalesTransactionBuilder
   String? _serialNumber;
   String? get serialNumber => _$this._serialNumber;
   set serialNumber(String? serialNumber) => _$this._serialNumber = serialNumber;
+
+  String? _vehicleNumber;
+  String? get vehicleNumber => _$this._vehicleNumber;
+  set vehicleNumber(String? vehicleNumber) =>
+      _$this._vehicleNumber = vehicleNumber;
 
   String? _productReplacedId;
   String? get productReplacedId => _$this._productReplacedId;
@@ -136,10 +158,12 @@ class SalesTransactionBuilder
     if ($v != null) {
       _id = $v.id;
       _productId = $v.productId;
+      _productUnitId = $v.productUnitId;
       _customerId = $v.customerId;
       _sellerId = $v.sellerId;
       _sellPrice = $v.sellPrice;
       _serialNumber = $v.serialNumber;
+      _vehicleNumber = $v.vehicleNumber;
       _productReplacedId = $v.productReplacedId;
       _soldAt = $v.soldAt;
       _$v = null;
@@ -166,10 +190,12 @@ class SalesTransactionBuilder
         _$SalesTransaction._(
           id: id,
           productId: productId,
+          productUnitId: productUnitId,
           customerId: customerId,
           sellerId: sellerId,
           sellPrice: sellPrice,
           serialNumber: serialNumber,
+          vehicleNumber: vehicleNumber,
           productReplacedId: productReplacedId,
           soldAt: soldAt,
         );

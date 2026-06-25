@@ -20,7 +20,9 @@ class _$ApiProductsPostRequest extends ApiProductsPostRequest {
   @override
   final num? offerPrice;
   @override
-  final int? minQuantity;
+  final int? minUnitCountAdmin;
+  @override
+  final int? minUnitCountSeller;
 
   factory _$ApiProductsPostRequest([
     void Function(ApiProductsPostRequestBuilder)? updates,
@@ -33,7 +35,8 @@ class _$ApiProductsPostRequest extends ApiProductsPostRequest {
     this.minPrice,
     this.onSale,
     this.offerPrice,
-    this.minQuantity,
+    this.minUnitCountAdmin,
+    this.minUnitCountSeller,
   }) : super._();
   @override
   ApiProductsPostRequest rebuild(
@@ -54,7 +57,8 @@ class _$ApiProductsPostRequest extends ApiProductsPostRequest {
         minPrice == other.minPrice &&
         onSale == other.onSale &&
         offerPrice == other.offerPrice &&
-        minQuantity == other.minQuantity;
+        minUnitCountAdmin == other.minUnitCountAdmin &&
+        minUnitCountSeller == other.minUnitCountSeller;
   }
 
   @override
@@ -66,7 +70,8 @@ class _$ApiProductsPostRequest extends ApiProductsPostRequest {
     _$hash = $jc(_$hash, minPrice.hashCode);
     _$hash = $jc(_$hash, onSale.hashCode);
     _$hash = $jc(_$hash, offerPrice.hashCode);
-    _$hash = $jc(_$hash, minQuantity.hashCode);
+    _$hash = $jc(_$hash, minUnitCountAdmin.hashCode);
+    _$hash = $jc(_$hash, minUnitCountSeller.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -80,7 +85,8 @@ class _$ApiProductsPostRequest extends ApiProductsPostRequest {
           ..add('minPrice', minPrice)
           ..add('onSale', onSale)
           ..add('offerPrice', offerPrice)
-          ..add('minQuantity', minQuantity))
+          ..add('minUnitCountAdmin', minUnitCountAdmin)
+          ..add('minUnitCountSeller', minUnitCountSeller))
         .toString();
   }
 }
@@ -115,9 +121,15 @@ class ApiProductsPostRequestBuilder
   num? get offerPrice => _$this._offerPrice;
   set offerPrice(num? offerPrice) => _$this._offerPrice = offerPrice;
 
-  int? _minQuantity;
-  int? get minQuantity => _$this._minQuantity;
-  set minQuantity(int? minQuantity) => _$this._minQuantity = minQuantity;
+  int? _minUnitCountAdmin;
+  int? get minUnitCountAdmin => _$this._minUnitCountAdmin;
+  set minUnitCountAdmin(int? minUnitCountAdmin) =>
+      _$this._minUnitCountAdmin = minUnitCountAdmin;
+
+  int? _minUnitCountSeller;
+  int? get minUnitCountSeller => _$this._minUnitCountSeller;
+  set minUnitCountSeller(int? minUnitCountSeller) =>
+      _$this._minUnitCountSeller = minUnitCountSeller;
 
   ApiProductsPostRequestBuilder() {
     ApiProductsPostRequest._defaults(this);
@@ -132,7 +144,8 @@ class ApiProductsPostRequestBuilder
       _minPrice = $v.minPrice;
       _onSale = $v.onSale;
       _offerPrice = $v.offerPrice;
-      _minQuantity = $v.minQuantity;
+      _minUnitCountAdmin = $v.minUnitCountAdmin;
+      _minUnitCountSeller = $v.minUnitCountSeller;
       _$v = null;
     }
     return this;
@@ -161,7 +174,8 @@ class ApiProductsPostRequestBuilder
           minPrice: minPrice,
           onSale: onSale,
           offerPrice: offerPrice,
-          minQuantity: minQuantity,
+          minUnitCountAdmin: minUnitCountAdmin,
+          minUnitCountSeller: minUnitCountSeller,
         );
     replace(_$result);
     return _$result;

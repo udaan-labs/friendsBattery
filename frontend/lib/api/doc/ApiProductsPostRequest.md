@@ -14,7 +14,8 @@ Name | Type | Description | Notes
 **minPrice** | **num** |  | [optional] 
 **onSale** | **bool** |  | [optional] 
 **offerPrice** | **num** |  | [optional] 
-**minQuantity** | **int** |  | [optional] 
+**minUnitCountAdmin** | **int** |  | [optional] 
+**minUnitCountSeller** | **int** |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

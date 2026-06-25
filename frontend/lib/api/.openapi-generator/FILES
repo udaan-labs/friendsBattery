@@ -23,7 +23,9 @@ doc/ApiInventoryTransferPostRequestProductsInner.md
 doc/ApiInventoryUpdateStockPost200Response.md
 doc/ApiInventoryUpdateStockPost200ResponseData.md
 doc/ApiInventoryUpdateStockPostRequest.md
+doc/ApiProductsCategoriesListPostRequest.md
 doc/ApiProductsCategoriesPostRequest.md
+doc/ApiProductsGroupsPostRequest.md
 doc/ApiProductsListPostRequest.md
 doc/ApiProductsPostRequest.md
 doc/ApiProductsProductModelsListPostRequest.md
@@ -106,7 +108,9 @@ lib/src/model/api_inventory_transfer_post_request_products_inner.dart
 lib/src/model/api_inventory_update_stock_post200_response.dart
 lib/src/model/api_inventory_update_stock_post200_response_data.dart
 lib/src/model/api_inventory_update_stock_post_request.dart
+lib/src/model/api_products_categories_list_post_request.dart
 lib/src/model/api_products_categories_post_request.dart
+lib/src/model/api_products_groups_post_request.dart
 lib/src/model/api_products_list_post_request.dart
 lib/src/model/api_products_post_request.dart
 lib/src/model/api_products_product_models_list_post_request.dart

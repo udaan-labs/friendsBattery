@@ -18,6 +18,10 @@ class _$ApiInventoryUpdateStockPostRequest
   final int quantity;
   @override
   final num? minSellPrice;
+  @override
+  final int? minUnitCountAdmin;
+  @override
+  final int? minUnitCountSeller;
 
   factory _$ApiInventoryUpdateStockPostRequest([
     void Function(ApiInventoryUpdateStockPostRequestBuilder)? updates,
@@ -29,6 +33,8 @@ class _$ApiInventoryUpdateStockPostRequest
     required this.productModelId,
     required this.quantity,
     this.minSellPrice,
+    this.minUnitCountAdmin,
+    this.minUnitCountSeller,
   }) : super._();
   @override
   ApiInventoryUpdateStockPostRequest rebuild(
@@ -47,7 +53,9 @@ class _$ApiInventoryUpdateStockPostRequest
         productNameId == other.productNameId &&
         productModelId == other.productModelId &&
         quantity == other.quantity &&
-        minSellPrice == other.minSellPrice;
+        minSellPrice == other.minSellPrice &&
+        minUnitCountAdmin == other.minUnitCountAdmin &&
+        minUnitCountSeller == other.minUnitCountSeller;
   }
 
   @override
@@ -58,6 +66,8 @@ class _$ApiInventoryUpdateStockPostRequest
     _$hash = $jc(_$hash, productModelId.hashCode);
     _$hash = $jc(_$hash, quantity.hashCode);
     _$hash = $jc(_$hash, minSellPrice.hashCode);
+    _$hash = $jc(_$hash, minUnitCountAdmin.hashCode);
+    _$hash = $jc(_$hash, minUnitCountSeller.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -69,7 +79,9 @@ class _$ApiInventoryUpdateStockPostRequest
           ..add('productNameId', productNameId)
           ..add('productModelId', productModelId)
           ..add('quantity', quantity)
-          ..add('minSellPrice', minSellPrice))
+          ..add('minSellPrice', minSellPrice)
+          ..add('minUnitCountAdmin', minUnitCountAdmin)
+          ..add('minUnitCountSeller', minUnitCountSeller))
         .toString();
   }
 }
@@ -105,6 +117,16 @@ class ApiInventoryUpdateStockPostRequestBuilder
   num? get minSellPrice => _$this._minSellPrice;
   set minSellPrice(num? minSellPrice) => _$this._minSellPrice = minSellPrice;
 
+  int? _minUnitCountAdmin;
+  int? get minUnitCountAdmin => _$this._minUnitCountAdmin;
+  set minUnitCountAdmin(int? minUnitCountAdmin) =>
+      _$this._minUnitCountAdmin = minUnitCountAdmin;
+
+  int? _minUnitCountSeller;
+  int? get minUnitCountSeller => _$this._minUnitCountSeller;
+  set minUnitCountSeller(int? minUnitCountSeller) =>
+      _$this._minUnitCountSeller = minUnitCountSeller;
+
   ApiInventoryUpdateStockPostRequestBuilder() {
     ApiInventoryUpdateStockPostRequest._defaults(this);
   }
@@ -117,6 +139,8 @@ class ApiInventoryUpdateStockPostRequestBuilder
       _productModelId = $v.productModelId;
       _quantity = $v.quantity;
       _minSellPrice = $v.minSellPrice;
+      _minUnitCountAdmin = $v.minUnitCountAdmin;
+      _minUnitCountSeller = $v.minUnitCountSeller;
       _$v = null;
     }
     return this;
@@ -162,6 +186,8 @@ class ApiInventoryUpdateStockPostRequestBuilder
             'quantity',
           ),
           minSellPrice: minSellPrice,
+          minUnitCountAdmin: minUnitCountAdmin,
+          minUnitCountSeller: minUnitCountSeller,
         );
     replace(_$result);
     return _$result;

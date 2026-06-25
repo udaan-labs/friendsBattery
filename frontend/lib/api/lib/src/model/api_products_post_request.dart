@@ -17,7 +17,8 @@ part 'api_products_post_request.g.dart';
 /// * [minPrice] 
 /// * [onSale] 
 /// * [offerPrice] 
-/// * [minQuantity] 
+/// * [minUnitCountAdmin] 
+/// * [minUnitCountSeller] 
 @BuiltValue()
 abstract class ApiProductsPostRequest implements Built<ApiProductsPostRequest, ApiProductsPostRequestBuilder> {
   @BuiltValueField(wireName: r'category_id')
@@ -38,8 +39,11 @@ abstract class ApiProductsPostRequest implements Built<ApiProductsPostRequest, A
   @BuiltValueField(wireName: r'offer_price')
   num? get offerPrice;
 
-  @BuiltValueField(wireName: r'min_quantity')
-  int? get minQuantity;
+  @BuiltValueField(wireName: r'min_unit_count_admin')
+  int? get minUnitCountAdmin;
+
+  @BuiltValueField(wireName: r'min_unit_count_seller')
+  int? get minUnitCountSeller;
 
   ApiProductsPostRequest._();
 
@@ -106,10 +110,17 @@ class _$ApiProductsPostRequestSerializer implements PrimitiveSerializer<ApiProdu
         specifiedType: const FullType(num),
       );
     }
-    if (object.minQuantity != null) {
-      yield r'min_quantity';
+    if (object.minUnitCountAdmin != null) {
+      yield r'min_unit_count_admin';
       yield serializers.serialize(
-        object.minQuantity,
+        object.minUnitCountAdmin,
+        specifiedType: const FullType(int),
+      );
+    }
+    if (object.minUnitCountSeller != null) {
+      yield r'min_unit_count_seller';
+      yield serializers.serialize(
+        object.minUnitCountSeller,
         specifiedType: const FullType(int),
       );
     }
@@ -178,12 +189,19 @@ class _$ApiProductsPostRequestSerializer implements PrimitiveSerializer<ApiProdu
           ) as num;
           result.offerPrice = valueDes;
           break;
-        case r'min_quantity':
+        case r'min_unit_count_admin':
           final valueDes = serializers.deserialize(
             value,
             specifiedType: const FullType(int),
           ) as int;
-          result.minQuantity = valueDes;
+          result.minUnitCountAdmin = valueDes;
+          break;
+        case r'min_unit_count_seller':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.minUnitCountSeller = valueDes;
           break;
         default:
           unhandled.add(key);

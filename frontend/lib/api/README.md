@@ -80,7 +80,10 @@ Class | Method | HTTP request | Description
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryTransferPost**](doc/InventoryApi.md#apiinventorytransferpost) | **POST** /api/inventory/transfer | Transfer inventory from admin to seller
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryUpdateStockPost**](doc/InventoryApi.md#apiinventoryupdatestockpost) | **POST** /api/inventory/update-stock | Update admin&#39;s own inventory stock (Admin only)
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsCategoriesGet**](doc/ProductsApi.md#apiproductscategoriesget) | **GET** /api/products/categories | Return all categories
+[*ProductsApi*](doc/ProductsApi.md) | [**apiProductsCategoriesListPost**](doc/ProductsApi.md#apiproductscategorieslistpost) | **POST** /api/products/categories/list | Return all categories belonging to a group
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsCategoriesPost**](doc/ProductsApi.md#apiproductscategoriespost) | **POST** /api/products/categories | Create a new product category
+[*ProductsApi*](doc/ProductsApi.md) | [**apiProductsGroupsGet**](doc/ProductsApi.md#apiproductsgroupsget) | **GET** /api/products/groups | Return all groups
+[*ProductsApi*](doc/ProductsApi.md) | [**apiProductsGroupsPost**](doc/ProductsApi.md#apiproductsgroupspost) | **POST** /api/products/groups | Create a new product group
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsListPost**](doc/ProductsApi.md#apiproductslistpost) | **POST** /api/products/list | Return all products matching filters
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsPost**](doc/ProductsApi.md#apiproductspost) | **POST** /api/products | Create a new product
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsProductModelsListPost**](doc/ProductsApi.md#apiproductsproductmodelslistpost) | **POST** /api/products/product-models/list | Return all models belonging to a product name
@@ -128,7 +131,9 @@ Class | Method | HTTP request | Description
  - [ApiInventoryUpdateStockPost200Response](doc/ApiInventoryUpdateStockPost200Response.md)
  - [ApiInventoryUpdateStockPost200ResponseData](doc/ApiInventoryUpdateStockPost200ResponseData.md)
  - [ApiInventoryUpdateStockPostRequest](doc/ApiInventoryUpdateStockPostRequest.md)
+ - [ApiProductsCategoriesListPostRequest](doc/ApiProductsCategoriesListPostRequest.md)
  - [ApiProductsCategoriesPostRequest](doc/ApiProductsCategoriesPostRequest.md)
+ - [ApiProductsGroupsPostRequest](doc/ApiProductsGroupsPostRequest.md)
  - [ApiProductsListPostRequest](doc/ApiProductsListPostRequest.md)
  - [ApiProductsPostRequest](doc/ApiProductsPostRequest.md)
  - [ApiProductsProductModelsListPostRequest](doc/ApiProductsProductModelsListPostRequest.md)

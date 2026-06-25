@@ -10,6 +10,7 @@ import '../widgets/seller_quick_actions.dart';
 import '../widgets/recent_inventory_list.dart';
 import '../widgets/pending_shipments_list.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
+import '../../../../shared/widgets/logout_dialog_helper.dart';
 
 class SellerDashboardScreen extends ConsumerWidget {
   const SellerDashboardScreen({super.key});
@@ -67,7 +68,7 @@ class SellerDashboardScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.logout, color: Color(0xFF3E4A3D)),
             onPressed: () {
-              ref.read(authProvider.notifier).logout();
+              showLogoutConfirmationDialog(context, ref);
             },
           ),
           const SizedBox(width: 8),
@@ -211,9 +212,9 @@ class SellerDashboardScreen extends ConsumerWidget {
               currentIndex: 0,
               onTap: (index) {
                 if (index == 3) {
-                  ref.read(authProvider.notifier).logout();
+                  showLogoutConfirmationDialog(context, ref);
                 } else if (index == 1) {
-                  context.showInfoSnackBar('Stock Screen coming soon');
+                  context.push('/shared/inventory');
                 } else if (index == 2) {
                   context.showInfoSnackBar('Sales Screen coming soon');
                 }

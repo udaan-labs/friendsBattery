@@ -13,10 +13,12 @@ part 'sales_transaction.g.dart';
 /// Properties:
 /// * [id] 
 /// * [productId] 
+/// * [productUnitId] 
 /// * [customerId] 
 /// * [sellerId] 
 /// * [sellPrice] 
 /// * [serialNumber] 
+/// * [vehicleNumber] 
 /// * [productReplacedId] 
 /// * [soldAt] 
 @BuiltValue()
@@ -26,6 +28,9 @@ abstract class SalesTransaction implements Built<SalesTransaction, SalesTransact
 
   @BuiltValueField(wireName: r'productId')
   String? get productId;
+
+  @BuiltValueField(wireName: r'productUnitId')
+  String? get productUnitId;
 
   @BuiltValueField(wireName: r'customerId')
   String? get customerId;
@@ -38,6 +43,9 @@ abstract class SalesTransaction implements Built<SalesTransaction, SalesTransact
 
   @BuiltValueField(wireName: r'serialNumber')
   String? get serialNumber;
+
+  @BuiltValueField(wireName: r'vehicleNumber')
+  String? get vehicleNumber;
 
   @BuiltValueField(wireName: r'productReplacedId')
   String? get productReplacedId;
@@ -82,6 +90,13 @@ class _$SalesTransactionSerializer implements PrimitiveSerializer<SalesTransacti
         specifiedType: const FullType(String),
       );
     }
+    if (object.productUnitId != null) {
+      yield r'productUnitId';
+      yield serializers.serialize(
+        object.productUnitId,
+        specifiedType: const FullType(String),
+      );
+    }
     if (object.customerId != null) {
       yield r'customerId';
       yield serializers.serialize(
@@ -107,6 +122,13 @@ class _$SalesTransactionSerializer implements PrimitiveSerializer<SalesTransacti
       yield r'serialNumber';
       yield serializers.serialize(
         object.serialNumber,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.vehicleNumber != null) {
+      yield r'vehicleNumber';
+      yield serializers.serialize(
+        object.vehicleNumber,
         specifiedType: const FullType.nullable(String),
       );
     }
@@ -161,6 +183,13 @@ class _$SalesTransactionSerializer implements PrimitiveSerializer<SalesTransacti
           ) as String;
           result.productId = valueDes;
           break;
+        case r'productUnitId':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.productUnitId = valueDes;
+          break;
         case r'customerId':
           final valueDes = serializers.deserialize(
             value,
@@ -190,6 +219,14 @@ class _$SalesTransactionSerializer implements PrimitiveSerializer<SalesTransacti
           ) as String?;
           if (valueDes == null) continue;
           result.serialNumber = valueDes;
+          break;
+        case r'vehicleNumber':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.vehicleNumber = valueDes;
           break;
         case r'productReplacedId':
           final valueDes = serializers.deserialize(

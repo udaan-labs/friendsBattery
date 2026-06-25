@@ -11,9 +11,13 @@ part 'api_products_categories_post_request.g.dart';
 /// ApiProductsCategoriesPostRequest
 ///
 /// Properties:
+/// * [groupId] 
 /// * [name] 
 @BuiltValue()
 abstract class ApiProductsCategoriesPostRequest implements Built<ApiProductsCategoriesPostRequest, ApiProductsCategoriesPostRequestBuilder> {
+  @BuiltValueField(wireName: r'group_id')
+  int? get groupId;
+
   @BuiltValueField(wireName: r'name')
   String? get name;
 
@@ -40,6 +44,13 @@ class _$ApiProductsCategoriesPostRequestSerializer implements PrimitiveSerialize
     ApiProductsCategoriesPostRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.groupId != null) {
+      yield r'group_id';
+      yield serializers.serialize(
+        object.groupId,
+        specifiedType: const FullType(int),
+      );
+    }
     if (object.name != null) {
       yield r'name';
       yield serializers.serialize(
@@ -70,6 +81,13 @@ class _$ApiProductsCategoriesPostRequestSerializer implements PrimitiveSerialize
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'group_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.groupId = valueDes;
+          break;
         case r'name':
           final valueDes = serializers.deserialize(
             value,

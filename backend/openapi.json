@@ -158,7 +158,10 @@
             "format": "double",
             "nullable": true
           },
-          "minQuantity": {
+          "minUnitCountAdmin": {
+            "type": "integer"
+          },
+          "minUnitCountSeller": {
             "type": "integer"
           },
           "createdAt": {
@@ -384,6 +387,9 @@
           "productId": {
             "type": "string"
           },
+          "productUnitId": {
+            "type": "string"
+          },
           "customerId": {
             "type": "string",
             "nullable": true
@@ -396,6 +402,10 @@
             "format": "double"
           },
           "serialNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "vehicleNumber": {
             "type": "string",
             "nullable": true
           },
@@ -689,6 +699,8 @@
                         "productCategoryId",
                         "productNameId",
                         "productModelId",
+                        "productId",
+                        "productItemId",
                         "quantity"
                       ],
                       "properties": {
@@ -699,6 +711,12 @@
                           "type": "integer"
                         },
                         "productModelId": {
+                          "type": "integer"
+                        },
+                        "productId": {
+                          "type": "integer"
+                        },
+                        "productItemId": {
                           "type": "integer"
                         },
                         "quantity": {
@@ -983,9 +1001,9 @@
         }
       }
     },
-    "/api/products/categories": {
+    "/api/products/groups": {
       "post": {
-        "summary": "Create a new product category",
+        "summary": "Create a new product group",
         "tags": [
           "Products"
         ],
@@ -1006,6 +1024,48 @@
         },
         "responses": {
           "201": {
+            "description": "Group created successfully"
+          }
+        }
+      },
+      "get": {
+        "summary": "Return all groups",
+        "tags": [
+          "Products"
+        ],
+        "responses": {
+          "200": {
+            "description": "Groups fetched successfully"
+          }
+        }
+      }
+    },
+    "/api/products/categories": {
+      "post": {
+        "summary": "Create a new product category",
+        "tags": [
+          "Products"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "group_id": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
             "description": "Category created successfully"
           }
         }
@@ -1015,6 +1075,34 @@
         "tags": [
           "Products"
         ],
+        "responses": {
+          "200": {
+            "description": "Categories fetched successfully"
+          }
+        }
+      }
+    },
+    "/api/products/categories/list": {
+      "post": {
+        "summary": "Return all categories belonging to a group",
+        "tags": [
+          "Products"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "group_id": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Categories fetched successfully"
@@ -1174,7 +1262,10 @@
                   "offer_price": {
                     "type": "number"
                   },
-                  "min_quantity": {
+                  "min_unit_count_admin": {
+                    "type": "integer"
+                  },
+                  "min_unit_count_seller": {
                     "type": "integer"
                   }
                 }

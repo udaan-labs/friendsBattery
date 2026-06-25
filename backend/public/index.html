@@ -343,6 +343,16 @@
             <label for="priceInput" class="font-label-lg text-label-lg text-on-surface">Minimum Selling Price</label>
             <input type="number" id="priceInput" required class="bg-surface-container-highest border border-outline-variant/30 rounded-xl px-md py-sm focus:outline-none focus:border-primary text-on-surface" placeholder="e.g. 15000">
           </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+            <div class="flex flex-col gap-xs">
+              <label for="minAdminInput" class="font-label-lg text-label-lg text-on-surface">Minimum Units for Admin</label>
+              <input type="number" id="minAdminInput" required class="bg-surface-container-highest border border-outline-variant/30 rounded-xl px-md py-sm focus:outline-none focus:border-primary text-on-surface" placeholder="e.g. 50">
+            </div>
+            <div class="flex flex-col gap-xs">
+              <label for="minSellerInput" class="font-label-lg text-label-lg text-on-surface">Minimum Units for Seller</label>
+              <input type="number" id="minSellerInput" required class="bg-surface-container-highest border border-outline-variant/30 rounded-xl px-md py-sm focus:outline-none focus:border-primary text-on-surface" placeholder="e.g. 20">
+            </div>
+          </div>
           
           <button type="submit" class="bg-primary text-on-primary font-label-lg text-label-lg py-sm rounded-full shadow-md hover:brightness-110 active:scale-95 transition-all mt-md flex justify-center items-center gap-sm">
             <span class="material-symbols-outlined text-md">add_box</span>
@@ -899,11 +909,13 @@
       const productModelId = Number(document.getElementById('modelIdInput').value);
       const quantity = Number(document.getElementById('qtyInput').value);
       const minSellPrice = Number(document.getElementById('priceInput').value);
+      const minUnitCountAdmin = Number(document.getElementById('minAdminInput').value);
+      const minUnitCountSeller = Number(document.getElementById('minSellerInput').value);
 
       try {
         const res = await apiFetch('/api/inventory/update-stock', {
           method: 'POST',
-          body: JSON.stringify({ productCategoryId, productNameId, productModelId, quantity, minSellPrice })
+          body: JSON.stringify({ productCategoryId, productNameId, productModelId, quantity, minSellPrice, minUnitCountAdmin, minUnitCountSeller })
         });
 
         if (res.success) {

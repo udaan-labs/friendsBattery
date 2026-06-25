@@ -10,7 +10,10 @@ All URIs are relative to *http://localhost:3000*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**apiProductsCategoriesGet**](ProductsApi.md#apiproductscategoriesget) | **GET** /api/products/categories | Return all categories
+[**apiProductsCategoriesListPost**](ProductsApi.md#apiproductscategorieslistpost) | **POST** /api/products/categories/list | Return all categories belonging to a group
 [**apiProductsCategoriesPost**](ProductsApi.md#apiproductscategoriespost) | **POST** /api/products/categories | Create a new product category
+[**apiProductsGroupsGet**](ProductsApi.md#apiproductsgroupsget) | **GET** /api/products/groups | Return all groups
+[**apiProductsGroupsPost**](ProductsApi.md#apiproductsgroupspost) | **POST** /api/products/groups | Create a new product group
 [**apiProductsListPost**](ProductsApi.md#apiproductslistpost) | **POST** /api/products/list | Return all products matching filters
 [**apiProductsPost**](ProductsApi.md#apiproductspost) | **POST** /api/products | Create a new product
 [**apiProductsProductModelsListPost**](ProductsApi.md#apiproductsproductmodelslistpost) | **POST** /api/products/product-models/list | Return all models belonging to a product name
@@ -55,6 +58,46 @@ void (empty response body)
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **apiProductsCategoriesListPost**
+> apiProductsCategoriesListPost(apiProductsCategoriesListPostRequest)
+
+Return all categories belonging to a group
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getProductsApi();
+final ApiProductsCategoriesListPostRequest apiProductsCategoriesListPostRequest = ; // ApiProductsCategoriesListPostRequest | 
+
+try {
+    api.apiProductsCategoriesListPost(apiProductsCategoriesListPostRequest);
+} on DioException catch (e) {
+    print('Exception when calling ProductsApi->apiProductsCategoriesListPost: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **apiProductsCategoriesListPostRequest** | [**ApiProductsCategoriesListPostRequest**](ApiProductsCategoriesListPostRequest.md)|  | 
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **apiProductsCategoriesPost**
 > apiProductsCategoriesPost(apiProductsCategoriesPostRequest)
 
@@ -79,6 +122,82 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **apiProductsCategoriesPostRequest** | [**ApiProductsCategoriesPostRequest**](ApiProductsCategoriesPostRequest.md)|  | 
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiProductsGroupsGet**
+> apiProductsGroupsGet()
+
+Return all groups
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getProductsApi();
+
+try {
+    api.apiProductsGroupsGet();
+} on DioException catch (e) {
+    print('Exception when calling ProductsApi->apiProductsGroupsGet: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiProductsGroupsPost**
+> apiProductsGroupsPost(apiProductsGroupsPostRequest)
+
+Create a new product group
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getProductsApi();
+final ApiProductsGroupsPostRequest apiProductsGroupsPostRequest = ; // ApiProductsGroupsPostRequest | 
+
+try {
+    api.apiProductsGroupsPost(apiProductsGroupsPostRequest);
+} on DioException catch (e) {
+    print('Exception when calling ProductsApi->apiProductsGroupsPost: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **apiProductsGroupsPostRequest** | [**ApiProductsGroupsPostRequest**](ApiProductsGroupsPostRequest.md)|  | 
 
 ### Return type
 
