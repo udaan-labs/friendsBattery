@@ -5,6 +5,7 @@ import '../../features/auth/screens/splash_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
 import '../../features/admin/dashboard/screens/admin_dashboard_screen.dart';
+import '../../features/admin/dashboard/screens/admin_shell_screen.dart';
 import '../../features/admin/inventory/screens/add_stock_screen.dart';
 import '../../features/admin/shipments/screens/shipment_list_screen.dart';
 import '../../features/admin/shipments/screens/create_shipment_screen.dart';
@@ -62,36 +63,45 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/register',
         builder: (context, state) => const RegisterScreen(isAdminFlow: false),
       ),
-      GoRoute(
-        path: '/admin/dashboard',
-        builder: (context, state) => const AdminDashboardScreen(),
-      ),
-      GoRoute(
-        path: '/admin/add-seller',
-        builder: (context, state) => const RegisterScreen(isAdminFlow: true),
-      ),
-      GoRoute(
-        path: '/admin/add-stock',
-        builder: (context, state) => const AddStockScreen(),
-      ),
-      GoRoute(
-        path: '/admin/shipments',
-        builder: (context, state) => const ShipmentListScreen(),
-      ),
-      GoRoute(
-        path: '/admin/shipments/create',
-        builder: (context, state) => const CreateShipmentScreen(),
-      ),
-      GoRoute(
-        path: '/admin/sellers',
-        builder: (context, state) => const SellersListScreen(),
-      ),
-      GoRoute(
-        path: '/admin/sellers/:id',
-        builder: (context, state) {
-          final idStr = state.pathParameters['id']!;
-          return SellerDetailsScreen(sellerId: int.parse(idStr));
-        },
+      ShellRoute(
+        builder: (context, state, child) => AdminShellScreen(child: child),
+        routes: [
+          GoRoute(
+            path: '/admin/dashboard',
+            builder: (context, state) => const AdminDashboardScreen(),
+          ),
+          GoRoute(
+            path: '/admin/add-seller',
+            builder: (context, state) => const RegisterScreen(isAdminFlow: true),
+          ),
+          GoRoute(
+            path: '/admin/add-stock',
+            builder: (context, state) => const AddStockScreen(),
+          ),
+          GoRoute(
+            path: '/admin/inventory',
+            builder: (context, state) => const CurrentInventoryScreen(),
+          ),
+          GoRoute(
+            path: '/admin/shipments',
+            builder: (context, state) => const ShipmentListScreen(),
+          ),
+          GoRoute(
+            path: '/admin/shipments/create',
+            builder: (context, state) => const CreateShipmentScreen(),
+          ),
+          GoRoute(
+            path: '/admin/sellers',
+            builder: (context, state) => const SellersListScreen(),
+          ),
+          GoRoute(
+            path: '/admin/sellers/:id',
+            builder: (context, state) {
+              final idStr = state.pathParameters['id']!;
+              return SellerDetailsScreen(sellerId: int.parse(idStr));
+            },
+          ),
+        ],
       ),
       GoRoute(
         path: '/seller/dashboard',

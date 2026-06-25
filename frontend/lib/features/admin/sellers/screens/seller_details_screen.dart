@@ -44,7 +44,13 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/admin/dashboard');
+            }
+          },
         ),
         title: const Text(
           'Seller Details',

@@ -71,7 +71,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         title: Text(widget.isAdminFlow ? 'Add Seller' : 'Sign Up'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go(widget.isAdminFlow ? '/admin/dashboard' : '/login');
+            }
+          },
         ),
       ),
       body: Center(

@@ -579,7 +579,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     tabId: 'view_stock',
                     onTap: () {
                       context.pop(); // close drawer
-                      context.push('/shared/inventory');
+                      context.push('/admin/inventory');
                     },
                   ),
                   _buildDrawerItem(
@@ -587,6 +587,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     activeIcon: Icons.people,
                     title: 'Manage Sellers',
                     tabId: 'manage_sellers',
+                    onTap: () {
+                      context.pop();
+                      context.go('/admin/sellers');
+                    },
                   ),
                   _buildDrawerItem(
                     icon: Icons.point_of_sale_outlined,
@@ -599,6 +603,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     activeIcon: Icons.swap_horiz,
                     title: 'Stock Transfer',
                     tabId: 'stock_transfer',
+                    onTap: () {
+                      context.pop();
+                      context.go('/admin/shipments');
+                    },
                   ),
                   _buildDrawerItem(
                     icon: Icons.assessment_outlined,
@@ -636,41 +644,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         ),
       ),
       body: _buildCurrentTabView(isDesktop),
-      bottomNavigationBar: !isDesktop
-          ? BottomNavigationBar(
-              currentIndex: _getBottomNavIndex(),
-              onTap: _onBottomNavTapped,
-              type: BottomNavigationBarType.fixed,
-              backgroundColor: const Color(0xFFECEEF0), // bg-surface-container
-              selectedItemColor: const Color(0xFF006B2C),
-              unselectedItemColor: const Color(0xFF586377),
-              showUnselectedLabels: true,
-              selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
-              unselectedLabelStyle: const TextStyle(fontSize: 10),
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.grid_view_outlined),
-                  activeIcon: Icon(Icons.grid_view_rounded),
-                  label: 'Dashboard',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.people_outline_rounded),
-                  activeIcon: Icon(Icons.people_alt_rounded),
-                  label: 'Sellers',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.inventory_2_outlined),
-                  activeIcon: Icon(Icons.inventory_2_rounded),
-                  label: 'Stock',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.warning_amber_rounded),
-                  activeIcon: Icon(Icons.warning_rounded),
-                  label: 'Alerts',
-                ),
-              ],
-            )
-          : null,
       ),
     );
   }
@@ -704,42 +677,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         onTap: onTap ?? () => _switchTab(tabId),
       ),
     );
-  }
-
-  int _getBottomNavIndex() {
-    switch (_currentTab) {
-      case 'dashboard':
-        return 0;
-      case 'manage_sellers':
-        return 1;
-      case 'view_stock':
-        return 2;
-      case 'sales':
-      case 'stock_transfer':
-      case 'reports':
-      case 'settings':
-      case 'add_product':
-      default:
-        return 3; // Mapped to Alerts/Placeholder
-    }
-  }
-
-  void _onBottomNavTapped(int index) {
-    switch (index) {
-      case 0:
-        _switchTab('dashboard');
-        break;
-      case 1:
-        _switchTab('manage_sellers');
-        break;
-      case 2:
-        context.push('/shared/inventory');
-        break;
-      case 3:
-      default:
-        _switchTab('sales'); // Placeholder Alert tab
-        break;
-    }
   }
 
   Widget _buildCurrentTabView(bool isDesktop) {
