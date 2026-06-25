@@ -43,6 +43,8 @@ const sellerRouter = express.Router();
  *                     - productCategoryId
  *                     - productNameId
  *                     - productModelId
+ *                     - productId
+ *                     - productItemId
  *                     - quantity
  *                   properties:
  *                     productCategoryId:
@@ -50,6 +52,10 @@ const sellerRouter = express.Router();
  *                     productNameId:
  *                       type: integer
  *                     productModelId:
+ *                       type: integer
+ *                     productId:
+ *                       type: integer
+ *                     productItemId:
  *                       type: integer
  *                     quantity:
  *                       type: integer

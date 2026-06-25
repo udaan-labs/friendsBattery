@@ -9,6 +9,8 @@ const createShipmentSchema = z.object({
           productCategoryId: z.number().int().positive('Category ID must be a positive integer'),
           productNameId: z.number().int().positive('Product Name ID must be a positive integer'),
           productModelId: z.number().int().positive('Product Model ID must be a positive integer'),
+          productId: z.number().int().positive('Product ID must be a positive integer'),
+          productItemId: z.number().int().positive('Product Item ID must be a positive integer'),
           quantity: z.number().int().positive('Quantity must be a positive integer')
         })
       )

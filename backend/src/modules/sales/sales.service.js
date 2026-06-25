@@ -13,6 +13,7 @@ class SalesService {
     return {
       id: Number(sale.id),
       product_id: Number(sale.productId),
+      product_unit_id: Number(sale.productUnitId),
       sell_price: sale.sellPrice,
       serial_number: sale.serialNumber,
       vehicle_number: sale.vehicleNumber,

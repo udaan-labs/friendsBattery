@@ -57,6 +57,7 @@ class SalesRepository {
       const sale = await tx.salesTransaction.create({
         data: {
           productId: saleData.productId,
+          productUnitId: saleData.productUnitId,
           customerId: saleData.customerId,
           sellerId: saleData.sellerId,
           sellPrice: saleData.sellPrice,

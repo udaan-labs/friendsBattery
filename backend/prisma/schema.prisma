@@ -157,6 +157,7 @@ model Product {
   replacedInSales   SalesTransaction[] @relation("ProductReplaced")
   returns           ReturnProduct[]
   shipmentItems     ShipmentItem[]
+  newShipmentItems  NewShipmentItem[]
 
   @@map("products")
 }
@@ -173,7 +174,9 @@ model ProductUnit {
   product Product @relation(fields: [productId], references: [id])
   owner   User    @relation("UnitOwner", fields: [ownerId], references: [id])
 
-  transactions InventoryTransaction[]
+  transactions     InventoryTransaction[]
+  sales            SalesTransaction[]
+  newShipmentItems NewShipmentItem[]
 
   @@map("product_units")
 }
@@ -281,12 +284,16 @@ model NewShipmentItem {
   productCategoryId BigInt @map("product_category_id")
   productNameId     BigInt @map("product_name_id")
   productModelId    BigInt @map("product_model_id")
+  productId         BigInt @map("product_id")
+  productUnitId     BigInt @map("product_item_id")
   quantity          Int
 
-  shipment NewShipment  @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
-  category Category     @relation(fields: [productCategoryId], references: [id])
-  name     ProductName  @relation(fields: [productNameId], references: [id])
-  model    ProductModel @relation(fields: [productModelId], references: [id])
+  shipment    NewShipment  @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  category    Category     @relation(fields: [productCategoryId], references: [id])
+  name        ProductName  @relation(fields: [productNameId], references: [id])
+  model       ProductModel @relation(fields: [productModelId], references: [id])
+  product     Product      @relation(fields: [productId], references: [id])
+  productUnit ProductUnit  @relation(fields: [productUnitId], references: [id])
 
   @@map("shipment_items")
 }
@@ -296,11 +303,14 @@ model SalesTransaction {
   productId         BigInt   @map("product_id")
   customerId        BigInt?  @map("customer_id")
   sellerId          BigInt   @map("seller_id")
+  productUnitId     BigInt   @map("product_unit_id")
   sellPrice         Decimal  @map("sell_price") @db.Decimal(12, 2)
   serialNumber      String?  @map("serial_number") @db.VarChar(100)
   vehicleNumber     String?  @map("vehicle_number") @db.VarChar(50)
   productReplacedId BigInt?  @map("product_replaced_id")
   soldAt            DateTime @default(now()) @map("sold_at") @db.Timestamp()
+
+  productUnit ProductUnit @relation(fields: [productUnitId], references: [id])
 
   product         Product         @relation("ProductSold", fields: [productId], references: [id])
   customer        Customer?       @relation(fields: [customerId], references: [id])

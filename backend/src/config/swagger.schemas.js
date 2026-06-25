@@ -154,10 +154,12 @@ module.exports = {
     properties: {
       id: { type: 'string' },
       productId: { type: 'string' },
+      productUnitId: { type: 'string' },
       customerId: { type: 'string', nullable: true },
       sellerId: { type: 'string' },
       sellPrice: { type: 'number', format: 'double' },
       serialNumber: { type: 'string', nullable: true },
+      vehicleNumber: { type: 'string', nullable: true },
       productReplacedId: { type: 'string', nullable: true },
       soldAt: { type: 'string', format: 'date-time' }
     }
