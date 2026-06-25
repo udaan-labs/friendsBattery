@@ -48,7 +48,7 @@ class QuickActions extends StatelessWidget {
                   subtitle: 'Transfer stock to seller',
                   icon: Icons.move_to_inbox_outlined,
                   onTap: () {
-                    // Navigate if needed
+                    context.push('/admin/shipments/create');
                   },
                 ),
                 const Divider(height: 1, color: Color(0xFFECEEF0)),

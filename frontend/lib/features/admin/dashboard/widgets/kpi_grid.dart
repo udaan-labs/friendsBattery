@@ -49,7 +49,9 @@ class KpiGrid extends ConsumerWidget {
                 context.push('/shared/inventory');
               }),
               buildCard('TOTAL SALES', todaySales, 'Units', Icons.trending_up_outlined),
-              buildCard('TOTAL SELLERS', totalSellers, 'Active', Icons.group_outlined),
+              buildCard('TOTAL SELLERS', totalSellers, 'Active', Icons.group_outlined, onTap: () {
+                context.push('/admin/sellers');
+              }),
             ],
           ),
         );
@@ -64,7 +66,9 @@ class KpiGrid extends ConsumerWidget {
               const SizedBox(width: 8),
               Expanded(child: buildCard('TOTAL SALES', todaySales, 'Units', Icons.trending_up_outlined)),
               const SizedBox(width: 8),
-              Expanded(child: buildCard('TOTAL SELLERS', totalSellers, 'Active', Icons.group_outlined)),
+              Expanded(child: buildCard('TOTAL SELLERS', totalSellers, 'Active', Icons.group_outlined, onTap: () {
+                context.push('/admin/sellers');
+              })),
             ],
           ),
         );

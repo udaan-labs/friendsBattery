@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/inventory_provider.dart';
 import '../repository/shared_inventory_repository.dart';
+import '../widgets/inventory_product_card.dart';
 
 class CurrentInventoryScreen extends ConsumerStatefulWidget {
   const CurrentInventoryScreen({super.key});
@@ -112,61 +113,17 @@ class _CurrentInventoryScreenState extends ConsumerState<CurrentInventoryScreen>
                   return Column(
                     children: [
                       Expanded(
-                        child: SingleChildScrollView(
+                        child: ListView.builder(
                           physics: const AlwaysScrollableScrollPhysics(),
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.05),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                  border: Border.all(color: Colors.grey.shade200),
-                                ),
-                                child: DataTable(
-                                  headingRowColor: MaterialStateProperty.all(Colors.grey.shade50),
-                                  dataRowColor: MaterialStateProperty.resolveWith<Color?>((Set<MaterialState> states) {
-                                    return null; // alternate row colors can be added if we track index
-                                  }),
-                                  columns: const [
-                                    DataColumn(label: Text('#', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('Product Group', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('Category', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('Product Model', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('Product Name', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('Quantity', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('Min Price', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('Status', style: TextStyle(fontWeight: FontWeight.bold))),
-                                  ],
-                                  rows: List.generate(data.items.length, (index) {
-                                    final item = data.items[index];
-                                    final serialNumber = ((queryState.page - 1) * queryState.limit) + index + 1;
-                                    return DataRow(
-                                      color: MaterialStateProperty.all(index % 2 == 0 ? Colors.white : Colors.grey.shade50),
-                                      cells: [
-                                        DataCell(Text('$serialNumber')),
-                                        DataCell(Text(item.productGroup)),
-                                        DataCell(Text(item.category)),
-                                        DataCell(Text(item.productModel)),
-                                        DataCell(Text(item.productName)),
-                                        DataCell(Text('${item.quantity}')),
-                                        DataCell(Text('₹${item.minPrice.toStringAsFixed(2)}')),
-                                        DataCell(_buildStatusBadge(item.quantity, item.minStock)),
-                                      ],
-                                    );
-                                  }),
-                                ),
-                              ),
-                            ),
-                          ),
+                          itemCount: data.items.length,
+                          itemBuilder: (context, index) {
+                            final item = data.items[index];
+                            final serialNumber = ((queryState.page - 1) * queryState.limit) + index + 1;
+                            return InventoryProductCard(
+                              item: item,
+                              index: serialNumber,
+                            );
+                          },
                         ),
                       ),
                       _buildPagination(data.total, queryState.page, queryState.limit),
@@ -192,35 +149,6 @@ class _CurrentInventoryScreenState extends ConsumerState<CurrentInventoryScreen>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildStatusBadge(int quantity, int minStock) {
-    Color color;
-    String text;
-
-    if (quantity == 0) {
-      color = Colors.red;
-      text = 'Out of Stock';
-    } else if (quantity <= minStock) {
-      color = Colors.orange;
-      text = 'Low Stock';
-    } else {
-      color = Colors.green;
-      text = 'In Stock';
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.5)),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12),
       ),
     );
   }

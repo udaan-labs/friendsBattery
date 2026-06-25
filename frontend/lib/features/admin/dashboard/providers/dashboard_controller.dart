@@ -10,7 +10,6 @@ class DashboardController {
   Future<void> refreshAllData() async {
     await Future.wait([
       _safeRefresh(kpiProvider, 'KPIs'),
-      _safeRefresh(lowStockAlertsProvider, 'Low Stock Alerts'),
       _safeRefresh(recentActivityProvider, 'Recent Activity'),
     ]);
   }

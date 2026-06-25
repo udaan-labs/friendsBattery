@@ -11,7 +11,6 @@ import '../../../../shared/widgets/snackbar_helper.dart';
 import '../../../../shared/widgets/logout_dialog_helper.dart';
 import '../providers/dashboard_controller.dart';
 import '../widgets/kpi_grid.dart';
-import '../widgets/low_stock_alerts.dart';
 import '../widgets/quick_actions.dart';
 import '../widgets/recent_activity_timeline.dart';
 import '../../inventory/screens/add_product_screen.dart';
@@ -786,8 +785,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               flex: 8,
                               sliver: SliverMainAxisGroup(
                                 slivers: const [
-                                  LowStockAlerts(),
-                                  SliverToBoxAdapter(child: SizedBox(height: 32)),
                                   RecentActivityTimeline(),
                                 ],
                               ),
@@ -809,8 +806,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       else
                         SliverMainAxisGroup(
                           slivers: const [
-                            LowStockAlerts(),
-                            SliverToBoxAdapter(child: SizedBox(height: 24)),
                             QuickActions(),
                             SliverToBoxAdapter(child: SizedBox(height: 24)),
                             RecentActivityTimeline(),

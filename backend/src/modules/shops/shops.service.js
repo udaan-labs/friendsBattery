@@ -21,7 +21,10 @@ class ShopsService {
       shop_name: user.shopName,
       user_number: user.userNumber,
       is_verified: user.isVerified,
-      created_at: user.createdAt
+      created_at: user.createdAt,
+      totalStock: 0,
+      todaySales: 0,
+      pendingShipments: 0
     }));
   }
 
@@ -31,6 +34,7 @@ class ShopsService {
    * Output: Seller details mapped to response format
    */
   async viewSeller(sellerId) {
+    const inventoryService = require('../inventory/inventory.service');
     // We use Promise.all() to execute independent database queries in parallel.
     // This reduces the total response time instead of waiting for each query sequentially.
     const [
@@ -38,13 +42,15 @@ class ShopsService {
       stockCount,
       productsCount,
       salesCount,
-      returnsCount
+      returnsCount,
+      inventoryData
     ] = await Promise.all([
       shopsRepository.findSellerById(sellerId),
       shopsRepository.getSellerStock(sellerId),
       shopsRepository.getSellerProductsCount(sellerId),
       shopsRepository.getSellerSalesCount(sellerId),
-      shopsRepository.getSellerReturnsCount(sellerId)
+      shopsRepository.getSellerReturnsCount(sellerId),
+      inventoryService.getInventory(sellerId, { page: 1, limit: 1000000 })
     ]);
 
     if (!user) {
@@ -66,6 +72,7 @@ class ShopsService {
         sales: salesCount,
         returns: returnsCount
       },
+      inventory: inventoryData.data,
       created_at: user.createdAt
     };
   }

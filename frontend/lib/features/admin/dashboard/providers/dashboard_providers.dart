@@ -14,29 +14,6 @@ final kpiProvider = FutureProvider<DashboardStats>((ref) async {
   return ref.watch(dashboardApiServiceProvider).getDashboardStats();
 });
 
-final lowStockAlertsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  await Future.delayed(const Duration(milliseconds: 500));
-  return [
-    {
-      'product': 'Exide InvaTubular 150Ah',
-      'sku': 'EX150',
-      'stock': 5,
-      'threshold': 15,
-    },
-    {
-      'product': 'Amaron Go 35Ah',
-      'sku': 'AG35',
-      'stock': 2,
-      'threshold': 10,
-    },
-    {
-      'product': 'Luminous RedCharge 150Ah',
-      'sku': 'LR150',
-      'stock': 8,
-      'threshold': 20,
-    },
-  ];
-});
 
 final recentActivityProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   await Future.delayed(const Duration(milliseconds: 500));
