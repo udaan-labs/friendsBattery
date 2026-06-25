@@ -50,8 +50,8 @@ class InventoryRepository {
     };
 
     if (skip !== undefined && take !== undefined) {
-      queryOptions.skip = skip;
-      queryOptions.take = take;
+      queryOptions.skip = Number(skip);
+      queryOptions.take = Number(take);
     }
 
     return prisma.product.findMany(queryOptions);
@@ -194,8 +194,8 @@ class InventoryRepository {
         fromUser: { select: { userName: true, shopName: true } },
         toUser: { select: { userName: true, shopName: true } }
       },
-      skip,
-      take,
+      skip: skip !== undefined ? Number(skip) : undefined,
+      take: take !== undefined ? Number(take) : undefined,
       orderBy: { timestamp: 'desc' }
     });
   }
@@ -288,8 +288,8 @@ class InventoryRepository {
     };
 
     if (skip !== undefined && take !== undefined) {
-      queryOptions.skip = skip;
-      queryOptions.take = take;
+      queryOptions.skip = Number(skip);
+      queryOptions.take = Number(take);
     }
 
     return prisma.product.findMany(queryOptions);

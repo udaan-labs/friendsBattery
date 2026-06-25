@@ -24,8 +24,8 @@ class SharedInventoryItemModel {
     return SharedInventoryItemModel(
       productGroup: json['product_group']?.toString() ?? 'N/A',
       category: json['category']?.toString() ?? 'N/A',
-      productModel: json['product_model']?.toString() ?? 'N/A',
-      productName: json['product_name']?.toString() ?? 'N/A',
+      productModel: json['model']?.toString() ?? 'N/A',
+      productName: json['brand']?.toString() ?? 'N/A',
       quantity: (json['quantity'] as num?)?.toInt() ?? 0,
       minPrice: (json['min_price'] as num?)?.toDouble() ?? 0.0,
       minStock: (json['min_stock'] as num?)?.toInt() ?? 5, // Defaulting to 5 for stock threshold demo
@@ -65,11 +65,21 @@ class SharedInventoryRepository {
       final data = response.data;
       
       if (data is Map<String, dynamic>) {
-        final itemsData = data['data'] as List<dynamic>? ?? [];
-        final total = data['total'] as int? ?? itemsData.length;
+        final innerData = data['data'];
         
-        final items = itemsData.map((e) => SharedInventoryItemModel.fromJson(e as Map<String, dynamic>)).toList();
-        return PaginatedInventoryResponse(items: items, total: total);
+        if (innerData is Map<String, dynamic>) {
+          final itemsData = innerData['data'] as List<dynamic>? ?? [];
+          final pagination = innerData['pagination'];
+          final total = (pagination is Map<String, dynamic> ? pagination['total'] as int? : null) ?? itemsData.length;
+          
+          final items = itemsData.map((e) => SharedInventoryItemModel.fromJson(e as Map<String, dynamic>)).toList();
+          return PaginatedInventoryResponse(items: items, total: total);
+        } else if (innerData is List<dynamic>) {
+          final itemsData = innerData;
+          final total = itemsData.length;
+          final items = itemsData.map((e) => SharedInventoryItemModel.fromJson(e as Map<String, dynamic>)).toList();
+          return PaginatedInventoryResponse(items: items, total: total);
+        }
       } else if (data is List) {
         // Fallback if the API returns a direct list
         final items = data.map((e) => SharedInventoryItemModel.fromJson(e as Map<String, dynamic>)).toList();
