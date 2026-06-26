@@ -148,3 +148,16 @@ final sellerPendingShipmentsProvider = FutureProvider<List<ApiSellerShipmentsGet
     rethrow;
   }
 });
+
+/// All shipments (any status) for the Received Shipments screen.
+final sellerAllShipmentsProvider = FutureProvider<List<ApiSellerShipmentsGet200ResponseDataInner>>((ref) async {
+  try {
+    final api = ref.watch(apiClientProvider).getShipmentsApi();
+    final response = await api.apiSellerShipmentsGet();
+    final list = response.data?.data;
+    if (list == null) return [];
+    return list.toList();
+  } catch (e) {
+    rethrow;
+  }
+});

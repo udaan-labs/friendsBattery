@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: "{{baseurl}}/transfers/2"
+  url: "{{baseurl}}/transfers/12"
   headers:
     - name: auth-id
       value: "{{authId}}"

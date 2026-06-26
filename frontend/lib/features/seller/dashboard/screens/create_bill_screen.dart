@@ -16,6 +16,7 @@ class CreateBillScreen extends ConsumerStatefulWidget {
 
 class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _serialNumberController = TextEditingController();
   final _customerNameController = TextEditingController();
   final _customerMobileController = TextEditingController();
   final _vehicleNumberController = TextEditingController();
@@ -24,18 +25,15 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
   bool _isLoadingCategories = false;
   bool _isLoadingNames = false;
   bool _isLoadingModels = false;
-  bool _isLoadingSerials = false;
   bool _isSubmitting = false;
 
   List<Map<String, String>> _categories = [];
   List<Map<String, String>> _productNames = [];
   List<Map<String, String>> _productModels = [];
-  List<String> _serials = [];
 
   String? _selectedCategoryId;
   String? _selectedProductNameId;
   String? _selectedProductModelId;
-  String? _selectedSerial;
 
   int? _productId;
   num? _minPrice;
@@ -55,6 +53,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
 
   @override
   void dispose() {
+    _serialNumberController.dispose();
     _customerNameController.dispose();
     _customerMobileController.dispose();
     _vehicleNumberController.dispose();
@@ -97,8 +96,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
       _selectedProductNameId = null;
       _productModels = [];
       _selectedProductModelId = null;
-      _serials = [];
-      _selectedSerial = null;
+      _serialNumberController.clear();
       _productId = null;
       _minPrice = null;
     });
@@ -135,8 +133,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
       _isLoadingModels = true;
       _productModels = [];
       _selectedProductModelId = null;
-      _serials = [];
-      _selectedSerial = null;
+      _serialNumberController.clear();
       _productId = null;
       _minPrice = null;
     });
@@ -170,11 +167,9 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
     }
   }
 
-  Future<void> _loadProductDetailsAndSerials(String productModelId) async {
+  Future<void> _loadProductDetails(String productModelId) async {
     setState(() {
-      _isLoadingSerials = true;
-      _serials = [];
-      _selectedSerial = null;
+      _serialNumberController.clear();
       _productId = null;
       _minPrice = null;
     });
@@ -196,26 +191,8 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
           _minPrice = details.minSellPrice ?? 0;
         });
       }
-
-      // Load available serial numbers
-      final serialsResponse = await api.apiInventoryAvailableSerialsGet(
-        categoryId: _selectedCategoryId!,
-        productNameId: _selectedProductNameId!,
-        productModelId: productModelId,
-      );
-
-      final serialsData = serialsResponse.data?.data;
-      if (serialsData != null) {
-        setState(() {
-          _serials = serialsData.toList().map((s) => s.toString()).toList();
-        });
-      }
     } catch (e) {
       // Handled automatically by ApiInterceptor
-    } finally {
-      setState(() {
-        _isLoadingSerials = false;
-      });
     }
   }
 
@@ -223,9 +200,8 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedCategoryId == null ||
         _selectedProductNameId == null ||
-        _selectedProductModelId == null ||
-        _selectedSerial == null) {
-      context.showErrorSnackBar('Please select all product fields and serial number');
+        _selectedProductModelId == null) {
+      context.showErrorSnackBar('Please select all product fields');
       return;
     }
     if (_productId == null) {
@@ -240,10 +216,11 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
     try {
       final api = ref.read(apiClientProvider).getSalesApi();
       final sellPrice = double.parse(_sellPriceController.text);
+      final serialValue = _serialNumberController.text.trim();
 
       final request = ApiSalesPostRequest((b) => b
         ..productId = _productId!
-        ..serialNumber = _selectedSerial!
+        ..serialNumber = serialValue
         ..customerName = _customerNameController.text
         ..customerNumber = _customerMobileController.text
         ..vehicleNumber = _vehicleNumberController.text.isNotEmpty ? _vehicleNumberController.text : null
@@ -268,7 +245,52 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
     }
   }
 
+  bool _hasUnsavedChanges() {
+    return _selectedCategoryId != null ||
+        _serialNumberController.text.isNotEmpty ||
+        _customerNameController.text.isNotEmpty ||
+        _customerMobileController.text.isNotEmpty ||
+        _vehicleNumberController.text.isNotEmpty ||
+        _sellPriceController.text.isNotEmpty;
+  }
 
+  Future<void> _onBackPressed() async {
+    if (!_hasUnsavedChanges()) {
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go('/seller/dashboard');
+      }
+      return;
+    }
+
+    final shouldDiscard = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Discard Changes?'),
+        content: const Text('You have unsaved changes. Are you sure you want to discard them and leave?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Discard'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDiscard == true && mounted) {
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go('/seller/dashboard');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -277,21 +299,21 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
       orElse: () => {'name': ''},
     )['name'];
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FB),
+    return PopScope(
+      canPop: !_hasUnsavedChanges(),
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _onBackPressed();
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF7F9FB),
       appBar: AppBar(
         title: const Text('Create Bill'),
         backgroundColor: const Color(0xFFF7F9FB),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF3E4A3D)),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/seller/dashboard');
-            }
-          },
+          onPressed: _onBackPressed,
         ),
       ),
       body: Center(
@@ -401,48 +423,39 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                                   label: model['name']!,
                                 );
                               }).toList(),
-                              onSelected: (id) {
-                                if (id != null) {
-                                  setState(() {
-                                    _selectedProductModelId = id;
-                                  });
-                                  _loadProductDetailsAndSerials(id);
-                                }
-                              },
+                                onSelected: (id) {
+                                  if (id != null) {
+                                    setState(() {
+                                      _selectedProductModelId = id;
+                                    });
+                                    _loadProductDetails(id);
+                                  }
+                                },
                             ),
                       const SizedBox(height: 20),
 
-                      // Serial Number Dropdown
+                      // Serial Number TextField
                       const Text(
-                        'Battery Unique Number (Serial Number)',
+                        'Serial Number',
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
                       ),
                       const SizedBox(height: 8),
-                      _isLoadingSerials
-                          ? const Center(child: CircularProgressIndicator())
-                          : DropdownMenu<String>(
-                              key: ValueKey('serial_$_selectedProductModelId'),
-                              expandedInsets: EdgeInsets.zero,
-                              enableFilter: true,
-                              enabled: _selectedProductModelId != null,
-                              hintText: 'Select Serial Number',
-                              requestFocusOnTap: true,
-                              dropdownMenuEntries: _serials.map((s) {
-                                return DropdownMenuEntry<String>(
-                                  value: s,
-                                  label: s,
-                                );
-                              }).toList(),
-                              onSelected: (serial) {
-                                setState(() {
-                                  _selectedSerial = serial;
-                                });
-                              },
-                            ),
+                      TextFormField(
+                        controller: _serialNumberController,
+                        decoration: const InputDecoration(
+                          hintText: 'Enter product serial number',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Serial Number is required';
+                          }
+                          return null;
+                        },
+                      ),
                       const SizedBox(height: 20),
 
                       // Product Information Card
-                      if (_selectedSerial != null) ...[
+                      if (_productId != null) ...[
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
@@ -459,11 +472,6 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                               const SizedBox(height: 8),
                               Text(
                                 'Model: $selectedModelName',
-                                style: const TextStyle(fontSize: 13, color: Color(0xFF3E4A3D)),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Serial Number: $_selectedSerial',
                                 style: const TextStyle(fontSize: 13, color: Color(0xFF3E4A3D)),
                               ),
                               const SizedBox(height: 4),
@@ -531,14 +539,10 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                         controller: _vehicleNumberController,
                         textCapitalization: TextCapitalization.characters,
                         decoration: const InputDecoration(
-                          hintText: 'e.g. MH12AB1234',
+                          hintText: 'e.g. MH12AB1234 (optional)',
                         ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Vehicle Number is required';
-                          }
-                          return null;
-                        },
+                        // Vehicle number is optional per the API
+                        validator: null,
                       ),
                       const SizedBox(height: 20),
 
@@ -594,7 +598,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                       ],
 
                       // Summary Card
-                      if (_selectedSerial != null && _customerNameController.text.isNotEmpty && _userSellPrice != null) ...[
+                      if (_productId != null && _customerNameController.text.isNotEmpty && _userSellPrice != null) ...[
                         Container(
                           margin: const EdgeInsets.only(top: 16),
                           padding: const EdgeInsets.all(16),
@@ -607,13 +611,8 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                selectedModelName ?? '',
+                                selectedModelName ?? 'Product',
                                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF191C1E)),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Serial: $_selectedSerial',
-                                style: const TextStyle(fontSize: 13, color: Color(0xFF545F73)),
                               ),
                               const SizedBox(height: 8),
                               Text(
@@ -669,6 +668,6 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 }

@@ -14,18 +14,32 @@ class ShopsService {
    */
   async getSellers() {
     const sellers = await shopsRepository.findSellers();
+    const dashboardRepository = require('../dashboard/dashboard.repository');
 
-    return sellers.map(user => ({
-      id: Number(user.id),
-      user_name: user.userName,
-      shop_name: user.shopName,
-      user_number: user.userNumber,
-      is_verified: user.isVerified,
-      created_at: user.createdAt,
-      totalStock: 0,
-      todaySales: 0,
-      pendingShipments: 0
-    }));
+    // Enrich each seller with live stats in parallel
+    const enriched = await Promise.all(
+      sellers.map(async (user) => {
+        const [totalStock, todaySales, pendingShipments] = await Promise.all([
+          dashboardRepository.getSellerTotalStock(user.id),
+          dashboardRepository.getSellerTodaySales(user.id),
+          dashboardRepository.getSellerPendingShipmentsCount(user.id)
+        ]);
+        return {
+          id: Number(user.id),
+          user_name: user.userName,
+          shop_name: user.shopName,
+          user_number: user.userNumber,
+          is_verified: user.isVerified,
+          is_active: user.isActive,
+          created_at: user.createdAt,
+          totalStock,
+          todaySales,
+          pendingShipments
+        };
+      })
+    );
+
+    return enriched;
   }
 
   /**

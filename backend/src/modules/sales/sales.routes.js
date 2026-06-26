@@ -4,7 +4,8 @@ const salesController = require('./sales.controller');
 const {
   createSaleSchema,
   viewSaleSchema,
-  customerSalesSchema
+  customerSalesSchema,
+  salesHistorySchema
 } = require('./sales.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
 const { validateRequest } = require('../../shared/middleware/validation.middleware');
@@ -70,6 +71,52 @@ router.get(
 
 /**
  * @swagger
+ * /api/sales/history:
+ *   get:
+ *     summary: Return seller's own sales history with pagination, search, and date filtering
+ *     tags: [Sales]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *       - in: query
+ *         name: searchCustomer
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: searchSerial
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: fromDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: toDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *     responses:
+ *       200:
+ *         description: Seller sales history fetched successfully
+ */
+router.get(
+  '/history',
+  authenticate,
+  validateRequest(salesHistorySchema),
+  salesController.getSalesHistory
+);
+
+/**
+ * @swagger
  * /api/sales/{transactionId}:
  *   get:
  *     summary: Return a single sale's details by ID
@@ -91,29 +138,6 @@ router.get(
   authenticate,
   validateRequest(viewSaleSchema),
   salesController.getSaleById
-);
-
-/**
- * @swagger
- * /api/sales/customer/{mobile}:
- *   get:
- *     summary: Return complete purchase history for a customer mobile
- *     tags: [Sales]
- *     parameters:
- *       - in: path
- *         name: mobile
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Customer history fetched successfully
- */
-router.get(
-  '/customer/:mobile',
-  authenticate,
-  validateRequest(customerSalesSchema),
-  salesController.getCustomerHistory
 );
 
 module.exports = router;

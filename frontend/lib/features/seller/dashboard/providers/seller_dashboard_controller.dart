@@ -13,6 +13,7 @@ class SellerDashboardController {
       _safeRefresh(sellerKpiProvider, 'KPIs'),
       _safeRefresh(sellerRecentInventoryProvider, 'Recent Inventory'),
       _safeRefresh(sellerPendingShipmentsProvider, 'Pending Shipments'),
+      _safeRefresh(sellerAllShipmentsProvider, 'All Shipments'),
     ]);
   }
 

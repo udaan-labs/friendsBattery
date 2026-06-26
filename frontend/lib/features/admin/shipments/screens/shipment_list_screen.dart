@@ -122,7 +122,7 @@ class ShipmentListScreen extends ConsumerWidget {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(16),
                     onTap: () {
-                      // Navigate to details if needed, but not specified in prompt
+                      context.push('/admin/shipments/${shipment.shipmentId}');
                     },
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),

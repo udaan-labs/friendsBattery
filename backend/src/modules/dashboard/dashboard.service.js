@@ -6,18 +6,20 @@ class DashboardService {
    * @returns {Promise<Object>}
    */
   async getStats() {
-    const [totalStock, todaySales, pendingRequests, totalSellers] = await Promise.all([
+    const [totalStock, todaySales, pendingRequests, totalSellers, pendingShipments] = await Promise.all([
       dashboardRepository.getTotalStock(),
       dashboardRepository.getTodaySales(),
       dashboardRepository.getPendingRequests(),
-      dashboardRepository.getTotalSellers()
+      dashboardRepository.getTotalSellers(),
+      dashboardRepository.getPendingShipmentsAdmin()
     ]);
 
     return {
       totalStock,
       todaySales,
       pendingRequests,
-      totalSellers
+      totalSellers,
+      pendingShipments
     };
   }
 
@@ -38,6 +40,14 @@ class DashboardService {
       todaySales,
       pendingShipments
     };
+  }
+
+  /**
+   * Get recent activity feed.
+   * @returns {Promise<Array>}
+   */
+  async getRecentActivity() {
+    return dashboardRepository.getRecentActivity();
   }
 }
 

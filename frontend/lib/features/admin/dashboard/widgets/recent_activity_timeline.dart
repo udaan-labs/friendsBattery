@@ -17,6 +17,8 @@ class RecentActivityTimeline extends ConsumerWidget {
           return Icons.person_add_alt_1_outlined;
         case 'local_shipping':
           return Icons.local_shipping_outlined;
+        case 'point_of_sale':
+          return Icons.point_of_sale_outlined;
         default:
           return Icons.notifications_outlined;
       }

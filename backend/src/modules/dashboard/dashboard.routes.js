@@ -59,4 +59,24 @@ router.get(
   dashboardController.getStats.bind(dashboardController)
 );
 
+/**
+ * @swagger
+ * /api/dashboard/recent-activity:
+ *   get:
+ *     summary: Get recent activity feed (Admin only)
+ *     tags: [Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Recent activity retrieved successfully
+ */
+router.get(
+  '/recent-activity',
+  authenticate,
+  requireAdmin,
+  dashboardController.getRecentActivity.bind(dashboardController)
+);
+
 module.exports = router;
+

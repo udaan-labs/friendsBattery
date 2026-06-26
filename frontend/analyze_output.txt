@@ -1,0 +1,81 @@
+﻿Analyzing frontend...                                           
+
+warning - Unused import: 'package:built_value/json_object.dart' - lib\api\lib\src\api\auth_api.dart:7:8 - unused_import
+warning - Unused import: 'package:built_value/json_object.dart' - lib\api\lib\src\api\customers_api.dart:7:8 - unused_import
+warning - Unused import: 'package:friends_battery_api/src/model/error.dart' - lib\api\lib\src\api\customers_api.dart:13:8 - unused_import
+warning - Unused import: 'package:built_value/json_object.dart' - lib\api\lib\src\api\dashboard_api.dart:7:8 - unused_import
+warning - Unused import: 'package:built_value/json_object.dart' - lib\api\lib\src\api\inventory_api.dart:7:8 - unused_import
+warning - Unused import: 'package:built_value/json_object.dart' - lib\api\lib\src\api\products_api.dart:7:8 - unused_import
+warning - Unused import: 'package:built_value/json_object.dart' - lib\api\lib\src\api\sales_api.dart:7:8 - unused_import
+warning - Duplicate import - lib\api\lib\src\api\shipments_api.dart:11:8 - duplicate_import
+warning - Unused import: 'package:built_value/json_object.dart' - lib\api\lib\src\api\shops_api.dart:7:8 - unused_import
+warning - Unused import: 'package:built_value/json_object.dart' - lib\api\lib\src\api\transfers_api.dart:7:8 - unused_import
+warning - Unused import: '../../../../shared/providers/auth_provider.dart' - lib\features\admin\dashboard\screens\admin_dashboard_screen.dart:5:8 - unused_import
+warning - The value of the field '_isLoadingCategories' isn't used - lib\features\admin\dashboard\screens\admin_dashboard_screen.dart:44:8 - unused_field
+warning - The value of the field '_isLoadingNames' isn't used - lib\features\admin\dashboard\screens\admin_dashboard_screen.dart:45:8 - unused_field
+warning - The value of the field '_isLoadingModels' isn't used - lib\features\admin\dashboard\screens\admin_dashboard_screen.dart:46:8 - unused_field
+warning - The value of the field '_isLoadingDetails' isn't used - lib\features\admin\dashboard\screens\admin_dashboard_screen.dart:47:8 - unused_field
+warning - The value of the field '_isSubmittingStock' isn't used - lib\features\admin\dashboard\screens\admin_dashboard_screen.dart:48:8 - unused_field
+warning - The value of the field '_categories' isn't used - lib\features\admin\dashboard\screens\admin_dashboard_screen.dart:50:29 - unused_field
+warning - The value of the field '_productNames' isn't used - lib\features\admin\dashboard\screens\admin_dashboard_screen.dart:51:29 - unused_field
+warning - The value of the field '_productModels' isn't used - lib\features\admin\dashboard\screens\admin_dashboard_screen.dart:52:29 - unused_field
+warning - The value of the field '_currentDetailsStock' isn't used - lib\features\admin\dashboard\screens\admin_dashboard_screen.dart:58:8 - unused_field
+warning - The value of the field '_currentMinPrice' isn't used - lib\features\admin\dashboard\screens\admin_dashboard_screen.dart:59:8 - unused_field
+warning - The declaration '_loadProductNames' isn't referenced - lib\features\admin\dashboard\screens\admin_dashboard_screen.dart:253:16 - unused_element
+warning - The declaration '_loadProductModels' isn't referenced - lib\features\admin\dashboard\screens\admin_dashboard_screen.dart:293:16 - unused_element
+warning - The declaration '_loadProductDetails' isn't referenced - lib\features\admin\dashboard\screens\admin_dashboard_screen.dart:333:16 - unused_element
+warning - The declaration '_submitStockUpdate' isn't referenced - lib\features\admin\dashboard\screens\admin_dashboard_screen.dart:366:16 - unused_element
+warning - The declaration '_buildManageSellersTabView' isn't referenced - lib\features\admin\dashboard\screens\admin_dashboard_screen.dart:874:10 - unused_element
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\dashboard\widgets\decorative_asset.dart:16:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\dashboard\widgets\decorative_asset.dart:34:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\dashboard\widgets\kpi_grid.dart:142:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\dashboard\widgets\kpi_grid.dart:156:28 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\dashboard\widgets\quick_actions.dart:29:39 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\dashboard\widgets\recent_activity_timeline.dart:119:33 - deprecated_member_use
+warning - Unused import: 'package:friends_battery_api/friends_battery_api.dart' - lib\features\admin\inventory\providers\inventory_provider.dart:2:8 - unused_import
+warning - Unused import: 'package:go_router/go_router.dart' - lib\features\admin\inventory\screens\add_product_screen.dart:2:8 - unused_import
+warning - Unused import: '../../../../theme/app_theme.dart' - lib\features\admin\inventory\screens\add_product_screen.dart:3:8 - unused_import
+warning - The value of the field '_selectedGroupId' isn't used - lib\features\admin\inventory\screens\forms\create_product_form.dart:34:11 - unused_field
+   info - Statements in an if should be enclosed in a block - lib\features\admin\sales\screens\admin_sales_screen.dart:77:35 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\features\admin\sales\screens\admin_sales_screen.dart:78:18 - curly_braces_in_flow_control_structures
+warning - The value of 'refresh' should be used - lib\features\admin\sellers\screens\seller_details_screen.dart:68:15 - unused_result
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\sellers\widgets\inventory_product_card.dart:41:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\sellers\widgets\inventory_product_card.dart:103:22 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\sellers\widgets\seller_info_card.dart:28:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\sellers\widgets\seller_info_card.dart:98:22 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\sellers\widgets\statistic_card.dart:26:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\sellers\widgets\statistic_card.dart:39:28 - deprecated_member_use
+warning - Unused import: 'package:friends_battery_api/friends_battery_api.dart' - lib\features\auth\providers\auth_controller.dart:2:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\seller\dashboard\screens\create_bill_screen.dart:598:60 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\seller\dashboard\screens\seller_dashboard_screen.dart:28:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\seller\dashboard\screens\seller_dashboard_screen.dart:110:51 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\seller\dashboard\screens\seller_received_shipments_screen.dart:100:47 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\seller\dashboard\screens\seller_return_product_screen.dart:250:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\seller\dashboard\screens\shipment_details_screen.dart:54:45 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\seller\dashboard\widgets\pending_shipments_list.dart:125:45 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\seller\dashboard\widgets\pending_shipments_list.dart:156:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\seller\dashboard\widgets\pending_shipments_list.dart:310:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\seller\dashboard\widgets\recent_inventory_list.dart:50:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\seller\dashboard\widgets\recent_inventory_list.dart:140:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\seller\dashboard\widgets\recent_inventory_list.dart:144:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\seller\dashboard\widgets\recent_inventory_list.dart:149:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\seller\dashboard\widgets\seller_kpi_grid.dart:39:45 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\seller\dashboard\widgets\seller_kpi_grid.dart:56:62 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\seller\dashboard\widgets\seller_kpi_grid.dart:119:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\seller\dashboard\widgets\seller_kpi_grid.dart:136:58 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\seller\dashboard\widgets\seller_quick_actions.dart:104:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\shared\inventory\widgets\inventory_product_card.dart:25:32 - deprecated_member_use
+   info - Parameter 'key' could be a super parameter - lib\shared\widgets\seller_card.dart:11:9 - use_super_parameters
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\shared\widgets\seller_card.dart:42:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\shared\widgets\seller_card.dart:71:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\shared\widgets\seller_card.dart:107:54 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\shared\widgets\seller_card.dart:108:53 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\shared\widgets\seller_card.dart:232:28 - deprecated_member_use
+
+flutter : 71 issues found. (ran in 10.1s)
+At line:1 char:1
++ flutter analyze --no-fatal-warnings 2>&1 | Out-File -FilePath "analyz ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (71 issues found. (ran in 10.1s):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

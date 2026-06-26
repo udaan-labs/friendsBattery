@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../providers/seller_dashboard_providers.dart';
 
 class SellerKpiGrid extends ConsumerWidget {
@@ -25,71 +26,86 @@ class SellerKpiGrid extends ConsumerWidget {
         ),
         delegate: SliverChildListDelegate(
           [
-            // Current Stock Card
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF16A34A).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.battery_charging_full,
-                      color: Color(0xFF16A34A),
-                      size: 24,
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Current Stock',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF545F73),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      RichText(
-                        text: TextSpan(
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF191C1E),
-                          ),
-                          children: [
-                            TextSpan(text: '$stock '),
-                            const TextSpan(
-                              text: 'units',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.normal,
-                                color: Color(0xFF545F73),
-                              ),
-                            ),
-                          ],
-                        ),
+            // Current Stock Card (tappable → navigates to seller inventory)
+            Builder(
+              builder: (context) => GestureDetector(
+                onTap: () => context.push('/seller/inventory'),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
-                ],
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF16A34A).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.battery_charging_full,
+                              color: Color(0xFF16A34A),
+                              size: 24,
+                            ),
+                          ),
+                          const Icon(
+                            Icons.chevron_right,
+                            size: 18,
+                            color: Color(0xFF545F73),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Current Stock',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF545F73),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          RichText(
+                            text: TextSpan(
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF191C1E),
+                              ),
+                              children: [
+                                TextSpan(text: '$stock '),
+                                const TextSpan(
+                                  text: 'units',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.normal,
+                                    color: Color(0xFF545F73),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
 

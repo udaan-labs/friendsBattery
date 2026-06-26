@@ -18,6 +18,7 @@ class SalesService {
       serial_number: sale.serialNumber,
       vehicle_number: sale.vehicleNumber,
       sold_at: sale.soldAt,
+      quantity: 1, // As confirmed, each transaction represents a quantity of 1
       customer: sale.customer ? {
         id: Number(sale.customer.id),
         name: sale.customer.name,
@@ -52,19 +53,20 @@ class SalesService {
       });
     }
 
-    // 2. Verify serial number exists in seller inventory
-    const productUnit = await salesRepository.findAvailableProductUnit(data.serial_number, sellerId);
-    
-    if (!productUnit) {
-      const error = new Error('Serial number not found in your available inventory');
-      error.statusCode = 404;
+    // 2. Check if the provided real serial number is already in use
+    const existingUnit = await salesRepository.checkSerialNumberExists(data.serial_number);
+    if (existingUnit) {
+      const error = new Error('This serial number is already registered in the system.');
+      error.statusCode = 400;
       throw error;
     }
 
-    // 3. Verify the product unit matches the requested product ID
-    if (Number(productUnit.productId) !== data.product_id) {
-      const error = new Error('Serial number does not match the specified product');
-      error.statusCode = 400;
+    // 3. Find an available product unit for the requested product
+    const productUnit = await salesRepository.findAvailableProductUnitByProductId(data.product_id, sellerId);
+    
+    if (!productUnit) {
+      const error = new Error('No available stock for this product in your inventory.');
+      error.statusCode = 404;
       throw error;
     }
 
@@ -113,9 +115,40 @@ class SalesService {
   /**
    * Get sales history for a specific customer mobile
    */
-  async getCustomerHistory(mobile) {
-    const sales = await salesRepository.getSalesByCustomerMobile(mobile);
-    return sales.map(this._formatSale);
+
+  async getSalesHistory(sellerId, query) {
+    const page = parseInt(query.page, 10) || 1;
+    const limit = parseInt(query.limit, 10) || 10;
+    const { searchCustomer, searchSerial, fromDate, toDate } = query;
+
+    const filters = {
+      searchCustomer,
+      searchSerial,
+      fromDate,
+      toDate,
+    };
+
+    const pagination = {
+      skip: (page - 1) * limit,
+      take: limit,
+    };
+
+    const sales = await salesRepository.getSalesHistoryBySeller(
+      sellerId,
+      filters,
+      pagination
+    );
+    const total = await salesRepository.countSalesHistoryBySeller(sellerId, filters);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data: sales.map(this._formatSale),
+      total: total,
+      page: page,
+      limit: limit,
+      total_pages: totalPages,
+    };
   }
 }
 

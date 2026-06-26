@@ -19,7 +19,7 @@ class AdminShellScreen extends StatelessWidget {
       currentIndex = 1;
     } else if (location.startsWith('/admin/inventory') || location.startsWith('/admin/add-stock')) {
       currentIndex = 2;
-    } else if (location.startsWith('/admin/shipments')) {
+    } else if (location.startsWith('/admin/shipments') || location.startsWith('/admin/sales')) {
       currentIndex = 3;
     }
 

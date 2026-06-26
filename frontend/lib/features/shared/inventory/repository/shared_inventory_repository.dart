@@ -21,14 +21,18 @@ class SharedInventoryItemModel {
   });
 
   factory SharedInventoryItemModel.fromJson(Map<String, dynamic> json) {
+    // API returns: category (top-level group), brand (product name/series), model
+    // We map: productGroup=category, category=brand, productModel=model, productName=brand
+    final categoryName = json['category']?.toString() ?? 'N/A';
+    final brandName = json['brand']?.toString() ?? 'N/A';
     return SharedInventoryItemModel(
-      productGroup: json['product_group']?.toString() ?? 'N/A',
-      category: json['category']?.toString() ?? 'N/A',
+      productGroup: categoryName,
+      category: brandName,
       productModel: json['model']?.toString() ?? 'N/A',
-      productName: json['brand']?.toString() ?? 'N/A',
+      productName: brandName,
       quantity: (json['quantity'] as num?)?.toInt() ?? 0,
       minPrice: (json['min_price'] as num?)?.toDouble() ?? 0.0,
-      minStock: (json['min_stock'] as num?)?.toInt() ?? 5, // Defaulting to 5 for stock threshold demo
+      minStock: (json['min_stock'] as num?)?.toInt() ?? 5,
     );
   }
 }

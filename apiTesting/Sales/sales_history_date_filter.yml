@@ -1,0 +1,26 @@
+info:
+  name: sales_history_date_filter
+  type: http
+  seq: 8
+
+http:
+  method: GET
+  url: "{{baseurl}}/sales/history?fromDate=2024-01-01T00:00:00.000Z&toDate=2026-12-31T23:59:59.000Z"
+  headers:
+    - name: auth-id
+      value: "{{authId}}"
+    - name: auth-key
+      value: "{{authKey}}"
+  body:
+    type: none
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+assert:
+  - res.status: eq 200
+  - res.body.success: eq true
+  - res.body.data: isDefined

@@ -42,15 +42,40 @@ class SalesRepository {
   }
 
   /**
+   * Find an available product unit by product ID and seller ID
+   */
+  async findAvailableProductUnitByProductId(productId, sellerId) {
+    return prisma.productUnit.findFirst({
+      where: {
+        productId: productId,
+        ownerId: sellerId,
+        status: 'IN_STOCK'
+      }
+    });
+  }
+
+  /**
+   * Check if a serial number is already in use by any product unit
+   */
+  async checkSerialNumberExists(serialNumber) {
+    return prisma.productUnit.findUnique({
+      where: { serialNumber }
+    });
+  }
+
+  /**
    * Create sale transaction and update inventory atomically
    * Includes the immutable ledger record for inventory_transactions
    */
   async createSaleTransaction(saleData) {
     return prisma.$transaction(async (tx) => {
-      // 1. Update ProductUnit status to SOLD
+      // 1. Update ProductUnit status to SOLD and update serialNumber
       await tx.productUnit.update({
         where: { id: saleData.productUnitId },
-        data: { status: 'SOLD' }
+        data: { 
+          status: 'SOLD',
+          serialNumber: saleData.serialNumber 
+        }
       });
 
       // 2. Create the SalesTransaction record
@@ -144,13 +169,37 @@ class SalesRepository {
   /**
    * Fetch complete purchase history for a customer mobile
    */
-  async getSalesByCustomerMobile(mobile) {
-    return prisma.salesTransaction.findMany({
-      where: {
+  async getSalesHistoryBySeller(sellerId, filters, pagination) {
+    const { searchCustomer, searchSerial, fromDate, toDate } = filters;
+    const { skip, take } = pagination;
+
+    const whereClause = {
+      sellerId,
+      ...(searchCustomer && {
         customer: {
-          phone: mobile
-        }
-      },
+          name: {
+            contains: searchCustomer,
+            mode: 'insensitive',
+          },
+        },
+      }),
+      ...(searchSerial && {
+        serialNumber: {
+          contains: searchSerial,
+          mode: 'insensitive',
+        },
+      }),
+      ...(fromDate &&
+        toDate && {
+          soldAt: {
+            gte: new Date(fromDate),
+            lte: new Date(toDate),
+          },
+        }),
+    };
+
+    return prisma.salesTransaction.findMany({
+      where: whereClause,
       include: {
         customer: true,
         seller: { select: { id: true, userName: true, shopName: true } },
@@ -158,11 +207,46 @@ class SalesRepository {
           include: {
             category: true,
             productName: true,
-            productModel: true
-          }
-        }
+            productModel: true,
+          },
+        },
       },
-      orderBy: { soldAt: 'desc' }
+      orderBy: { soldAt: 'desc' },
+      skip,
+      take,
+    });
+  }
+
+  async countSalesHistoryBySeller(sellerId, filters) {
+    const { searchCustomer, searchSerial, fromDate, toDate } = filters;
+
+    const whereClause = {
+      sellerId,
+      ...(searchCustomer && {
+        customer: {
+          name: {
+            contains: searchCustomer,
+            mode: 'insensitive',
+          },
+        },
+      }),
+      ...(searchSerial && {
+        serialNumber: {
+          contains: searchSerial,
+          mode: 'insensitive',
+        },
+      }),
+      ...(fromDate &&
+        toDate && {
+          soldAt: {
+            gte: new Date(fromDate),
+            lte: new Date(toDate),
+          },
+        }),
+    };
+
+    return prisma.salesTransaction.count({
+      where: whereClause,
     });
   }
 }

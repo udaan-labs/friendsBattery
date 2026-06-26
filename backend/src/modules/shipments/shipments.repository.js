@@ -61,7 +61,12 @@ class ShipmentsRepository {
       include: {
         items: {
           include: {
-            model: true
+            product: {
+              include: {
+                productModel: true,
+                productName: true
+              }
+            }
           }
         }
       },

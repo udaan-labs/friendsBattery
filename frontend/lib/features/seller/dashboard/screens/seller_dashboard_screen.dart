@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/widgets/common_pull_to_refresh.dart';
 import '../providers/seller_dashboard_controller.dart';
 import '../providers/seller_dashboard_providers.dart';
@@ -10,7 +9,7 @@ import '../widgets/seller_quick_actions.dart';
 import '../widgets/recent_inventory_list.dart';
 import '../widgets/pending_shipments_list.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
-import '../../../../shared/widgets/logout_dialog_helper.dart';
+import 'seller_shell_screen.dart';
 
 class SellerDashboardScreen extends ConsumerWidget {
   const SellerDashboardScreen({super.key});
@@ -28,22 +27,18 @@ class SellerDashboardScreen extends ConsumerWidget {
         scrolledUnderElevation: 4,
         shadowColor: Colors.black.withOpacity(0.1),
         leading: IconButton(
-          icon: const Icon(Icons.menu, color: Color(0xFF3E4A3D)), // text-on-surface-variant
-          onPressed: () {},
+          icon: const Icon(Icons.menu, color: Color(0xFF3E4A3D)),
+          onPressed: () => sellerScaffoldKey.currentState?.openDrawer(),
         ),
         title: const Text(
           'BatteryPro',
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF16A34A), // text-primary
+            color: Color(0xFF16A34A),
           ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: Color(0xFF3E4A3D)),
-            onPressed: () {},
-          ),
           Stack(
             alignment: Alignment.center,
             children: [
@@ -58,18 +53,12 @@ class SellerDashboardScreen extends ConsumerWidget {
                   width: 8,
                   height: 8,
                   decoration: const BoxDecoration(
-                    color: Color(0xFFBA1A1A), // text-error
+                    color: Color(0xFFBA1A1A),
                     shape: BoxShape.circle,
                   ),
                 ),
               ),
             ],
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout, color: Color(0xFF3E4A3D)),
-            onPressed: () {
-              showLogoutConfirmationDialog(context, ref);
-            },
           ),
           const SizedBox(width: 8),
         ],
@@ -202,43 +191,6 @@ class SellerDashboardScreen extends ConsumerWidget {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
-      bottomNavigationBar: !isDesktop
-          ? BottomNavigationBar(
-              type: BottomNavigationBarType.fixed,
-              backgroundColor: const Color(0xFFECEEF0), // surface-container
-              selectedItemColor: const Color(0xFF16A34A), // primary
-              unselectedItemColor: const Color(0xFF586377), // on-secondary-container
-              showUnselectedLabels: true,
-              currentIndex: 0,
-              onTap: (index) {
-                if (index == 3) {
-                  showLogoutConfirmationDialog(context, ref);
-                } else if (index == 1) {
-                  context.push('/shared/inventory');
-                } else if (index == 2) {
-                  context.showInfoSnackBar('Sales Screen coming soon');
-                }
-              },
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.dashboard),
-                  label: 'Dashboard',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.inventory_2),
-                  label: 'Stock',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.auto_graph),
-                  label: 'Sales',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.logout),
-                  label: 'Logout',
-                ),
-              ],
-            )
-          : null,
     );
   }
 }

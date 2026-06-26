@@ -39,13 +39,13 @@ class SellerQuickActions extends StatelessWidget {
                 },
               ),
               _ActionButton(
-                title: 'Request Stock',
-                icon: Icons.unarchive,
+                title: 'Return Product',
+                icon: Icons.assignment_return_rounded,
                 bgColor: Colors.white,
                 iconBgColor: const Color(0xFFD5E0F8),
                 iconColor: const Color(0xFF16A34A),
                 onTap: () {
-                  context.showInfoSnackBar('Request Stock tapped');
+                  context.push('/seller/return-product');
                 },
               ),
               _ActionButton(
@@ -55,7 +55,7 @@ class SellerQuickActions extends StatelessWidget {
                 iconBgColor: const Color(0xFFD5E0F8),
                 iconColor: const Color(0xFF16A34A),
                 onTap: () {
-                  context.showInfoSnackBar('Sales History tapped');
+                  context.push('/seller/sales-history');
                 },
               ),
               _ActionButton(
@@ -65,7 +65,7 @@ class SellerQuickActions extends StatelessWidget {
                 iconBgColor: const Color(0xFFD5E0F8),
                 iconColor: const Color(0xFF16A34A),
                 onTap: () {
-                  context.showInfoSnackBar('Stock Details tapped');
+                  context.push('/seller/inventory');
                 },
               ),
             ],

@@ -27,6 +27,19 @@ class DashboardController {
       return errorResponse(res, 500, 'Internal server error while fetching seller dashboard stats');
     }
   }
+
+  /**
+   * Get recent activity feed (Admin only).
+   */
+  async getRecentActivity(req, res) {
+    try {
+      const activity = await dashboardService.getRecentActivity();
+      return successResponse(res, 200, 'Recent activity retrieved successfully', activity);
+    } catch (error) {
+      console.error('Error in DashboardController.getRecentActivity:', error);
+      return errorResponse(res, 500, 'Internal server error while fetching recent activity');
+    }
+  }
 }
 
 module.exports = new DashboardController();

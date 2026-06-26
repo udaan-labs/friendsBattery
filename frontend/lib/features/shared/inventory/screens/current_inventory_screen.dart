@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../providers/inventory_provider.dart';
-import '../repository/shared_inventory_repository.dart';
 import '../widgets/inventory_product_card.dart';
 
 class CurrentInventoryScreen extends ConsumerStatefulWidget {
@@ -56,9 +56,21 @@ class _CurrentInventoryScreenState extends ConsumerState<CurrentInventoryScreen>
   Widget build(BuildContext context) {
     final inventoryState = ref.watch(sharedInventoryProvider);
     final queryState = ref.watch(sharedInventoryQueryProvider);
+    final String location = GoRouterState.of(context).uri.toString();
+    final bool isSeller = location.startsWith('/seller');
 
-    return Scaffold(
-      backgroundColor: Colors.white,
+    return PopScope(
+      canPop: context.canPop(),
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (isSeller) {
+          context.go('/seller/dashboard');
+        } else {
+          context.go('/admin/dashboard');
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -150,7 +162,7 @@ class _CurrentInventoryScreenState extends ConsumerState<CurrentInventoryScreen>
           ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildPagination(int total, int currentPage, int limit) {

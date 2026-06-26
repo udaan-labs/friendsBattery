@@ -32,8 +32,20 @@ const customerSalesSchema = z.object({
   })
 });
 
+const salesHistorySchema = z.object({
+  query: z.object({
+    page: z.string().regex(/^\d+$/, 'Page must be numeric').transform(Number).default('1').transform(Number),
+    limit: z.string().regex(/^\d+$/, 'Limit must be numeric').transform(Number).default('10').transform(Number),
+    searchCustomer: z.string().optional(),
+    searchSerial: z.string().optional(),
+    fromDate: z.string().datetime().optional(),
+    toDate: z.string().datetime().optional(),
+  }),
+});
+
 module.exports = {
   createSaleSchema,
   viewSaleSchema,
-  customerSalesSchema
+  customerSalesSchema,
+  salesHistorySchema,
 };

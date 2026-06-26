@@ -33,24 +33,29 @@ class KpiGrid extends ConsumerWidget {
       );
     }
 
-    Widget buildGrid(String totalStock, String todaySales, String totalSellers) {
+    Widget buildGrid(String totalStock, String todaySales, String totalSellers, String pendingShipments) {
       if (isDesktop) {
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: GridView.count(
-            crossAxisCount: 3,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 2.2,
+            crossAxisCount: 4,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 2.0,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             children: [
               buildCard('TOTAL STOCK', totalStock, 'Units', Icons.inventory_2_outlined, onTap: () {
                 context.push('/shared/inventory');
               }),
-              buildCard('TOTAL SALES', todaySales, 'Units', Icons.trending_up_outlined),
+              buildCard('TOTAL SALES', todaySales, 'Transactions', Icons.trending_up_outlined, onTap: () {
+                context.push('/admin/sales');
+              }),
               buildCard('TOTAL SELLERS', totalSellers, 'Active', Icons.group_outlined, onTap: () {
                 context.push('/admin/sellers');
+              }),
+              buildCard('PENDING SHIPMENTS', pendingShipments, 'In transit', Icons.local_shipping_outlined, onTap: () {
+                context.push('/admin/shipments');
               }),
             ],
           ),
@@ -58,17 +63,31 @@ class KpiGrid extends ConsumerWidget {
       } else {
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: Row(
+          child: Column(
             children: [
-              Expanded(child: buildCard('TOTAL STOCK', totalStock, 'Units', Icons.inventory_2_outlined, onTap: () {
-                context.push('/shared/inventory');
-              })),
-              const SizedBox(width: 8),
-              Expanded(child: buildCard('TOTAL SALES', todaySales, 'Units', Icons.trending_up_outlined)),
-              const SizedBox(width: 8),
-              Expanded(child: buildCard('TOTAL SELLERS', totalSellers, 'Active', Icons.group_outlined, onTap: () {
-                context.push('/admin/sellers');
-              })),
+              Row(
+                children: [
+                  Expanded(child: buildCard('TOTAL STOCK', totalStock, 'Units', Icons.inventory_2_outlined, onTap: () {
+                    context.push('/shared/inventory');
+                  })),
+                  const SizedBox(width: 8),
+                  Expanded(child: buildCard('TOTAL SALES', todaySales, 'Transactions', Icons.trending_up_outlined, onTap: () {
+                    context.push('/admin/sales');
+                  })),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(child: buildCard('TOTAL SELLERS', totalSellers, 'Active', Icons.group_outlined, onTap: () {
+                    context.push('/admin/sellers');
+                  })),
+                  const SizedBox(width: 8),
+                  Expanded(child: buildCard('PENDING SHIPMENTS', pendingShipments, 'In transit', Icons.local_shipping_outlined, onTap: () {
+                    context.push('/admin/shipments');
+                  })),
+                ],
+              ),
             ],
           ),
         );
@@ -80,8 +99,9 @@ class KpiGrid extends ConsumerWidget {
         stats.totalStock.toString(),
         stats.todaySales.toString(),
         stats.totalSellers.toString(),
+        stats.pendingShipments.toString(),
       ),
-      loading: () => buildGrid('--', '--', '--'),
+      loading: () => buildGrid('--', '--', '--', '--'),
       error: (e, st) => Padding(
         padding: const EdgeInsets.all(16.0),
         child: Text('Error: $e', style: const TextStyle(color: Colors.red)),

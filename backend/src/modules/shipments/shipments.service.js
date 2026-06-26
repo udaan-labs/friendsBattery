@@ -57,12 +57,15 @@ class ShipmentsService {
       shipmentNumber: s.shipmentNumber,
       status: s.status,
       createdAt: s.createdAt.toISOString().split('T')[0],
+      acceptedAt: s.acceptedAt ? s.acceptedAt.toISOString() : null,
       items: s.items.map(item => ({
-        productModel: item.model?.name || '',
+        productName: item.product?.productName?.name || '',
+        productModel: item.product?.productModel?.name || '',
         quantity: item.quantity
       }))
     }));
   }
+
 
   async acceptShipment(shipmentId, sellerId) {
     // 1. Fetch shipment

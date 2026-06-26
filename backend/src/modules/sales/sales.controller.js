@@ -62,13 +62,15 @@ class SalesController {
   /**
    * Get sales history for a specific customer mobile
    */
-  async getCustomerHistory(req, res) {
+
+  async getSalesHistory(req, res) {
     try {
-      const { mobile } = req.params;
-      const history = await salesService.getCustomerHistory(mobile);
-      return successResponse(res, 200, 'Customer history fetched successfully', history);
+      const sellerId = req.user.id;
+      const query = req.query;
+      const history = await salesService.getSalesHistory(sellerId, query);
+      return successResponse(res, 200, 'Seller sales history fetched successfully', history);
     } catch (error) {
-      console.error('Get Customer History Error:', error);
+      console.error('Get Sales History Error:', error);
       return errorResponse(res, 500, 'Internal server error');
     }
   }

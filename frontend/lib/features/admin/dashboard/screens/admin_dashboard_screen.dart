@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/widgets/common_pull_to_refresh.dart';
-import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_client_provider.dart';
 import '../../../../core/storage/local_storage.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
@@ -164,8 +163,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     });
 
     try {
-      final dio = ApiClient().dio;
-      final response = await dio.get('/api/users?role=SELLER');
+      final dio = ref.read(apiClientProvider).dio;
+      final response = await dio.get('/api/shops/sellers');
       final body = response.data;
       if (body != null && body['success'] == true && body['data'] is List) {
         setState(() {
@@ -187,7 +186,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
   Future<void> _updateSellerState(String sellerId, bool isActive, bool isVerified) async {
     try {
-      final dio = ApiClient().dio;
+      final dio = ref.read(apiClientProvider).dio;
       final response = await dio.put('/api/auth/activate', data: {
         'user_id': sellerId,
         'is_active': isActive,
@@ -597,6 +596,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     activeIcon: Icons.point_of_sale,
                     title: 'Sales',
                     tabId: 'sales',
+                    onTap: () {
+                      context.pop();
+                      context.push('/admin/sales');
+                    },
                   ),
                   _buildDrawerItem(
                     icon: Icons.swap_horiz_outlined,
@@ -688,8 +691,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       case 'view_stock':
         return _buildViewStockTabView();
       case 'manage_sellers':
-        return _buildManageSellersTabView();
-      case 'sales':
+        // Redirect to the proper dedicated screen to avoid duplication
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) context.go('/admin/sellers');
+        });
+        return const Center(child: CircularProgressIndicator());
       case 'stock_transfer':
       case 'reports':
       case 'settings':

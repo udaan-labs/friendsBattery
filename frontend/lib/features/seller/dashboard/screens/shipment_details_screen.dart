@@ -30,9 +30,14 @@ class ShipmentDetailsScreen extends ConsumerWidget {
       ),
       body: shipmentsAsync.when(
         data: (shipments) {
+          if (shipments.isEmpty) {
+            return const Center(
+              child: Text('No shipment data available.', style: TextStyle(color: Color(0xFF545F73))),
+            );
+          }
           final shipment = shipments.firstWhere(
             (s) => s.shipmentId == shipmentId,
-            orElse: () => shipments.first, // Fallback if not found
+            orElse: () => shipments.first,
           );
 
           return SingleChildScrollView(

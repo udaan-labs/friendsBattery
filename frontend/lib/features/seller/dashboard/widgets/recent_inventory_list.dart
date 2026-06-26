@@ -68,45 +68,55 @@ class RecentInventoryList extends ConsumerWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFECEEF0),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(
-                                Icons.battery_charging_full,
-                                color: Color(0xFF16A34A),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item.name,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF191C1E),
-                                  ),
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 48,
+                                height: 48,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFECEEF0),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  item.serialNumber,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF545F73),
-                                  ),
+                                child: const Icon(
+                                  Icons.battery_charging_full,
+                                  color: Color(0xFF16A34A),
                                 ),
-                              ],
-                            ),
-                          ],
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item.name,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF191C1E),
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      item.serialNumber,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Color(0xFF545F73),
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        _buildStatusBadge(item.status),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          flex: 0,
+                          child: _buildStatusBadge(item.status),
+                        ),
                       ],
                     ),
                   );
