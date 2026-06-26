@@ -29,4 +29,11 @@ const requireSeller = (req, res, next) => {
   next();
 };
 
-module.exports = { requireRole, requireAdmin, requireSeller };
+const requireAdminOrSeller = (req, res, next) => {
+  if (!req.user || (!isAdmin(req.user) && !isSeller(req.user))) {
+    return errorResponse(res, 403, 'Forbidden: Admin or Seller access required');
+  }
+  next();
+};
+
+module.exports = { requireRole, requireAdmin, requireSeller, requireAdminOrSeller };

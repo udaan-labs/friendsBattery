@@ -19,11 +19,17 @@ class SalesApi {
 
   const SalesApi(this._dio, this._serializers);
 
-  /// Return complete purchase history for a customer mobile
+  /// Return all sales across all sellers with pagination, search, filters, and shipment tracing (Admin only)
   /// 
   ///
   /// Parameters:
-  /// * [mobile] 
+  /// * [page] 
+  /// * [limit] 
+  /// * [search] - Search by customer name, seller name, shop name, product name, or serial number
+  /// * [sellerId] - Filter by specific seller ID
+  /// * [fromDate] 
+  /// * [toDate] 
+  /// * [shipmentStatus] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -33,8 +39,14 @@ class SalesApi {
   ///
   /// Returns a [Future]
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<void>> apiSalesCustomerMobileGet({ 
-    required String mobile,
+  Future<Response<void>> apiSalesAdminHistoryGet({ 
+    int? page = 1,
+    int? limit = 10,
+    String? search,
+    int? sellerId,
+    DateTime? fromDate,
+    DateTime? toDate,
+    String? shipmentStatus,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -42,7 +54,7 @@ class SalesApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/api/sales/customer/{mobile}'.replaceAll('{' r'mobile' '}', encodeQueryParameter(_serializers, mobile, const FullType(String)).toString());
+    final _path = r'/api/sales/admin/history';
     final _options = Options(
       method: r'GET',
       headers: <String, dynamic>{
@@ -61,9 +73,20 @@ class SalesApi {
       validateStatus: validateStatus,
     );
 
+    final _queryParameters = <String, dynamic>{
+      if (page != null) r'page': encodeQueryParameter(_serializers, page, const FullType(int)),
+      if (limit != null) r'limit': encodeQueryParameter(_serializers, limit, const FullType(int)),
+      if (search != null) r'search': encodeQueryParameter(_serializers, search, const FullType(String)),
+      if (sellerId != null) r'sellerId': encodeQueryParameter(_serializers, sellerId, const FullType(int)),
+      if (fromDate != null) r'fromDate': encodeQueryParameter(_serializers, fromDate, const FullType(DateTime)),
+      if (toDate != null) r'toDate': encodeQueryParameter(_serializers, toDate, const FullType(DateTime)),
+      if (shipmentStatus != null) r'shipmentStatus': encodeQueryParameter(_serializers, shipmentStatus, const FullType(String)),
+    };
+
     final _response = await _dio.request<Object>(
       _path,
       options: _options,
+      queryParameters: _queryParameters,
       cancelToken: cancelToken,
       onSendProgress: onSendProgress,
       onReceiveProgress: onReceiveProgress,
@@ -115,6 +138,79 @@ class SalesApi {
     final _response = await _dio.request<Object>(
       _path,
       options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    return _response;
+  }
+
+  /// Return seller&#39;s own sales history with pagination, search, and date filtering
+  /// 
+  ///
+  /// Parameters:
+  /// * [page] 
+  /// * [limit] 
+  /// * [searchCustomer] 
+  /// * [searchSerial] 
+  /// * [fromDate] 
+  /// * [toDate] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future]
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<void>> apiSalesHistoryGet({ 
+    int? page = 1,
+    int? limit = 10,
+    String? searchCustomer,
+    String? searchSerial,
+    DateTime? fromDate,
+    DateTime? toDate,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/api/sales/history';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      if (page != null) r'page': encodeQueryParameter(_serializers, page, const FullType(int)),
+      if (limit != null) r'limit': encodeQueryParameter(_serializers, limit, const FullType(int)),
+      if (searchCustomer != null) r'searchCustomer': encodeQueryParameter(_serializers, searchCustomer, const FullType(String)),
+      if (searchSerial != null) r'searchSerial': encodeQueryParameter(_serializers, searchSerial, const FullType(String)),
+      if (fromDate != null) r'fromDate': encodeQueryParameter(_serializers, fromDate, const FullType(DateTime)),
+      if (toDate != null) r'toDate': encodeQueryParameter(_serializers, toDate, const FullType(DateTime)),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
       cancelToken: cancelToken,
       onSendProgress: onSendProgress,
       onReceiveProgress: onReceiveProgress,

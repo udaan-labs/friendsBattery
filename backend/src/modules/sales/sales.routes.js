@@ -5,9 +5,11 @@ const {
   createSaleSchema,
   viewSaleSchema,
   customerSalesSchema,
-  salesHistorySchema
+  salesHistorySchema,
+  adminSalesHistorySchema
 } = require('./sales.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
+const { requireAdmin } = require('../../shared/middleware/role.middleware');
 const { validateRequest } = require('../../shared/middleware/validation.middleware');
 
 /**
@@ -113,6 +115,62 @@ router.get(
   authenticate,
   validateRequest(salesHistorySchema),
   salesController.getSalesHistory
+);
+
+/**
+ * @swagger
+ * /api/sales/admin/history:
+ *   get:
+ *     summary: Return all sales across all sellers with pagination, search, filters, and shipment tracing (Admin only)
+ *     tags: [Sales]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search by customer name, seller name, shop name, product name, or serial number
+ *       - in: query
+ *         name: sellerId
+ *         schema:
+ *           type: integer
+ *         description: Filter by specific seller ID
+ *       - in: query
+ *         name: fromDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: toDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: shipmentStatus
+ *         schema:
+ *           type: string
+ *           enum: [PENDING, ACCEPTED, REJECTED]
+ *     responses:
+ *       200:
+ *         description: Admin sales history fetched successfully
+ *       403:
+ *         description: Forbidden — Admin access required
+ */
+router.get(
+  '/admin/history',
+  authenticate,
+  requireAdmin,
+  validateRequest(adminSalesHistorySchema),
+  salesController.getAdminSalesHistory
 );
 
 /**

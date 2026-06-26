@@ -11,21 +11,40 @@ class ShipmentsService {
       throw error;
     }
 
-    // 2. Validate products exist
+    // 2. Fetch available units and map to shipment items
+    const shipmentItems = [];
+    
     for (const item of data.items) {
-      const product = await shipmentsRepository.findProduct(
-        item.productCategoryId,
-        item.productNameId,
-        item.productModelId
-      );
+      // Find product to get its relations
+      const product = await shipmentsRepository.findProductById(item.product_id);
       if (!product) {
-        const error = new Error(`Product combo not found: Category ${item.productCategoryId}, Name ${item.productNameId}, Model ${item.productModelId}`);
+        const error = new Error(`Product ID ${item.product_id} not found`);
         error.statusCode = 400;
         throw error;
       }
+
+      // Find available units for this admin
+      const availableUnits = await shipmentsRepository.getAvailableUnits(item.product_id, adminId, item.quantity);
+      if (availableUnits.length < item.quantity) {
+        const error = new Error(`Insufficient stock for Product ID ${item.product_id}. Requested: ${item.quantity}, Available: ${availableUnits.length}`);
+        error.statusCode = 400;
+        throw error;
+      }
+
+      // Create one shipment item per unit
+      for (const unit of availableUnits) {
+        shipmentItems.push({
+          productCategoryId: product.categoryId,
+          productNameId: product.productNameId,
+          productModelId: product.productModelId,
+          productId: product.id,
+          productItemId: unit.id,
+          quantity: 1
+        });
+      }
     }
 
-    // 3. Generate unique shipment number (e.g. SHP-101)
+    // 3. Generate unique shipment number
     const count = await prisma.newShipment.count();
     const shipmentNumber = `SHP-${100 + count + 1}`;
 
@@ -34,7 +53,7 @@ class ShipmentsService {
       shipmentNumber,
       sellerId: data.sellerId,
       createdByAdminId: adminId,
-      items: data.items
+      items: shipmentItems
     });
 
     return {
@@ -66,6 +85,83 @@ class ShipmentsService {
     }));
   }
 
+  /**
+   * Get all shipments (Admin view).
+   */
+  async getAllShipments() {
+    const shipments = await shipmentsRepository.getAllShipments();
+    return shipments.map(s => ({
+      shipmentId: Number(s.id),
+      shipmentNumber: s.shipmentNumber,
+      status: s.status,
+      createdAt: s.createdAt.toISOString(),
+      acceptedAt: s.acceptedAt ? s.acceptedAt.toISOString() : null,
+      seller: {
+        id: Number(s.seller.id),
+        userName: s.seller.userName,
+        shopName: s.seller.shopName || '',
+      },
+      totalProducts: s.items.length,
+      totalQuantity: s.items.reduce((sum, item) => sum + item.quantity, 0),
+      items: s.items.map(item => ({
+        productName: item.product?.productName?.name || '',
+        productModel: item.product?.productModel?.name || '',
+        quantity: item.quantity
+      }))
+    }));
+  }
+
+  /**
+   * Get a single shipment by ID with role-based access.
+   * Admin can view any shipment; Seller can only view their own.
+   */
+  async getShipmentById(shipmentId, userId, userRole) {
+    const shipment = await shipmentsRepository.getShipmentById(shipmentId);
+
+    if (!shipment) {
+      const error = new Error('Shipment not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    // Sellers can only access their own shipments
+    if (userRole === 'SELLER' && Number(shipment.sellerId) !== Number(userId)) {
+      const error = new Error('Forbidden: You can only view your own shipments');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    const totalQuantity = shipment.items.reduce((sum, item) => sum + item.quantity, 0);
+
+    return {
+      shipmentId: Number(shipment.id),
+      shipmentNumber: shipment.shipmentNumber,
+      status: shipment.status,
+      createdAt: shipment.createdAt.toISOString(),
+      acceptedAt: shipment.acceptedAt ? shipment.acceptedAt.toISOString() : null,
+      seller: {
+        id: Number(shipment.seller.id),
+        userName: shipment.seller.userName,
+        shopName: shipment.seller.shopName || '',
+        userNumber: shipment.seller.userNumber || null,
+      },
+      createdByAdmin: {
+        id: Number(shipment.admin.id),
+        userName: shipment.admin.userName,
+      },
+      totalProducts: shipment.items.length,
+      totalQuantity,
+      items: shipment.items.map(item => ({
+        id: Number(item.id),
+        category: item.category?.name || '',
+        productGroup: item.product?.group?.name || '',
+        productName: item.name?.name || '',
+        productModel: item.model?.name || '',
+        quantity: item.quantity,
+        serialNumber: item.productUnit?.serialNumber || null,
+      }))
+    };
+  }
 
   async acceptShipment(shipmentId, sellerId) {
     // 1. Fetch shipment

@@ -68,6 +68,7 @@ Class | Method | HTTP request | Description
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthLoginPost**](doc/AuthApi.md#apiauthloginpost) | **POST** /api/auth/login | Authenticate user and return token
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthRegisterPost**](doc/AuthApi.md#apiauthregisterpost) | **POST** /api/auth/register | Register a new user
 [*CustomersApi*](doc/CustomersApi.md) | [**apiCustomersGet**](doc/CustomersApi.md#apicustomersget) | **GET** /api/customers | Retrieve a list of customers
+[*DashboardApi*](doc/DashboardApi.md) | [**apiDashboardRecentActivityGet**](doc/DashboardApi.md#apidashboardrecentactivityget) | **GET** /api/dashboard/recent-activity | Get recent activity feed (Admin only)
 [*DashboardApi*](doc/DashboardApi.md) | [**apiDashboardStatsGet**](doc/DashboardApi.md#apidashboardstatsget) | **GET** /api/dashboard/stats | Get dashboard statistics
 [*DashboardApi*](doc/DashboardApi.md) | [**apiSellerDashboardStatsGet**](doc/DashboardApi.md#apisellerdashboardstatsget) | **GET** /api/seller/dashboard/stats | Get seller dashboard statistics
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryAdjustPatch**](doc/InventoryApi.md#apiinventoryadjustpatch) | **PATCH** /api/inventory/adjust | Adjust inventory stock levels
@@ -90,12 +91,15 @@ Class | Method | HTTP request | Description
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsProductModelsPost**](doc/ProductsApi.md#apiproductsproductmodelspost) | **POST** /api/products/product-models | Create a product model
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsProductNamesListPost**](doc/ProductsApi.md#apiproductsproductnameslistpost) | **POST** /api/products/product-names/list | Return all product names belonging to a category
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsProductNamesPost**](doc/ProductsApi.md#apiproductsproductnamespost) | **POST** /api/products/product-names | Create a product name under a category
-[*SalesApi*](doc/SalesApi.md) | [**apiSalesCustomerMobileGet**](doc/SalesApi.md#apisalescustomermobileget) | **GET** /api/sales/customer/{mobile} | Return complete purchase history for a customer mobile
+[*SalesApi*](doc/SalesApi.md) | [**apiSalesAdminHistoryGet**](doc/SalesApi.md#apisalesadminhistoryget) | **GET** /api/sales/admin/history | Return all sales across all sellers with pagination, search, filters, and shipment tracing (Admin only)
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesGet**](doc/SalesApi.md#apisalesget) | **GET** /api/sales | Return all sales based on role (Admin sees all, Seller sees own)
+[*SalesApi*](doc/SalesApi.md) | [**apiSalesHistoryGet**](doc/SalesApi.md#apisaleshistoryget) | **GET** /api/sales/history | Return seller&#39;s own sales history with pagination, search, and date filtering
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesPost**](doc/SalesApi.md#apisalespost) | **POST** /api/sales | Create a new sale transaction
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesTransactionIdGet**](doc/SalesApi.md#apisalestransactionidget) | **GET** /api/sales/{transactionId} | Return a single sale&#39;s details by ID
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiSellerDashboardPendingShipmentsGet**](doc/ShipmentsApi.md#apisellerdashboardpendingshipmentsget) | **GET** /api/seller/dashboard/pending-shipments | Get pending shipments count (Seller only)
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiSellerShipmentsGet**](doc/ShipmentsApi.md#apisellershipmentsget) | **GET** /api/seller/shipments | List shipments for seller (Seller only)
+[*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiShipmentsGet**](doc/ShipmentsApi.md#apishipmentsget) | **GET** /api/shipments | List all shipments (Admin only)
+[*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiShipmentsIdGet**](doc/ShipmentsApi.md#apishipmentsidget) | **GET** /api/shipments/{id} | Get shipment details by ID (Admin or Seller)
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiShipmentsPost**](doc/ShipmentsApi.md#apishipmentspost) | **POST** /api/shipments | Create a new shipment (Admin only)
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiShipmentsShipmentIdAcceptPost**](doc/ShipmentsApi.md#apishipmentsshipmentidacceptpost) | **POST** /api/shipments/{shipmentId}/accept | Accept a pending shipment (Seller only)
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsSellersGet**](doc/ShopsApi.md#apishopssellersget) | **GET** /api/shops/sellers | Return all sellers
@@ -148,6 +152,13 @@ Class | Method | HTTP request | Description
  - [ApiSellerShipmentsGet200Response](doc/ApiSellerShipmentsGet200Response.md)
  - [ApiSellerShipmentsGet200ResponseDataInner](doc/ApiSellerShipmentsGet200ResponseDataInner.md)
  - [ApiSellerShipmentsGet200ResponseDataInnerItemsInner](doc/ApiSellerShipmentsGet200ResponseDataInnerItemsInner.md)
+ - [ApiShipmentsGet200Response](doc/ApiShipmentsGet200Response.md)
+ - [ApiShipmentsGet200ResponseDataInner](doc/ApiShipmentsGet200ResponseDataInner.md)
+ - [ApiShipmentsGet200ResponseDataInnerSeller](doc/ApiShipmentsGet200ResponseDataInnerSeller.md)
+ - [ApiShipmentsIdGet200Response](doc/ApiShipmentsIdGet200Response.md)
+ - [ApiShipmentsIdGet200ResponseData](doc/ApiShipmentsIdGet200ResponseData.md)
+ - [ApiShipmentsIdGet200ResponseDataItemsInner](doc/ApiShipmentsIdGet200ResponseDataItemsInner.md)
+ - [ApiShipmentsIdGet200ResponseDataSeller](doc/ApiShipmentsIdGet200ResponseDataSeller.md)
  - [ApiShipmentsPostRequest](doc/ApiShipmentsPostRequest.md)
  - [ApiShipmentsPostRequestItemsInner](doc/ApiShipmentsPostRequestItemsInner.md)
  - [ApiTransfersPostRequest](doc/ApiTransfersPostRequest.md)

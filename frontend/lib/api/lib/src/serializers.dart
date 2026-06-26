@@ -53,6 +53,13 @@ import 'package:friends_battery_api/src/model/api_seller_dashboard_stats_get200_
 import 'package:friends_battery_api/src/model/api_seller_shipments_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_seller_shipments_get200_response_data_inner.dart';
 import 'package:friends_battery_api/src/model/api_seller_shipments_get200_response_data_inner_items_inner.dart';
+import 'package:friends_battery_api/src/model/api_shipments_get200_response.dart';
+import 'package:friends_battery_api/src/model/api_shipments_get200_response_data_inner.dart';
+import 'package:friends_battery_api/src/model/api_shipments_get200_response_data_inner_seller.dart';
+import 'package:friends_battery_api/src/model/api_shipments_id_get200_response.dart';
+import 'package:friends_battery_api/src/model/api_shipments_id_get200_response_data.dart';
+import 'package:friends_battery_api/src/model/api_shipments_id_get200_response_data_items_inner.dart';
+import 'package:friends_battery_api/src/model/api_shipments_id_get200_response_data_seller.dart';
 import 'package:friends_battery_api/src/model/api_shipments_post_request.dart';
 import 'package:friends_battery_api/src/model/api_shipments_post_request_items_inner.dart';
 import 'package:friends_battery_api/src/model/api_transfers_post_request.dart';
@@ -115,6 +122,13 @@ part 'serializers.g.dart';
   ApiSellerShipmentsGet200Response,
   ApiSellerShipmentsGet200ResponseDataInner,
   ApiSellerShipmentsGet200ResponseDataInnerItemsInner,
+  ApiShipmentsGet200Response,
+  ApiShipmentsGet200ResponseDataInner,
+  ApiShipmentsGet200ResponseDataInnerSeller,
+  ApiShipmentsIdGet200Response,
+  ApiShipmentsIdGet200ResponseData,
+  ApiShipmentsIdGet200ResponseDataItemsInner,
+  ApiShipmentsIdGet200ResponseDataSeller,
   ApiShipmentsPostRequest,
   ApiShipmentsPostRequestItemsInner,
   ApiTransfersPostRequest,

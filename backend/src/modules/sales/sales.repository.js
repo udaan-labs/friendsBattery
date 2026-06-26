@@ -249,6 +249,117 @@ class SalesRepository {
       where: whereClause,
     });
   }
+
+  /**
+   * Build WHERE clause for admin sales history queries
+   */
+  _buildAdminWhereClause(filters) {
+    const { search, sellerId, fromDate, toDate, shipmentStatus } = filters;
+
+    const where = {};
+
+    if (sellerId) {
+      where.sellerId = BigInt(sellerId);
+    }
+
+    if (fromDate && toDate) {
+      where.soldAt = {
+        gte: new Date(fromDate),
+        lte: new Date(toDate),
+      };
+    }
+
+    if (search) {
+      where.OR = [
+        {
+          customer: {
+            name: { contains: search, mode: 'insensitive' },
+          },
+        },
+        {
+          seller: {
+            userName: { contains: search, mode: 'insensitive' },
+          },
+        },
+        {
+          seller: {
+            shopName: { contains: search, mode: 'insensitive' },
+          },
+        },
+        {
+          product: {
+            productName: {
+              name: { contains: search, mode: 'insensitive' },
+            },
+          },
+        },
+        {
+          serialNumber: { contains: search, mode: 'insensitive' },
+        },
+      ];
+    }
+
+    if (shipmentStatus) {
+      where.productUnit = {
+        newShipmentItems: {
+          some: {
+            shipment: {
+              status: shipmentStatus,
+            },
+          },
+        },
+      };
+    }
+
+    return where;
+  }
+
+  /**
+   * Fetch all sales for Admin with full details (seller, customer, product, shipment)
+   */
+  async getAdminSalesHistory(filters, pagination) {
+    const { skip, take } = pagination;
+    const where = this._buildAdminWhereClause(filters);
+
+    return prisma.salesTransaction.findMany({
+      where,
+      include: {
+        customer: true,
+        seller: {
+          select: { id: true, userName: true, shopName: true },
+        },
+        product: {
+          include: {
+            group: true,
+            category: true,
+            productName: true,
+            productModel: true,
+          },
+        },
+        productUnit: {
+          include: {
+            newShipmentItems: {
+              include: {
+                shipment: true,
+              },
+              take: 1,
+            },
+          },
+        },
+      },
+      orderBy: { soldAt: 'desc' },
+      skip,
+      take,
+    });
+  }
+
+  /**
+   * Count all admin sales (mirrors getAdminSalesHistory filters)
+   */
+  async countAdminSalesHistory(filters) {
+    const where = this._buildAdminWhereClause(filters);
+    return prisma.salesTransaction.count({ where });
+  }
 }
 
 module.exports = new SalesRepository();

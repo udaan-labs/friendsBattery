@@ -1,0 +1,53 @@
+info:
+  name: admin_sales_history
+  type: http
+  seq: 4
+
+http:
+  method: GET
+  url: "{{baseurl}}/sales/admin/history"
+  headers:
+    - name: auth-id
+      value: "{{adminAuthId}}"
+    - name: auth-key
+      value: "{{adminAuthKey}}"
+  params:
+    - name: page
+      value: "1"
+      enabled: true
+    - name: limit
+      value: "10"
+      enabled: true
+    - name: search
+      value: ""
+      enabled: false
+    - name: sellerId
+      value: ""
+      enabled: false
+    - name: fromDate
+      value: ""
+      enabled: false
+    - name: toDate
+      value: ""
+      enabled: false
+    - name: shipmentStatus
+      value: ""
+      enabled: false
+  body:
+    type: none
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+assert:
+  - res.status: eq 200
+  - res.body.success: eq true
+  - res.body.data: isDefined
+  - res.body.data.data: isDefined
+  - res.body.data.page: eq 1
+  - res.body.data.limit: eq 10
+  - res.body.data.total_pages: isDefined
+  - res.body.data.total: isDefined

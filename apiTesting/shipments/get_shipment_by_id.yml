@@ -1,0 +1,66 @@
+info:
+  name: get_shipment_by_id
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: "{{baseurl}}/shipments/1"
+  headers:
+    - name: Authorization
+      value: "Bearer {{token}}"
+  body:
+    type: none
+
+docs:
+  description: >
+    Get full shipment details by ID.
+    Admin can view any shipment.
+    Seller can only view their own shipments.
+
+  path_params:
+    - name: id
+      type: integer
+      required: true
+      description: The shipment ID (integer)
+
+  sample_response:
+    success: true
+    message: "Shipment retrieved successfully"
+    data:
+      shipmentId: 1
+      shipmentNumber: "SHP-101"
+      status: "PENDING"
+      createdAt: "2026-06-25T12:00:00.000Z"
+      acceptedAt: null
+      seller:
+        id: 5
+        userName: "rahul_sharma"
+        shopName: "EcoPower Solutions"
+        userNumber: "9876543210"
+      createdByAdmin:
+        id: 1
+        userName: "admin"
+      totalProducts: 2
+      totalQuantity: 5
+      items:
+        - id: 1
+          category: "Lead Acid"
+          productGroup: "Battery"
+          productName: "UltraLife Max"
+          productModel: "S3-100Ah"
+          quantity: 3
+          serialNumber: "SN-BATT-001"
+        - id: 2
+          category: "Lithium"
+          productGroup: "Battery"
+          productName: "PowerVolt Core"
+          productModel: "PV-200"
+          quantity: 2
+          serialNumber: "SN-PV-002"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

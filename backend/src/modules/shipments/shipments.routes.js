@@ -2,7 +2,7 @@ const express = require('express');
 const shipmentsController = require('./shipments.controller');
 const { createShipmentSchema, acceptShipmentSchema } = require('./shipments.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
-const { requireAdmin, requireSeller } = require('../../shared/middleware/role.middleware');
+const { requireAdmin, requireSeller, requireAdminOrSeller } = require('../../shared/middleware/role.middleware');
 const { validateRequest } = require('../../shared/middleware/validation.middleware');
 
 const shipmentsRouter = express.Router();
@@ -73,6 +73,152 @@ shipmentsRouter.post(
   requireAdmin,
   validateRequest(createShipmentSchema),
   shipmentsController.createShipment.bind(shipmentsController)
+);
+
+/**
+ * @swagger
+ * /api/shipments:
+ *   get:
+ *     summary: List all shipments (Admin only)
+ *     tags: [Shipments]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: All shipments retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       shipmentId:
+ *                         type: integer
+ *                       shipmentNumber:
+ *                         type: string
+ *                       status:
+ *                         type: string
+ *                       createdAt:
+ *                         type: string
+ *                       acceptedAt:
+ *                         type: string
+ *                         nullable: true
+ *                       seller:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           userName:
+ *                             type: string
+ *                           shopName:
+ *                             type: string
+ *                       totalProducts:
+ *                         type: integer
+ *                       totalQuantity:
+ *                         type: integer
+ */
+shipmentsRouter.get(
+  '/',
+  authenticate,
+  requireAdmin,
+  shipmentsController.getAllShipments.bind(shipmentsController)
+);
+
+/**
+ * @swagger
+ * /api/shipments/{id}:
+ *   get:
+ *     summary: Get shipment details by ID (Admin or Seller)
+ *     tags: [Shipments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Shipment ID
+ *     responses:
+ *       200:
+ *         description: Shipment details retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     shipmentId:
+ *                       type: integer
+ *                     shipmentNumber:
+ *                       type: string
+ *                     status:
+ *                       type: string
+ *                     createdAt:
+ *                       type: string
+ *                     acceptedAt:
+ *                       type: string
+ *                       nullable: true
+ *                     seller:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: integer
+ *                         userName:
+ *                           type: string
+ *                         shopName:
+ *                           type: string
+ *                         userNumber:
+ *                           type: string
+ *                           nullable: true
+ *                     totalProducts:
+ *                       type: integer
+ *                     totalQuantity:
+ *                       type: integer
+ *                     items:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           category:
+ *                             type: string
+ *                           productGroup:
+ *                             type: string
+ *                           productName:
+ *                             type: string
+ *                           productModel:
+ *                             type: string
+ *                           quantity:
+ *                             type: integer
+ *                           serialNumber:
+ *                             type: string
+ *                             nullable: true
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Shipment not found
+ */
+shipmentsRouter.get(
+  '/:id',
+  authenticate,
+  requireAdminOrSeller,
+  shipmentsController.getShipmentById.bind(shipmentsController)
 );
 
 /**

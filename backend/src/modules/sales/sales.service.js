@@ -150,6 +150,94 @@ class SalesService {
       total_pages: totalPages,
     };
   }
+
+  /**
+   * Format a sale record for the Admin sales history response.
+   * Extends _formatSale with shipment info traced via productUnit → NewShipmentItem → NewShipment.
+   */
+  _formatAdminSale(sale) {
+    const base = {
+      id: Number(sale.id),
+      sold_at: sale.soldAt,
+      quantity: 1,
+      sell_price: sale.sellPrice,
+      serial_number: sale.serialNumber,
+      vehicle_number: sale.vehicleNumber,
+      seller: sale.seller
+        ? {
+            id: Number(sale.seller.id),
+            user_name: sale.seller.userName,
+            shop_name: sale.seller.shopName,
+          }
+        : null,
+      customer: sale.customer
+        ? {
+            name: sale.customer.name,
+            phone: sale.customer.phone,
+          }
+        : null,
+      product: sale.product
+        ? {
+            id: Number(sale.product.id),
+            group: sale.product.group ? sale.product.group.name : null,
+            category: sale.product.category.name,
+            product_name: sale.product.productName.name,
+            product_model: sale.product.productModel.name,
+          }
+        : null,
+      shipment: null,
+    };
+
+    // Trace shipment via productUnit → NewShipmentItem → NewShipment
+    const shipmentItem =
+      sale.productUnit &&
+      sale.productUnit.newShipmentItems &&
+      sale.productUnit.newShipmentItems.length > 0
+        ? sale.productUnit.newShipmentItems[0]
+        : null;
+
+    if (shipmentItem && shipmentItem.shipment) {
+      const s = shipmentItem.shipment;
+      base.shipment = {
+        id: Number(s.id),
+        shipment_number: s.shipmentNumber,
+        shipment_date: s.createdAt,
+        arrival_date: s.acceptedAt,
+        status: s.status,
+      };
+    }
+
+    return base;
+  }
+
+  /**
+   * Get paginated sales history for Admin — all sellers, with shipment tracing
+   */
+  async getAdminSalesHistory(query) {
+    const page = parseInt(query.page, 10) || 1;
+    const limit = parseInt(query.limit, 10) || 10;
+    const { search, sellerId, fromDate, toDate, shipmentStatus } = query;
+
+    const filters = { search, sellerId, fromDate, toDate, shipmentStatus };
+
+    const pagination = {
+      skip: (page - 1) * limit,
+      take: limit,
+    };
+
+    const [sales, total] = await Promise.all([
+      salesRepository.getAdminSalesHistory(filters, pagination),
+      salesRepository.countAdminSalesHistory(filters),
+    ]);
+
+    return {
+      data: sales.map((s) => this._formatAdminSale(s)),
+      total,
+      page,
+      limit,
+      total_pages: Math.ceil(total / limit),
+    };
+  }
 }
 
 module.exports = new SalesService();

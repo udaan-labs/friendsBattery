@@ -161,3 +161,16 @@ final sellerAllShipmentsProvider = FutureProvider<List<ApiSellerShipmentsGet200R
     rethrow;
   }
 });
+
+/// Seller: get full shipment detail by ID via GET /api/shipments/:id
+final sellerShipmentDetailProvider =
+    FutureProvider.family<Map<String, dynamic>, int>((ref, shipmentId) async {
+  final dio = ref.watch(apiClientProvider).dio;
+  final response = await dio.get('/api/shipments/$shipmentId');
+  final body = response.data;
+  if (body is Map && body['data'] != null) {
+    return body['data'] as Map<String, dynamic>;
+  }
+  throw Exception('Invalid response from GET /api/shipments/$shipmentId');
+});
+

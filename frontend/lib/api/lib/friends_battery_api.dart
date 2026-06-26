@@ -59,6 +59,13 @@ export 'package:friends_battery_api/src/model/api_seller_dashboard_stats_get200_
 export 'package:friends_battery_api/src/model/api_seller_shipments_get200_response.dart';
 export 'package:friends_battery_api/src/model/api_seller_shipments_get200_response_data_inner.dart';
 export 'package:friends_battery_api/src/model/api_seller_shipments_get200_response_data_inner_items_inner.dart';
+export 'package:friends_battery_api/src/model/api_shipments_get200_response.dart';
+export 'package:friends_battery_api/src/model/api_shipments_get200_response_data_inner.dart';
+export 'package:friends_battery_api/src/model/api_shipments_get200_response_data_inner_seller.dart';
+export 'package:friends_battery_api/src/model/api_shipments_id_get200_response.dart';
+export 'package:friends_battery_api/src/model/api_shipments_id_get200_response_data.dart';
+export 'package:friends_battery_api/src/model/api_shipments_id_get200_response_data_items_inner.dart';
+export 'package:friends_battery_api/src/model/api_shipments_id_get200_response_data_seller.dart';
 export 'package:friends_battery_api/src/model/api_shipments_post_request.dart';
 export 'package:friends_battery_api/src/model/api_shipments_post_request_items_inner.dart';
 export 'package:friends_battery_api/src/model/api_transfers_post_request.dart';

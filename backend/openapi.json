@@ -741,6 +741,206 @@
             "description": "Admin access required"
           }
         }
+      },
+      "get": {
+        "summary": "List all shipments (Admin only)",
+        "tags": [
+          "Shipments"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "All shipments retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "shipmentId": {
+                            "type": "integer"
+                          },
+                          "shipmentNumber": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "acceptedAt": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "seller": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer"
+                              },
+                              "userName": {
+                                "type": "string"
+                              },
+                              "shopName": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "totalProducts": {
+                            "type": "integer"
+                          },
+                          "totalQuantity": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/shipments/{id}": {
+      "get": {
+        "summary": "Get shipment details by ID (Admin or Seller)",
+        "tags": [
+          "Shipments"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Shipment ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shipment details retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "shipmentId": {
+                          "type": "integer"
+                        },
+                        "shipmentNumber": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "createdAt": {
+                          "type": "string"
+                        },
+                        "acceptedAt": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "seller": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "integer"
+                            },
+                            "userName": {
+                              "type": "string"
+                            },
+                            "shopName": {
+                              "type": "string"
+                            },
+                            "userNumber": {
+                              "type": "string",
+                              "nullable": true
+                            }
+                          }
+                        },
+                        "totalProducts": {
+                          "type": "integer"
+                        },
+                        "totalQuantity": {
+                          "type": "integer"
+                        },
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer"
+                              },
+                              "category": {
+                                "type": "string"
+                              },
+                              "productGroup": {
+                                "type": "string"
+                              },
+                              "productName": {
+                                "type": "string"
+                              },
+                              "productModel": {
+                                "type": "string"
+                              },
+                              "quantity": {
+                                "type": "integer"
+                              },
+                              "serialNumber": {
+                                "type": "string",
+                                "nullable": true
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Shipment not found"
+          }
+        }
       }
     },
     "/api/shipments/{shipmentId}/accept": {
@@ -952,6 +1152,145 @@
         }
       }
     },
+    "/api/sales/history": {
+      "get": {
+        "summary": "Return seller's own sales history with pagination, search, and date filtering",
+        "tags": [
+          "Sales"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "in": "query",
+            "name": "searchCustomer",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "searchSerial",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "fromDate",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "toDate",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Seller sales history fetched successfully"
+          }
+        }
+      }
+    },
+    "/api/sales/admin/history": {
+      "get": {
+        "summary": "Return all sales across all sellers with pagination, search, filters, and shipment tracing (Admin only)",
+        "tags": [
+          "Sales"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search by customer name, seller name, shop name, product name, or serial number"
+          },
+          {
+            "in": "query",
+            "name": "sellerId",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filter by specific seller ID"
+          },
+          {
+            "in": "query",
+            "name": "fromDate",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "toDate",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "shipmentStatus",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "ACCEPTED",
+                "REJECTED"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Admin sales history fetched successfully"
+          },
+          "403": {
+            "description": "Forbidden — Admin access required"
+          }
+        }
+      }
+    },
     "/api/sales/{transactionId}": {
       "get": {
         "summary": "Return a single sale's details by ID",
@@ -974,29 +1313,6 @@
           },
           "404": {
             "description": "Transaction not found"
-          }
-        }
-      }
-    },
-    "/api/sales/customer/{mobile}": {
-      "get": {
-        "summary": "Return complete purchase history for a customer mobile",
-        "tags": [
-          "Sales"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "mobile",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Customer history fetched successfully"
           }
         }
       }
@@ -2096,6 +2412,24 @@
           },
           "500": {
             "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/recent-activity": {
+      "get": {
+        "summary": "Get recent activity feed (Admin only)",
+        "tags": [
+          "Dashboard"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recent activity retrieved successfully"
           }
         }
       }

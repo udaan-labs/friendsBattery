@@ -1,0 +1,44 @@
+info:
+  name: get_all_shipments_admin
+  type: http
+  seq: 6
+
+http:
+  method: GET
+  url: "{{baseurl}}/shipments"
+  headers:
+    - name: Authorization
+      value: "Bearer {{token}}"
+  body:
+    type: none
+
+docs:
+  description: >
+    Get all shipments (Admin only).
+    Returns all shipments across all sellers with summary info.
+
+  sample_response:
+    success: true
+    message: "All shipments retrieved successfully"
+    data:
+      - shipmentId: 1
+        shipmentNumber: "SHP-101"
+        status: "PENDING"
+        createdAt: "2026-06-25T12:00:00.000Z"
+        acceptedAt: null
+        seller:
+          id: 5
+          userName: "rahul_sharma"
+          shopName: "EcoPower Solutions"
+        totalProducts: 2
+        totalQuantity: 5
+        items:
+          - productName: "UltraLife Max"
+            productModel: "S3-100Ah"
+            quantity: 3
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

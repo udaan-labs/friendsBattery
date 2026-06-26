@@ -74,6 +74,20 @@ class SalesController {
       return errorResponse(res, 500, 'Internal server error');
     }
   }
+
+  /**
+   * Get paginated sales history for Admin — all sellers, with shipment tracing
+   */
+  async getAdminSalesHistory(req, res) {
+    try {
+      const query = req.query;
+      const history = await salesService.getAdminSalesHistory(query);
+      return successResponse(res, 200, 'Admin sales history fetched successfully', history);
+    } catch (error) {
+      console.error('Get Admin Sales History Error:', error);
+      return errorResponse(res, 500, 'Internal server error');
+    }
+  }
 }
 
 module.exports = new SalesController();

@@ -11,29 +11,40 @@ class ShipmentListScreen extends ConsumerWidget {
 
   Color _getStatusColor(String status) {
     switch (status.toUpperCase()) {
-      case 'DELIVERED':
-        return const Color(0xFF00873A); // Green
+      case 'ACCEPTED':
+        return const Color(0xFF00873A);
       case 'PENDING':
-        return const Color(0xFFC05600); // Amber/Orange
-      case 'CANCELLED':
+        return const Color(0xFFC05600);
       case 'REJECTED':
-        return const Color(0xFFBA1A1A); // Red
+        return const Color(0xFFBA1A1A);
       default:
-        return const Color(0xFF586377); // Grey
+        return const Color(0xFF586377);
     }
   }
 
   Color _getStatusBgColor(String status) {
     switch (status.toUpperCase()) {
-      case 'DELIVERED':
+      case 'ACCEPTED':
         return const Color(0xFFE8F5E9);
       case 'PENDING':
         return const Color(0xFFFFF3E0);
-      case 'CANCELLED':
       case 'REJECTED':
         return const Color(0xFFFFEBEE);
       default:
         return const Color(0xFFECEEF0);
+    }
+  }
+
+  IconData _getStatusIcon(String status) {
+    switch (status.toUpperCase()) {
+      case 'ACCEPTED':
+        return Icons.check_circle_outline;
+      case 'PENDING':
+        return Icons.schedule;
+      case 'REJECTED':
+        return Icons.cancel_outlined;
+      default:
+        return Icons.info_outline;
     }
   }
 
@@ -44,7 +55,10 @@ class ShipmentListScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FB),
       appBar: AppBar(
-        title: const Text('Shipments & Transfers'),
+        title: const Text(
+          'Shipments',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+        ),
         backgroundColor: const Color(0xFFF7F9FB),
         elevation: 0,
         leading: IconButton(
@@ -73,7 +87,8 @@ class ShipmentListScreen extends ConsumerWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.local_shipping_outlined, size: 64, color: Colors.grey[400]),
+                          Icon(Icons.local_shipping_outlined,
+                              size: 64, color: Colors.grey[400]),
                           const SizedBox(height: 16),
                           Text(
                             'No shipments created yet.',
@@ -85,7 +100,7 @@ class ShipmentListScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Tap the + button to transfer stock.',
+                            'Tap the + button to create a shipment.',
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[500],
@@ -104,12 +119,13 @@ class ShipmentListScreen extends ConsumerWidget {
               itemCount: shipments.length,
               itemBuilder: (context, index) {
                 final shipment = shipments[index];
-                final formattedDate = DateFormat('dd MMM yyyy, hh:mm a').format(shipment.createdAt);
+                final formattedDate =
+                    DateFormat('dd MMM yyyy, hh:mm a').format(shipment.createdAt);
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: AppTheme.background,
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: const [
                       BoxShadow(
@@ -129,44 +145,75 @@ class ShipmentListScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Header Row
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                'Shipment #${shipment.shipmentId}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF191C1E),
-                                ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    shipment.shipmentNumber,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                      color: Color(0xFF191C1E),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '#${shipment.shipmentId}',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF586377),
+                                    ),
+                                  ),
+                                ],
                               ),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 5),
                                 decoration: BoxDecoration(
                                   color: _getStatusBgColor(shipment.status),
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(20),
                                 ),
-                                child: Text(
-                                  shipment.status.toUpperCase(),
-                                  style: TextStyle(
-                                    color: _getStatusColor(shipment.status),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      _getStatusIcon(shipment.status),
+                                      size: 13,
+                                      color: _getStatusColor(shipment.status),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      shipment.status.toUpperCase(),
+                                      style: TextStyle(
+                                        color: _getStatusColor(shipment.status),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 12),
+
+                          // Seller Row
                           Row(
                             children: [
-                              const Icon(Icons.store, size: 18, color: Color(0xFF586377)),
-                              const SizedBox(width: 8),
+                              const Icon(Icons.store_outlined,
+                                  size: 16, color: Color(0xFF586377)),
+                              const SizedBox(width: 6),
                               Expanded(
                                 child: Text(
-                                  '${shipment.shopName} (${shipment.sellerName})',
+                                  shipment.shopName.isNotEmpty
+                                      ? '${shipment.shopName} (${shipment.sellerName})'
+                                      : shipment.sellerName,
                                   style: const TextStyle(
-                                    fontSize: 14,
+                                    fontSize: 13,
                                     fontWeight: FontWeight.w500,
                                     color: Color(0xFF191C1E),
                                   ),
@@ -174,11 +221,14 @@ class ShipmentListScreen extends ConsumerWidget {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 6),
+
+                          // Date Row
                           Row(
                             children: [
-                              const Icon(Icons.calendar_today, size: 16, color: Color(0xFF586377)),
-                              const SizedBox(width: 8),
+                              const Icon(Icons.calendar_today,
+                                  size: 14, color: Color(0xFF586377)),
+                              const SizedBox(width: 6),
                               Text(
                                 formattedDate,
                                 style: const TextStyle(
@@ -189,51 +239,21 @@ class ShipmentListScreen extends ConsumerWidget {
                             ],
                           ),
                           const Divider(height: 24, thickness: 1),
+
+                          // Summary Row
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Total Items',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF586377),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '${shipment.totalProducts} pcs',
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF191C1E),
-                                    ),
-                                  ),
-                                ],
+                              _SummaryChip(
+                                icon: Icons.category_outlined,
+                                label: '${shipment.totalProducts} product type${shipment.totalProducts != 1 ? 's' : ''}',
                               ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  const Text(
-                                    'Shipment Value',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF586377),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '₹${shipment.totalAmount.toStringAsFixed(2)}',
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF006B2C),
-                                    ),
-                                  ),
-                                ],
+                              _SummaryChip(
+                                icon: Icons.inventory_2_outlined,
+                                label: '${shipment.totalQuantity} unit${shipment.totalQuantity != 1 ? 's' : ''}',
                               ),
+                              const Icon(Icons.chevron_right,
+                                  color: Color(0xFF586377)),
                             ],
                           ),
                         ],
@@ -249,7 +269,8 @@ class ShipmentListScreen extends ConsumerWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error_outline, size: 48, color: AppTheme.error),
+                const Icon(Icons.error_outline,
+                    size: 48, color: AppTheme.error),
                 const SizedBox(height: 16),
                 Text('Failed to load shipments: $err'),
                 const SizedBox(height: 16),
@@ -269,8 +290,28 @@ class ShipmentListScreen extends ConsumerWidget {
         backgroundColor: const Color(0xFF006B2C),
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
-        label: const Text('Transfer Stock'),
+        label: const Text('Create Shipment'),
       ),
+    );
+  }
+}
+
+class _SummaryChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  const _SummaryChip({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 14, color: const Color(0xFF586377)),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 13, color: Color(0xFF586377)),
+        ),
+      ],
     );
   }
 }

@@ -43,9 +43,27 @@ const salesHistorySchema = z.object({
   }),
 });
 
+/**
+ * Validation schema for Admin sales history
+ * Supports search by customer name, seller name/shop, product name, serial number
+ * Filters by sellerId, date range, shipment status
+ */
+const adminSalesHistorySchema = z.object({
+  query: z.object({
+    page: z.string().regex(/^\d+$/, 'Page must be numeric').transform(Number).default('1').transform(Number),
+    limit: z.string().regex(/^\d+$/, 'Limit must be numeric').transform(Number).default('10').transform(Number),
+    search: z.string().optional(),
+    sellerId: z.string().regex(/^\d+$/, 'Seller ID must be numeric').transform(Number).optional(),
+    fromDate: z.string().datetime().optional(),
+    toDate: z.string().datetime().optional(),
+    shipmentStatus: z.enum(['PENDING', 'ACCEPTED', 'REJECTED']).optional(),
+  }),
+});
+
 module.exports = {
   createSaleSchema,
   viewSaleSchema,
   customerSalesSchema,
   salesHistorySchema,
+  adminSalesHistorySchema,
 };

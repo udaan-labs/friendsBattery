@@ -38,6 +38,39 @@ class ShipmentsController {
     }
   }
 
+  /**
+   * GET /api/shipments — Admin: list all shipments.
+   */
+  async getAllShipments(req, res) {
+    try {
+      const result = await shipmentsService.getAllShipments();
+      return successResponse(res, 200, 'All shipments retrieved successfully', result);
+    } catch (error) {
+      console.error('Get All Shipments Error:', error);
+      return errorResponse(res, 500, 'Internal server error');
+    }
+  }
+
+  /**
+   * GET /api/shipments/:id — Admin or Seller: get shipment detail.
+   */
+  async getShipmentById(req, res) {
+    try {
+      const userId = Number(req.user.id);
+      const userRole = req.user.role; // 'ADMIN' or 'SELLER'
+      const shipmentId = Number(req.params.id);
+
+      const result = await shipmentsService.getShipmentById(shipmentId, userId, userRole);
+      return successResponse(res, 200, 'Shipment retrieved successfully', result);
+    } catch (error) {
+      if (error.statusCode) {
+        return errorResponse(res, error.statusCode, error.message);
+      }
+      console.error('Get Shipment By ID Error:', error);
+      return errorResponse(res, 500, 'Internal server error');
+    }
+  }
+
   async acceptShipment(req, res) {
     try {
       const sellerId = Number(req.user.id);
