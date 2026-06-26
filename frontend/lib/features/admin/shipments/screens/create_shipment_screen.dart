@@ -410,13 +410,16 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
           },
         ),
       ),
-      body: Center(
+      body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Seller & Dates Card
                 Container(
@@ -462,11 +465,12 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                       const SizedBox(height: 20),
 
                       // Dates Row
-                      Row(
-                        children: [
-                          // Dispatch Date
-                          Expanded(
-                            child: Column(
+                      Builder(
+                        builder: (context) {
+                          final isNarrow = MediaQuery.of(context).size.width < 440;
+                          final datesContent = [
+                            // Dispatch Date
+                            Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text(
@@ -496,12 +500,9 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                                 ),
                               ],
                             ),
-                          ),
-                          const SizedBox(width: 16),
-
-                          // Expected Arrival Date
-                          Expanded(
-                            child: Column(
+                            if (isNarrow) const SizedBox(height: 16) else const SizedBox(width: 16),
+                            // Expected Arrival Date
+                            Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text(
@@ -531,8 +532,21 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                                 ),
                               ],
                             ),
-                          ),
-                        ],
+                          ];
+
+                          return isNarrow
+                              ? Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: datesContent,
+                                )
+                              : Row(
+                                  children: [
+                                    Expanded(child: datesContent[0]),
+                                    const SizedBox(width: 16),
+                                    Expanded(child: datesContent[2]),
+                                  ],
+                                );
+                        },
                       ),
                     ],
                   ),
@@ -821,6 +835,8 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                         ),
                 ),
               ],
+                ),
+              ),
             ),
           ),
         ),

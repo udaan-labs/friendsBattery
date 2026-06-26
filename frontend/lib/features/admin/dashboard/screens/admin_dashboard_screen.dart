@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:friends_battery_api/friends_battery_api.dart';
-import '../../../../shared/providers/auth_provider.dart';
+
 import '../../../../shared/widgets/common_pull_to_refresh.dart';
 import '../../../../core/network/api_client_provider.dart';
 import '../../../../core/storage/local_storage.dart';
@@ -33,43 +32,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   bool _isLoadingStock = false;
   List<Map<String, dynamic>> _flatStockItems = [];
 
-  // Manage Sellers tab state variables
-  bool _isLoadingSellers = false;
-  List<dynamic> _sellers = [];
-
-  // Add Product tab state variables
-  final _addStockFormKey = GlobalKey<FormState>();
-  final _quantityController = TextEditingController();
-  final _minPriceController = TextEditingController();
-  bool _isLoadingCategories = false;
-  bool _isLoadingNames = false;
-  bool _isLoadingModels = false;
-  bool _isLoadingDetails = false;
-  bool _isSubmittingStock = false;
-
-  List<Map<String, String>> _categories = [];
-  List<Map<String, String>> _productNames = [];
-  List<Map<String, String>> _productModels = [];
-
-  String? _selectedCategoryId;
-  String? _selectedProductNameId;
-  String? _selectedProductModelId;
-
-  int? _currentDetailsStock;
-  num? _currentMinPrice;
-
   @override
   void initState() {
     super.initState();
     // Pre-load data based on default view
     ref.read(dashboardControllerProvider).refreshAllData();
-  }
-
-  @override
-  void dispose() {
-    _quantityController.dispose();
-    _minPriceController.dispose();
-    super.dispose();
   }
 
   void _switchTab(String tabId) {
@@ -82,10 +49,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
     if (tabId == 'dashboard') {
       ref.read(dashboardControllerProvider).refreshAllData();
-    } else if (tabId == 'manage_sellers') {
-      _fetchSellers();
-    } else if (tabId == 'add_product') {
-      _loadCategories();
     }
   }
 
@@ -154,259 +117,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       }
     }
   }
-
-  // --- API Methods for Manage Sellers ---
-  Future<void> _fetchSellers() async {
-    setState(() {
-      _isLoadingSellers = true;
-      _sellers = [];
-    });
-
-    try {
-      final dio = ref.read(apiClientProvider).dio;
-      final response = await dio.get('/api/shops/sellers');
-      final body = response.data;
-      if (body != null && body['success'] == true && body['data'] is List) {
-        setState(() {
-          _sellers = body['data'] as List;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        context.showErrorSnackBar('Failed to retrieve registered sellers');
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoadingSellers = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _updateSellerState(String sellerId, bool isActive, bool isVerified) async {
-    try {
-      final dio = ref.read(apiClientProvider).dio;
-      final response = await dio.put('/api/auth/activate', data: {
-        'user_id': sellerId,
-        'is_active': isActive,
-        'is_verified': isVerified,
-      });
-
-      final body = response.data;
-      if (body != null && body['success'] == true) {
-        if (mounted) {
-          context.showSuccessSnackBar('Seller status updated successfully');
-        }
-        _fetchSellers();
-      } else {
-        if (mounted) {
-          context.showErrorSnackBar(body['message'] ?? 'Action failed');
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        context.showErrorSnackBar('Connection or transaction error');
-      }
-    }
-  }
-
-  // --- API Methods for Add Product Form ---
-  Future<void> _loadCategories() async {
-    setState(() {
-      _isLoadingCategories = true;
-      _categories = [];
-      _selectedCategoryId = null;
-      _productNames = [];
-      _selectedProductNameId = null;
-      _productModels = [];
-      _selectedProductModelId = null;
-      _currentDetailsStock = null;
-      _currentMinPrice = null;
-    });
-    try {
-      final api = ref.read(apiClientProvider).getProductsApi();
-      final response = await api.apiProductsCategoriesGet();
-      final data = (response as dynamic).data;
-      if (data is Map<String, dynamic> && data['data'] is List) {
-        final list = data['data'] as List;
-        setState(() {
-          _categories = list.map((item) {
-            return {
-              'id': item['id'].toString(),
-              'name': item['name'].toString(),
-            };
-          }).toList();
-        });
-      }
-    } catch (e) {
-      // Ignored
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoadingCategories = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _loadProductNames(String categoryId) async {
-    setState(() {
-      _isLoadingNames = true;
-      _productNames = [];
-      _selectedProductNameId = null;
-      _productModels = [];
-      _selectedProductModelId = null;
-      _currentDetailsStock = null;
-      _currentMinPrice = null;
-    });
-
-    try {
-      final api = ref.read(apiClientProvider).getProductsApi();
-      final request = ApiProductsProductNamesListPostRequest((b) => b..categoryId = int.parse(categoryId));
-      final response = await api.apiProductsProductNamesListPost(
-        apiProductsProductNamesListPostRequest: request,
-      );
-      final data = (response as dynamic).data;
-      if (data is Map<String, dynamic> && data['data'] is List) {
-        final list = data['data'] as List;
-        setState(() {
-          _productNames = list.map((item) {
-            return {
-              'id': item['id'].toString(),
-              'name': item['name'].toString(),
-            };
-          }).toList();
-        });
-      }
-    } catch (e) {
-      // Ignored
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoadingNames = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _loadProductModels(String productNameId) async {
-    setState(() {
-      _isLoadingModels = true;
-      _productModels = [];
-      _selectedProductModelId = null;
-      _currentDetailsStock = null;
-      _currentMinPrice = null;
-    });
-
-    try {
-      final api = ref.read(apiClientProvider).getProductsApi();
-      final request = ApiProductsProductModelsListPostRequest((b) => b
-        ..categoryId = int.parse(_selectedCategoryId!)
-        ..productNameId = int.parse(productNameId));
-      final response = await api.apiProductsProductModelsListPost(
-        apiProductsProductModelsListPostRequest: request,
-      );
-      final data = (response as dynamic).data;
-      if (data is Map<String, dynamic> && data['data'] is List) {
-        final list = data['data'] as List;
-        setState(() {
-          _productModels = list.map((item) {
-            return {
-              'id': item['id'].toString(),
-              'name': item['name'].toString(),
-            };
-          }).toList();
-        });
-      }
-    } catch (e) {
-      // Ignored
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoadingModels = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _loadProductDetails(String productModelId) async {
-    setState(() {
-      _isLoadingDetails = true;
-      _currentDetailsStock = null;
-      _currentMinPrice = null;
-    });
-
-    try {
-      final api = ref.read(apiClientProvider).getInventoryApi();
-      final response = await api.apiInventoryProductDetailsGet(
-        categoryId: _selectedCategoryId!,
-        productNameId: _selectedProductNameId!,
-        productModelId: productModelId,
-      );
-
-      final details = response.data?.data;
-      if (details != null) {
-        setState(() {
-          _currentDetailsStock = details.currentStock ?? 0;
-          _currentMinPrice = details.minSellPrice ?? 0;
-        });
-      }
-    } catch (e) {
-      // Ignored
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoadingDetails = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _submitStockUpdate() async {
-    if (!_addStockFormKey.currentState!.validate()) return;
-    if (_selectedCategoryId == null || _selectedProductNameId == null || _selectedProductModelId == null) {
-      context.showErrorSnackBar('Please select all product fields');
-      return;
-    }
-
-    setState(() {
-      _isSubmittingStock = true;
-    });
-
-    try {
-      final api = ref.read(apiClientProvider).getInventoryApi();
-      final quantity = int.parse(_quantityController.text);
-      final minPrice = _minPriceController.text.isNotEmpty ? num.parse(_minPriceController.text) : null;
-
-      final request = ApiInventoryUpdateStockPostRequest((b) => b
-        ..productCategoryId = int.parse(_selectedCategoryId!)
-        ..productNameId = int.parse(_selectedProductNameId!)
-        ..productModelId = int.parse(_selectedProductModelId!)
-        ..quantity = quantity
-        ..minSellPrice = minPrice);
-
-      await api.apiInventoryUpdateStockPost(
-        apiInventoryUpdateStockPostRequest: request,
-      );
-
-      if (mounted) {
-        context.showSuccessSnackBar('Stock level updated successfully');
-        _quantityController.clear();
-        _minPriceController.clear();
-        _switchTab('view_stock');
-      }
-    } catch (e) {
-      // Ignored
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmittingStock = false;
-        });
-      }
-    }
-  }
-
 
   String _getInitials(String name) {
     if (name.isEmpty) return 'AD';
@@ -646,7 +356,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           ],
         ),
       ),
-      body: _buildCurrentTabView(isDesktop),
+      body: SafeArea(
+        child: _buildCurrentTabView(isDesktop),
+      ),
       ),
     );
   }
@@ -865,136 +577,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               ),
             ],
           ),
-        ),
-      ],
-    );
-  }
-
-  // --- Sub-View: Manage Sellers ---
-  Widget _buildManageSellersTabView() {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('Sellers Administration', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF006B2C))),
-              IconButton(icon: const Icon(Icons.refresh), onPressed: _fetchSellers),
-            ],
-          ),
-        ),
-        Expanded(
-          child: _isLoadingSellers
-              ? const Center(child: CircularProgressIndicator())
-              : _sellers.isEmpty
-                  ? const Center(child: Text('No registered sellers.'))
-                  : ListView.builder(
-                      itemCount: _sellers.length,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemBuilder: (context, index) {
-                        final seller = _sellers[index];
-                        final sellerId = seller['userId'] ?? '';
-                        final name = seller['userName'] ?? '';
-                        final shop = seller['shopName'] ?? '-';
-                        final phone = seller['userNumber'] ?? '-';
-                        final isVerified = seller['isVerified'] ?? false;
-                        final isActive = seller['isActive'] ?? false;
-
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          color: Colors.white,
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF191C1E))),
-                                    Text(sellerId, style: const TextStyle(fontFamily: 'monospace', fontSize: 12, color: Color(0xFF3E4A3D))),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                Text('Shop: $shop', style: const TextStyle(fontSize: 13, color: Color(0xFF3E4A3D))),
-                                Text('Phone: $phone', style: const TextStyle(fontSize: 13, color: Color(0xFF3E4A3D))),
-                                const SizedBox(height: 12),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        // Verification status label
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: isVerified ? const Color(0xFFF7FFF2) : const Color(0xFFFFDAD6),
-                                            borderRadius: BorderRadius.circular(999),
-                                          ),
-                                          child: Text(
-                                            isVerified ? 'Verified' : 'Pending',
-                                            style: TextStyle(
-                                              color: isVerified ? const Color(0xFF005320) : const Color(0xFF93000a),
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        // Active status label
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: isActive ? const Color(0xFFF7FFF2) : const Color(0xFFECEEF0),
-                                            borderRadius: BorderRadius.circular(999),
-                                          ),
-                                          child: Text(
-                                            isActive ? 'Active' : 'Suspended',
-                                            style: TextStyle(
-                                              color: isActive ? const Color(0xFF006B2C) : const Color(0xFF3E4A3D),
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Row(
-                                      children: [
-                                        if (!isVerified)
-                                          ElevatedButton(
-                                            onPressed: () => _updateSellerState(sellerId, true, true),
-                                            style: ElevatedButton.styleFrom(
-                                              minimumSize: const Size(0, 48),
-                                              backgroundColor: const Color(0xFF006B2C),
-                                              foregroundColor: Colors.white,
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
-                                            ),
-                                            child: const Text('Verify'),
-                                          )
-                                        else
-                                          ElevatedButton(
-                                            onPressed: () => _updateSellerState(sellerId, !isActive, true),
-                                            style: ElevatedButton.styleFrom(
-                                              minimumSize: const Size(0, 48),
-                                              backgroundColor: isActive ? const Color(0xFFBA1A1A) : const Color(0xFF006B2C),
-                                              foregroundColor: Colors.white,
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
-                                            ),
-                                            child: Text(isActive ? 'Suspend' : 'Activate'),
-                                          ),
-                                      ],
-                                    )
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
         ),
       ],
     );

@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:friends_battery_api/friends_battery_api.dart';
 import '../repository/auth_repository.dart';
 import '../../../core/storage/session_manager.dart';
 import '../../../shared/providers/auth_provider.dart';

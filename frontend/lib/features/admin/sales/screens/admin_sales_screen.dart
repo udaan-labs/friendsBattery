@@ -86,8 +86,9 @@ class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
           },
         ),
       ),
-      body: Column(
-        children: [
+      body: SafeArea(
+        child: Column(
+          children: [
           // ── Search bar ──────────────────────────────────────────────
           Container(
             color: Colors.white,
@@ -145,8 +146,9 @@ class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildBody(AdminSalesHistoryState state) {
     // Initial loading shimmer

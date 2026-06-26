@@ -25,7 +25,7 @@ class SellerDashboardScreen extends ConsumerWidget {
         backgroundColor: const Color(0xFFF7F9FB), // bg-surface
         elevation: 0,
         scrolledUnderElevation: 4,
-        shadowColor: Colors.black.withOpacity(0.1),
+        shadowColor: Colors.black.withValues(alpha: 0.1),
         leading: IconButton(
           icon: const Icon(Icons.menu, color: Color(0xFF3E4A3D)),
           onPressed: () => sellerScaffoldKey.currentState?.openDrawer(),
@@ -63,9 +63,10 @@ class SellerDashboardScreen extends ConsumerWidget {
           const SizedBox(width: 8),
         ],
       ),
-      body: CommonPullToRefresh(
-        onRefresh: () => ref.read(sellerDashboardControllerProvider).refreshAllData(),
-        child: CustomScrollView(
+      body: SafeArea(
+        child: CommonPullToRefresh(
+          onRefresh: () => ref.read(sellerDashboardControllerProvider).refreshAllData(),
+          child: CustomScrollView(
           slivers: [
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
@@ -107,7 +108,7 @@ class SellerDashboardScreen extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
+                              color: Colors.black.withValues(alpha: 0.04),
                               blurRadius: 12,
                               offset: const Offset(0, 4),
                             ),
@@ -178,6 +179,7 @@ class SellerDashboardScreen extends ConsumerWidget {
             ),
           ],
         ),
+      ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {

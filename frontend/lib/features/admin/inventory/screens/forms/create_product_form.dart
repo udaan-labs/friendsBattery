@@ -31,7 +31,6 @@ class _CreateProductFormState extends ConsumerState<CreateProductForm> {
   List<Map<String, String>> _productNames = [];
   List<Map<String, String>> _productModels = [];
   
-  String? _selectedGroupId;
   String? _selectedCategoryId;
   String? _selectedProductNameId;
   String? _selectedProductModelId;
@@ -213,12 +212,13 @@ class _CreateProductFormState extends ConsumerState<CreateProductForm> {
         backgroundColor: const Color(0xFFF7F9FB),
         elevation: 0,
       ),
-      body: Center(
+      body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: Container(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Container(
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
@@ -244,7 +244,6 @@ class _CreateProductFormState extends ConsumerState<CreateProductForm> {
                             dropdownMenuEntries: _groups.map((g) => DropdownMenuEntry(value: g['id']!, label: g['name']!)).toList(),
                             onSelected: (id) {
                               if (id != null) {
-                                setState(() => _selectedGroupId = id);
                                 _loadCategories(id);
                               }
                             },
@@ -397,6 +396,7 @@ class _CreateProductFormState extends ConsumerState<CreateProductForm> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

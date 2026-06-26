@@ -47,7 +47,7 @@ class RecentInventoryList extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -147,16 +147,16 @@ class RecentInventoryList extends ConsumerWidget {
 
     switch (status) {
       case 'Available':
-        bgColor = const Color(0xFF16A34A).withOpacity(0.1);
+        bgColor = const Color(0xFF16A34A).withValues(alpha: 0.1);
         textColor = const Color(0xFF16A34A);
         break;
       case 'Low Stock':
-        bgColor = const Color(0xFFBA1A1A).withOpacity(0.1);
+        bgColor = const Color(0xFFBA1A1A).withValues(alpha: 0.1);
         textColor = const Color(0xFFBA1A1A);
         break;
       case 'Sold':
       default:
-        bgColor = const Color(0xFF545F73).withOpacity(0.1);
+        bgColor = const Color(0xFF545F73).withValues(alpha: 0.1);
         textColor = const Color(0xFF545F73);
         break;
     }

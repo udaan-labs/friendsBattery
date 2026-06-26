@@ -99,13 +99,15 @@ class _ShipmentDetailsScreenState
           ),
         ],
       ),
-      body: detailState.when(
-        data: (data) => _buildBody(data),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => _ErrorView(
-          error: e.toString(),
-          onRetry: () => ref
-              .invalidate(sellerShipmentDetailProvider(widget.shipmentId)),
+      body: SafeArea(
+        child: detailState.when(
+          data: (data) => _buildBody(data),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => _ErrorView(
+            error: e.toString(),
+            onRetry: () => ref
+                .invalidate(sellerShipmentDetailProvider(widget.shipmentId)),
+          ),
         ),
       ),
     );
@@ -343,29 +345,31 @@ class _StatusBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: _bg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _fg.withOpacity(0.3)),
+        border: Border.all(color: _fg.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
           Icon(_icon, color: _fg, size: 28),
           const SizedBox(width: 14),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Shipment Status',
-                  style:
-                      TextStyle(fontSize: 12, color: Color(0xFF586377))),
-              const SizedBox(height: 2),
-              Text(
-                status.toUpperCase(),
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                  color: _fg,
-                  letterSpacing: 0.5,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Shipment Status',
+                    style:
+                        TextStyle(fontSize: 12, color: Color(0xFF586377))),
+                const SizedBox(height: 2),
+                Text(
+                  status.toUpperCase(),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: _fg,
+                    letterSpacing: 0.5,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -550,7 +554,7 @@ class _ProductCard extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: const Color(0xFF006B2C).withOpacity(0.1),
+                color: const Color(0xFF006B2C).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Center(

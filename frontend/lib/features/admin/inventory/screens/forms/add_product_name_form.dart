@@ -135,70 +135,72 @@ class _AddProductNameFormState extends ConsumerState<AddProductNameForm> {
         backgroundColor: const Color(0xFFF7F9FB),
         elevation: 0,
       ),
-      body: Center(
+      body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: const [
-                  BoxShadow(color: Color(0x0A000000), blurRadius: 12, offset: Offset(0, 4)),
-                ],
-              ),
-              padding: const EdgeInsets.all(24),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text('Group', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E))),
-                    const SizedBox(height: 8),
-                    _isLoadingGroups
-                        ? const Center(child: CircularProgressIndicator())
-                        : DropdownMenu<String>(
-                            expandedInsets: EdgeInsets.zero,
-                            enableFilter: true,
-                            hintText: 'Select Existing Group',
-                            dropdownMenuEntries: _groups.map((g) => DropdownMenuEntry(value: g['id']!, label: g['name']!)).toList(),
-                            onSelected: (id) {
-                              if (id != null) {
-                                setState(() => _selectedGroupId = id);
-                                _loadCategories(id);
-                              }
-                            },
-                          ),
-                    const SizedBox(height: 16),
-
-                    const Text('Category', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E))),
-                    const SizedBox(height: 8),
-                    _isLoadingCategories
-                        ? const Center(child: CircularProgressIndicator())
-                        : DropdownMenu<String>(
-                            key: ValueKey('cat_$_selectedGroupId'),
-                            expandedInsets: EdgeInsets.zero,
-                            enableFilter: true,
-                            enabled: _selectedGroupId != null,
-                            hintText: 'Select Existing Category',
-                            dropdownMenuEntries: _categories.map((c) => DropdownMenuEntry(value: c['id']!, label: c['name']!)).toList(),
-                            onSelected: (id) => setState(() => _selectedCategoryId = id),
-                          ),
-                    const SizedBox(height: 16),
-
-                    _buildTextField('Product Name', _productNameController),
-                    const SizedBox(height: 16),
-                    _buildTextField('Product Model', _productModelController),
-                    const SizedBox(height: 32),
-
-                    ElevatedButton(
-                      onPressed: _isSubmitting ? null : _submit,
-                      child: _isSubmitting
-                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : const Text('Save Product Name'),
-                    ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: const [
+                    BoxShadow(color: Color(0x0A000000), blurRadius: 12, offset: Offset(0, 4)),
                   ],
+                ),
+                padding: const EdgeInsets.all(24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text('Group', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E))),
+                      const SizedBox(height: 8),
+                      _isLoadingGroups
+                          ? const Center(child: CircularProgressIndicator())
+                          : DropdownMenu<String>(
+                              expandedInsets: EdgeInsets.zero,
+                              enableFilter: true,
+                              hintText: 'Select Existing Group',
+                              dropdownMenuEntries: _groups.map((g) => DropdownMenuEntry(value: g['id']!, label: g['name']!)).toList(),
+                              onSelected: (id) {
+                                if (id != null) {
+                                  setState(() => _selectedGroupId = id);
+                                  _loadCategories(id);
+                                }
+                              },
+                            ),
+                      const SizedBox(height: 16),
+
+                      const Text('Category', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E))),
+                      const SizedBox(height: 8),
+                      _isLoadingCategories
+                          ? const Center(child: CircularProgressIndicator())
+                          : DropdownMenu<String>(
+                              key: ValueKey('cat_$_selectedGroupId'),
+                              expandedInsets: EdgeInsets.zero,
+                              enableFilter: true,
+                              enabled: _selectedGroupId != null,
+                              hintText: 'Select Existing Category',
+                              dropdownMenuEntries: _categories.map((c) => DropdownMenuEntry(value: c['id']!, label: c['name']!)).toList(),
+                              onSelected: (id) => setState(() => _selectedCategoryId = id),
+                            ),
+                      const SizedBox(height: 16),
+
+                      _buildTextField('Product Name', _productNameController),
+                      const SizedBox(height: 16),
+                      _buildTextField('Product Model', _productModelController),
+                      const SizedBox(height: 32),
+
+                      ElevatedButton(
+                        onPressed: _isSubmitting ? null : _submit,
+                        child: _isSubmitting
+                            ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                            : const Text('Save Product Name'),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

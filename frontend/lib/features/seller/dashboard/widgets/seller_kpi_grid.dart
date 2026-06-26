@@ -9,6 +9,7 @@ class SellerKpiGrid extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final kpiData = ref.watch(sellerKpiProvider);
+    final screenWidth = MediaQuery.of(context).size.width;
 
     Widget buildGrid(int stock, double salesAmount, int salesCount, double growth) {
       // Format salesAmount: if >= 1000, display as e.g., 42.5k
@@ -17,12 +18,15 @@ class SellerKpiGrid extends ConsumerWidget {
         formattedSales = '₹${(salesAmount / 1000).toStringAsFixed(1)}k';
       }
 
+      // Responsive aspect ratio based on width to prevent vertical overflow on narrow/large-font devices
+      final aspectRatio = screenWidth < 360 ? 0.9 : (screenWidth < 400 ? 1.0 : 1.1);
+
       return SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
-          childAspectRatio: 1.1,
+          childAspectRatio: aspectRatio,
         ),
         delegate: SliverChildListDelegate(
           [
@@ -36,7 +40,7 @@ class SellerKpiGrid extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -53,7 +57,7 @@ class SellerKpiGrid extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF16A34A).withOpacity(0.1),
+                              color: const Color(0xFF16A34A).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Icon(
@@ -79,26 +83,32 @@ class SellerKpiGrid extends ConsumerWidget {
                               fontWeight: FontWeight.w600,
                               color: Color(0xFF545F73),
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),
-                          RichText(
-                            text: TextSpan(
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF191C1E),
-                              ),
-                              children: [
-                                TextSpan(text: '$stock '),
-                                const TextSpan(
-                                  text: 'units',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.normal,
-                                    color: Color(0xFF545F73),
-                                  ),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: RichText(
+                              text: TextSpan(
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF191C1E),
                                 ),
-                              ],
+                                children: [
+                                  TextSpan(text: '$stock '),
+                                  const TextSpan(
+                                    text: 'units',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.normal,
+                                      color: Color(0xFF545F73),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
@@ -116,7 +126,7 @@ class SellerKpiGrid extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -133,7 +143,7 @@ class SellerKpiGrid extends ConsumerWidget {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0051D5).withOpacity(0.1),
+                          color: const Color(0xFF0051D5).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(
@@ -171,26 +181,32 @@ class SellerKpiGrid extends ConsumerWidget {
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF545F73),
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
-                      RichText(
-                        text: TextSpan(
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF191C1E),
-                          ),
-                          children: [
-                            TextSpan(text: '$formattedSales '),
-                            TextSpan(
-                              text: '$salesCount orders',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.normal,
-                                color: Color(0xFF545F73),
-                              ),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: RichText(
+                          text: TextSpan(
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF191C1E),
                             ),
-                          ],
+                            children: [
+                              TextSpan(text: '$formattedSales '),
+                              TextSpan(
+                                text: '$salesCount orders',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.normal,
+                                  color: Color(0xFF545F73),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],

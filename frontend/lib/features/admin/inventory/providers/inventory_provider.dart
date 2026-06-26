@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:friends_battery_api/friends_battery_api.dart';
 import '../repository/inventory_repository.dart';
 import '../../../../../core/network/api_client_provider.dart';
 

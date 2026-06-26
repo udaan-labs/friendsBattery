@@ -281,18 +281,22 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
           onPressed: _onBackPressed,
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Info banner
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFD5E0F8).withOpacity(0.4),
+                  color: const Color(0xFFD5E0F8).withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: const Color(0xFFD5E0F8)),
                 ),
@@ -566,8 +570,12 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
               const SizedBox(height: 16),
             ],
           ),
+            ),
+          ),
         ),
       ),
-    ));
-  }
+    ),
+  ),
+);
+}
 }

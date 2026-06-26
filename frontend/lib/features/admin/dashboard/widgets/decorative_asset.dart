@@ -13,7 +13,7 @@ class DecorativeAsset extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 6,
               offset: const Offset(0, 4),
             ),
@@ -31,7 +31,7 @@ class DecorativeAsset extends StatelessWidget {
               begin: Alignment.bottomCenter,
               end: Alignment.topCenter,
               colors: [
-                const Color(0xFF006B2C).withOpacity(0.8),
+                const Color(0xFF006B2C).withValues(alpha: 0.8),
                 Colors.transparent,
               ],
             ),

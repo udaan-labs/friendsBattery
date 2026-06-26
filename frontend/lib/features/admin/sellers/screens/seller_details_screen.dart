@@ -63,14 +63,16 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          ref.refresh(sellerDetailsProvider(widget.sellerId));
-        },
-        child: asyncData.when(
-          data: (data) => _buildContent(data),
-          loading: () => _buildLoadingState(),
-          error: (err, stack) => _buildErrorState(err),
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(sellerDetailsProvider(widget.sellerId));
+          },
+          child: asyncData.when(
+            data: (data) => _buildContent(data),
+            loading: () => _buildLoadingState(),
+            error: (err, stack) => _buildErrorState(err),
+          ),
         ),
       ),
     );
@@ -92,39 +94,44 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
           ),
           const SizedBox(height: 24),
           
-          GridView.count(
-            crossAxisCount: 2,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: 1.0,
-            children: [
-              StatisticCard(
-                label: 'Stock',
-                value: data.stock.toString(),
-                icon: Icons.inventory_2_rounded,
-                color: Colors.blue,
-              ),
-              StatisticCard(
-                label: 'Products',
-                value: data.products.toString(),
-                icon: Icons.category_rounded,
-                color: Colors.purple,
-              ),
-              StatisticCard(
-                label: 'Sales',
-                value: data.sales.toString(),
-                icon: Icons.payments_rounded,
-                color: Colors.green,
-              ),
-              StatisticCard(
-                label: 'Returns',
-                value: data.returns.toString(),
-                icon: Icons.keyboard_return_rounded,
-                color: Colors.orange,
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final double ratio = constraints.maxWidth < 360 ? 0.95 : 1.15;
+              return GridView.count(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                childAspectRatio: ratio,
+                children: [
+                  StatisticCard(
+                    label: 'Stock',
+                    value: data.stock.toString(),
+                    icon: Icons.inventory_2_rounded,
+                    color: Colors.blue,
+                  ),
+                  StatisticCard(
+                    label: 'Products',
+                    value: data.products.toString(),
+                    icon: Icons.category_rounded,
+                    color: Colors.purple,
+                  ),
+                  StatisticCard(
+                    label: 'Sales',
+                    value: data.sales.toString(),
+                    icon: Icons.payments_rounded,
+                    color: Colors.green,
+                  ),
+                  StatisticCard(
+                    label: 'Returns',
+                    value: data.returns.toString(),
+                    icon: Icons.keyboard_return_rounded,
+                    color: Colors.orange,
+                  ),
+                ],
+              );
+            },
           ),
           
           const SizedBox(height: 32),
@@ -197,19 +204,24 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
           children: [
             _buildSkeleton(height: 200),
             const SizedBox(height: 24),
-            GridView.count(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              childAspectRatio: 1.0,
-              children: [
-                _buildSkeleton(),
-                _buildSkeleton(),
-                _buildSkeleton(),
-                _buildSkeleton(),
-              ],
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final double ratio = constraints.maxWidth < 360 ? 0.95 : 1.15;
+                return GridView.count(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  childAspectRatio: ratio,
+                  children: [
+                    _buildSkeleton(),
+                    _buildSkeleton(),
+                    _buildSkeleton(),
+                    _buildSkeleton(),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 32),
             _buildSkeleton(height: 24, width: 150),
@@ -236,27 +248,30 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
 
   Widget _buildErrorState(Object err) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 48, color: Colors.red),
-          const SizedBox(height: 16),
-          Text(
-            'Failed to load details',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            err.toString(),
-            style: TextStyle(color: Colors.grey.shade600),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => ref.refresh(sellerDetailsProvider(widget.sellerId)),
-            child: const Text('Retry'),
-          ),
-        ],
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            const Text(
+              'Failed to load details',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              err.toString(),
+              style: TextStyle(color: Colors.grey.shade600),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => ref.invalidate(sellerDetailsProvider(widget.sellerId)),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
       ),
     );
   }

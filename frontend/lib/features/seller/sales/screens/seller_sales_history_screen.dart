@@ -54,51 +54,53 @@ class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScr
           },
         ),
       ),
-      body: Column(
-        children: [
-          // Search Bar
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-            child: TextField(
-              controller: _searchController,
-              onChanged: _onSearchChanged,
-              decoration: InputDecoration(
-                hintText: 'Search by customer name or serial number...',
-                hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
-                prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF586377), size: 20),
-                filled: true,
-                fillColor: const Color(0xFFF7F9FB),
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: const BorderSide(color: Color(0xFF16A34A), width: 1.5),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Search Bar
+            Container(
+              color: Colors.white,
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+              child: TextField(
+                controller: _searchController,
+                onChanged: _onSearchChanged,
+                decoration: InputDecoration(
+                  hintText: 'Search by customer name or serial number...',
+                  hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
+                  prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF586377), size: 20),
+                  filled: true,
+                  fillColor: const Color(0xFFF7F9FB),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: const BorderSide(color: Color(0xFF16A34A), width: 1.5),
+                  ),
                 ),
               ),
             ),
-          ),
 
-          // Thin divider between search and list
-          const Divider(height: 1, thickness: 1, color: Color(0xFFEEF0F2)),
+            // Thin divider between search and list
+            const Divider(height: 1, thickness: 1, color: Color(0xFFEEF0F2)),
 
-          // List content — always wrapped in a scrollable for RefreshIndicator
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: _onRefresh,
-              color: const Color(0xFF006B2C),
-              backgroundColor: Colors.white,
-              child: _buildBody(state),
+            // List content — always wrapped in a scrollable for RefreshIndicator
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _onRefresh,
+                color: const Color(0xFF006B2C),
+                backgroundColor: Colors.white,
+                child: _buildBody(state),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

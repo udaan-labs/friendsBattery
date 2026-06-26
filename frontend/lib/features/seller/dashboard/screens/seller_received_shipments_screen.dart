@@ -31,7 +31,8 @@ class SellerReceivedShipmentsScreen extends ConsumerWidget {
           onPressed: () => sellerScaffoldKey.currentState?.openDrawer(),
         ),
       ),
-      body: RefreshIndicator(
+      body: SafeArea(
+        child: RefreshIndicator(
         onRefresh: () => ref.refresh(sellerAllShipmentsProvider.future),
         child: shipmentsAsync.when(
           data: (shipments) {
@@ -103,7 +104,7 @@ class SellerReceivedShipmentsScreen extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
+                          color: Colors.black.withValues(alpha: 0.04),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -183,6 +184,7 @@ class SellerReceivedShipmentsScreen extends ConsumerWidget {
             ),
           ),
         ),
+      ),
       ),
     ));
   }

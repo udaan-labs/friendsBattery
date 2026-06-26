@@ -72,7 +72,8 @@ class ShipmentListScreen extends ConsumerWidget {
           },
         ),
       ),
-      body: CommonPullToRefresh(
+      body: SafeArea(
+        child: CommonPullToRefresh(
         onRefresh: () async {
           ref.invalidate(shipmentsListProvider);
         },
@@ -242,15 +243,19 @@ class ShipmentListScreen extends ConsumerWidget {
 
                           // Summary Row
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              _SummaryChip(
-                                icon: Icons.category_outlined,
-                                label: '${shipment.totalProducts} product type${shipment.totalProducts != 1 ? 's' : ''}',
+                              Expanded(
+                                child: _SummaryChip(
+                                  icon: Icons.category_outlined,
+                                  label: '${shipment.totalProducts} product type${shipment.totalProducts != 1 ? 's' : ''}',
+                                ),
                               ),
-                              _SummaryChip(
-                                icon: Icons.inventory_2_outlined,
-                                label: '${shipment.totalQuantity} unit${shipment.totalQuantity != 1 ? 's' : ''}',
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: _SummaryChip(
+                                  icon: Icons.inventory_2_outlined,
+                                  label: '${shipment.totalQuantity} unit${shipment.totalQuantity != 1 ? 's' : ''}',
+                                ),
                               ),
                               const Icon(Icons.chevron_right,
                                   color: Color(0xFF586377)),
@@ -266,23 +271,30 @@ class ShipmentListScreen extends ConsumerWidget {
           },
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (err, stack) => Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline,
-                    size: 48, color: AppTheme.error),
-                const SizedBox(height: 16),
-                Text('Failed to load shipments: $err'),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () => ref.invalidate(shipmentsListProvider),
-                  child: const Text('Retry'),
-                ),
-              ],
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline,
+                      size: 48, color: AppTheme.error),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Failed to load shipments: $err',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => ref.invalidate(shipmentsListProvider),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
+    ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           context.push('/admin/shipments/create');
@@ -304,12 +316,17 @@ class _SummaryChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, size: 14, color: const Color(0xFF586377)),
         const SizedBox(width: 4),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 13, color: Color(0xFF586377)),
+        Flexible(
+          child: Text(
+            label,
+            style: const TextStyle(fontSize: 13, color: Color(0xFF586377)),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+          ),
         ),
       ],
     );

@@ -122,7 +122,7 @@ class _PendingShipmentsListState extends ConsumerState<PendingShipmentsList> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -153,7 +153,7 @@ class _PendingShipmentsListState extends ConsumerState<PendingShipmentsList> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
+                      color: Colors.black.withValues(alpha: 0.04),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -178,109 +178,136 @@ class _PendingShipmentsListState extends ConsumerState<PendingShipmentsList> {
                         final totalQuantity = shipment.items?.fold<int>(0, (sum, item) => sum + (item.quantity ?? 0)) ?? 0;
                         final timeAgo = _getTimeAgo(shipment.createdAt);
 
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                          child: Row(
-                            children: [
-                              // Left Icon
-                              Container(
-                                width: 48,
-                                height: 48,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFECEEF0),
-                                  borderRadius: BorderRadius.circular(8),
+                        return LayoutBuilder(
+                          builder: (context, constraints) {
+                            final isNarrow = constraints.maxWidth < 440;
+                            
+                            final detailsRow = Row(
+                              children: [
+                                // Left Icon
+                                Container(
+                                  width: 48,
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFECEEF0),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    Icons.local_shipping,
+                                    color: Color(0xFF16A34A),
+                                  ),
                                 ),
-                                child: const Icon(
-                                  Icons.local_shipping,
-                                  color: Color(0xFF16A34A),
+                                const SizedBox(width: 16),
+                                // Center Content
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        shipmentNum,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF191C1E),
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '$totalProducts Products',
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          color: Color(0xFF3E4A3D),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        '$totalQuantity Items • $timeAgo',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFF545F73),
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 16),
-                              // Center Content
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      shipmentNum,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF191C1E),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      '$totalProducts Products',
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500,
-                                        color: Color(0xFF3E4A3D),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      '$totalQuantity Items • $timeAgo',
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Color(0xFF545F73),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              // Right Actions
-                              Row(
-                                children: [
-                                  OutlinedButton(
-                                    onPressed: () {
-                                      context.push('/seller/shipments/$shipmentId');
-                                    },
-                                    style: OutlinedButton.styleFrom(
-                                      side: const BorderSide(color: Color(0xFFBDCABA)),
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                      minimumSize: const Size(60, 36),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                    ),
-                                    child: const Text(
-                                      'View',
-                                      style: TextStyle(
-                                        color: Color(0xFF3E4A3D),
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                              ],
+                            );
+
+                            final actionButtons = Row(
+                              mainAxisAlignment: isNarrow ? MainAxisAlignment.end : MainAxisAlignment.start,
+                              children: [
+                                OutlinedButton(
+                                  onPressed: () {
+                                    context.push('/seller/shipments/$shipmentId');
+                                  },
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(color: Color(0xFFBDCABA)),
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    minimumSize: const Size(60, 36),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
-                                  ElevatedButton(
-                                    onPressed: _isAccepting
-                                        ? null
-                                        : () => _handleAccept(shipmentId, shipmentNum),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF16A34A),
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                      minimumSize: const Size(70, 36),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      elevation: 0,
-                                    ),
-                                    child: const Text(
-                                      'Accept',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                  child: const Text(
+                                    'View',
+                                    style: TextStyle(
+                                      color: Color(0xFF3E4A3D),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                ],
-                              ),
-                            ],
-                          ),
+                                ),
+                                const SizedBox(width: 8),
+                                ElevatedButton(
+                                  onPressed: _isAccepting
+                                      ? null
+                                      : () => _handleAccept(shipmentId, shipmentNum),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF16A34A),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    minimumSize: const Size(70, 36),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    elevation: 0,
+                                  ),
+                                  child: const Text(
+                                    'Accept',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                              child: isNarrow
+                                  ? Column(
+                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      children: [
+                                        detailsRow,
+                                        const SizedBox(height: 12),
+                                        actionButtons,
+                                      ],
+                                    )
+                                  : Row(
+                                      children: [
+                                        Expanded(child: detailsRow),
+                                        const SizedBox(width: 12),
+                                        actionButtons,
+                                      ],
+                                    ),
+                            );
+                          },
                         );
                       },
                     ),
@@ -307,7 +334,7 @@ class _PendingShipmentsListState extends ConsumerState<PendingShipmentsList> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),

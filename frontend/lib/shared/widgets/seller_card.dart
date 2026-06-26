@@ -9,13 +9,13 @@ class SellerCard extends StatefulWidget {
   final VoidCallback onTap;
 
   const SellerCard({
-    Key? key,
+    super.key,
     required this.seller,
     this.totalStock = 0,
     this.todaySales = 0,
     this.pendingShipments = 0,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   State<SellerCard> createState() => _SellerCardState();
@@ -39,7 +39,7 @@ class _SellerCardState extends State<SellerCard> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(_isPressed ? 0.02 : 0.05),
+            color: Colors.black.withValues(alpha: _isPressed ? 0.02 : 0.05),
             blurRadius: _isPressed ? 5 : 15,
             offset: _isPressed ? const Offset(0, 2) : const Offset(0, 5),
             spreadRadius: 0,
@@ -68,7 +68,7 @@ class _SellerCardState extends State<SellerCard> {
                       width: 60,
                       height: 60,
                       decoration: BoxDecoration(
-                        color: colorScheme.primary.withOpacity(0.1),
+                        color: colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Icon(
@@ -104,8 +104,8 @@ class _SellerCardState extends State<SellerCard> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: isVerified
-                                      ? Colors.green.withOpacity(0.1)
-                                      : Colors.grey.withOpacity(0.1),
+                                      ? Colors.green.withValues(alpha: 0.1)
+                                      : Colors.grey.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Row(
@@ -229,7 +229,7 @@ class _SellerCardState extends State<SellerCard> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: color, size: 24),

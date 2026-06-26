@@ -48,44 +48,53 @@ class SellersListScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: sellersAsyncValue.when(
-        data: (sellers) {
-          if (sellers.isEmpty) {
-            return const Center(child: Text('No sellers found.'));
-          }
-          return RefreshIndicator(
-            onRefresh: () => ref.refresh(sellersProvider.future),
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: sellers.length,
-              itemBuilder: (context, index) {
-                final sellerData = sellers[index];
-                final seller = sellerData.seller;
-                return SellerCard(
-                  seller: seller,
-                  totalStock: sellerData.totalStock,
-                  todaySales: sellerData.todaySales,
-                  pendingShipments: sellerData.pendingShipments,
-                  onTap: () {
-                    context.push('/admin/sellers/${seller.id}');
-                  },
-                );
-              },
-            ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('Error: $error', style: const TextStyle(color: Colors.red)),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => ref.refresh(sellersProvider),
-                child: const Text('Retry'),
+      body: SafeArea(
+        child: sellersAsyncValue.when(
+          data: (sellers) {
+            if (sellers.isEmpty) {
+              return const Center(child: Text('No sellers found.'));
+            }
+            return RefreshIndicator(
+              onRefresh: () => ref.refresh(sellersProvider.future),
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: sellers.length,
+                itemBuilder: (context, index) {
+                  final sellerData = sellers[index];
+                  final seller = sellerData.seller;
+                  return SellerCard(
+                    seller: seller,
+                    totalStock: sellerData.totalStock,
+                    todaySales: sellerData.todaySales,
+                    pendingShipments: sellerData.pendingShipments,
+                    onTap: () {
+                      context.push('/admin/sellers/${seller.id}');
+                    },
+                  );
+                },
               ),
-            ],
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stack) => Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Error: $error',
+                    style: const TextStyle(color: Colors.red),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => ref.refresh(sellersProvider),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),

@@ -39,12 +39,14 @@ class AdminShipmentDetailScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: detailState.when(
-        data: (detail) => _ShipmentDetailBody(detail: detail),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => _ErrorView(
-          error: e.toString(),
-          onRetry: () => ref.invalidate(shipmentDetailByIdProvider(shipmentId)),
+      body: SafeArea(
+        child: detailState.when(
+          data: (detail) => _ShipmentDetailBody(detail: detail),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => _ErrorView(
+            error: e.toString(),
+            onRetry: () => ref.invalidate(shipmentDetailByIdProvider(shipmentId)),
+          ),
         ),
       ),
     );
@@ -239,30 +241,32 @@ class _StatusBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: _bg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _fg.withOpacity(0.3)),
+        border: Border.all(color: _fg.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
           Icon(_icon, color: _fg, size: 24),
           const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Shipment Status',
-                style: TextStyle(fontSize: 12, color: Color(0xFF586377)),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                status.toUpperCase(),
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  color: _fg,
-                  letterSpacing: 0.5,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Shipment Status',
+                  style: TextStyle(fontSize: 12, color: Color(0xFF586377)),
                 ),
-              ),
-            ],
+                const SizedBox(height: 2),
+                Text(
+                  status.toUpperCase(),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: _fg,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -437,7 +441,7 @@ class _ProductCard extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: const Color(0xFF006B2C).withOpacity(0.1),
+                color: const Color(0xFF006B2C).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Center(
@@ -482,7 +486,9 @@ class _ProductCard extends StatelessWidget {
                   const SizedBox(height: 8),
 
                   // Quantity chip
-                  Row(
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 6,
                     children: [
                       _Chip(
                         icon: Icons.inventory_2_outlined,
@@ -491,15 +497,13 @@ class _ProductCard extends StatelessWidget {
                         bg: const Color(0xFFE8F5E9),
                       ),
                       if (item.serialNumber != null &&
-                          item.serialNumber!.isNotEmpty) ...[
-                        const SizedBox(width: 8),
+                          item.serialNumber!.isNotEmpty)
                         _Chip(
                           icon: Icons.qr_code_rounded,
                           label: item.serialNumber!,
                           color: const Color(0xFF1565C0),
                           bg: const Color(0xFFE3F2FD),
                         ),
-                      ],
                     ],
                   ),
                 ],
@@ -555,7 +559,7 @@ class _ErrorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

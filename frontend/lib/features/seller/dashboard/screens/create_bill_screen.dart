@@ -316,11 +316,14 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
           onPressed: _onBackPressed,
         ),
       ),
-      body: Center(
+      body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Container(
                 decoration: BoxDecoration(
@@ -603,7 +606,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                           margin: const EdgeInsets.only(top: 16),
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFD5E0F8).withOpacity(0.3),
+                            color: const Color(0xFFD5E0F8).withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: const Color(0xFFD5E0F8)),
                           ),
@@ -668,6 +671,9 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
           ),
         ),
       ),
-    ));
-  }
+    ),
+  ),
+),
+);
+}
 }

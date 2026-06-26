@@ -293,274 +293,279 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
           },
         ),
       ),
-      body: Center(
+      body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: AppTheme.background,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x0A000000),
-                      blurRadius: 12,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.all(24),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Product Group
-                      const Text(
-                        'Product Group',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                      ),
-                      const SizedBox(height: 8),
-                      _isLoadingGroups
-                          ? const Center(child: CircularProgressIndicator())
-                          : DropdownMenu<String>(
-                              expandedInsets: EdgeInsets.zero,
-                              enableFilter: true,
-                              hintText: 'Select Group',
-                              requestFocusOnTap: true,
-                              dropdownMenuEntries: _groups.map((group) {
-                                return DropdownMenuEntry<String>(
-                                  value: group['id']!,
-                                  label: group['name']!,
-                                );
-                              }).toList(),
-                              onSelected: (id) {
-                                if (id != null) {
-                                  setState(() {
-                                    _selectedGroupId = id;
-                                  });
-                                  _loadCategories(id);
-                                }
-                              },
-                            ),
-                      const SizedBox(height: 20),
-
-                      // Product Category
-                      const Text(
-                        'Product Category',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                      ),
-                      const SizedBox(height: 8),
-                      _isLoadingCategories
-                          ? const Center(child: CircularProgressIndicator())
-                          : DropdownMenu<String>(
-                              key: ValueKey('category_$_selectedGroupId'),
-                              expandedInsets: EdgeInsets.zero,
-                              enableFilter: true,
-                              enabled: _selectedGroupId != null,
-                              hintText: 'Select Category',
-                              requestFocusOnTap: true,
-                              dropdownMenuEntries: _categories.map((cat) {
-                                return DropdownMenuEntry<String>(
-                                  value: cat['id']!,
-                                  label: cat['name']!,
-                                );
-                              }).toList(),
-                              onSelected: (id) {
-                                if (id != null) {
-                                  setState(() {
-                                    _selectedCategoryId = id;
-                                  });
-                                  _loadProductNames(id);
-                                }
-                              },
-                            ),
-                      const SizedBox(height: 20),
-
-                      // Product Name
-                      const Text(
-                        'Product Name',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                      ),
-                      const SizedBox(height: 8),
-                      _isLoadingNames
-                          ? const Center(child: CircularProgressIndicator())
-                          : DropdownMenu<String>(
-                              key: ValueKey('name_$_selectedCategoryId'),
-                              expandedInsets: EdgeInsets.zero,
-                              enableFilter: true,
-                              enabled: _selectedCategoryId != null,
-                              hintText: 'Select Product Name',
-                              requestFocusOnTap: true,
-                              dropdownMenuEntries: _productNames.map((name) {
-                                return DropdownMenuEntry<String>(
-                                  value: name['id']!,
-                                  label: name['name']!,
-                                );
-                              }).toList(),
-                              onSelected: (id) {
-                                if (id != null) {
-                                  setState(() {
-                                    _selectedProductNameId = id;
-                                  });
-                                  _loadProductModels(id);
-                                }
-                              },
-                            ),
-                      const SizedBox(height: 20),
-
-                      // Product Model
-                      const Text(
-                        'Product Model',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                      ),
-                      const SizedBox(height: 8),
-                      _isLoadingModels
-                          ? const Center(child: CircularProgressIndicator())
-                          : DropdownMenu<String>(
-                              key: ValueKey('model_$_selectedProductNameId'),
-                              expandedInsets: EdgeInsets.zero,
-                              enableFilter: true,
-                              enabled: _selectedProductNameId != null,
-                              hintText: 'Select Product Model',
-                              requestFocusOnTap: true,
-                              dropdownMenuEntries: _productModels.map((model) {
-                                return DropdownMenuEntry<String>(
-                                  value: model['id']!,
-                                  label: model['name']!,
-                                );
-                              }).toList(),
-                              onSelected: (id) {
-                                if (id != null) {
-                                  setState(() {
-                                    _selectedProductModelId = id;
-                                  });
-                                  _loadProductDetails(id);
-                                }
-                              },
-                            ),
-                      const SizedBox(height: 20),
-
-                      // Product Information Section
-                      if (_selectedProductModelId != null) ...[
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFECEEF0),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Product Information',
-                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF191C1E)),
-                              ),
-                              const SizedBox(height: 8),
-                              _isLoadingDetails
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    )
-                                  : Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Current Stock: ${_currentStock ?? 0}',
-                                          style: const TextStyle(fontSize: 13, color: Color(0xFF3E4A3D)),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          'Current Min Price: ₹${_currentMinPrice ?? 0}',
-                                          style: const TextStyle(fontSize: 13, color: Color(0xFF3E4A3D)),
-                                        ),
-                                      ],
-                                    ),
-                            ],
-                          ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppTheme.background,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x0A000000),
+                          blurRadius: 12,
+                          offset: Offset(0, 4),
                         ),
-                        const SizedBox(height: 20),
                       ],
-
-                      // Quantity to Add
-                      const Text(
-                        'Quantity to Add',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _quantityController,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          hintText: 'Enter quantity',
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Quantity is required';
-                          }
-                          final parsed = int.tryParse(value);
-                          if (parsed == null || parsed <= 0) {
-                            return 'Quantity must be greater than 0';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Minimum Selling Price
-                      const Text(
-                        'Minimum Selling Price (Optional)',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _minPriceController,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          hintText: 'Enter minimum selling price',
-                          prefixText: '₹ ',
-                        ),
-                        validator: (value) {
-                          if (value != null && value.trim().isNotEmpty) {
-                            final parsed = num.tryParse(value);
-                            if (parsed == null || parsed < 0) {
-                              return 'Minimum price must be greater than or equal to 0';
-                            }
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 32),
-
-                      // Submit Button
-                      ElevatedButton(
-                        onPressed: _isSubmitting ? null : _submit,
-                        child: _isSubmitting
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
+                    ),
+                    padding: const EdgeInsets.all(24),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Product Group
+                          const Text(
+                            'Product Group',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
+                          ),
+                          const SizedBox(height: 8),
+                          _isLoadingGroups
+                              ? const Center(child: CircularProgressIndicator())
+                              : DropdownMenu<String>(
+                                  expandedInsets: EdgeInsets.zero,
+                                  enableFilter: true,
+                                  hintText: 'Select Group',
+                                  requestFocusOnTap: true,
+                                  dropdownMenuEntries: _groups.map((group) {
+                                    return DropdownMenuEntry<String>(
+                                      value: group['id']!,
+                                      label: group['name']!,
+                                    );
+                                  }).toList(),
+                                  onSelected: (id) {
+                                    if (id != null) {
+                                      setState(() {
+                                        _selectedGroupId = id;
+                                      });
+                                      _loadCategories(id);
+                                    }
+                                  },
                                 ),
-                              )
-                            : const Text(
-                                'Update Stock',
-                                style: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
+                          const SizedBox(height: 20),
+
+                          // Product Category
+                          const Text(
+                            'Product Category',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
+                          ),
+                          const SizedBox(height: 8),
+                          _isLoadingCategories
+                              ? const Center(child: CircularProgressIndicator())
+                              : DropdownMenu<String>(
+                                  key: ValueKey('category_$_selectedGroupId'),
+                                  expandedInsets: EdgeInsets.zero,
+                                  enableFilter: true,
+                                  enabled: _selectedGroupId != null,
+                                  hintText: 'Select Category',
+                                  requestFocusOnTap: true,
+                                  dropdownMenuEntries: _categories.map((cat) {
+                                    return DropdownMenuEntry<String>(
+                                      value: cat['id']!,
+                                      label: cat['name']!,
+                                    );
+                                  }).toList(),
+                                  onSelected: (id) {
+                                    if (id != null) {
+                                      setState(() {
+                                        _selectedCategoryId = id;
+                                      });
+                                      _loadProductNames(id);
+                                    }
+                                  },
                                 ),
+                          const SizedBox(height: 20),
+
+                          // Product Name
+                          const Text(
+                            'Product Name',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
+                          ),
+                          const SizedBox(height: 8),
+                          _isLoadingNames
+                              ? const Center(child: CircularProgressIndicator())
+                              : DropdownMenu<String>(
+                                  key: ValueKey('name_$_selectedCategoryId'),
+                                  expandedInsets: EdgeInsets.zero,
+                                  enableFilter: true,
+                                  enabled: _selectedCategoryId != null,
+                                  hintText: 'Select Product Name',
+                                  requestFocusOnTap: true,
+                                  dropdownMenuEntries: _productNames.map((name) {
+                                    return DropdownMenuEntry<String>(
+                                      value: name['id']!,
+                                      label: name['name']!,
+                                    );
+                                  }).toList(),
+                                  onSelected: (id) {
+                                    if (id != null) {
+                                      setState(() {
+                                        _selectedProductNameId = id;
+                                      });
+                                      _loadProductModels(id);
+                                    }
+                                  },
+                                ),
+                          const SizedBox(height: 20),
+
+                          // Product Model
+                          const Text(
+                            'Product Model',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
+                          ),
+                          const SizedBox(height: 8),
+                          _isLoadingModels
+                              ? const Center(child: CircularProgressIndicator())
+                              : DropdownMenu<String>(
+                                  key: ValueKey('model_$_selectedProductNameId'),
+                                  expandedInsets: EdgeInsets.zero,
+                                  enableFilter: true,
+                                  enabled: _selectedProductNameId != null,
+                                  hintText: 'Select Product Model',
+                                  requestFocusOnTap: true,
+                                  dropdownMenuEntries: _productModels.map((model) {
+                                    return DropdownMenuEntry<String>(
+                                      value: model['id']!,
+                                      label: model['name']!,
+                                    );
+                                  }).toList(),
+                                  onSelected: (id) {
+                                    if (id != null) {
+                                      setState(() {
+                                        _selectedProductModelId = id;
+                                      });
+                                      _loadProductDetails(id);
+                                    }
+                                  },
+                                ),
+                          const SizedBox(height: 20),
+
+                          // Product Information Section
+                          if (_selectedProductModelId != null) ...[
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFECEEF0),
+                                borderRadius: BorderRadius.circular(12),
                               ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Product Information',
+                                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF191C1E)),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  _isLoadingDetails
+                                      ? const SizedBox(
+                                          height: 20,
+                                          width: 20,
+                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                        )
+                                      : Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Current Stock: ${_currentStock ?? 0}',
+                                              style: const TextStyle(fontSize: 13, color: Color(0xFF3E4A3D)),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              'Current Min Price: ₹${_currentMinPrice ?? 0}',
+                                              style: const TextStyle(fontSize: 13, color: Color(0xFF3E4A3D)),
+                                            ),
+                                          ],
+                                        ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                          ],
+
+                          // Quantity to Add
+                          const Text(
+                            'Quantity to Add',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
+                          ),
+                          const SizedBox(height: 8),
+                          TextFormField(
+                            controller: _quantityController,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              hintText: 'Enter quantity',
+                            ),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Quantity is required';
+                              }
+                              final parsed = int.tryParse(value);
+                              if (parsed == null || parsed <= 0) {
+                                return 'Quantity must be greater than 0';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Minimum Selling Price
+                          const Text(
+                            'Minimum Selling Price (Optional)',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
+                          ),
+                          const SizedBox(height: 8),
+                          TextFormField(
+                            controller: _minPriceController,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              hintText: 'Enter minimum selling price',
+                              prefixText: '₹ ',
+                            ),
+                            validator: (value) {
+                              if (value != null && value.trim().isNotEmpty) {
+                                final parsed = num.tryParse(value);
+                                if (parsed == null || parsed < 0) {
+                                  return 'Minimum price must be greater than or equal to 0';
+                                }
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 32),
+
+                          // Submit Button
+                          ElevatedButton(
+                            onPressed: _isSubmitting ? null : _submit,
+                            child: _isSubmitting
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text(
+                                    'Update Stock',
+                                    style: TextStyle(
+                                      fontFamily: 'Inter',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

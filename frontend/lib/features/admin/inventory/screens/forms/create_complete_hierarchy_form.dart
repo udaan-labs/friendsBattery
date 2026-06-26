@@ -93,55 +93,57 @@ class _CreateCompleteHierarchyFormState extends ConsumerState<CreateCompleteHier
         backgroundColor: const Color(0xFFF7F9FB),
         elevation: 0,
       ),
-      body: Center(
+      body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x0A000000),
-                    blurRadius: 12,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.all(24),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text(
-                      'Create a complete product hierarchy from scratch.',
-                      style: TextStyle(color: Color(0xFF3E4A3D)),
-                    ),
-                    const SizedBox(height: 24),
-                    
-                    _buildTextField('Group Name', _groupController),
-                    const SizedBox(height: 16),
-                    _buildTextField('Category Name', _categoryController),
-                    const SizedBox(height: 16),
-                    _buildTextField('Product Name', _productNameController),
-                    const SizedBox(height: 16),
-                    _buildTextField('Product Model', _productModelController),
-                    const SizedBox(height: 32),
-
-                    ElevatedButton(
-                      onPressed: _isSubmitting ? null : _submit,
-                      child: _isSubmitting
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                            )
-                          : const Text('Create Hierarchy'),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x0A000000),
+                      blurRadius: 12,
+                      offset: Offset(0, 4),
                     ),
                   ],
+                ),
+                padding: const EdgeInsets.all(24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Create a complete product hierarchy from scratch.',
+                        style: TextStyle(color: Color(0xFF3E4A3D)),
+                      ),
+                      const SizedBox(height: 24),
+                      
+                      _buildTextField('Group Name', _groupController),
+                      const SizedBox(height: 16),
+                      _buildTextField('Category Name', _categoryController),
+                      const SizedBox(height: 16),
+                      _buildTextField('Product Name', _productNameController),
+                      const SizedBox(height: 16),
+                      _buildTextField('Product Model', _productModelController),
+                      const SizedBox(height: 32),
+
+                      ElevatedButton(
+                        onPressed: _isSubmitting ? null : _submit,
+                        child: _isSubmitting
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              )
+                            : const Text('Create Hierarchy'),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
