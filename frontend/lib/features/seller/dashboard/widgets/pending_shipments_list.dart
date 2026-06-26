@@ -74,8 +74,8 @@ class _PendingShipmentsListState extends ConsumerState<PendingShipmentsList> {
     });
 
     try {
-      final api = ref.read(apiClientProvider).getTransfersApi();
-      await api.apiTransfersShipmentIdReceivePatch(shipmentId: shipmentId);
+      final api = ref.read(apiClientProvider).getShipmentsApi();
+      await api.apiShipmentsShipmentIdAcceptPost(shipmentId: shipmentId);
 
 
       if (mounted) {
