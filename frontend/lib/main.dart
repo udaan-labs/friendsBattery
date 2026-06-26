@@ -8,8 +8,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize dotenv
-  await dotenv.load(fileName: ".env");
+  // Determine environment and load appropriate env file
+  const envFile = String.fromEnvironment('ENV_FILE', defaultValue: '.env.local');
+  await dotenv.load(fileName: envFile);
   
   // Initialize local storage (Hive)
   await Hive.initFlutter();
