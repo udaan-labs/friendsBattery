@@ -98,6 +98,36 @@ class ProductsService {
   }
 
   /**
+   * Get products available in the authenticated user's inventory.
+   * Returns data grouped by product name, with models and stock counts.
+   * Excludes products with zero available quantity.
+   */
+  async getInventoryProducts(userId) {
+    const products = await productsRepository.findInventoryProducts(userId);
+
+    const groupedMap = new Map();
+
+    for (const product of products) {
+      const nameKey = product.productName.name;
+      if (!groupedMap.has(nameKey)) {
+        groupedMap.set(nameKey, {
+          productName: nameKey,
+          models: []
+        });
+      }
+
+      groupedMap.get(nameKey).models.push({
+        id: Number(product.id),
+        productModel: product.productModel.name,
+        availableQuantity: product._count.units,
+        minSellPrice: Number(product.minPrice)
+      });
+    }
+
+    return Array.from(groupedMap.values());
+  }
+
+  /**
    * Fetch matching products by product name and product model
    *
    * Input:

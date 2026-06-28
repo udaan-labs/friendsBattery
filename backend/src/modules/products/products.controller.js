@@ -87,6 +87,21 @@ class ProductsController {
   }
 
   /**
+   * Get products available in the authenticated user's inventory.
+   * Returns data grouped by product name with model details and stock counts.
+   */
+  async getInventoryProducts(req, res) {
+    try {
+      const userId = Number(req.user.id);
+      const products = await productsService.getInventoryProducts(userId);
+      return successResponse(res, 200, 'Inventory products fetched successfully', products);
+    } catch (error) {
+      console.error('Get Inventory Products Error:', error);
+      return errorResponse(res, 500, 'Internal server error');
+    }
+  }
+
+  /**
    * Get all products matching filters
    */
   async getProducts(req, res) {

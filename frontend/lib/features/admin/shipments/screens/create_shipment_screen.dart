@@ -20,9 +20,6 @@ class TransferRowState {
   final quantityController = TextEditingController();
   final priceController = TextEditingController();
 
-  bool isLoadingModels = false;
-  bool isLoadingDetails = false;
-
   List<Map<String, String>> productModels = [];
 
   TransferRowState() {
@@ -51,6 +48,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
   bool _isSubmitting = false;
 
   List<SellerModel> _sellers = [];
+  List<Map<String, dynamic>> _inventoryProducts = [];
   List<Map<String, String>> _productNames = [];
 
   int? _selectedSellerId;
@@ -100,20 +98,22 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
       final sellersList = await repo.getSellers();
 
       final dio = ApiClient().dio;
-      final response = await dio.get('/api/products/product-names');
-      final nameData = response.data;
+      final response = await dio.get('/api/products/inventory-products');
+      final body = response.data;
 
-      List<Map<String, String>> namesList = [];
-      if (nameData is Map<String, dynamic> && nameData['data'] is List) {
-        final list = nameData['data'] as List;
-        namesList = list.map((item) => {
-          'id': item['id'].toString(),
-          'name': item['name'].toString(),
-        }).toList();
+      List<Map<String, dynamic>> inventoryList = [];
+      if (body is Map<String, dynamic> && body['data'] is List) {
+        inventoryList = (body['data'] as List).cast<Map<String, dynamic>>();
       }
+
+      List<Map<String, String>> namesList = inventoryList.map((item) => {
+        'id': item['productName'] as String,
+        'name': item['productName'] as String,
+      }).toList();
 
       setState(() {
         _sellers = sellersList;
+        _inventoryProducts = inventoryList;
         _productNames = namesList;
       });
     } catch (e) {
@@ -126,91 +126,57 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
     }
   }
 
-  Future<void> _loadProductModels(int rowIndex, String productNameId) async {
+  void _onProductNameSelected(int rowIndex, String productName) {
     final row = _rows[rowIndex];
+
+    final group = _inventoryProducts.firstWhere(
+      (g) => g['productName'] == productName,
+      orElse: () => <String, dynamic>{},
+    );
+
+    final List<Map<String, String>> models = [];
+    if (group.isNotEmpty && group['models'] is List) {
+      for (final m in group['models'] as List) {
+        models.add({
+          'id': m['id'].toString(),
+          'name': m['productModel'].toString(),
+        });
+      }
+    }
+
     setState(() {
-      row.isLoadingModels = true;
-      row.productModels = [];
+      row.productNameId = productName;
+      row.productModels = models;
       row.productModelId = null;
       row.productId = null;
       row.availableStock = null;
     });
-
-    try {
-      final dio = ApiClient().dio;
-      final response = await dio.post('/api/products/product-models/list', data: {
-        'product_name_id': int.parse(productNameId),
-      });
-      final data = response.data;
-      if (data is Map<String, dynamic> && data['data'] is List) {
-        final list = data['data'] as List;
-        setState(() {
-          row.productModels = list.map((item) => {
-            'id': item['id'].toString(),
-            'name': item['name'].toString(),
-          }).toList();
-        });
-      }
-    } catch (e) {
-      // Handled automatically by ApiInterceptor
-    } finally {
-      setState(() {
-        row.isLoadingModels = false;
-      });
-    }
   }
 
-  Future<void> _loadProductDetails(int rowIndex, String productModelId) async {
+  void _onProductModelSelected(int rowIndex, String modelId) {
     final row = _rows[rowIndex];
-    setState(() {
-      row.isLoadingDetails = true;
-      row.availableStock = null;
-      row.productId = null;
-    });
+    final group = _inventoryProducts.firstWhere(
+      (g) => g['productName'] == row.productNameId,
+      orElse: () => <String, dynamic>{},
+    );
 
-    try {
-      final dio = ApiClient().dio;
-
-      // Fetch stock detail + product ID in parallel
-      final futures = await Future.wait([
-        dio.get('/api/inventory/product-details', queryParameters: {
-          'product_name_id': row.productNameId!,
-          'product_model_id': productModelId,
-        }),
-        dio.post('/api/products/list', data: {
-          'product_name_id': int.parse(row.productNameId!),
-          'product_model_id': int.parse(productModelId),
-        }),
-      ]);
-
-      final detailsData = futures[0].data;
-      final productsData = futures[1].data;
-
-      int? resolvedProdId;
-      int? stockCount;
-
-      if (detailsData is Map<String, dynamic> && detailsData['data'] != null) {
-        stockCount = detailsData['data']['currentStock'] ?? 0;
-      }
-
-      if (productsData is Map<String, dynamic> && productsData['data'] is List) {
-        final list = productsData['data'] as List;
-        if (list.isNotEmpty) {
-          resolvedProdId = list.first['id'] as int;
+    int? resolvedProdId;
+    int? stockCount;
+    if (group.isNotEmpty && group['models'] is List) {
+      for (final m in group['models'] as List) {
+        if (m['id'].toString() == modelId) {
+          resolvedProdId = m['id'];
+          stockCount = m['availableQuantity'] as int?;
+          break;
         }
       }
-
-      setState(() {
-        row.availableStock = stockCount ?? 0;
-        row.productId = resolvedProdId;
-      });
-    } catch (e) {
-      // Handled automatically by ApiInterceptor
-    } finally {
-      setState(() {
-        row.isLoadingDetails = false;
-      });
     }
+
+    setState(() {
+      row.productModelId = modelId;
+      row.productId = resolvedProdId;
+      row.availableStock = stockCount ?? 0;
+    });
   }
 
   Future<void> _selectDispatchDate(BuildContext context) async {
@@ -571,10 +537,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                                     }).toList(),
                                     onSelected: (id) {
                                       if (id != null) {
-                                        setState(() {
-                                          row.productNameId = id;
-                                        });
-                                        _loadProductModels(index, id);
+                                        _onProductNameSelected(index, id);
                                       }
                                     },
                                   ),
@@ -586,9 +549,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                               style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
                             ),
                             const SizedBox(height: 6),
-                            row.isLoadingModels
-                                ? const Center(child: CircularProgressIndicator())
-                                : DropdownMenu<String>(
+                            DropdownMenu<String>(
                                     key: ValueKey('model_${index}_${row.productNameId}'),
                                     expandedInsets: EdgeInsets.zero,
                                     enableFilter: true,
@@ -603,10 +564,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                                     }).toList(),
                                     onSelected: (id) {
                                       if (id != null) {
-                                        setState(() {
-                                          row.productModelId = id;
-                                        });
-                                        _loadProductDetails(index, id);
+                                        _onProductModelSelected(index, id);
                                       }
                                     },
                                   ),
@@ -620,20 +578,14 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                                   color: const Color(0xFFECEEF0),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: row.isLoadingDetails
-                                    ? const SizedBox(
-                                        height: 16,
-                                        width: 16,
-                                        child: CircularProgressIndicator(strokeWidth: 2),
-                                      )
-                                    : Text(
-                                        'Available Stock: ${row.availableStock ?? 0}',
-                                        style: const TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600,
-                                          color: Color(0xFF3E4A3D),
-                                        ),
-                                      ),
+                                child: Text(
+                                  'Available Stock: ${row.availableStock ?? 0}',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF3E4A3D),
+                                  ),
+                                ),
                               ),
                               const SizedBox(height: 16),
                             ],

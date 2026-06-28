@@ -60,6 +60,28 @@ productRouter.get(
 
 /**
  * @swagger
+ * /api/products/inventory-products:
+ *   get:
+ *     summary: Get products in the authenticated user's inventory
+ *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Inventory products fetched successfully
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
+productRouter.get(
+  '/inventory-products',
+  authenticate,
+  productsController.getInventoryProducts
+);
+
+/**
+ * @swagger
  * /api/products/product-models:
  *   post:
  *     summary: Create a product model

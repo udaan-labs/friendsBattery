@@ -1,0 +1,95 @@
+info:
+  name: get_inventory_products
+  title: Get Inventory Products
+  description: >
+    Returns products that are available in the authenticated user's inventory.
+    Products are grouped by product name with their models and available stock counts.
+    This endpoint is used for dependent Product Name -> Product Model dropdowns
+    in both Admin (Create Shipment) and Seller (Create Bill) screens.
+  type: http
+  seq: 11
+
+http:
+  method: GET
+  url: "{{baseurl}}/products/inventory-products"
+  headers:
+    - name: auth-id
+      value: "{{authId}}"
+    - name: auth-key
+      value: "{{authKey}}"
+
+  auth:
+    type: bearer
+    key: auth-key
+    description: JWT token obtained from login API
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  success:
+    status: 200
+    body: |-
+      {
+        "success": true,
+        "message": "Inventory products fetched successfully",
+        "data": [
+          {
+            "productName": "Exide",
+            "models": [
+              {
+                "id": 12,
+                "productModel": "XP800",
+                "availableQuantity": 15,
+                "minSellPrice": 1200
+              },
+              {
+                "id": 13,
+                "productModel": "DIN66",
+                "availableQuantity": 8,
+                "minSellPrice": 1100
+              }
+            ]
+          },
+          {
+            "productName": "Amaron",
+            "models": [
+              {
+                "id": 25,
+                "productModel": "100AH",
+                "availableQuantity": 10,
+                "minSellPrice": 8500
+              }
+            ]
+          }
+        ]
+      }
+
+  error_unauthorized:
+    status: 401
+    body: |-
+      {
+        "success": false,
+        "message": "Authentication failed"
+      }
+
+  error_empty_inventory:
+    status: 200
+    body: |-
+      {
+        "success": true,
+        "message": "Inventory products fetched successfully",
+        "data": []
+      }
+
+notes: |
+  - This endpoint respects the authenticated user's identity via auth-id header.
+  - Admin users see only products in Admin inventory.
+  - Seller users see only products in Seller inventory.
+  - Products with zero available stock are excluded.
+  - The response is pre-grouped for dependent dropdowns:
+    selecting a productName reveals only its associated models.
+  - No query parameters or request body are required.

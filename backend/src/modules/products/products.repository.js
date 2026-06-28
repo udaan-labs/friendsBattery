@@ -114,6 +114,40 @@ class ProductsRepository {
   }
 
   /**
+   * Find products that the user has available (IN_STOCK) inventory for
+   */
+  async findInventoryProducts(userId) {
+    return prisma.product.findMany({
+      where: {
+        units: {
+          some: {
+            ownerId: BigInt(userId),
+            status: 'IN_STOCK'
+          }
+        }
+      },
+      include: {
+        productName: true,
+        productModel: true,
+        _count: {
+          select: {
+            units: {
+              where: {
+                ownerId: BigInt(userId),
+                status: 'IN_STOCK'
+              }
+            }
+          }
+        }
+      },
+      orderBy: [
+        { productName: { name: 'asc' } },
+        { productModel: { name: 'asc' } }
+      ]
+    });
+  }
+
+  /**
    * Fetch all products
    */
   async getProducts() {

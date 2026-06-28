@@ -25,9 +25,9 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
   final _sellPriceController = TextEditingController();
 
   bool _isLoadingNames = false;
-  bool _isLoadingModels = false;
   bool _isSubmitting = false;
 
+  List<Map<String, dynamic>> _inventoryProducts = [];
   List<Map<String, String>> _productNames = [];
   List<Map<String, String>> _productModels = [];
 
@@ -41,7 +41,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProductNames();
+    _loadInventoryProducts();
     _sellPriceController.addListener(() {
       final val = num.tryParse(_sellPriceController.text);
       setState(() {
@@ -73,22 +73,23 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
     }
   }
 
-  Future<void> _loadProductNames() async {
+  Future<void> _loadInventoryProducts() async {
     setState(() {
       _isLoadingNames = true;
     });
 
     try {
       final dio = ApiClient().dio;
-      final response = await dio.get('/api/products/product-names');
-      final data = response.data;
-      if (data is Map<String, dynamic> && data['data'] is List) {
-        final list = data['data'] as List;
+      final response = await dio.get('/api/products/inventory-products');
+      final body = response.data;
+      if (body is Map<String, dynamic> && body['data'] is List) {
+        final list = body['data'] as List;
         setState(() {
+          _inventoryProducts = list.cast<Map<String, dynamic>>();
           _productNames = list.map((item) {
             return {
-              'id': item['id'].toString(),
-              'name': item['name'].toString(),
+              'id': item['productName'] as String,
+              'name': item['productName'] as String,
             };
           }).toList();
         });
@@ -102,68 +103,56 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
     }
   }
 
-  Future<void> _loadProductModels(String productNameId) async {
+  void _onProductNameSelected(String productName) {
+    final group = _inventoryProducts.firstWhere(
+      (g) => g['productName'] == productName,
+      orElse: () => <String, dynamic>{},
+    );
+
+    final List<Map<String, String>> models = [];
+    if (group.isNotEmpty && group['models'] is List) {
+      for (final m in group['models'] as List) {
+        models.add({
+          'id': m['id'].toString(),
+          'name': m['productModel'].toString(),
+        });
+      }
+    }
+
     setState(() {
-      _isLoadingModels = true;
-      _productModels = [];
+      _selectedProductNameId = productName;
+      _productModels = models;
       _selectedProductModelId = null;
       _serialNumberController.clear();
       _productId = null;
       _minPrice = null;
     });
-
-    try {
-      final dio = ApiClient().dio;
-      final response = await dio.post('/api/products/product-models/list', data: {
-        'product_name_id': int.parse(productNameId),
-      });
-      final data = response.data;
-      if (data is Map<String, dynamic> && data['data'] is List) {
-        final list = data['data'] as List;
-        setState(() {
-          _productModels = list.map((item) {
-            return {
-              'id': item['id'].toString(),
-              'name': item['name'].toString(),
-            };
-          }).toList();
-        });
-      }
-    } catch (e) {
-      // Handled automatically by ApiInterceptor
-    } finally {
-      setState(() {
-        _isLoadingModels = false;
-      });
-    }
   }
 
-  Future<void> _loadProductDetails(String productModelId) async {
-    setState(() {
-      _serialNumberController.clear();
-      _productId = null;
-      _minPrice = null;
-    });
+  void _onProductModelSelected(String modelId) {
+    final group = _inventoryProducts.firstWhere(
+      (g) => g['productName'] == _selectedProductNameId,
+      orElse: () => <String, dynamic>{},
+    );
 
-    try {
-      final dio = ApiClient().dio;
-      
-      // Load stock details & min price
-      final response = await dio.get('/api/inventory/product-details', queryParameters: {
-        'product_name_id': _selectedProductNameId!,
-        'product_model_id': productModelId,
-      });
-
-      final details = response.data['data'];
-      if (details != null) {
-        setState(() {
-          _productId = details['productId'];
-          _minPrice = details['minSellPrice'] ?? 0;
-        });
+    int? resolvedProdId;
+    num? resolvedMinPrice;
+    if (group.isNotEmpty && group['models'] is List) {
+      for (final m in group['models'] as List) {
+        if (m['id'].toString() == modelId) {
+          resolvedProdId = m['id'];
+          resolvedMinPrice = (m['minSellPrice'] ?? 0).toDouble();
+          break;
+        }
       }
-    } catch (e) {
-      // Handled automatically by ApiInterceptor
     }
+
+    setState(() {
+      _selectedProductModelId = modelId;
+      _serialNumberController.clear();
+      _productId = resolvedProdId;
+      _minPrice = resolvedMinPrice ?? 0;
+    });
   }
 
   Future<void> _submit() async {
@@ -331,10 +320,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                               }).toList(),
                               onSelected: (id) {
                                 if (id != null) {
-                                  setState(() {
-                                    _selectedProductNameId = id;
-                                  });
-                                  _loadProductModels(id);
+                                  _onProductNameSelected(id);
                                 }
                               },
                             ),
@@ -346,9 +332,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
                       ),
                       const SizedBox(height: 8),
-                      _isLoadingModels
-                          ? const Center(child: CircularProgressIndicator())
-                          : DropdownMenu<String>(
+                      DropdownMenu<String>(
                               key: ValueKey('model_$_selectedProductNameId'),
                               expandedInsets: EdgeInsets.zero,
                               enableFilter: true,
@@ -363,10 +347,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                               }).toList(),
                                 onSelected: (id) {
                                   if (id != null) {
-                                    setState(() {
-                                      _selectedProductModelId = id;
-                                    });
-                                    _loadProductDetails(id);
+                                    _onProductModelSelected(id);
                                   }
                                 },
                             ),
