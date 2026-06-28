@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import '../../../../theme/app_theme.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 import '../../../../core/network/api_client_provider.dart';
 import '../providers/seller_dashboard_controller.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
@@ -318,7 +319,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.all(ResponsiveHelper.responsivePadding(context)),
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 600),

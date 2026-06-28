@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 import '../providers/seller_details_provider.dart';
 import '../widgets/seller_info_card.dart';
 import '../widgets/statistic_card.dart';
@@ -81,7 +82,7 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
   Widget _buildContent(SellerDetailsData data) {
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.all(ResponsiveHelper.responsiveHorizontalMargin(context)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -174,23 +175,23 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text('📦', style: TextStyle(fontSize: 48)),
-          const SizedBox(height: 16),
-          const Text(
-            'No Inventory Available',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.inventory_2_outlined, size: 48, color: Colors.grey),
+              const SizedBox(height: 16),
+              const Text(
+                'No Inventory Available',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'This seller currently has no products in stock.',
+                style: TextStyle(color: Colors.grey.shade600),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            'This seller currently has no products in stock.',
-            style: TextStyle(color: Colors.grey.shade600),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
     );
   }
 
@@ -198,7 +199,7 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
     return FadeTransition(
       opacity: Tween<double>(begin: 0.4, end: 1.0).animate(_pulseController),
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(ResponsiveHelper.responsiveHorizontalMargin(context)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

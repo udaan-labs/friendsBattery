@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 import '../providers/inventory_provider.dart';
 import '../widgets/inventory_product_card.dart';
 
@@ -86,11 +87,13 @@ class _CurrentInventoryScreenState extends ConsumerState<CurrentInventoryScreen>
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(ResponsiveHelper.responsiveHorizontalMargin(context)),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: "Search by product group, category, model or product name...",
+                hintText: ResponsiveHelper.isSmallPhone(context)
+                    ? "Search inventory..."
+                    : "Search by product group, category, model or product name...",
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -173,29 +176,65 @@ class _CurrentInventoryScreenState extends ConsumerState<CurrentInventoryScreen>
     final end = (start + limit - 1).clamp(0, total);
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(ResponsiveHelper.responsiveHorizontalMargin(context)),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: Colors.grey.shade200)),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text('Showing $start to $end of $total entries', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
-          Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth < 400) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('Showing $start to $end of $total entries',
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 11),
+                    textAlign: TextAlign.center),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton(
+                      onPressed: currentPage > 1 ? () => _onPageChanged(currentPage - 1) : null,
+                      child: const Text('Previous'),
+                    ),
+                    const SizedBox(width: 8),
+                    Text('$currentPage / $totalPages', style: const TextStyle(fontSize: 13)),
+                    const SizedBox(width: 8),
+                    TextButton(
+                      onPressed: currentPage < totalPages ? () => _onPageChanged(currentPage + 1) : null,
+                      child: const Text('Next'),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          }
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              TextButton(
-                onPressed: currentPage > 1 ? () => _onPageChanged(currentPage - 1) : null,
-                child: const Text('Previous'),
+              Flexible(
+                child: Text('Showing $start to $end of $total entries',
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                    overflow: TextOverflow.ellipsis),
               ),
-              Text('$currentPage / $totalPages'),
-              TextButton(
-                onPressed: currentPage < totalPages ? () => _onPageChanged(currentPage + 1) : null,
-                child: const Text('Next'),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextButton(
+                    onPressed: currentPage > 1 ? () => _onPageChanged(currentPage - 1) : null,
+                    child: const Text('Previous'),
+                  ),
+                  Text('$currentPage / $totalPages', style: const TextStyle(fontSize: 13)),
+                  TextButton(
+                    onPressed: currentPage < totalPages ? () => _onPageChanged(currentPage + 1) : null,
+                    child: const Text('Next'),
+                  ),
+                ],
               ),
             ],
-          ),
-        ],
+          );
+        },
       ),
     );
   }

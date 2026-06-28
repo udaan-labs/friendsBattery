@@ -81,19 +81,23 @@ class SellerDashboardScreen extends ConsumerWidget {
                       children: [
                         Text(
                           'Good Morning, ${profile.userName.split(" ").first}',
-                          style: const TextStyle(
-                            fontSize: 28,
+                          style: TextStyle(
+                            fontSize: ResponsiveHelper.isSmallPhone(context) ? 22 : 28,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF191C1E),
+                            color: const Color(0xFF191C1E),
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
                         Text(
                           '${profile.shopName} • ${profile.role}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Color(0xFF545F73),
+                          style: TextStyle(
+                            fontSize: ResponsiveHelper.isSmallPhone(context) ? 13 : 16,
+                            color: const Color(0xFF545F73),
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 24),
                       ],
@@ -103,7 +107,7 @@ class SellerDashboardScreen extends ConsumerWidget {
                   // Search Bar
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.only(bottom: 24.0),
+                      padding: EdgeInsets.only(bottom: 24.0),
                       child: Container(
                         decoration: BoxDecoration(
                           color: Colors.white,

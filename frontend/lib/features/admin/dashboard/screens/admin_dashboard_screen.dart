@@ -515,7 +515,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       children: [
         // Header filters row
         Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(ResponsiveHelper.responsiveHorizontalMargin(context)),
           child: Row(
             children: [
               Expanded(
@@ -577,36 +577,70 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         ),
         // Pagination Toolbar
         Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Page $_stockPage of $_stockTotalPages', style: const TextStyle(color: Color(0xFF3E4A3D))),
-              Row(
-                children: [
-                  ElevatedButton(
-                    onPressed: _stockPage <= 1 ? null : () => _fetchStock(_stockPage - 1),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(0, 48),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
+          padding: EdgeInsets.all(ResponsiveHelper.responsiveHorizontalMargin(context)),
+          child: ResponsiveHelper.isSmallPhone(context)
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text('Page $_stockPage of $_stockTotalPages',
+                        style: const TextStyle(color: Color(0xFF3E4A3D)),
+                        textAlign: TextAlign.center),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: _stockPage <= 1 ? null : () => _fetchStock(_stockPage - 1),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(0, 48),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
+                          ),
+                          child: const Text('Previous'),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: _stockPage >= _stockTotalPages ? null : () => _fetchStock(_stockPage + 1),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(0, 48),
+                            backgroundColor: const Color(0xFF006B2C),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
+                          ),
+                          child: const Text('Next'),
+                        ),
+                      ],
                     ),
-                    child: const Text('Previous'),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: _stockPage >= _stockTotalPages ? null : () => _fetchStock(_stockPage + 1),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(0, 48),
-                      backgroundColor: const Color(0xFF006B2C),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
+                  ],
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Page $_stockPage of $_stockTotalPages', style: const TextStyle(color: Color(0xFF3E4A3D))),
+                    Row(
+                      children: [
+                        ElevatedButton(
+                          onPressed: _stockPage <= 1 ? null : () => _fetchStock(_stockPage - 1),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(0, 48),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
+                          ),
+                          child: const Text('Previous'),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: _stockPage >= _stockTotalPages ? null : () => _fetchStock(_stockPage + 1),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(0, 48),
+                            backgroundColor: const Color(0xFF006B2C),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
+                          ),
+                          child: const Text('Next'),
+                        ),
+                      ],
                     ),
-                    child: const Text('Next'),
-                  ),
-                ],
-              ),
-            ],
-          ),
+                  ],
+                ),
         ),
       ],
     );

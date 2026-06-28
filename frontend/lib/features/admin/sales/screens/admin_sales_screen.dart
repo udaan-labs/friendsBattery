@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../theme/app_theme.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 import '../providers/admin_sales_history_provider.dart';
 import '../widgets/admin_sale_history_card.dart';
 
@@ -97,8 +98,9 @@ class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
               controller: _searchController,
               onChanged: _onSearchChanged,
               decoration: InputDecoration(
-                hintText:
-                    'Search by customer, seller, shop, product, serial...',
+                hintText: ResponsiveHelper.isSmallPhone(context)
+                    ? 'Search sales...'
+                    : 'Search by customer, seller, shop, product, serial...',
                 hintStyle:
                     TextStyle(color: Colors.grey.shade400, fontSize: 13),
                 prefixIcon: const Icon(Icons.search_rounded,
