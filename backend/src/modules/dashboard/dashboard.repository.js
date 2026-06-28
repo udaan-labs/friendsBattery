@@ -18,8 +18,8 @@ class DashboardRepository {
   }
 
   /**
-   * Get the total number of items sold today.
-   * @returns {Promise<number>}
+   * Get the total count and revenue of items sold today.
+   * @returns {Promise<{count: number, amount: number}>}
    */
   async getTodaySales() {
     const startOfToday = new Date();
@@ -28,14 +28,30 @@ class DashboardRepository {
     const endOfToday = new Date();
     endOfToday.setHours(23, 59, 59, 999);
 
-    return prisma.salesTransaction.count({
-      where: {
-        soldAt: {
-          gte: startOfToday,
-          lte: endOfToday
+    const [count, sumResult] = await Promise.all([
+      prisma.salesTransaction.count({
+        where: {
+          soldAt: {
+            gte: startOfToday,
+            lte: endOfToday
+          }
         }
-      }
-    });
+      }),
+      prisma.salesTransaction.aggregate({
+        _sum: { sellPrice: true },
+        where: {
+          soldAt: {
+            gte: startOfToday,
+            lte: endOfToday
+          }
+        }
+      })
+    ]);
+
+    return {
+      count,
+      amount: Number(sumResult._sum.sellPrice || 0)
+    };
   }
 
   /**
@@ -77,9 +93,9 @@ class DashboardRepository {
   }
 
   /**
-   * Get the total number of items sold today by a specific seller.
+   * Get the total count and revenue of items sold today by a specific seller.
    * @param {string|number|bigint} sellerId
-   * @returns {Promise<number>}
+   * @returns {Promise<{count: number, amount: number}>}
    */
   async getSellerTodaySales(sellerId) {
     const startOfToday = new Date();
@@ -88,15 +104,32 @@ class DashboardRepository {
     const endOfToday = new Date();
     endOfToday.setHours(23, 59, 59, 999);
 
-    return prisma.salesTransaction.count({
-      where: {
-        sellerId: BigInt(sellerId),
-        soldAt: {
-          gte: startOfToday,
-          lte: endOfToday
+    const [count, sumResult] = await Promise.all([
+      prisma.salesTransaction.count({
+        where: {
+          sellerId: BigInt(sellerId),
+          soldAt: {
+            gte: startOfToday,
+            lte: endOfToday
+          }
         }
-      }
-    });
+      }),
+      prisma.salesTransaction.aggregate({
+        _sum: { sellPrice: true },
+        where: {
+          sellerId: BigInt(sellerId),
+          soldAt: {
+            gte: startOfToday,
+            lte: endOfToday
+          }
+        }
+      })
+    ]);
+
+    return {
+      count,
+      amount: Number(sumResult._sum.sellPrice || 0)
+    };
   }
 
   /**

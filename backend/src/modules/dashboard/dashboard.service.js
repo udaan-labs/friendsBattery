@@ -16,7 +16,8 @@ class DashboardService {
 
     return {
       totalStock,
-      todaySales,
+      todaySales: todaySales.count,
+      todaySalesAmount: todaySales.amount,
       pendingRequests,
       totalSellers,
       pendingShipments
@@ -37,7 +38,8 @@ class DashboardService {
 
     return {
       totalStock,
-      todaySales,
+      todaySales: todaySales.count,
+      todaySalesAmount: todaySales.amount,
       pendingShipments
     };
   }

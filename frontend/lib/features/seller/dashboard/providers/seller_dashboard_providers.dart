@@ -65,21 +65,20 @@ class SellerKpiStats {
 
 final sellerKpiProvider = FutureProvider<SellerKpiStats>((ref) async {
   try {
-    final api = ref.watch(apiClientProvider).getDashboardApi();
-    final response = await api.apiSellerDashboardStatsGet();
-    final data = response.data?.data;
+    final dio = ref.watch(apiClientProvider).dio;
+    final response = await dio.get('/api/seller/dashboard/stats');
+    final body = response.data;
 
-    if (data == null) {
+    if (body is! Map || body['success'] != true || body['data'] is! Map) {
       throw Exception('Failed to retrieve seller statistics from API');
     }
 
-    final totalStock = data.totalStock ?? 0;
-    final todaySalesCount = data.todaySales ?? 0;
-    final pendingShipmentsCount = data.pendingShipments ?? 0;
-    
-    // Estimate todaySalesAmount or use placeholder logic if sales are zero.
-    // For 14 sales (the initial mock state), 14 * 3035 approx ₹42.5k.
-    final todaySalesAmount = todaySalesCount > 0 ? todaySalesCount * 3035.0 : 42500.0;
+    final d = body['data'] as Map<String, dynamic>;
+
+    final totalStock = (d['totalStock'] ?? 0) as int;
+    final todaySalesCount = (d['todaySales'] ?? 0) as int;
+    final todaySalesAmount = (d['todaySalesAmount'] ?? 0).toDouble();
+    final pendingShipmentsCount = (d['pendingShipments'] ?? 0) as int;
 
     return SellerKpiStats(
       currentStock: totalStock,
@@ -89,7 +88,6 @@ final sellerKpiProvider = FutureProvider<SellerKpiStats>((ref) async {
       pendingShipments: pendingShipmentsCount,
     );
   } catch (e) {
-    // Rethrow so Riverpod's error state is activated and displayed correctly on the screen
     rethrow;
   }
 });
