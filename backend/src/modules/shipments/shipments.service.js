@@ -34,7 +34,6 @@ class ShipmentsService {
       // Create one shipment item per unit
       for (const unit of availableUnits) {
         shipmentItems.push({
-          productCategoryId: product.categoryId,
           productNameId: product.productNameId,
           productModelId: product.productModelId,
           productId: product.id,
@@ -153,8 +152,6 @@ class ShipmentsService {
       totalQuantity,
       items: shipment.items.map(item => ({
         id: Number(item.id),
-        category: item.category?.name || '',
-        productGroup: item.product?.group?.name || '',
         productName: item.name?.name || '',
         productModel: item.model?.name || '',
         quantity: item.quantity,

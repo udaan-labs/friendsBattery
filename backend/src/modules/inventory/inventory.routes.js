@@ -57,21 +57,16 @@ router.get(
  * @swagger
  * /api/inventory/details:
  *   get:
- *     summary: Return a complete inventory summary grouped by Category, Subcategory, and Product Name
+ *     summary: Return a complete inventory summary grouped by Product Name and Product Model
  *     tags: [Inventory]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
- *         name: category_id
+ *         name: product_name_id
  *         schema:
  *           type: integer
- *         description: Filter by Category ID
- *       - in: query
- *         name: subcategory_id
- *         schema:
- *           type: integer
- *         description: Filter by Subcategory (Product Name) ID
+ *         description: Filter by Product Name ID
  *       - in: query
  *         name: search
  *         schema:
@@ -92,72 +87,6 @@ router.get(
  *     responses:
  *       200:
  *         description: Inventory details summary fetched successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: Inventory details fetched successfully
- *                 data:
- *                   type: object
- *                   properties:
- *                     categories:
- *                       type: array
- *                       items:
- *                         type: object
- *                         properties:
- *                           categoryId:
- *                             type: integer
- *                           categoryName:
- *                             type: string
- *                           totalProducts:
- *                             type: integer
- *                           totalInventory:
- *                             type: integer
- *                           subcategories:
- *                             type: array
- *                             items:
- *                               type: object
- *                               properties:
- *                                 subcategoryId:
- *                                   type: integer
- *                                 subcategoryName:
- *                                   type: string
- *                                 totalProducts:
- *                                   type: integer
- *                                 totalInventory:
- *                                   type: integer
- *                                 products:
- *                                   type: array
- *                                   items:
- *                                     type: object
- *                                     properties:
- *                                       productId:
- *                                         type: integer
- *                                       productName:
- *                                         type: string
- *                                       totalQuantity:
- *                                         type: integer
- *                                       soldQuantity:
- *                                         type: integer
- *                                       remainingQuantity:
- *                                         type: integer
- *                     pagination:
- *                       type: object
- *                       properties:
- *                         total:
- *                           type: integer
- *                         page:
- *                           type: integer
- *                         limit:
- *                           type: integer
- *                         total_pages:
- *                           type: integer
  *       401:
  *         description: Unauthorized
  *       500:
@@ -219,14 +148,9 @@ router.get(
  * @swagger
  * /api/inventory/product-details:
  *   get:
- *     summary: Fetch details of a product (stock count & min sell price) by category, product name, and model IDs
+ *     summary: Fetch details of a product (stock count & min sell price) by product name and model IDs
  *     tags: [Inventory]
  *     parameters:
- *       - in: query
- *         name: category_id
- *         required: true
- *         schema:
- *           type: string
  *       - in: query
  *         name: product_name_id
  *         required: true
@@ -240,24 +164,6 @@ router.get(
  *     responses:
  *       200:
  *         description: Product details fetched successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   type: object
- *                   properties:
- *                     productId:
- *                       type: integer
- *                     currentStock:
- *                       type: integer
- *                     minSellPrice:
- *                       type: number
  */
 router.get(
   '/product-details',
@@ -274,11 +180,6 @@ router.get(
  *     tags: [Inventory]
  *     parameters:
  *       - in: query
- *         name: category_id
- *         required: true
- *         schema:
- *           type: string
- *       - in: query
  *         name: product_name_id
  *         required: true
  *         schema:
@@ -291,19 +192,6 @@ router.get(
  *     responses:
  *       200:
  *         description: Available serials fetched successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   type: array
- *                   items:
- *                     type: string
  */
 router.get(
   '/available-serials',
@@ -454,14 +342,10 @@ router.post(
  *           schema:
  *             type: object
  *             required:
- *               - productCategoryId
  *               - productNameId
  *               - productModelId
  *               - quantity
  *             properties:
- *               productCategoryId:
- *                 type: integer
- *                 example: 1
  *               productNameId:
  *                 type: integer
  *                 example: 10
@@ -483,39 +367,10 @@ router.post(
  *     responses:
  *       200:
  *         description: Stock updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: Stock updated successfully
- *                 data:
- *                   type: object
- *                   properties:
- *                     productCategoryId:
- *                       type: integer
- *                       example: 1
- *                     productNameId:
- *                       type: integer
- *                       example: 10
- *                     productModelId:
- *                       type: integer
- *                       example: 25
- *                     quantity:
- *                       type: integer
- *                       example: 125
- *                     minSellPrice:
- *                       type: number
- *                       example: 1200
  *       400:
  *         description: Invalid request payload
  *       404:
- *         description: Category, product name, or product model not found
+ *         description: Product name or product model not found
  */
 router.post(
   '/update-stock',

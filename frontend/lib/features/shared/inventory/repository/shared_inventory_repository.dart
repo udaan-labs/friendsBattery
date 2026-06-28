@@ -2,8 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 
 class SharedInventoryItemModel {
-  final String productGroup;
-  final String category;
   final String productModel;
   final String productName;
   final int quantity;
@@ -11,8 +9,6 @@ class SharedInventoryItemModel {
   final int minStock; // Assuming we have this or default to 10
 
   SharedInventoryItemModel({
-    required this.productGroup,
-    required this.category,
     required this.productModel,
     required this.productName,
     required this.quantity,
@@ -23,11 +19,8 @@ class SharedInventoryItemModel {
   factory SharedInventoryItemModel.fromJson(Map<String, dynamic> json) {
     // API returns: category (top-level group), brand (product name/series), model
     // We map: productGroup=category, category=brand, productModel=model, productName=brand
-    final categoryName = json['category']?.toString() ?? 'N/A';
     final brandName = json['brand']?.toString() ?? 'N/A';
     return SharedInventoryItemModel(
-      productGroup: categoryName,
-      category: brandName,
       productModel: json['model']?.toString() ?? 'N/A',
       productName: brandName,
       quantity: (json['quantity'] as num?)?.toInt() ?? 0,

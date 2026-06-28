@@ -73,10 +73,6 @@ class InventoryProductCard extends StatelessWidget {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildField(icon: Icons.inventory_2_outlined, iconColor: Colors.green, label: 'Product Group', value: item.productGroup),
-                          const SizedBox(height: 12),
-                          _buildField(icon: Icons.folder_outlined, iconColor: Colors.blue, label: 'Category', value: item.category),
-                          const SizedBox(height: 12),
                           _buildField(icon: Icons.local_offer_outlined, iconColor: Colors.orange, label: 'Product Name', value: item.productName),
                           const SizedBox(height: 12),
                           _buildField(icon: Icons.precision_manufacturing_outlined, iconColor: Colors.purple, label: 'Product Model', value: item.productModel),
@@ -94,10 +90,6 @@ class InventoryProductCard extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildField(icon: Icons.inventory_2_outlined, iconColor: Colors.green, label: 'Product Group', value: item.productGroup),
-                              const SizedBox(height: 16),
-                              _buildField(icon: Icons.folder_outlined, iconColor: Colors.blue, label: 'Category', value: item.category),
-                              const SizedBox(height: 16),
                               _buildField(icon: Icons.local_offer_outlined, iconColor: Colors.orange, label: 'Product Name', value: item.productName),
                             ],
                           ),

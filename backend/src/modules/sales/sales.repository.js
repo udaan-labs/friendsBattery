@@ -115,7 +115,6 @@ class SalesRepository {
         seller: { select: { id: true, userName: true, shopName: true } },
         product: {
           include: {
-            category: true,
             productName: true,
             productModel: true
           }
@@ -136,7 +135,6 @@ class SalesRepository {
         seller: { select: { id: true, userName: true, shopName: true } },
         product: {
           include: {
-            category: true,
             productName: true,
             productModel: true
           }
@@ -157,7 +155,6 @@ class SalesRepository {
         seller: { select: { id: true, userName: true, shopName: true } },
         product: {
           include: {
-            category: true,
             productName: true,
             productModel: true
           }
@@ -205,7 +202,6 @@ class SalesRepository {
         seller: { select: { id: true, userName: true, shopName: true } },
         product: {
           include: {
-            category: true,
             productName: true,
             productModel: true,
           },
@@ -330,8 +326,6 @@ class SalesRepository {
         },
         product: {
           include: {
-            group: true,
-            category: true,
             productName: true,
             productModel: true,
           },

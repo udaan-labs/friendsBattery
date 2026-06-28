@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:friends_battery_api/friends_battery_api.dart';
+import 'package:dio/dio.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
-import '../../../../core/network/api_client_provider.dart';
+import '../../../../core/network/api_client.dart';
 import '../providers/inventory_provider.dart';
 import '../../dashboard/providers/dashboard_controller.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
@@ -21,20 +21,14 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
   final _quantityController = TextEditingController();
   final _minPriceController = TextEditingController();
 
-  bool _isLoadingGroups = false;
-  bool _isLoadingCategories = false;
   bool _isLoadingNames = false;
   bool _isLoadingModels = false;
   bool _isLoadingDetails = false;
   bool _isSubmitting = false;
 
-  List<Map<String, String>> _groups = [];
-  List<Map<String, String>> _categories = [];
   List<Map<String, String>> _productNames = [];
   List<Map<String, String>> _productModels = [];
 
-  String? _selectedGroupId;
-  String? _selectedCategoryId;
   String? _selectedProductNameId;
   String? _selectedProductModelId;
 
@@ -44,7 +38,7 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
   @override
   void initState() {
     super.initState();
-    _loadGroups();
+    _loadProductNames();
   }
 
   @override
@@ -54,109 +48,25 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
     super.dispose();
   }
 
-  Future<void> _loadGroups() async {
-    setState(() {
-      _isLoadingGroups = true;
-    });
+  Future<void> _loadProductNames() async {
+    setState(() => _isLoadingNames = true);
     try {
-      final api = ref.read(apiClientProvider).getProductsApi();
-      final response = await api.apiProductsGroupsGet();
-      final data = (response as dynamic).data;
+      final dio = ApiClient().dio;
+      final response = await dio.get('/api/products/product-names');
+      final data = response.data;
       if (data is Map<String, dynamic> && data['data'] is List) {
         final list = data['data'] as List;
         setState(() {
-          _groups = list.map((item) {
-            return {
-              'id': item['id'].toString(),
-              'name': item['name'].toString(),
-            };
+          _productNames = list.map((item) => {
+            'id': item['id'].toString(),
+            'name': item['name'].toString(),
           }).toList();
         });
       }
     } catch (e) {
       // Handled automatically by ApiInterceptor
     } finally {
-      setState(() {
-        _isLoadingGroups = false;
-      });
-    }
-  }
-
-  Future<void> _loadCategories(String groupId) async {
-    setState(() {
-      _isLoadingCategories = true;
-      _categories = [];
-      _selectedCategoryId = null;
-      _productNames = [];
-      _selectedProductNameId = null;
-      _productModels = [];
-      _selectedProductModelId = null;
-      _currentStock = null;
-      _currentMinPrice = null;
-    });
-
-    try {
-      final api = ref.read(apiClientProvider).getProductsApi();
-      final request = ApiProductsCategoriesListPostRequest((b) => b..groupId = int.parse(groupId));
-      final response = await api.apiProductsCategoriesListPost(
-        apiProductsCategoriesListPostRequest: request,
-      );
-      final data = (response as dynamic).data;
-      if (data is Map<String, dynamic> && data['data'] is List) {
-        final list = data['data'] as List;
-        setState(() {
-          _categories = list.map((item) {
-            return {
-              'id': item['id'].toString(),
-              'name': item['name'].toString(),
-            };
-          }).toList();
-        });
-      }
-    } catch (e) {
-      // Handled automatically by ApiInterceptor
-    } finally {
-      setState(() {
-        _isLoadingCategories = false;
-      });
-    }
-  }
-
-  Future<void> _loadProductNames(String categoryId) async {
-    setState(() {
-      _isLoadingNames = true;
-      _productNames = [];
-      _selectedProductNameId = null;
-      _productModels = [];
-      _selectedProductModelId = null;
-      _currentStock = null;
-      _currentMinPrice = null;
-    });
-
-    try {
-      final api = ref.read(apiClientProvider).getProductsApi();
-      final request = ApiProductsProductNamesListPostRequest((b) => b..categoryId = int.parse(categoryId));
-      final response = await api.apiProductsProductNamesListPost(
-        apiProductsProductNamesListPostRequest: request,
-      );
-      final data = (response as dynamic).data;
-      if (data is Map<String, dynamic> && data['data'] is List) {
-        final list = data['data'] as List;
-        setState(() {
-          _productNames = list.map((item) {
-            return {
-              'id': item['id'].toString(),
-              'name': item['name'].toString(),
-            };
-          }).toList();
-        });
-      }
-    } catch (e) {
-      // Handled automatically by ApiInterceptor
-    } finally {
-      setState(() {
-        _isLoadingNames = false;
-      });
+      if (mounted) setState(() => _isLoadingNames = false);
     }
   }
 
@@ -170,31 +80,24 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
     });
 
     try {
-      final api = ref.read(apiClientProvider).getProductsApi();
-      final request = ApiProductsProductModelsListPostRequest((b) => b
-        ..categoryId = int.parse(_selectedCategoryId!)
-        ..productNameId = int.parse(productNameId));
-      final response = await api.apiProductsProductModelsListPost(
-        apiProductsProductModelsListPostRequest: request,
-      );
-      final data = (response as dynamic).data;
+      final dio = ApiClient().dio;
+      final response = await dio.post('/api/products/product-models/list', data: {
+        'product_name_id': int.parse(productNameId),
+      });
+      final data = response.data;
       if (data is Map<String, dynamic> && data['data'] is List) {
         final list = data['data'] as List;
         setState(() {
-          _productModels = list.map((item) {
-            return {
-              'id': item['id'].toString(),
-              'name': item['name'].toString(),
-            };
+          _productModels = list.map((item) => {
+            'id': item['id'].toString(),
+            'name': item['name'].toString(),
           }).toList();
         });
       }
     } catch (e) {
       // Handled automatically by ApiInterceptor
     } finally {
-      setState(() {
-        _isLoadingModels = false;
-      });
+      if (mounted) setState(() => _isLoadingModels = false);
     }
   }
 
@@ -206,55 +109,47 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
     });
 
     try {
-      final api = ref.read(apiClientProvider).getInventoryApi();
-      final response = await api.apiInventoryProductDetailsGet(
-        categoryId: _selectedCategoryId!,
-        productNameId: _selectedProductNameId!,
-        productModelId: productModelId,
-      );
+      final dio = ApiClient().dio;
+      final response = await dio.get('/api/inventory/product-details', queryParameters: {
+        'product_name_id': _selectedProductNameId!,
+        'product_model_id': productModelId,
+      });
 
-      final details = response.data?.data;
-      if (details != null) {
+      final data = response.data;
+      if (data is Map<String, dynamic> && data['data'] != null) {
+        final details = data['data'];
         setState(() {
-          _currentStock = details.currentStock ?? 0;
-          _currentMinPrice = details.minSellPrice ?? 0;
+          _currentStock = details['currentStock'] ?? 0;
+          _currentMinPrice = details['minSellPrice'] ?? 0;
         });
       }
     } catch (e) {
       // Handled automatically by ApiInterceptor
     } finally {
-      setState(() {
-        _isLoadingDetails = false;
-      });
+      if (mounted) setState(() => _isLoadingDetails = false);
     }
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedGroupId == null || _selectedCategoryId == null || _selectedProductNameId == null || _selectedProductModelId == null) {
-      context.showErrorSnackBar('Please select all product fields');
+    if (_selectedProductNameId == null || _selectedProductModelId == null) {
+      context.showErrorSnackBar('Please select Product Name and Product Model');
       return;
     }
 
-    setState(() {
-      _isSubmitting = true;
-    });
+    setState(() => _isSubmitting = true);
 
     try {
-      final api = ref.read(apiClientProvider).getInventoryApi();
+      final dio = ApiClient().dio;
       final quantity = int.parse(_quantityController.text);
       final minPrice = _minPriceController.text.isNotEmpty ? num.parse(_minPriceController.text) : null;
 
-      final request = ApiInventoryUpdateStockPostRequest((b) => b
-        ..productCategoryId = int.parse(_selectedCategoryId!)
-        ..productNameId = int.parse(_selectedProductNameId!)
-        ..productModelId = int.parse(_selectedProductModelId!)
-        ..quantity = quantity
-        ..minSellPrice = minPrice);
-
-      await api.apiInventoryUpdateStockPost(
-        apiInventoryUpdateStockPostRequest: request,
-      );
+      await dio.post('/api/inventory/update-stock', data: {
+        'productNameId': int.parse(_selectedProductNameId!),
+        'productModelId': int.parse(_selectedProductModelId!),
+        'quantity': quantity,
+        if (minPrice != null) 'minSellPrice': minPrice,
+      });
 
       if (mounted) {
         context.showSuccessSnackBar('Stock updated successfully');
@@ -264,16 +159,15 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
         ref.invalidate(inventoryListProvider);
         context.pop();
       }
-    } catch (e) {
-      // Handled automatically by ApiInterceptor
+    } on DioException catch (e) {
+      if (mounted) {
+        final msg = e.response?.data?['message'] ?? 'Failed to update stock';
+        context.showErrorSnackBar(msg);
+      }
     } finally {
-      setState(() {
-        _isSubmitting = false;
-      });
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -321,68 +215,6 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // Product Group
-                          const Text(
-                            'Product Group',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                          ),
-                          const SizedBox(height: 8),
-                          _isLoadingGroups
-                              ? const Center(child: CircularProgressIndicator())
-                              : DropdownMenu<String>(
-                                  expandedInsets: EdgeInsets.zero,
-                                  enableFilter: true,
-                                  hintText: 'Select Group',
-                                  requestFocusOnTap: true,
-                                  dropdownMenuEntries: _groups.map((group) {
-                                    return DropdownMenuEntry<String>(
-                                      value: group['id']!,
-                                      label: group['name']!,
-                                    );
-                                  }).toList(),
-                                  onSelected: (id) {
-                                    if (id != null) {
-                                      setState(() {
-                                        _selectedGroupId = id;
-                                      });
-                                      _loadCategories(id);
-                                    }
-                                  },
-                                ),
-                          const SizedBox(height: 20),
-
-                          // Product Category
-                          const Text(
-                            'Product Category',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                          ),
-                          const SizedBox(height: 8),
-                          _isLoadingCategories
-                              ? const Center(child: CircularProgressIndicator())
-                              : DropdownMenu<String>(
-                                  key: ValueKey('category_$_selectedGroupId'),
-                                  expandedInsets: EdgeInsets.zero,
-                                  enableFilter: true,
-                                  enabled: _selectedGroupId != null,
-                                  hintText: 'Select Category',
-                                  requestFocusOnTap: true,
-                                  dropdownMenuEntries: _categories.map((cat) {
-                                    return DropdownMenuEntry<String>(
-                                      value: cat['id']!,
-                                      label: cat['name']!,
-                                    );
-                                  }).toList(),
-                                  onSelected: (id) {
-                                    if (id != null) {
-                                      setState(() {
-                                        _selectedCategoryId = id;
-                                      });
-                                      _loadProductNames(id);
-                                    }
-                                  },
-                                ),
-                          const SizedBox(height: 20),
-
                           // Product Name
                           const Text(
                             'Product Name',
@@ -392,10 +224,8 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
                           _isLoadingNames
                               ? const Center(child: CircularProgressIndicator())
                               : DropdownMenu<String>(
-                                  key: ValueKey('name_$_selectedCategoryId'),
                                   expandedInsets: EdgeInsets.zero,
                                   enableFilter: true,
-                                  enabled: _selectedCategoryId != null,
                                   hintText: 'Select Product Name',
                                   requestFocusOnTap: true,
                                   dropdownMenuEntries: _productNames.map((name) {
@@ -406,9 +236,7 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
                                   }).toList(),
                                   onSelected: (id) {
                                     if (id != null) {
-                                      setState(() {
-                                        _selectedProductNameId = id;
-                                      });
+                                      setState(() => _selectedProductNameId = id);
                                       _loadProductModels(id);
                                     }
                                   },
@@ -438,9 +266,7 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
                                   }).toList(),
                                   onSelected: (id) {
                                     if (id != null) {
-                                      setState(() {
-                                        _selectedProductModelId = id;
-                                      });
+                                      setState(() => _selectedProductModelId = id);
                                       _loadProductDetails(id);
                                     }
                                   },

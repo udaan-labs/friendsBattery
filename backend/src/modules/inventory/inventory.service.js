@@ -25,7 +25,6 @@ class InventoryService {
     return {
       data: products.map(p => ({
         product_id: Number(p.id),
-        category: p.category?.name || '',
         brand: p.productName?.name || '',
         model: p.productModel?.name || '',
         quantity: p._count.units,
@@ -57,7 +56,6 @@ class InventoryService {
 
     return {
       product_id: Number(product.id),
-      category: product.category?.name || '',
       brand: product.productName?.name || '',
       model: product.productModel?.name || '',
       quantity: product._count.units,
@@ -255,28 +253,18 @@ class InventoryService {
    * Input: adminId, payload
    * Output: updated stock details
    */
-  async updateStock(adminId, { productCategoryId, productNameId, productModelId, quantity, minSellPrice, minUnitCountAdmin, minUnitCountSeller }) {
-    // 1. Validate category existence
-    const category = await prisma.category.findUnique({
-      where: { id: BigInt(productCategoryId) }
-    });
-    if (!category) {
-      const error = new Error('Category not found');
-      error.statusCode = 404;
-      throw error;
-    }
-
-    // 2. Validate product name existence and that it belongs to the category
+  async updateStock(adminId, { productNameId, productModelId, quantity, minSellPrice, minUnitCountAdmin, minUnitCountSeller }) {
+    // 1. Validate product name existence
     const productName = await prisma.productName.findUnique({
       where: { id: BigInt(productNameId) }
     });
-    if (!productName || Number(productName.categoryId) !== productCategoryId) {
-      const error = new Error('Product name not found or does not belong to the selected category');
+    if (!productName) {
+      const error = new Error('Product name not found');
       error.statusCode = 404;
       throw error;
     }
 
-    // 3. Validate product model existence and that it belongs to the product name
+    // 2. Validate product model existence and that it belongs to the product name
     const productModel = await prisma.productModel.findUnique({
       where: { id: BigInt(productModelId) }
     });
@@ -290,7 +278,6 @@ class InventoryService {
       // Find or create product
       let product = await tx.product.findFirst({
         where: {
-          categoryId: BigInt(productCategoryId),
           productNameId: BigInt(productNameId),
           productModelId: BigInt(productModelId)
         }
@@ -300,7 +287,6 @@ class InventoryService {
         // Create new product
         product = await tx.product.create({
           data: {
-            categoryId: BigInt(productCategoryId),
             productNameId: BigInt(productNameId),
             productModelId: BigInt(productModelId),
             minPrice: minSellPrice !== undefined ? minSellPrice : 0,
@@ -357,7 +343,6 @@ class InventoryService {
       });
 
       return {
-        productCategoryId,
         productNameId,
         productModelId,
         quantity: existingQuantity + quantity,
@@ -367,13 +352,12 @@ class InventoryService {
   }
 
   /**
-   * Fetch details of a product (stock count & min sell price) by category, product name, and model IDs
+   * Fetch details of a product (stock count & min sell price) by product name and model IDs
    */
-  async getProductDetails(userId, { categoryId, productNameId, productModelId }) {
+  async getProductDetails(userId, { productNameId, productModelId }) {
     // 1. Find product
     const product = await prisma.product.findFirst({
       where: {
-        categoryId: BigInt(categoryId),
         productNameId: BigInt(productNameId),
         productModelId: BigInt(productModelId)
       }
@@ -406,16 +390,16 @@ class InventoryService {
   /**
    * Fetch available serial numbers for a product owned by a specific user.
    */
-  async getAvailableSerials(userId, { categoryId, productNameId, productModelId }) {
-    return inventoryRepository.findAvailableSerials(userId, { categoryId, productNameId, productModelId });
+  async getAvailableSerials(userId, { productNameId, productModelId }) {
+    return inventoryRepository.findAvailableSerials(userId, { productNameId, productModelId });
   }
 
   /**
-   * Fetch inventory details grouped by Category -> Subcategory -> Product.
+   * Fetch inventory details grouped by ProductName -> Product.
    * Input: userId, role, filters
    * Output: Grouped inventory details and pagination
    */
-  async getInventoryDetails(userId, role, { category_id, subcategory_id, search, page = 1, limit = 10 }) {
+  async getInventoryDetails(userId, role, { product_name_id, search, page = 1, limit = 10 }) {
     const pageNum = Number(page);
     const limitNum = Number(limit);
     const skip = (pageNum - 1) * limitNum;
@@ -426,8 +410,7 @@ class InventoryService {
     };
 
     const filters = {
-      categoryId: category_id,
-      subcategoryId: subcategory_id,
+      productNameId: product_name_id,
       search,
       skip,
       take: limitNum
@@ -441,7 +424,7 @@ class InventoryService {
 
     if (products.length === 0) {
       return {
-        categories: [],
+        productNames: [],
         pagination: {
           total,
           page: Number(page),
@@ -451,10 +434,9 @@ class InventoryService {
       };
     }
 
-    // 2. Extract unique product, category, and subcategory IDs in the current page
+    // 2. Extract unique product and product name IDs in the current page
     const productIds = products.map(p => p.id);
-    const categoryIds = [...new Set(products.map(p => p.categoryId))];
-    const subcategoryIds = [...new Set(products.map(p => p.productNameId))];
+    const productNameIds = [...new Set(products.map(p => p.productNameId))];
 
     // 3. Fetch product unit aggregates (total, sold, remaining)
     const unitGroups = await inventoryRepository.aggregateUnitCounts(productIds, ownerFilter);
@@ -477,61 +459,41 @@ class InventoryService {
       }
     }
 
-    // 4. Fetch Category and Subcategory Stats (Total products and total available inventory)
-    const [categoryStats, subcategoryStats] = await Promise.all([
-      Promise.all(categoryIds.map(async (catId) => {
-        const stats = await inventoryRepository.getCategoryStats(catId, ownerFilter);
-        return { categoryId: catId, ...stats };
-      })),
-      Promise.all(subcategoryIds.map(async (subCatId) => {
-        const stats = await inventoryRepository.getSubcategoryStats(subCatId, ownerFilter);
-        return { subcategoryId: subCatId, ...stats };
-      }))
-    ]);
+    // 4. Fetch ProductName Stats (Total products and total available inventory)
+    const productNameStats = await Promise.all(
+      productNameIds.map(async (nameId) => {
+        const stats = await inventoryRepository.getProductNameStats(nameId, ownerFilter);
+        return { productNameId: nameId, ...stats };
+      })
+    );
 
-    const categoryMap = new Map(categoryStats.map(s => [s.categoryId, s]));
-    const subcategoryMap = new Map(subcategoryStats.map(s => [s.subcategoryId, s]));
+    const productNameMap = new Map(productNameStats.map(s => [s.productNameId, s]));
 
-    // 5. Build hierarchy: Category -> Subcategory -> Product
-    const categories = [];
+    // 5. Build hierarchy: ProductName -> Product
+    const productNames = [];
     for (const product of products) {
-      const catId = product.categoryId;
-      const subcatId = product.productNameId;
+      const nameId = product.productNameId;
       const prodId = product.id;
 
-      // Find or create Category node
-      let catNode = categories.find(c => c.categoryId === Number(catId));
-      if (!catNode) {
-        const catStats = categoryMap.get(catId) || { totalProducts: 0, totalInventory: 0 };
-        catNode = {
-          categoryId: Number(catId),
-          categoryName: product.category.name,
-          totalProducts: catStats.totalProducts,
-          totalInventory: catStats.totalInventory,
-          subcategories: []
-        };
-        categories.push(catNode);
-      }
-
-      // Find or create Subcategory node
-      let subcatNode = catNode.subcategories.find(s => s.subcategoryId === Number(subcatId));
-      if (!subcatNode) {
-        const subcatStats = subcategoryMap.get(subcatId) || { totalProducts: 0, totalInventory: 0 };
-        subcatNode = {
-          subcategoryId: Number(subcatId),
-          subcategoryName: product.productName.name,
-          totalProducts: subcatStats.totalProducts,
-          totalInventory: subcatStats.totalInventory,
+      // Find or create ProductName node
+      let nameNode = productNames.find(n => n.productNameId === Number(nameId));
+      if (!nameNode) {
+        const nameStats = productNameMap.get(nameId) || { totalProducts: 0, totalInventory: 0 };
+        nameNode = {
+          productNameId: Number(nameId),
+          productNameLabel: product.productName.name,
+          totalProducts: nameStats.totalProducts,
+          totalInventory: nameStats.totalInventory,
           products: []
         };
-        catNode.subcategories.push(subcatNode);
+        productNames.push(nameNode);
       }
 
       // Add Product node
       const counts = countMap[Number(prodId)] || { total: 0, sold: 0, remaining: 0 };
-      subcatNode.products.push({
+      nameNode.products.push({
         productId: Number(prodId),
-        productName: product.productModel.name,
+        productModel: product.productModel.name,
         totalQuantity: counts.total,
         soldQuantity: counts.sold,
         remainingQuantity: counts.remaining
@@ -539,7 +501,7 @@ class InventoryService {
     }
 
     return {
-      categories,
+      productNames,
       pagination: {
         total,
         page: Number(page),
@@ -551,4 +513,3 @@ class InventoryService {
 }
 
 module.exports = new InventoryService();
-

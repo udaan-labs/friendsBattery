@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:friends_battery_api/friends_battery_api.dart';
+import 'package:dio/dio.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
-import '../../../../core/network/api_client_provider.dart';
+import '../../../../core/network/api_client.dart';
 import '../providers/seller_dashboard_controller.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
 
@@ -19,16 +19,13 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
   final _reasonController = TextEditingController();
   final _customerMobileController = TextEditingController();
 
-  bool _isLoadingCategories = false;
   bool _isLoadingNames = false;
   bool _isLoadingModels = false;
   bool _isSubmitting = false;
 
-  List<Map<String, String>> _categories = [];
   List<Map<String, String>> _productNames = [];
   List<Map<String, String>> _productModels = [];
 
-  String? _selectedCategoryId;
   String? _selectedProductNameId;
   String? _selectedProductModelId;
   String? _selectedSerial;
@@ -37,7 +34,7 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
   @override
   void initState() {
     super.initState();
-    _loadCategories();
+    _loadProductNames();
   }
 
   @override
@@ -47,30 +44,7 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
     super.dispose();
   }
 
-  Future<void> _loadCategories() async {
-    setState(() => _isLoadingCategories = true);
-    try {
-      final api = ref.read(apiClientProvider).getProductsApi();
-      final response = await api.apiProductsCategoriesGet();
-      final data = (response as dynamic).data;
-      if (data is Map<String, dynamic> && data['data'] is List) {
-        final list = data['data'] as List;
-        setState(() {
-          _categories = list.map((item) {
-            return {
-              'id': item['id'].toString(),
-              'name': item['name'].toString(),
-            };
-          }).toList();
-        });
-      }
-    } catch (_) {
-    } finally {
-      setState(() => _isLoadingCategories = false);
-    }
-  }
-
-  Future<void> _loadProductNames(String categoryId) async {
+  Future<void> _loadProductNames() async {
     setState(() {
       _isLoadingNames = true;
       _productNames = [];
@@ -82,14 +56,9 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
     });
 
     try {
-      final api = ref.read(apiClientProvider).getProductsApi();
-      final request = ApiProductsProductNamesListPostRequest(
-        (b) => b..categoryId = int.parse(categoryId),
-      );
-      final response = await api.apiProductsProductNamesListPost(
-        apiProductsProductNamesListPostRequest: request,
-      );
-      final data = (response as dynamic).data;
+      final dio = ApiClient().dio;
+      final response = await dio.get('/api/products/product-names');
+      final data = response.data;
       if (data is Map<String, dynamic> && data['data'] is List) {
         final list = data['data'] as List;
         setState(() {
@@ -117,16 +86,11 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
     });
 
     try {
-      final api = ref.read(apiClientProvider).getProductsApi();
-      final request = ApiProductsProductModelsListPostRequest(
-        (b) => b
-          ..categoryId = int.parse(_selectedCategoryId!)
-          ..productNameId = int.parse(productNameId),
-      );
-      final response = await api.apiProductsProductModelsListPost(
-        apiProductsProductModelsListPostRequest: request,
-      );
-      final data = (response as dynamic).data;
+      final dio = ApiClient().dio;
+      final response = await dio.post('/api/products/product-models/list', data: {
+        'product_name_id': int.parse(productNameId),
+      });
+      final data = response.data;
       if (data is Map<String, dynamic> && data['data'] is List) {
         final list = data['data'] as List;
         setState(() {
@@ -151,16 +115,15 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
     });
 
     try {
-      final api = ref.read(apiClientProvider).getInventoryApi();
-      final detailsResponse = await api.apiInventoryProductDetailsGet(
-        categoryId: _selectedCategoryId!,
-        productNameId: _selectedProductNameId!,
-        productModelId: productModelId,
-      );
-      final details = detailsResponse.data?.data;
-      if (details != null) {
+      final dio = ApiClient().dio;
+      final response = await dio.get('/api/inventory/product-details', queryParameters: {
+        'product_name_id': _selectedProductNameId!,
+        'product_model_id': productModelId,
+      });
+      final data = response.data;
+      if (data is Map<String, dynamic> && data['data'] != null) {
         setState(() {
-          _productId = details.productId;
+          _productId = data['data']['productId'];
         });
       }
     } catch (_) {
@@ -169,8 +132,7 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedCategoryId == null ||
-        _selectedProductNameId == null ||
+    if (_selectedProductNameId == null ||
         _selectedProductModelId == null ||
         _selectedSerial == null ||
         _selectedSerial!.trim().isEmpty) {
@@ -185,14 +147,8 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
     setState(() => _isSubmitting = true);
 
     try {
-      // Call the sales API to log a return – since the returns module is stub,
-      // we use the GET /api/sales endpoint to verify the serial and show success.
       // In production this would call POST /api/returns with the payload below.
       // For now, display a success message to confirm the flow works.
-      //
-      // final api = ref.read(apiClientProvider).getReturnsApi();
-      // await api.apiReturnsPost(serialNumber: _selectedSerial!, reason: _reasonController.text);
-
       if (mounted) {
         context.showSuccessSnackBar('Return request submitted successfully');
         await ref.read(sellerDashboardControllerProvider).refreshAllData();
@@ -216,7 +172,7 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
   }
 
   bool _hasUnsavedChanges() {
-    return _selectedCategoryId != null ||
+    return _selectedProductNameId != null ||
         (_selectedSerial != null && _selectedSerial!.isNotEmpty) ||
         _customerMobileController.text.isNotEmpty ||
         _reasonController.text.isNotEmpty;
@@ -342,47 +298,17 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
                     ),
                     const SizedBox(height: 20),
 
-                    // Category
-                    const Text(
-                      'Battery Group (Category)',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                    ),
-                    const SizedBox(height: 8),
-                    _isLoadingCategories
-                        ? const Center(child: CircularProgressIndicator())
-                        : DropdownMenu<String>(
-                            expandedInsets: EdgeInsets.zero,
-                            enableFilter: true,
-                            hintText: 'Select Category',
-                            requestFocusOnTap: true,
-                            dropdownMenuEntries: _categories.map((cat) {
-                              return DropdownMenuEntry<String>(
-                                value: cat['id']!,
-                                label: cat['name']!,
-                              );
-                            }).toList(),
-                            onSelected: (id) {
-                              if (id != null) {
-                                setState(() => _selectedCategoryId = id);
-                                _loadProductNames(id);
-                              }
-                            },
-                          ),
-                    const SizedBox(height: 20),
-
                     // Product Name
                     const Text(
-                      'Battery Sub Group (Product Name)',
+                      'Product Name',
                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
                     ),
                     const SizedBox(height: 8),
                     _isLoadingNames
                         ? const Center(child: CircularProgressIndicator())
                         : DropdownMenu<String>(
-                            key: ValueKey('name_$_selectedCategoryId'),
                             expandedInsets: EdgeInsets.zero,
                             enableFilter: true,
-                            enabled: _selectedCategoryId != null,
                             hintText: 'Select Product Name',
                             requestFocusOnTap: true,
                             dropdownMenuEntries: _productNames.map((name) {

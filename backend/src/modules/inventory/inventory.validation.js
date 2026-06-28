@@ -60,7 +60,6 @@ const getHistorySchema = z.object({
 // Schema for POST /inventory/update-stock
 const updateStockSchema = z.object({
   body: z.object({
-    productCategoryId: z.number().int().positive({ message: 'Invalid product category id' }),
     productNameId: z.number().int().positive({ message: 'Invalid product name id' }),
     productModelId: z.number().int().positive({ message: 'Invalid product model id' }),
     quantity: z.number().int().positive({ message: 'Quantity must be greater than 0' }),
@@ -71,7 +70,6 @@ const updateStockSchema = z.object({
 // Schema for GET /inventory/product-details
 const getProductDetailsSchema = z.object({
   query: z.object({
-    category_id: z.string().regex(/^\d+$/).transform(Number),
     product_name_id: z.string().regex(/^\d+$/).transform(Number),
     product_model_id: z.string().regex(/^\d+$/).transform(Number),
   })
@@ -80,7 +78,6 @@ const getProductDetailsSchema = z.object({
 // Schema for GET /inventory/available-serials
 const getAvailableSerialsSchema = z.object({
   query: z.object({
-    category_id: z.string().regex(/^\d+$/).transform(Number),
     product_name_id: z.string().regex(/^\d+$/).transform(Number),
     product_model_id: z.string().regex(/^\d+$/).transform(Number),
   })
@@ -89,8 +86,7 @@ const getAvailableSerialsSchema = z.object({
 // Schema for GET /inventory/details
 const getInventoryDetailsSchema = z.object({
   query: z.object({
-    category_id: z.string().regex(/^\d+$/).transform(Number).optional(),
-    subcategory_id: z.string().regex(/^\d+$/).transform(Number).optional(),
+    product_name_id: z.string().regex(/^\d+$/).transform(Number).optional(),
     search: z.string().optional(),
     page: z.string().regex(/^\d+$/).transform(Number).refine(val => val > 0, { message: 'Page must be positive' }).optional(),
     limit: z.string().regex(/^\d+$/).transform(Number).refine(val => val > 0, { message: 'Limit must be positive' }).optional(),
@@ -108,4 +104,3 @@ module.exports = {
   getAvailableSerialsSchema,
   getInventoryDetailsSchema
 };
-

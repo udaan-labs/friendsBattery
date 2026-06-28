@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:friends_battery_api/friends_battery_api.dart';
+import 'package:dio/dio.dart';
 import '../../../../../shared/widgets/responsive_helper.dart';
-import '../../../../../core/network/api_client_provider.dart';
+import '../../../../../core/network/api_client.dart';
 import '../../../../../shared/widgets/snackbar_helper.dart';
 
 class AddProductModelForm extends ConsumerStatefulWidget {
@@ -17,23 +17,16 @@ class _AddProductModelFormState extends ConsumerState<AddProductModelForm> {
   final _formKey = GlobalKey<FormState>();
   final _productModelController = TextEditingController();
 
-  bool _isLoadingGroups = false;
-  bool _isLoadingCategories = false;
   bool _isLoadingNames = false;
   bool _isSubmitting = false;
 
-  List<Map<String, String>> _groups = [];
-  List<Map<String, String>> _categories = [];
   List<Map<String, String>> _productNames = [];
-  
-  String? _selectedGroupId;
-  String? _selectedCategoryId;
   String? _selectedProductNameId;
 
   @override
   void initState() {
     super.initState();
-    _loadGroups();
+    _loadProductNames();
   }
 
   @override
@@ -42,68 +35,12 @@ class _AddProductModelFormState extends ConsumerState<AddProductModelForm> {
     super.dispose();
   }
 
-  Future<void> _loadGroups() async {
-    setState(() => _isLoadingGroups = true);
+  Future<void> _loadProductNames() async {
+    setState(() => _isLoadingNames = true);
     try {
-      final api = ref.read(apiClientProvider).getProductsApi();
-      final response = await api.apiProductsGroupsGet();
-      final data = (response as dynamic).data;
-      if (data is Map<String, dynamic> && data['data'] is List) {
-        final list = data['data'] as List;
-        setState(() {
-          _groups = list.map((item) => {
-            'id': item['id'].toString(),
-            'name': item['name'].toString(),
-          }).toList();
-        });
-      }
-    } catch (e) {
-      // Error handled by interceptor
-    } finally {
-      if (mounted) setState(() => _isLoadingGroups = false);
-    }
-  }
-
-  Future<void> _loadCategories(String groupId) async {
-    setState(() {
-      _isLoadingCategories = true;
-      _categories = [];
-      _selectedCategoryId = null;
-      _productNames = [];
-      _selectedProductNameId = null;
-    });
-    try {
-      final api = ref.read(apiClientProvider).getProductsApi();
-      final request = ApiProductsCategoriesListPostRequest((b) => b..groupId = int.parse(groupId));
-      final response = await api.apiProductsCategoriesListPost(apiProductsCategoriesListPostRequest: request);
-      final data = (response as dynamic).data;
-      if (data is Map<String, dynamic> && data['data'] is List) {
-        final list = data['data'] as List;
-        setState(() {
-          _categories = list.map((item) => {
-            'id': item['id'].toString(),
-            'name': item['name'].toString(),
-          }).toList();
-        });
-      }
-    } catch (e) {
-      // Error handled by interceptor
-    } finally {
-      if (mounted) setState(() => _isLoadingCategories = false);
-    }
-  }
-
-  Future<void> _loadProductNames(String categoryId) async {
-    setState(() {
-      _isLoadingNames = true;
-      _productNames = [];
-      _selectedProductNameId = null;
-    });
-    try {
-      final api = ref.read(apiClientProvider).getProductsApi();
-      final request = ApiProductsProductNamesListPostRequest((b) => b..categoryId = int.parse(categoryId));
-      final response = await api.apiProductsProductNamesListPost(apiProductsProductNamesListPostRequest: request);
-      final data = (response as dynamic).data;
+      final dio = ApiClient().dio;
+      final response = await dio.get('/api/products/product-names');
+      final data = response.data;
       if (data is Map<String, dynamic> && data['data'] is List) {
         final list = data['data'] as List;
         setState(() {
@@ -130,19 +67,21 @@ class _AddProductModelFormState extends ConsumerState<AddProductModelForm> {
     setState(() => _isSubmitting = true);
 
     try {
-      final api = ref.read(apiClientProvider).getProductsApi();
-
-      final modelReq = ApiProductsProductModelsPostRequest((b) => b
-        ..productNameId = int.parse(_selectedProductNameId!)
-        ..name = _productModelController.text.trim());
-      await api.apiProductsProductModelsPost(apiProductsProductModelsPostRequest: modelReq);
+      final dio = ApiClient().dio;
+      await dio.post('/api/products/product-models', data: {
+        'product_name_id': int.parse(_selectedProductNameId!),
+        'name': _productModelController.text.trim(),
+      });
 
       if (mounted) {
         context.showSuccessSnackBar('Product Model created successfully');
         context.pop();
       }
-    } catch (e) {
-      // Error handled by interceptor
+    } on DioException catch (e) {
+      if (mounted) {
+        final msg = e.response?.data?['message'] ?? 'Failed to create product model';
+        context.showErrorSnackBar(msg);
+      }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -177,53 +116,13 @@ class _AddProductModelFormState extends ConsumerState<AddProductModelForm> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text('Group', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E))),
-                      const SizedBox(height: 8),
-                      _isLoadingGroups
-                          ? const Center(child: CircularProgressIndicator())
-                          : DropdownMenu<String>(
-                              expandedInsets: EdgeInsets.zero,
-                              enableFilter: true,
-                              hintText: 'Select Existing Group',
-                              dropdownMenuEntries: _groups.map((g) => DropdownMenuEntry(value: g['id']!, label: g['name']!)).toList(),
-                              onSelected: (id) {
-                                if (id != null) {
-                                  setState(() => _selectedGroupId = id);
-                                  _loadCategories(id);
-                                }
-                              },
-                            ),
-                      const SizedBox(height: 16),
-
-                      const Text('Category', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E))),
-                      const SizedBox(height: 8),
-                      _isLoadingCategories
-                          ? const Center(child: CircularProgressIndicator())
-                          : DropdownMenu<String>(
-                              key: ValueKey('cat_$_selectedGroupId'),
-                              expandedInsets: EdgeInsets.zero,
-                              enableFilter: true,
-                              enabled: _selectedGroupId != null,
-                              hintText: 'Select Existing Category',
-                              dropdownMenuEntries: _categories.map((c) => DropdownMenuEntry(value: c['id']!, label: c['name']!)).toList(),
-                              onSelected: (id) {
-                                if (id != null) {
-                                  setState(() => _selectedCategoryId = id);
-                                  _loadProductNames(id);
-                                }
-                              },
-                            ),
-                      const SizedBox(height: 16),
-
                       const Text('Product Name', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E))),
                       const SizedBox(height: 8),
                       _isLoadingNames
                           ? const Center(child: CircularProgressIndicator())
                           : DropdownMenu<String>(
-                              key: ValueKey('name_$_selectedCategoryId'),
                               expandedInsets: EdgeInsets.zero,
                               enableFilter: true,
-                              enabled: _selectedCategoryId != null,
                               hintText: 'Select Existing Product Name',
                               dropdownMenuEntries: _productNames.map((n) => DropdownMenuEntry(value: n['id']!, label: n['name']!)).toList(),
                               onSelected: (id) => setState(() => _selectedProductNameId = id),

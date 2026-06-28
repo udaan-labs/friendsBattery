@@ -18,15 +18,8 @@ const SHIPMENT_DETAIL_INCLUDE = {
   },
   items: {
     include: {
-      category: { select: { id: true, name: true } },
       name: { select: { id: true, name: true } },
       model: { select: { id: true, name: true } },
-      product: {
-        select: {
-          id: true,
-          group: { select: { id: true, name: true } }
-        }
-      },
       productUnit: { select: { id: true, serialNumber: true, status: true } }
     }
   }
@@ -42,15 +35,6 @@ class ShipmentsRepository {
     });
   }
 
-  async findProduct(categoryId, productNameId, productModelId) {
-    return prisma.product.findFirst({
-      where: {
-        categoryId: BigInt(categoryId),
-        productNameId: BigInt(productNameId),
-        productModelId: BigInt(productModelId)
-      }
-    });
-  }
 
   async findProductById(productId) {
     return prisma.product.findUnique({
@@ -80,7 +64,6 @@ class ShipmentsRepository {
         status: 'PENDING',
         items: {
           create: data.items.map(item => ({
-            productCategoryId: BigInt(item.productCategoryId),
             productNameId: BigInt(item.productNameId),
             productModelId: BigInt(item.productModelId),
             productId: BigInt(item.productId),

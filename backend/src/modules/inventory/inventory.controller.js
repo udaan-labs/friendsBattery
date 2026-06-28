@@ -123,11 +123,10 @@ class InventoryController {
   async updateStock(req, res) {
     try {
       const adminId = Number(req.user.id);
-      const { productCategoryId, productNameId, productModelId, quantity, minSellPrice, minUnitCountAdmin, minUnitCountSeller } = req.body;
+      const { productNameId, productModelId, quantity, minSellPrice, minUnitCountAdmin, minUnitCountSeller } = req.body;
 
       // Call business layer
       const result = await inventoryService.updateStock(adminId, {
-        productCategoryId,
         productNameId,
         productModelId,
         quantity,
@@ -148,15 +147,14 @@ class InventoryController {
   }
 
   /**
-   * Fetch details of a product (stock count & min sell price) by category, product name, and model IDs
+   * Fetch details of a product (stock count & min sell price) by product name and model IDs
    */
   async getProductDetails(req, res) {
     try {
       const userId = Number(req.user.id);
-      const { category_id, product_name_id, product_model_id } = req.query;
+      const { product_name_id, product_model_id } = req.query;
 
       const details = await inventoryService.getProductDetails(userId, {
-        categoryId: Number(category_id),
         productNameId: Number(product_name_id),
         productModelId: Number(product_model_id)
       });
@@ -174,10 +172,9 @@ class InventoryController {
   async getAvailableSerials(req, res) {
     try {
       const userId = Number(req.user.id);
-      const { category_id, product_name_id, product_model_id } = req.query;
+      const { product_name_id, product_model_id } = req.query;
 
       const serials = await inventoryService.getAvailableSerials(userId, {
-        categoryId: Number(category_id),
         productNameId: Number(product_name_id),
         productModelId: Number(product_model_id)
       });
@@ -190,22 +187,20 @@ class InventoryController {
   }
 
   /**
-   * Fetch inventory details summary grouped by Category -> Subcategory -> Product.
+   * Fetch inventory details summary grouped by ProductName -> Product.
    */
   async getInventoryDetails(req, res) {
     try {
       const userId = Number(req.user.id);
       const role = req.user.role;
-      const { category_id, subcategory_id, search, page, limit, seller_id } = req.query;
+      const { product_name_id, search, page, limit } = req.query;
 
       // Call business layer
       const details = await inventoryService.getInventoryDetails(userId, role, {
-        category_id,
-        subcategory_id,
+        product_name_id,
         search,
         page,
-        limit,
-        seller_id
+        limit
       });
 
       // Return standardized success response

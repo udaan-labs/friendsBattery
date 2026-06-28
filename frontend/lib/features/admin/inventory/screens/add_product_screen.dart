@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 
-import 'forms/create_complete_hierarchy_form.dart';
-import 'forms/add_category_form.dart';
 import 'forms/add_product_model_form.dart';
 import 'forms/add_product_name_form.dart';
 import 'forms/create_product_form.dart';
@@ -38,38 +36,12 @@ class AddProductScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              _ActionCard(
-                icon: Icons.account_tree_outlined,
-                title: 'Create Complete Hierarchy',
-                description: 'Add a new Group, Category, Product Name, and Model from scratch.',
-                iconBgColor: const Color(0xFF00873A),
-                iconColor: const Color(0xFFF7FFF2),
-                onTap: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => const CreateCompleteHierarchyForm(),
-                  ));
-                },
-              ),
-              const SizedBox(height: 16),
 
-              _ActionCard(
-                icon: Icons.category_outlined,
-                title: 'Add New Category',
-                description: 'Add a category to an existing Group.',
-                iconBgColor: const Color(0xFFD5E0F8),
-                iconColor: const Color(0xFF586377),
-                onTap: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => const AddCategoryForm(),
-                  ));
-                },
-              ),
-              const SizedBox(height: 16),
 
               _ActionCard(
                 icon: Icons.battery_charging_full,
                 title: 'Add Product Name',
-                description: 'Add a new product name to an existing Category.',
+                description: 'Add a new product name and its initial model.',
                 iconBgColor: const Color(0xFF006B2C),
                 iconColor: const Color(0xFFFFFFFF),
                 onTap: () {

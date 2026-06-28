@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:friends_battery_api/friends_battery_api.dart';
+import 'package:dio/dio.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
-import '../../../../core/network/api_client_provider.dart';
+import '../../../../core/network/api_client.dart';
 import '../providers/seller_dashboard_controller.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
+import '../../../../shared/widgets/scanner_screen.dart';
 
 class CreateBillScreen extends ConsumerStatefulWidget {
   const CreateBillScreen({super.key});
@@ -23,16 +24,13 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
   final _vehicleNumberController = TextEditingController();
   final _sellPriceController = TextEditingController();
 
-  bool _isLoadingCategories = false;
   bool _isLoadingNames = false;
   bool _isLoadingModels = false;
   bool _isSubmitting = false;
 
-  List<Map<String, String>> _categories = [];
   List<Map<String, String>> _productNames = [];
   List<Map<String, String>> _productModels = [];
 
-  String? _selectedCategoryId;
   String? _selectedProductNameId;
   String? _selectedProductModelId;
 
@@ -43,7 +41,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
   @override
   void initState() {
     super.initState();
-    _loadCategories();
+    _loadProductNames();
     _sellPriceController.addListener(() {
       final val = num.tryParse(_sellPriceController.text);
       setState(() {
@@ -62,53 +60,28 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
     super.dispose();
   }
 
-  Future<void> _loadCategories() async {
-    setState(() {
-      _isLoadingCategories = true;
-    });
-    try {
-      final api = ref.read(apiClientProvider).getProductsApi();
-      final response = await api.apiProductsCategoriesGet();
-      final data = (response as dynamic).data;
-      if (data is Map<String, dynamic> && data['data'] is List) {
-        final list = data['data'] as List;
-        setState(() {
-          _categories = list.map((item) {
-            return {
-              'id': item['id'].toString(),
-              'name': item['name'].toString(),
-            };
-          }).toList();
-        });
-      }
-    } catch (e) {
-      // Handled automatically by ApiInterceptor
-    } finally {
+  Future<void> _scanSerialNumber() async {
+    final result = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (context) => const ScannerScreen()),
+    );
+    
+    if (result != null && result.isNotEmpty) {
       setState(() {
-        _isLoadingCategories = false;
+        _serialNumberController.text = result;
       });
     }
   }
 
-  Future<void> _loadProductNames(String categoryId) async {
+  Future<void> _loadProductNames() async {
     setState(() {
       _isLoadingNames = true;
-      _productNames = [];
-      _selectedProductNameId = null;
-      _productModels = [];
-      _selectedProductModelId = null;
-      _serialNumberController.clear();
-      _productId = null;
-      _minPrice = null;
     });
 
     try {
-      final api = ref.read(apiClientProvider).getProductsApi();
-      final request = ApiProductsProductNamesListPostRequest((b) => b..categoryId = int.parse(categoryId));
-      final response = await api.apiProductsProductNamesListPost(
-        apiProductsProductNamesListPostRequest: request,
-      );
-      final data = (response as dynamic).data;
+      final dio = ApiClient().dio;
+      final response = await dio.get('/api/products/product-names');
+      final data = response.data;
       if (data is Map<String, dynamic> && data['data'] is List) {
         final list = data['data'] as List;
         setState(() {
@@ -140,14 +113,11 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
     });
 
     try {
-      final api = ref.read(apiClientProvider).getProductsApi();
-      final request = ApiProductsProductModelsListPostRequest((b) => b
-        ..categoryId = int.parse(_selectedCategoryId!)
-        ..productNameId = int.parse(productNameId));
-      final response = await api.apiProductsProductModelsListPost(
-        apiProductsProductModelsListPostRequest: request,
-      );
-      final data = (response as dynamic).data;
+      final dio = ApiClient().dio;
+      final response = await dio.post('/api/products/product-models/list', data: {
+        'product_name_id': int.parse(productNameId),
+      });
+      final data = response.data;
       if (data is Map<String, dynamic> && data['data'] is List) {
         final list = data['data'] as List;
         setState(() {
@@ -176,20 +146,19 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
     });
 
     try {
-      final api = ref.read(apiClientProvider).getInventoryApi();
+      final dio = ApiClient().dio;
       
       // Load stock details & min price
-      final detailsResponse = await api.apiInventoryProductDetailsGet(
-        categoryId: _selectedCategoryId!,
-        productNameId: _selectedProductNameId!,
-        productModelId: productModelId,
-      );
+      final response = await dio.get('/api/inventory/product-details', queryParameters: {
+        'product_name_id': _selectedProductNameId!,
+        'product_model_id': productModelId,
+      });
 
-      final details = detailsResponse.data?.data;
+      final details = response.data['data'];
       if (details != null) {
         setState(() {
-          _productId = details.productId;
-          _minPrice = details.minSellPrice ?? 0;
+          _productId = details['productId'];
+          _minPrice = details['minSellPrice'] ?? 0;
         });
       }
     } catch (e) {
@@ -199,9 +168,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedCategoryId == null ||
-        _selectedProductNameId == null ||
-        _selectedProductModelId == null) {
+    if (_selectedProductNameId == null || _selectedProductModelId == null) {
       context.showErrorSnackBar('Please select all product fields');
       return;
     }
@@ -215,19 +182,18 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
     });
 
     try {
-      final api = ref.read(apiClientProvider).getSalesApi();
+      final dio = ApiClient().dio;
       final sellPrice = double.parse(_sellPriceController.text);
       final serialValue = _serialNumberController.text.trim();
 
-      final request = ApiSalesPostRequest((b) => b
-        ..productId = _productId!
-        ..serialNumber = serialValue
-        ..customerName = _customerNameController.text
-        ..customerNumber = _customerMobileController.text
-        ..vehicleNumber = _vehicleNumberController.text.isNotEmpty ? _vehicleNumberController.text : null
-        ..sellPrice = sellPrice);
-
-      await api.apiSalesPost(apiSalesPostRequest: request);
+      await dio.post('/api/sales', data: {
+        'product_id': _productId!,
+        'serial_number': serialValue,
+        'customer_name': _customerNameController.text,
+        'customer_number': _customerMobileController.text,
+        if (_vehicleNumberController.text.isNotEmpty) 'vehicle_number': _vehicleNumberController.text,
+        'sell_price': sellPrice,
+      });
 
       if (mounted) {
         context.showSuccessSnackBar('Sale recorded successfully');
@@ -247,7 +213,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
   }
 
   bool _hasUnsavedChanges() {
-    return _selectedCategoryId != null ||
+    return _selectedProductNameId != null ||
         _serialNumberController.text.isNotEmpty ||
         _customerNameController.text.isNotEmpty ||
         _customerMobileController.text.isNotEmpty ||
@@ -344,49 +310,17 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Product Category
-                      const Text(
-                        'Battery Group (Category)',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                      ),
-                      const SizedBox(height: 8),
-                      _isLoadingCategories
-                          ? const Center(child: CircularProgressIndicator())
-                          : DropdownMenu<String>(
-                              expandedInsets: EdgeInsets.zero,
-                              enableFilter: true,
-                              hintText: 'Select Category',
-                              requestFocusOnTap: true,
-                              dropdownMenuEntries: _categories.map((cat) {
-                                return DropdownMenuEntry<String>(
-                                  value: cat['id']!,
-                                  label: cat['name']!,
-                                );
-                              }).toList(),
-                              onSelected: (id) {
-                                if (id != null) {
-                                  setState(() {
-                                    _selectedCategoryId = id;
-                                  });
-                                  _loadProductNames(id);
-                                }
-                              },
-                            ),
-                      const SizedBox(height: 20),
-
                       // Product Name
                       const Text(
-                        'Battery Sub Group (Product Name)',
+                        'Product Name',
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
                       ),
                       const SizedBox(height: 8),
                       _isLoadingNames
                           ? const Center(child: CircularProgressIndicator())
                           : DropdownMenu<String>(
-                              key: ValueKey('name_$_selectedCategoryId'),
                               expandedInsets: EdgeInsets.zero,
                               enableFilter: true,
-                              enabled: _selectedCategoryId != null,
                               hintText: 'Select Product Name',
                               requestFocusOnTap: true,
                               dropdownMenuEntries: _productNames.map((name) {
@@ -446,8 +380,12 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _serialNumberController,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           hintText: 'Enter product serial number',
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.qr_code_scanner),
+                            onPressed: _scanSerialNumber,
+                          ),
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {

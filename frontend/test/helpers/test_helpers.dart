@@ -113,9 +113,9 @@ List<Map<String, dynamic>> mockRecentActivity() {
 PaginatedInventoryResponse mockInventoryResponse() {
   return PaginatedInventoryResponse(
     items: [
-      SharedInventoryItemModel(productGroup: 'Automotive', category: 'Batteries',
+      SharedInventoryItemModel(
         productModel: 'X100', productName: 'UltraLife', quantity: 50, minPrice: 1500.0, minStock: 5),
-      SharedInventoryItemModel(productGroup: 'Industrial', category: 'Power Cells',
+      SharedInventoryItemModel(
         productModel: 'P200', productName: 'PowerVolt', quantity: 30, minPrice: 2500.0, minStock: 10),
     ],
     total: 2,

@@ -9,82 +9,7 @@ const { successResponse, errorResponse } = require('../../shared/utils/response'
  */
 class ProductsController {
   /**
-   * Create a new group
-   */
-  async createGroup(req, res) {
-    try {
-      const group = await productsService.createGroup(req.body);
-      return successResponse(res, 201, 'Group created successfully', group);
-    } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Create Group Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
-    }
-  }
-
-  /**
-   * Get all groups
-   */
-  async getGroups(req, res) {
-    try {
-      const groups = await productsService.getGroups();
-      return successResponse(res, 200, 'Groups fetched successfully', groups);
-    } catch (error) {
-      console.error('Get Groups Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
-    }
-  }
-
-  /**
-   * Create a new category
-   */
-  async createCategory(req, res) {
-    try {
-      const category = await productsService.createCategory(req.body);
-      return successResponse(res, 201, 'Category created successfully', category);
-    } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Create Category Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
-    }
-  }
-
-  /**
-   * Get all categories
-   */
-  async getCategories(req, res) {
-    try {
-      const categories = await productsService.getCategories();
-      return successResponse(res, 200, 'Categories fetched successfully', categories);
-    } catch (error) {
-      console.error('Get Categories Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
-    }
-  }
-
-  /**
-   * Get all categories for a given group
-   */
-  async getCategoriesByGroup(req, res) {
-    try {
-      const { group_id } = req.body;
-      const categories = await productsService.getCategoriesByGroup(group_id);
-      return successResponse(res, 200, 'Categories fetched successfully', categories);
-    } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Get Categories By Group Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
-    }
-  }
-
-  /**
-   * Create a new product name under a category
+   * Create a new product name
    */
   async createProductName(req, res) {
     try {
@@ -100,17 +25,13 @@ class ProductsController {
   }
 
   /**
-   * Get all product names for a category
+   * Get all product names
    */
-  async getProductNamesByCategory(req, res) {
+  async getProductNames(req, res) {
     try {
-      const { category_id } = req.body;
-      const productNames = await productsService.getProductNamesByCategory(category_id);
+      const productNames = await productsService.getProductNames();
       return successResponse(res, 200, 'Product names fetched successfully', productNames);
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
       console.error('Get Product Names Error:', error);
       return errorResponse(res, 500, 'Internal server error');
     }
@@ -137,8 +58,8 @@ class ProductsController {
    */
   async getProductModelsByProductName(req, res) {
     try {
-      const { category_id, product_name_id } = req.body;
-      const productModels = await productsService.getProductModelsByProductName(category_id, product_name_id);
+      const { product_name_id } = req.body;
+      const productModels = await productsService.getProductModelsByProductName(product_name_id);
       return successResponse(res, 200, 'Product models fetched successfully', productModels);
     } catch (error) {
       if (error.statusCode) {
@@ -166,12 +87,12 @@ class ProductsController {
   }
 
   /**
-   * Get all products
+   * Get all products matching filters
    */
   async getProducts(req, res) {
     try {
-      const { category_id, product_name_id, product_model_id } = req.body;
-      const products = await productsService.getProducts(category_id, product_name_id, product_model_id);
+      const { product_name_id, product_model_id } = req.body;
+      const products = await productsService.getProducts(product_name_id, product_model_id);
       return successResponse(res, 200, 'Products fetched successfully', products);
     } catch (error) {
       if (error.statusCode) {

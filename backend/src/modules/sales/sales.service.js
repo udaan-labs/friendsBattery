@@ -31,7 +31,6 @@ class SalesService {
       } : null,
       product: sale.product ? {
         id: Number(sale.product.id),
-        category: sale.product.category.name,
         product_name: sale.product.productName.name,
         product_model: sale.product.productModel.name
       } : null
@@ -179,8 +178,6 @@ class SalesService {
       product: sale.product
         ? {
             id: Number(sale.product.id),
-            group: sale.product.group ? sale.product.group.name : null,
-            category: sale.product.category.name,
             product_name: sale.product.productName.name,
             product_model: sale.product.productModel.name,
           }

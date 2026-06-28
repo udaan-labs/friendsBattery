@@ -33,7 +33,6 @@ class InventoryRepository {
     const queryOptions = {
       where: whereClause,
       include: {
-        category: true,
         productName: true,
         productModel: true,
         _count: {
@@ -59,8 +58,6 @@ class InventoryRepository {
 
   /**
    * Retrieves the total count of inventory items for a user based on search criteria.
-   * Input: userId (BigInt), search object
-   * Output: Integer representing total count
    */
   async countInventory(userId, { search }) {
     const whereClause = {
@@ -84,8 +81,6 @@ class InventoryRepository {
 
   /**
    * Retrieves a single inventory item details for a user.
-   * Input: userId (BigInt), productId (BigInt)
-   * Output: Product object with unit count, or null if not found.
    */
   async findInventoryByProduct(userId, productId) {
     return prisma.product.findFirst({
@@ -99,7 +94,6 @@ class InventoryRepository {
         }
       },
       include: {
-        category: true,
         productName: true,
         productModel: true,
         _count: {
@@ -118,8 +112,6 @@ class InventoryRepository {
 
   /**
    * Creates new inventory units in the database.
-   * Input: Array of unit data objects
-   * Output: Array of created units
    */
   async createInventory(unitsData, tx = prisma) {
     return tx.productUnit.createManyAndReturn({
@@ -129,8 +121,6 @@ class InventoryRepository {
 
   /**
    * Updates inventory units status or ownership.
-   * Input: Array of unit IDs, update payload
-   * Output: Updated records count
    */
   async updateInventory(unitIds, data, tx = prisma) {
     return tx.productUnit.updateMany({
@@ -143,8 +133,6 @@ class InventoryRepository {
 
   /**
    * Retrieves available IN_STOCK units for a specific product and user.
-   * Input: userId, productId, quantity
-   * Output: Array of ProductUnit records
    */
   async findAvailableUnits(userId, productId, quantity, tx = prisma) {
     return tx.productUnit.findMany({
@@ -159,8 +147,6 @@ class InventoryRepository {
 
   /**
    * Finds a seller by ID
-   * Input: sellerId
-   * Output: User object
    */
   async findSeller(sellerId) {
     return prisma.user.findUnique({
@@ -170,8 +156,6 @@ class InventoryRepository {
 
   /**
    * Creates an inventory transaction record (audit log).
-   * Input: transaction data
-   * Output: created transaction
    */
   async createInventoryTransaction(data, tx = prisma) {
     return tx.inventoryTransaction.createMany({
@@ -181,8 +165,6 @@ class InventoryRepository {
 
   /**
    * Retrieves inventory history.
-   * Input: filter options (userId, fromDate, toDate, productId)
-   * Output: Array of inventory transactions
    */
   async findHistory(filters, { skip, take }) {
     return prisma.inventoryTransaction.findMany({
@@ -202,8 +184,6 @@ class InventoryRepository {
 
   /**
    * Create a shipment record.
-   * Input: shipment data
-   * Output: created shipment
    */
   async createShipment(data, tx = prisma) {
     return tx.shipment.create({
@@ -213,8 +193,6 @@ class InventoryRepository {
 
   /**
    * Create shipment item records.
-   * Input: array of shipment items data
-   * Output: created items count
    */
   async createShipmentItem(data, tx = prisma) {
     return tx.shipmentItem.createMany({
@@ -224,14 +202,13 @@ class InventoryRepository {
 
   /**
    * Find available serial numbers for a product owned by a specific user.
-   * Input: userId, categoryId, productNameId, productModelId
+   * Input: userId, productNameId, productModelId
    * Output: Array of strings representing serial numbers.
    */
-  async findAvailableSerials(userId, { categoryId, productNameId, productModelId }) {
+  async findAvailableSerials(userId, { productNameId, productModelId }) {
     // 1. Find product
     const product = await prisma.product.findFirst({
       where: {
-        categoryId: BigInt(categoryId),
         productNameId: BigInt(productNameId),
         productModelId: BigInt(productModelId)
       }
@@ -259,14 +236,11 @@ class InventoryRepository {
   /**
    * Retrieves products for the inventory details summary, based on filters.
    */
-  async findInventoryDetails({ categoryId, subcategoryId, search, skip, take }) {
+  async findInventoryDetails({ productNameId, search, skip, take }) {
     const whereClause = {};
 
-    if (categoryId) {
-      whereClause.categoryId = BigInt(categoryId);
-    }
-    if (subcategoryId) {
-      whereClause.productNameId = BigInt(subcategoryId);
+    if (productNameId) {
+      whereClause.productNameId = BigInt(productNameId);
     }
     if (search) {
       whereClause.OR = [
@@ -278,7 +252,6 @@ class InventoryRepository {
     const queryOptions = {
       where: whereClause,
       include: {
-        category: true,
         productName: true,
         productModel: true
       },
@@ -298,14 +271,11 @@ class InventoryRepository {
   /**
    * Counts the total number of products matching inventory details filters.
    */
-  async countInventoryDetails({ categoryId, subcategoryId, search }) {
+  async countInventoryDetails({ productNameId, search }) {
     const whereClause = {};
 
-    if (categoryId) {
-      whereClause.categoryId = BigInt(categoryId);
-    }
-    if (subcategoryId) {
-      whereClause.productNameId = BigInt(subcategoryId);
+    if (productNameId) {
+      whereClause.productNameId = BigInt(productNameId);
     }
     if (search) {
       whereClause.OR = [
@@ -334,35 +304,16 @@ class InventoryRepository {
   }
 
   /**
-   * Counts total products and total available inventory units in a category.
+   * Counts total products and total available inventory units for a product name.
    */
-  async getCategoryStats(categoryId, ownerFilter) {
+  async getProductNameStats(productNameId, ownerFilter) {
     const [totalProducts, totalInventory] = await Promise.all([
       prisma.product.count({
-        where: { categoryId: BigInt(categoryId) }
+        where: { productNameId: BigInt(productNameId) }
       }),
       prisma.productUnit.count({
         where: {
-          product: { categoryId: BigInt(categoryId) },
-          status: 'IN_STOCK',
-          ...ownerFilter
-        }
-      })
-    ]);
-    return { totalProducts, totalInventory };
-  }
-
-  /**
-   * Counts total products and total available inventory units in a subcategory.
-   */
-  async getSubcategoryStats(subcategoryId, ownerFilter) {
-    const [totalProducts, totalInventory] = await Promise.all([
-      prisma.product.count({
-        where: { productNameId: BigInt(subcategoryId) }
-      }),
-      prisma.productUnit.count({
-        where: {
-          product: { productNameId: BigInt(subcategoryId) },
+          product: { productNameId: BigInt(productNameId) },
           status: 'IN_STOCK',
           ...ownerFilter
         }
@@ -373,4 +324,3 @@ class InventoryRepository {
 }
 
 module.exports = new InventoryRepository();
-

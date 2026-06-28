@@ -157,7 +157,6 @@ class _KpiCard extends StatelessWidget {
         ),
         padding: EdgeInsets.all(isSmall ? 6 : 8),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
           Container(
             width: isSmall ? 28 : 32,

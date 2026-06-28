@@ -566,8 +566,6 @@ class _ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final category = item['category'] as String? ?? '';
-    final productGroup = item['productGroup'] as String? ?? '';
     final productName = item['productName'] as String? ?? '';
     final productModel = item['productModel'] as String? ?? '';
     final quantity = _parseInt(item['quantity']);
@@ -629,8 +627,6 @@ class _ProductCard extends StatelessWidget {
                   // Breadcrumb
                   Text(
                     [
-                      if (productGroup.isNotEmpty) productGroup,
-                      if (category.isNotEmpty) category,
                       if (productName.isNotEmpty) productName,
                     ].join(' • '),
                     style: const TextStyle(

@@ -2,13 +2,9 @@ const express = require('express');
 const productRouter = express.Router();
 const productsController = require('./products.controller');
 const {
-  createGroupSchema,
-  createCategorySchema,
   createProductNameSchema,
   createProductModelSchema,
   createProductSchema,
-  getCategoriesRequest,
-  getProductNamesRequest,
   getProductModelsRequest,
   getProductsRequest
 } = require('./products.validation');
@@ -25,119 +21,9 @@ const { validateRequest } = require('../../shared/middleware/validation.middlewa
 
 /**
  * @swagger
- * /api/products/groups:
- *   post:
- *     summary: Create a new product group
- *     tags: [Products]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *     responses:
- *       201:
- *         description: Group created successfully
- *   get:
- *     summary: Return all groups
- *     tags: [Products]
- *     responses:
- *       200:
- *         description: Groups fetched successfully
- */
-productRouter.post(
-  '/groups',
-  authenticate,
-  requireAdmin,
-  validateRequest(createGroupSchema),
-  productsController.createGroup
-);
-
-productRouter.get(
-  '/groups',
-  authenticate,
-  productsController.getGroups
-);
-
-/**
- * @swagger
- * /api/products/categories:
- *   post:
- *     summary: Create a new product category
- *     tags: [Products]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               group_id:
- *                 type: integer
- *               name:
- *                 type: string
- *     responses:
- *       201:
- *         description: Category created successfully
- */
-productRouter.post(
-  '/categories',
-  authenticate,
-  requireAdmin,
-  validateRequest(createCategorySchema),
-  productsController.createCategory
-);
-
-/**
- * @swagger
- * /api/products/categories:
- *   get:
- *     summary: Return all categories
- *     tags: [Products]
- *     responses:
- *       200:
- *         description: Categories fetched successfully
- */
-productRouter.get(
-  '/categories',
-  authenticate,
-  productsController.getCategories
-);
-
-/**
- * @swagger
- * /api/products/categories/list:
- *   post:
- *     summary: Return all categories belonging to a group
- *     tags: [Products]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               group_id:
- *                 type: integer
- *     responses:
- *       200:
- *         description: Categories fetched successfully
- */
-productRouter.post(
-  '/categories/list',
-  authenticate,
-  validateRequest(getCategoriesRequest),
-  productsController.getCategoriesByGroup
-);
-
-/**
- * @swagger
  * /api/products/product-names:
  *   post:
- *     summary: Create a product name under a category
+ *     summary: Create a product name
  *     tags: [Products]
  *     requestBody:
  *       required: true
@@ -146,13 +32,17 @@ productRouter.post(
  *           schema:
  *             type: object
  *             properties:
- *               category_id:
- *                 type: integer
  *               name:
  *                 type: string
  *     responses:
  *       201:
  *         description: Product name created successfully
+ *   get:
+ *     summary: Return all product names
+ *     tags: [Products]
+ *     responses:
+ *       200:
+ *         description: Product names fetched successfully
  */
 productRouter.post(
   '/product-names',
@@ -162,30 +52,10 @@ productRouter.post(
   productsController.createProductName
 );
 
-/**
- * @swagger
- * /api/products/product-names/list:
- *   post:
- *     summary: Return all product names belonging to a category
- *     tags: [Products]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               category_id:
- *                 type: integer
- *     responses:
- *       200:
- *         description: Product names fetched successfully
- */
-productRouter.post(
-  '/product-names/list',
+productRouter.get(
+  '/product-names',
   authenticate,
-  validateRequest(getProductNamesRequest),
-  productsController.getProductNamesByCategory
+  productsController.getProductNames
 );
 
 /**
@@ -230,8 +100,6 @@ productRouter.post(
  *           schema:
  *             type: object
  *             properties:
- *               category_id:
- *                 type: integer
  *               product_name_id:
  *                 type: integer
  *     responses:
@@ -258,8 +126,6 @@ productRouter.post(
  *           schema:
  *             type: object
  *             properties:
- *               category_id:
- *                 type: integer
  *               product_name_id:
  *                 type: integer
  *               product_model_id:
@@ -299,8 +165,6 @@ productRouter.post(
  *           schema:
  *             type: object
  *             properties:
- *               category_id:
- *                 type: integer
  *               product_name_id:
  *                 type: integer
  *               product_model_id:

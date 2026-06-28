@@ -8,129 +8,16 @@ const { prisma } = require('../../config/db');
  */
 class ProductsRepository {
   /**
-   * Find a group by name to prevent duplicates
+   * Find a product name by name to prevent duplicates
    */
-  async findGroupByName(name) {
-    return prisma.group.findUnique({
+  async findProductNameByName(name) {
+    return prisma.productName.findUnique({
       where: { name }
-    });
-  }
-
-  /**
-   * Find a group by ID
-   */
-  async findGroupById(id) {
-    return prisma.group.findUnique({
-      where: { id: BigInt(id) }
-    });
-  }
-
-  /**
-   * Create a new group
-   */
-  async createGroup(data) {
-    return prisma.group.create({
-      data: {
-        name: data.name
-      }
-    });
-  }
-
-  /**
-   * Fetch all groups
-   * Ordered alphabetically by name
-   */
-  async getGroups() {
-    return prisma.group.findMany({
-      orderBy: {
-        name: 'asc'
-      }
-    });
-  }
-
-  /**
-   * Find a category by name to prevent duplicates
-   */
-  async findCategoryByName(name) {
-    return prisma.category.findUnique({
-      where: { name }
-    });
-  }
-
-  /**
-   * Find a category by ID
-   *
-   * Input:
-   *  id
-   *
-   * Returns:
-   *  Category object or null
-   */
-  async findCategoryById(id) {
-    return prisma.category.findUnique({
-      where: { id: BigInt(id) }
-    });
-  }
-
-  /**
-   * Create a new category
-   */
-  async createCategory(data) {
-    return prisma.category.create({
-      data: {
-        groupId: BigInt(data.group_id),
-        name: data.name
-      }
-    });
-  }
-
-  /**
-   * Fetch all categories
-   * Ordered alphabetically by name
-   */
-  async getCategories() {
-    return prisma.category.findMany({
-      orderBy: {
-        name: 'asc'
-      }
-    });
-  }
-
-  /**
-   * Fetch all categories for a given group
-   */
-  async getCategoriesByGroup(groupId) {
-    return prisma.category.findMany({
-      where: {
-        groupId: BigInt(groupId)
-      },
-      orderBy: {
-        name: 'asc'
-      }
-    });
-  }
-
-  /**
-   * Find a product name by categoryId and name
-   * Used to prevent duplicates under the same category
-   */
-  async findProductNameByNameAndCategory(categoryId, name) {
-    return prisma.productName.findFirst({
-      where: {
-        categoryId: BigInt(categoryId),
-        name
-      }
     });
   }
 
   /**
    * Find a product name by ID
-   *
-   * Input:
-   *  id
-   *
-   * Returns:
-   *  Product name object or null
    */
   async findProductNameById(id) {
     return prisma.productName.findUnique({
@@ -139,25 +26,22 @@ class ProductsRepository {
   }
 
   /**
-   * Create a new product name under a category
+   * Create a new product name
    */
   async createProductName(data) {
     return prisma.productName.create({
       data: {
-        categoryId: BigInt(data.category_id),
         name: data.name
       }
     });
   }
 
   /**
-   * Fetch all product names for a given category
+   * Fetch all product names
+   * Ordered alphabetically by name
    */
-  async getProductNamesByCategory(categoryId) {
+  async getProductNames() {
     return prisma.productName.findMany({
-      where: {
-        categoryId: BigInt(categoryId)
-      },
       orderBy: {
         name: 'asc'
       }
@@ -179,12 +63,6 @@ class ProductsRepository {
 
   /**
    * Find a product model by ID
-   *
-   * Input:
-   *  id
-   *
-   * Returns:
-   *  Product model object or null
    */
   async findProductModelById(id) {
     return prisma.productModel.findUnique({
@@ -224,7 +102,6 @@ class ProductsRepository {
   async createProduct(data) {
     return prisma.product.create({
       data: {
-        categoryId: BigInt(data.category_id),
         productNameId: BigInt(data.product_name_id),
         productModelId: BigInt(data.product_model_id),
         minPrice: data.min_price,
@@ -238,14 +115,10 @@ class ProductsRepository {
 
   /**
    * Fetch all products
-   *
-   * Returns:
-   *  Array of all products
    */
   async getProducts() {
     return prisma.product.findMany({
       include: {
-        category: true,
         productName: true,
         productModel: true
       },
@@ -256,23 +129,15 @@ class ProductsRepository {
   }
 
   /**
-   * Fetch products by category, product name, and product model
-   *
-   * Input:
-   *  categoryId, productNameId, productModelId
-   *
-   * Returns:
-   *  Array of matching products
+   * Fetch products by product name and product model
    */
-  async getProductsByFilters(categoryId, productNameId, productModelId) {
+  async getProductsByFilters(productNameId, productModelId) {
     return prisma.product.findMany({
       where: {
-        categoryId: BigInt(categoryId),
         productNameId: BigInt(productNameId),
         productModelId: BigInt(productModelId)
       },
       include: {
-        category: true,
         productName: true,
         productModel: true
       },
