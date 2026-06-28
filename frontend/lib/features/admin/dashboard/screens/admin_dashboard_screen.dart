@@ -249,9 +249,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           style: TextStyle(color: Color(0xFF3E4A3D), fontSize: 13), // text-on-surface-variant
                         ),
                         SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 4 : 8),
-                        Flexible(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
                             color: const Color(0xFFE0E3E5), // bg-surface-container-highest
                             borderRadius: BorderRadius.circular(999),
@@ -262,7 +261,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                          ),
                       ],
                     ),
                   ),

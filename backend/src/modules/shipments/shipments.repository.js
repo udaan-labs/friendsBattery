@@ -197,28 +197,34 @@ class ShipmentsRepository {
         }
       });
 
-      // 2. Transfer ProductUnit records to the seller
-      for (const item of items) {
-        const updatedUnit = await tx.productUnit.update({
-          where: { id: BigInt(item.productUnitId) },
+      if (items && items.length > 0) {
+        const productUnitIds = items.map(item => BigInt(item.productUnitId));
+
+        // 2. Transfer all ProductUnit records to the seller in one query
+        await tx.productUnit.updateMany({
+          where: { id: { in: productUnitIds } },
           data: {
             ownerId: BigInt(sellerId),
             status: 'IN_STOCK'
           }
         });
 
-        // 3. Create InventoryTransaction
-        await tx.inventoryTransaction.create({
-          data: {
-            productUnitId: updatedUnit.id,
-            fromUserId: updatedShipment.createdByAdminId,
-            toUserId: BigInt(sellerId),
-            action: 'RECEIVED'
-          }
+        // 3. Create InventoryTransaction records in bulk
+        const transactionsData = items.map(item => ({
+          productUnitId: BigInt(item.productUnitId),
+          fromUserId: updatedShipment.createdByAdminId,
+          toUserId: BigInt(sellerId),
+          action: 'RECEIVED'
+        }));
+
+        await tx.inventoryTransaction.createMany({
+          data: transactionsData
         });
       }
 
       return updatedShipment;
+    }, {
+      timeout: 10000 // Increase timeout just in case of slow DB
     });
   }
 }
