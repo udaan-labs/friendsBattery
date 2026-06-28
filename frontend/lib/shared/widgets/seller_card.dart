@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
+import 'responsive_helper.dart';
 
 class SellerCard extends StatefulWidget {
   final User seller;
@@ -33,7 +34,7 @@ class _SellerCardState extends State<SellerCard> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 150),
       curve: Curves.easeInOut,
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      margin: EdgeInsets.symmetric(vertical: 8, horizontal: ResponsiveHelper.responsiveHorizontalMargin(context)),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -180,33 +181,39 @@ class _SellerCardState extends State<SellerCard> {
                 const Divider(height: 1, thickness: 1, color: Color(0xFFF0F0F0)),
                 const SizedBox(height: 20),
                 
-                // Bottom Statistics Section
-                Row(
-                  children: [
-                    _buildStatBox(
-                      context: context,
-                      icon: Icons.inventory_2_outlined,
-                      label: 'Total Stock',
-                      value: widget.totalStock.toString(),
-                      color: Colors.blue,
-                    ),
-                    const SizedBox(width: 12),
-                    _buildStatBox(
-                      context: context,
-                      icon: Icons.payments_outlined,
-                      label: 'Today Sales',
-                      value: widget.todaySales.toString(),
-                      color: Colors.green,
-                    ),
-                    const SizedBox(width: 12),
-                    _buildStatBox(
-                      context: context,
-                      icon: Icons.local_shipping_outlined,
-                      label: 'Pending Shipments',
-                      value: widget.pendingShipments.toString(),
-                      color: Colors.orange,
-                    ),
-                  ],
+                  // Bottom Statistics Section
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    if (constraints.maxWidth < 360) {
+                      return Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(child: _buildStatBox(context: context, icon: Icons.inventory_2_outlined, label: 'Total Stock', value: widget.totalStock.toString(), color: Colors.blue)),
+                              const SizedBox(width: 8),
+                              Expanded(child: _buildStatBox(context: context, icon: Icons.payments_outlined, label: 'Today Sales', value: widget.todaySales.toString(), color: Colors.green)),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(child: _buildStatBox(context: context, icon: Icons.local_shipping_outlined, label: 'Pending Shipments', value: widget.pendingShipments.toString(), color: Colors.orange)),
+                              const Expanded(child: SizedBox.shrink()),
+                            ],
+                          ),
+                        ],
+                      );
+                    }
+                    return Row(
+                      children: [
+                        Expanded(child: _buildStatBox(context: context, icon: Icons.inventory_2_outlined, label: 'Total Stock', value: widget.totalStock.toString(), color: Colors.blue)),
+                        const SizedBox(width: 12),
+                        Expanded(child: _buildStatBox(context: context, icon: Icons.payments_outlined, label: 'Today Sales', value: widget.todaySales.toString(), color: Colors.green)),
+                        const SizedBox(width: 12),
+                        Expanded(child: _buildStatBox(context: context, icon: Icons.local_shipping_outlined, label: 'Pending Shipments', value: widget.pendingShipments.toString(), color: Colors.orange)),
+                      ],
+                    );
+                  },
                 ),
               ],
             ),

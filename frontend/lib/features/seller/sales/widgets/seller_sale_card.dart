@@ -116,30 +116,31 @@ class SellerSaleCard extends StatelessWidget {
                 const SizedBox(height: 12),
 
                 // Product Information Grid
-                Row(
-                  children: [
-                    Expanded(
-                      child: _InfoItem(
-                        icon: Icons.category_outlined,
-                        label: 'Category',
-                        value: sale.category,
-                      ),
-                    ),
-                    Expanded(
-                      child: _InfoItem(
-                        icon: Icons.tag_rounded,
-                        label: 'Serial No',
-                        value: sale.serialNumber,
-                      ),
-                    ),
-                    Expanded(
-                      child: _InfoItem(
-                        icon: Icons.inventory_2_outlined,
-                        label: 'Quantity',
-                        value: sale.quantity.toString(),
-                      ),
-                    ),
-                  ],
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    if (constraints.maxWidth < 360) {
+                      return Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(child: _InfoItem(icon: Icons.category_outlined, label: 'Category', value: sale.category)),
+                              const SizedBox(width: 8),
+                              Expanded(child: _InfoItem(icon: Icons.tag_rounded, label: 'Serial No', value: sale.serialNumber)),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          _InfoItem(icon: Icons.inventory_2_outlined, label: 'Quantity', value: sale.quantity.toString()),
+                        ],
+                      );
+                    }
+                    return Row(
+                      children: [
+                        Expanded(child: _InfoItem(icon: Icons.category_outlined, label: 'Category', value: sale.category)),
+                        Expanded(child: _InfoItem(icon: Icons.tag_rounded, label: 'Serial No', value: sale.serialNumber)),
+                        Expanded(child: _InfoItem(icon: Icons.inventory_2_outlined, label: 'Quantity', value: sale.quantity.toString())),
+                      ],
+                    );
+                  },
                 ),
 
                 const Padding(

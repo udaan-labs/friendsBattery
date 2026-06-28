@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 
 class SellerInfoCard extends StatelessWidget {
   final String shopName;
@@ -19,7 +20,7 @@ class SellerInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),

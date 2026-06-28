@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/widgets/common_pull_to_refresh.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 import '../providers/seller_dashboard_controller.dart';
 import '../providers/seller_dashboard_providers.dart';
 import '../widgets/seller_kpi_grid.dart';
@@ -17,7 +18,8 @@ class SellerDashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(sellerProfileProvider);
-    final isDesktop = MediaQuery.of(context).size.width > 1024;
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+    final isTablet = ResponsiveHelper.isTablet(context);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FB), // bg-background
@@ -30,12 +32,12 @@ class SellerDashboardScreen extends ConsumerWidget {
           icon: const Icon(Icons.menu, color: Color(0xFF3E4A3D)),
           onPressed: () => sellerScaffoldKey.currentState?.openDrawer(),
         ),
-        title: const Text(
+        title: Text(
           'BatteryPro',
           style: TextStyle(
-            fontSize: 28,
+            fontSize: ResponsiveHelper.isSmallPhone(context) ? 22 : 28,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF16A34A),
+            color: const Color(0xFF16A34A),
           ),
         ),
         actions: [
@@ -43,7 +45,7 @@ class SellerDashboardScreen extends ConsumerWidget {
             alignment: Alignment.center,
             children: [
               IconButton(
-                icon: const Icon(Icons.notifications, color: Color(0xFF3E4A3D)),
+                icon: Icon(Icons.notifications, color: const Color(0xFF3E4A3D), size: ResponsiveHelper.isSmallPhone(context) ? 22 : 28),
                 onPressed: () {},
               ),
               Positioned(
@@ -60,7 +62,7 @@ class SellerDashboardScreen extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: ResponsiveHelper.isSmallPhone(context) ? 4 : 8),
         ],
       ),
       body: SafeArea(
@@ -159,6 +161,33 @@ class SellerDashboardScreen extends ConsumerWidget {
                           sliver: SliverMainAxisGroup(
                             slivers: [
                               SellerQuickActions(),
+                            ],
+                          ),
+                        ),
+                      ],
+                    )
+                  else if (isTablet)
+                    SliverCrossAxisGroup(
+                      slivers: [
+                        const SliverCrossAxisExpanded(
+                          flex: 6,
+                          sliver: SliverMainAxisGroup(
+                            slivers: [
+                              SellerQuickActions(),
+                            ],
+                          ),
+                        ),
+                        const SliverCrossAxisExpanded(
+                          flex: 1,
+                          sliver: SliverToBoxAdapter(child: SizedBox.shrink()),
+                        ),
+                        const SliverCrossAxisExpanded(
+                          flex: 6,
+                          sliver: SliverMainAxisGroup(
+                            slivers: [
+                              PendingShipmentsList(),
+                              SliverToBoxAdapter(child: SizedBox(height: 32)),
+                              RecentInventoryList(),
                             ],
                           ),
                         ),

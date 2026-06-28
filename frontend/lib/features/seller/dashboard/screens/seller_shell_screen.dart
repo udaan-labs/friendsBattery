@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 import '../../../../shared/widgets/logout_dialog_helper.dart';
 
-/// Global key to allow child pages to open the seller drawer
-/// from their AppBar hamburger button.
 final sellerScaffoldKey = GlobalKey<ScaffoldState>();
 
 class SellerShellScreen extends ConsumerWidget {
@@ -14,7 +13,7 @@ class SellerShellScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDesktop = MediaQuery.of(context).size.width > 1024;
+    final isDesktop = ResponsiveHelper.isDesktop(context);
     final String location = GoRouterState.of(context).uri.toString();
 
     // Determine active bottom nav index

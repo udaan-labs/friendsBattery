@@ -66,62 +66,57 @@ class InventoryProductCard extends StatelessWidget {
                 const SizedBox(height: 12),
                 
                 // Body columns
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Left Column
-                    Expanded(
-                      child: Column(
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    if (constraints.maxWidth < 380) {
+                      return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildField(
-                            icon: Icons.inventory_2_outlined,
-                            iconColor: Colors.green,
-                            label: 'Product Group',
-                            value: item.productGroup,
-                          ),
-                          const SizedBox(height: 16),
-                          _buildField(
-                            icon: Icons.folder_outlined,
-                            iconColor: Colors.blue,
-                            label: 'Category',
-                            value: item.category,
-                          ),
-                          const SizedBox(height: 16),
-                          _buildField(
-                            icon: Icons.local_offer_outlined,
-                            iconColor: Colors.orange,
-                            label: 'Product Name',
-                            value: item.productName,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    // Right Column
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildField(
-                            icon: Icons.precision_manufacturing_outlined,
-                            iconColor: Colors.purple,
-                            label: 'Product Model',
-                            value: item.productModel,
-                          ),
-                          const SizedBox(height: 16),
+                          _buildField(icon: Icons.inventory_2_outlined, iconColor: Colors.green, label: 'Product Group', value: item.productGroup),
+                          const SizedBox(height: 12),
+                          _buildField(icon: Icons.folder_outlined, iconColor: Colors.blue, label: 'Category', value: item.category),
+                          const SizedBox(height: 12),
+                          _buildField(icon: Icons.local_offer_outlined, iconColor: Colors.orange, label: 'Product Name', value: item.productName),
+                          const SizedBox(height: 12),
+                          _buildField(icon: Icons.precision_manufacturing_outlined, iconColor: Colors.purple, label: 'Product Model', value: item.productModel),
+                          const SizedBox(height: 12),
                           _buildQuantityField(),
-                          const SizedBox(height: 16),
-                          _buildField(
-                            icon: Icons.currency_rupee_outlined,
-                            iconColor: Colors.pink,
-                            label: 'Minimum Price',
-                            value: '₹${item.minPrice.toStringAsFixed(0)}',
-                          ),
+                          const SizedBox(height: 12),
+                          _buildField(icon: Icons.currency_rupee_outlined, iconColor: Colors.pink, label: 'Minimum Price', value: '₹${item.minPrice.toStringAsFixed(0)}'),
                         ],
-                      ),
-                    ),
-                  ],
+                      );
+                    }
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildField(icon: Icons.inventory_2_outlined, iconColor: Colors.green, label: 'Product Group', value: item.productGroup),
+                              const SizedBox(height: 16),
+                              _buildField(icon: Icons.folder_outlined, iconColor: Colors.blue, label: 'Category', value: item.category),
+                              const SizedBox(height: 16),
+                              _buildField(icon: Icons.local_offer_outlined, iconColor: Colors.orange, label: 'Product Name', value: item.productName),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildField(icon: Icons.precision_manufacturing_outlined, iconColor: Colors.purple, label: 'Product Model', value: item.productModel),
+                              const SizedBox(height: 16),
+                              _buildQuantityField(),
+                              const SizedBox(height: 16),
+                              _buildField(icon: Icons.currency_rupee_outlined, iconColor: Colors.pink, label: 'Minimum Price', value: '₹${item.minPrice.toStringAsFixed(0)}'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
                 
                 const SizedBox(height: 8),

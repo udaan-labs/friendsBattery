@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 import '../providers/seller_dashboard_providers.dart';
 
 class SellerKpiGrid extends ConsumerWidget {
@@ -10,16 +11,15 @@ class SellerKpiGrid extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final kpiData = ref.watch(sellerKpiProvider);
     final screenWidth = MediaQuery.of(context).size.width;
+    final isSmall = ResponsiveHelper.isSmallPhone(context);
 
     Widget buildGrid(int stock, double salesAmount, int salesCount, double growth) {
-      // Format salesAmount: if >= 1000, display as e.g., 42.5k
       String formattedSales = '₹${salesAmount.toStringAsFixed(0)}';
       if (salesAmount >= 1000) {
         formattedSales = '₹${(salesAmount / 1000).toStringAsFixed(1)}k';
       }
 
-      // Responsive aspect ratio based on width to prevent vertical overflow on narrow/large-font devices
-      final aspectRatio = screenWidth < 360 ? 0.9 : (screenWidth < 400 ? 1.0 : 1.1);
+      final aspectRatio = isSmall ? 0.9 : (screenWidth < 400 ? 1.0 : 1.1);
 
       return SliverGrid(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

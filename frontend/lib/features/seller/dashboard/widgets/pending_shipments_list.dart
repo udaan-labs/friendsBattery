@@ -147,7 +147,7 @@ class _PendingShipmentsListState extends ConsumerState<PendingShipmentsList> {
               }
 
               return Container(
-                constraints: const BoxConstraints(maxHeight: 250),
+                constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.35),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),

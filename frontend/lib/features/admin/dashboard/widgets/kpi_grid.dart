@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 import '../providers/dashboard_providers.dart';
 
 class KpiGrid extends ConsumerWidget {
@@ -8,8 +9,10 @@ class KpiGrid extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDesktop = MediaQuery.of(context).size.width > 1024;
     final kpiData = ref.watch(kpiProvider);
+    final padding = ResponsiveHelper.responsiveHorizontalMargin(context);
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+    final isSmall = ResponsiveHelper.isSmallPhone(context);
 
     String formatNumber(String val) {
       if (val == '--') return '--';
@@ -30,13 +33,14 @@ class KpiGrid extends ConsumerWidget {
         icon: icon,
         color: const Color(0xFF006B2C),
         onTap: onTap,
+        isSmall: isSmall,
       );
     }
 
     Widget buildGrid(String totalStock, String todaySales, String totalSellers, String pendingShipments) {
       if (isDesktop) {
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          padding: EdgeInsets.symmetric(horizontal: padding, vertical: 8.0),
           child: GridView.count(
             crossAxisCount: 4,
             crossAxisSpacing: 12,
@@ -61,8 +65,9 @@ class KpiGrid extends ConsumerWidget {
           ),
         );
       } else {
+        final spacing = isSmall ? 6.0 : 8.0;
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          padding: EdgeInsets.symmetric(horizontal: padding, vertical: 8.0),
           child: Column(
             children: [
               Row(
@@ -70,19 +75,19 @@ class KpiGrid extends ConsumerWidget {
                   Expanded(child: buildCard('TOTAL STOCK', totalStock, 'Units', Icons.inventory_2_outlined, onTap: () {
                     context.push('/shared/inventory');
                   })),
-                  const SizedBox(width: 8),
+                  SizedBox(width: spacing),
                   Expanded(child: buildCard('TOTAL SALES', todaySales, 'Transactions', Icons.trending_up_outlined, onTap: () {
                     context.push('/admin/sales');
                   })),
                 ],
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: spacing),
               Row(
                 children: [
                   Expanded(child: buildCard('TOTAL SELLERS', totalSellers, 'Active', Icons.group_outlined, onTap: () {
                     context.push('/admin/sellers');
                   })),
-                  const SizedBox(width: 8),
+                  SizedBox(width: spacing),
                   Expanded(child: buildCard('PENDING SHIPMENTS', pendingShipments, 'In transit', Icons.local_shipping_outlined, onTap: () {
                     context.push('/admin/shipments');
                   })),
@@ -117,6 +122,7 @@ class _KpiCard extends StatelessWidget {
   final IconData icon;
   final Color color;
   final VoidCallback? onTap;
+  final bool isSmall;
 
   const _KpiCard({
     required this.title,
@@ -125,10 +131,14 @@ class _KpiCard extends StatelessWidget {
     required this.icon,
     required this.color,
     this.onTap,
+    this.isSmall = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final iconSize = isSmall ? 14.0 : 16.0;
+    final valueSize = isSmall ? 16.0 : 18.0;
+    final titleSize = isSmall ? 8.0 : 9.0;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -145,13 +155,13 @@ class _KpiCard extends StatelessWidget {
             ),
           ],
         ),
-        padding: const EdgeInsets.all(8),
+        padding: EdgeInsets.all(isSmall ? 6 : 8),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
           Container(
-            width: 32,
-            height: 32,
+            width: isSmall ? 28 : 32,
+            height: isSmall ? 28 : 32,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.08),
               shape: BoxShape.circle,
@@ -159,10 +169,10 @@ class _KpiCard extends StatelessWidget {
             child: Icon(
               icon,
               color: color,
-              size: 16,
+              size: iconSize,
             ),
           ),
-          const SizedBox(width: 6),
+          SizedBox(width: isSmall ? 4 : 6),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -170,10 +180,10 @@ class _KpiCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 9,
+                  style: TextStyle(
+                    fontSize: titleSize,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF586377),
+                    color: const Color(0xFF586377),
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -181,10 +191,10 @@ class _KpiCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  style: const TextStyle(
-                    fontSize: 18,
+                  style: TextStyle(
+                    fontSize: valueSize,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF191C1E),
+                    color: const Color(0xFF191C1E),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

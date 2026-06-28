@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 
 class AdminShellScreen extends StatelessWidget {
   final Widget child;
@@ -8,7 +9,7 @@ class AdminShellScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = MediaQuery.of(context).size.width > 1024;
+    final isDesktop = ResponsiveHelper.isDesktop(context);
     
     // Determine the current index based on the route
     int currentIndex = 0;

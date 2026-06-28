@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../shared/widgets/common_pull_to_refresh.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 import '../../../../core/network/api_client_provider.dart';
 import '../../../../core/storage/local_storage.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
@@ -147,7 +148,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = MediaQuery.of(context).size.width > 1024;
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+    final isTablet = ResponsiveHelper.isTablet(context);
     final username = _getUserNameSafe();
 
     return PopScope(
@@ -159,45 +161,45 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       },
       child: Scaffold(
         key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF7F9FB), // bg-background
+      backgroundColor: const Color(0xFFF7F9FB),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFFFFFF), // White to match image
+        backgroundColor: const Color(0xFFFFFFFF),
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.menu, color: Color(0xFF191C1E)), // Dark menu icon
+          icon: const Icon(Icons.menu, color: Color(0xFF191C1E)),
           onPressed: () {
             _scaffoldKey.currentState?.openDrawer();
           },
         ),
-        title: const Text(
+        title: Text(
           'BatteryPro',
           style: TextStyle(
-            fontSize: 24,
+            fontSize: ResponsiveHelper.isSmallPhone(context) ? 20 : 24,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF006B2C), // text-primary
+            color: const Color(0xFF006B2C),
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search, color: Color(0xFF3E4A3D), size: 28),
+            icon: Icon(Icons.search, color: const Color(0xFF3E4A3D), size: ResponsiveHelper.isSmallPhone(context) ? 24 : 28),
             onPressed: () {},
           ),
           IconButton(
-            icon: const Badge(
-              label: Text('3'),
-              backgroundColor: Color(0xFFBA1A1A), // red
-              child: Icon(Icons.notifications_none_outlined, color: Color(0xFF3E4A3D), size: 28),
+            icon: Badge(
+              label: const Text('3'),
+              backgroundColor: const Color(0xFFBA1A1A),
+              child: Icon(Icons.notifications_none_outlined, color: const Color(0xFF3E4A3D), size: ResponsiveHelper.isSmallPhone(context) ? 24 : 28),
             ),
             onPressed: () {},
           ),
           IconButton(
-            icon: const Icon(Icons.exit_to_app, color: Color(0xFF3E4A3D), size: 28),
+            icon: Icon(Icons.exit_to_app, color: const Color(0xFF3E4A3D), size: ResponsiveHelper.isSmallPhone(context) ? 24 : 28),
             onPressed: () {
               showLogoutConfirmationDialog(context, ref);
             },
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: ResponsiveHelper.isSmallPhone(context) ? 4 : 8),
         ],
       ),
       drawer: Drawer(
@@ -357,7 +359,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         ),
       ),
       body: SafeArea(
-        child: _buildCurrentTabView(isDesktop),
+        child: _buildCurrentTabView(isDesktop, isTablet),
       ),
       ),
     );
@@ -394,10 +396,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildCurrentTabView(bool isDesktop) {
+  Widget _buildCurrentTabView(bool isDesktop, bool isTablet) {
     switch (_currentTab) {
       case 'dashboard':
-        return _buildDashboardTabView(isDesktop);
+        return _buildDashboardTabView(isDesktop, isTablet);
       case 'add_product':
         return _buildAddProductTabView();
       case 'view_stock':
@@ -417,7 +419,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   }
 
   // --- Sub-View: Bento Grid Dashboard ---
-  Widget _buildDashboardTabView(bool isDesktop) {
+  Widget _buildDashboardTabView(bool isDesktop, bool isTablet) {
     return CommonPullToRefresh(
       onRefresh: () => ref.read(dashboardControllerProvider).refreshAllData(),
       child: CustomScrollView(
@@ -430,7 +432,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             ),
           ),
           SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+            padding: EdgeInsets.symmetric(
+              horizontal: ResponsiveHelper.responsiveHorizontalMargin(context),
+              vertical: 16.0,
+            ),
             sliver: SliverMainAxisGroup(
               slivers: [
                 if (isDesktop)
@@ -453,6 +458,31 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               sliver: SliverMainAxisGroup(
                                 slivers: const [
                                   QuickActions(),
+                                ],
+                              ),
+                            ),
+                          ],
+                        )
+                      else if (isTablet)
+                        SliverCrossAxisGroup(
+                          slivers: [
+                            SliverCrossAxisExpanded(
+                              flex: 6,
+                              sliver: SliverMainAxisGroup(
+                                slivers: const [
+                                  QuickActions(),
+                                ],
+                              ),
+                            ),
+                            const SliverCrossAxisExpanded(
+                              flex: 1,
+                              sliver: SliverToBoxAdapter(child: SizedBox.shrink()),
+                            ),
+                            SliverCrossAxisExpanded(
+                              flex: 6,
+                              sliver: SliverMainAxisGroup(
+                                slivers: const [
+                                  RecentActivityTimeline(),
                                 ],
                               ),
                             ),

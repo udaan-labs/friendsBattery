@@ -79,14 +79,39 @@ class InventoryProductCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildInfoColumn('Quantity', quantity.toString(), Icons.inventory_2_outlined),
-                    _buildInfoColumn('Min Price', '₹$minPrice', Icons.price_change_outlined),
-                    _buildInfoColumn('Offer Price', offerPrice != null ? '₹$offerPrice' : '—', Icons.local_offer_outlined),
-                    const Icon(Icons.chevron_right_rounded, color: Colors.grey),
-                  ],
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    if (constraints.maxWidth < 360) {
+                      return Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(child: _buildInfoColumn('Quantity', quantity.toString(), Icons.inventory_2_outlined)),
+                              const SizedBox(width: 8),
+                              Expanded(child: _buildInfoColumn('Min Price', '₹$minPrice', Icons.price_change_outlined)),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(child: _buildInfoColumn('Offer Price', offerPrice != null ? '₹$offerPrice' : '—', Icons.local_offer_outlined)),
+                              const Spacer(),
+                              const Icon(Icons.chevron_right_rounded, color: Colors.grey),
+                            ],
+                          ),
+                        ],
+                      );
+                    }
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildInfoColumn('Quantity', quantity.toString(), Icons.inventory_2_outlined),
+                        _buildInfoColumn('Min Price', '₹$minPrice', Icons.price_change_outlined),
+                        _buildInfoColumn('Offer Price', offerPrice != null ? '₹$offerPrice' : '—', Icons.local_offer_outlined),
+                        const Icon(Icons.chevron_right_rounded, color: Colors.grey),
+                      ],
+                    );
+                  },
                 ),
               ],
             ),
