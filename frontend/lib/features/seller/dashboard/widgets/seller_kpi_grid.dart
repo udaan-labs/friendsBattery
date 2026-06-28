@@ -46,7 +46,7 @@ class SellerKpiGrid extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

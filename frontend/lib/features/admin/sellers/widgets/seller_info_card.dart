@@ -46,7 +46,7 @@ class SellerInfoCard extends StatelessWidget {
                       ),
                 ),
               ),
-              const Icon(Icons.storefront, size: 36, color: Colors.blueAccent),
+              Icon(Icons.storefront, size: ResponsiveHelper.iconSize(context, 36), color: Colors.blueAccent),
             ],
           ),
           const SizedBox(height: 16),

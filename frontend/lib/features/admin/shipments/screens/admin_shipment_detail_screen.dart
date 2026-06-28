@@ -46,7 +46,8 @@ class AdminShipmentDetailScreen extends ConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => _ErrorView(
             error: e.toString(),
-            onRetry: () => ref.invalidate(shipmentDetailByIdProvider(shipmentId)),
+            onRetry: () =>
+                ref.invalidate(shipmentDetailByIdProvider(shipmentId)),
           ),
         ),
       ),
@@ -165,23 +166,27 @@ class _ShipmentDetailBody extends StatelessWidget {
         // ── Products Section ────────────────────────────────────────────
         Row(
           children: [
-            const Icon(Icons.battery_charging_full_rounded,
-                size: 20, color: Color(0xFF006B2C)),
+            const Icon(
+              Icons.battery_charging_full_rounded,
+              size: 20,
+              color: Color(0xFF006B2C),
+            ),
             const SizedBox(width: 8),
             const Text(
               'Products in this Shipment',
               style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF191C1E)),
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF191C1E),
+              ),
             ),
           ],
         ),
         const SizedBox(height: 12),
 
         ...detail.items.asMap().entries.map(
-              (entry) => _ProductCard(item: entry.value, index: entry.key + 1),
-            ),
+          (entry) => _ProductCard(item: entry.value, index: entry.key + 1),
+        ),
 
         const SizedBox(height: 32),
       ],
@@ -238,7 +243,10 @@ class _StatusBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+      padding: EdgeInsets.symmetric(
+        vertical: ResponsiveHelper.isSmallPhone(context) ? 12 : 16,
+        horizontal: ResponsiveHelper.isSmallPhone(context) ? 16 : 20,
+      ),
       decoration: BoxDecoration(
         color: _bg,
         borderRadius: BorderRadius.circular(16),
@@ -281,8 +289,11 @@ class _SectionCard extends StatelessWidget {
   final String title;
   final IconData icon;
   final List<Widget> children;
-  const _SectionCard(
-      {required this.title, required this.icon, required this.children});
+  const _SectionCard({
+    required this.title,
+    required this.icon,
+    required this.children,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -292,7 +303,10 @@ class _SectionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: const [
           BoxShadow(
-              color: Color(0x0A000000), blurRadius: 12, offset: Offset(0, 4))
+            color: Color(0x0A000000),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
         ],
       ),
       padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
@@ -330,7 +344,11 @@ class _InfoRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
-  const _InfoRow({required this.icon, required this.label, required this.value});
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -343,15 +361,19 @@ class _InfoRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label,
-                  style: const TextStyle(
-                      fontSize: 11, color: Color(0xFF586377))),
+              Text(
+                label,
+                style: const TextStyle(fontSize: 11, color: Color(0xFF586377)),
+              ),
               const SizedBox(height: 2),
-              Text(value,
-                  style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF191C1E))),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF191C1E),
+                ),
+              ),
             ],
           ),
         ),
@@ -394,17 +416,21 @@ class _StatBox extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 22, color: iconColor),
-          const SizedBox(height: 8),
+          Icon(
+            icon,
+            size: ResponsiveHelper.iconSize(context, 22),
+            color: iconColor,
+          ),
+          SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 6 : 8),
           Text(
             value,
             style: TextStyle(
-              fontSize: 24,
+              fontSize: ResponsiveHelper.fontSize(context, 24),
               fontWeight: FontWeight.bold,
               color: iconColor,
             ),
           ),
-          const SizedBox(height: 2),
+          SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 1 : 2),
           Text(
             label,
             style: const TextStyle(fontSize: 12, color: Color(0xFF586377)),
@@ -432,7 +458,10 @@ class _ProductCard extends StatelessWidget {
         border: Border.all(color: const Color(0xFFECEEF0)),
         boxShadow: const [
           BoxShadow(
-              color: Color(0x06000000), blurRadius: 8, offset: Offset(0, 2))
+            color: Color(0x06000000),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
         ],
       ),
       child: Padding(
@@ -466,7 +495,9 @@ class _ProductCard extends StatelessWidget {
                 children: [
                   // Product Model (primary)
                   Text(
-                    item.productModel.isNotEmpty ? item.productModel : 'Unknown Model',
+                    item.productModel.isNotEmpty
+                        ? item.productModel
+                        : 'Unknown Model',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
@@ -498,7 +529,8 @@ class _ProductCard extends StatelessWidget {
                     children: [
                       _Chip(
                         icon: Icons.inventory_2_outlined,
-                        label: '${item.quantity} unit${item.quantity != 1 ? 's' : ''}',
+                        label:
+                            '${item.quantity} unit${item.quantity != 1 ? 's' : ''}',
                         color: const Color(0xFF006B2C),
                         bg: const Color(0xFFE8F5E9),
                       ),
@@ -527,18 +559,21 @@ class _Chip extends StatelessWidget {
   final String label;
   final Color color;
   final Color bg;
-  const _Chip(
-      {required this.icon,
-      required this.label,
-      required this.color,
-      required this.bg});
+  const _Chip({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.bg,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration:
-          BoxDecoration(color: bg, borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -547,7 +582,10 @@ class _Chip extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-                fontSize: 11, fontWeight: FontWeight.w600, color: color),
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
           ),
         ],
       ),
@@ -575,9 +613,10 @@ class _ErrorView extends StatelessWidget {
             const Text(
               'Failed to load shipment',
               style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF191C1E)),
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF191C1E),
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -593,10 +632,13 @@ class _ErrorView extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF006B2C),
                 foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ],

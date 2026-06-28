@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../theme/app_theme.dart';
 import '../../../shared/providers/auth_provider.dart';
+import '../../../shared/widgets/responsive_helper.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -38,7 +39,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    final isSmall = ResponsiveHelper.isSmallPhone(context);
+    return Scaffold(
       backgroundColor: AppTheme.primary,
       body: Center(
         child: Column(
@@ -46,15 +48,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           children: [
             Icon(
               Icons.battery_charging_full,
-              size: 80,
+              size: ResponsiveHelper.iconSize(context, 80),
               color: Colors.white,
             ),
-            SizedBox(height: 24),
+            SizedBox(height: isSmall ? 16 : 24),
             Text(
               'BatteryPro',
               style: TextStyle(
                 fontFamily: 'Inter',
-                fontSize: 32,
+                fontSize: ResponsiveHelper.fontSize(context, 32),
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
                 letterSpacing: -0.02,

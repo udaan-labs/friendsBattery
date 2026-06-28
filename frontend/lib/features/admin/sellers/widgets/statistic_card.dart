@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 
 class StatisticCard extends StatelessWidget {
   final String label;
@@ -17,7 +18,7 @@ class StatisticCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
@@ -34,32 +35,32 @@ class StatisticCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(ResponsiveHelper.isSmallPhone(context) ? 8 : 10),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 24),
+            child: Icon(icon, color: color, size: ResponsiveHelper.iconSize(context, 24)),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 8 : 12),
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 22,
+              style: TextStyle(
+                fontSize: ResponsiveHelper.fontSize(context, 22),
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 2 : 4),
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
               label,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: ResponsiveHelper.fontSize(context, 13),
                 color: Colors.grey.shade600,
                 fontWeight: FontWeight.w500,
               ),

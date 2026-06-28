@@ -450,7 +450,7 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
                           // Product Information Section
                           if (_selectedProductModelId != null) ...[
                             Container(
-                              padding: const EdgeInsets.all(16),
+                              padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFECEEF0),
                                 borderRadius: BorderRadius.circular(12),

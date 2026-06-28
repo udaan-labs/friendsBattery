@@ -461,7 +461,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                       // Product Information Card
                       if (_productId != null) ...[
                         Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
                           decoration: BoxDecoration(
                             color: const Color(0xFFECEEF0),
                             borderRadius: BorderRadius.circular(12),
@@ -605,7 +605,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                       if (_productId != null && _customerNameController.text.isNotEmpty && _userSellPrice != null) ...[
                         Container(
                           margin: const EdgeInsets.only(top: 16),
-                          padding: const EdgeInsets.all(16),
+                          padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
                           decoration: BoxDecoration(
                             color: const Color(0xFFD5E0F8).withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(12),

@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 
 class DecorativeAsset extends StatelessWidget {
   const DecorativeAsset({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final isSmall = ResponsiveHelper.isSmallPhone(context);
     return SliverToBoxAdapter(
       child: Container(
-        height: 256, // h-64
-        margin: const EdgeInsets.only(top: 32),
+        height: isSmall ? 180 : 256,
+        margin: EdgeInsets.only(top: isSmall ? 16 : 32),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
@@ -36,8 +38,8 @@ class DecorativeAsset extends StatelessWidget {
               ],
             ),
           ),
-          padding: const EdgeInsets.all(24),
-          child: const Column(
+          padding: EdgeInsets.all(isSmall ? 16 : 24),
+          child: Column(
             mainAxisAlignment: MainAxisAlignment.end,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -45,16 +47,16 @@ class DecorativeAsset extends StatelessWidget {
                 'Optimization Active',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 22,
+                  fontSize: ResponsiveHelper.fontSize(context, 22),
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 4),
+              SizedBox(height: isSmall ? 2 : 4),
               Text(
                 'Battery health across fleet is at 98.4% capacity.',
                 style: TextStyle(
                   color: Colors.white70,
-                  fontSize: 12,
+                  fontSize: ResponsiveHelper.fontSize(context, 12),
                 ),
               ),
             ],

@@ -138,7 +138,7 @@ class _ActionCard extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
@@ -154,13 +154,13 @@ class _ActionCard extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: ResponsiveHelper.isSmallPhone(context) ? 40 : 48,
+              height: ResponsiveHelper.isSmallPhone(context) ? 40 : 48,
               decoration: BoxDecoration(
                 color: iconBgColor,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: iconColor, size: 28),
+              child: Icon(icon, color: iconColor, size: ResponsiveHelper.iconSize(context, 28)),
             ),
             const SizedBox(width: 16),
             Expanded(

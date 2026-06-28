@@ -135,11 +135,11 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
             },
           ),
           
-          const SizedBox(height: 32),
-          const Text(
+          SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 24 : 32),
+          Text(
             'Current Inventory',
             style: TextStyle(
-              fontSize: 20,
+              fontSize: ResponsiveHelper.fontSize(context, 20),
               fontWeight: FontWeight.bold,
               color: Colors.black87,
             ),
@@ -178,11 +178,11 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.inventory_2_outlined, size: 48, color: Colors.grey),
-              const SizedBox(height: 16),
-              const Text(
+              Icon(Icons.inventory_2_outlined, size: ResponsiveHelper.iconSize(context, 48), color: Colors.grey),
+              SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 12 : 16),
+              Text(
                 'No Inventory Available',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: ResponsiveHelper.fontSize(context, 18), fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(

@@ -18,8 +18,7 @@ class ShipmentDetailsScreen extends ConsumerStatefulWidget {
       _ShipmentDetailsScreenState();
 }
 
-class _ShipmentDetailsScreenState
-    extends ConsumerState<ShipmentDetailsScreen> {
+class _ShipmentDetailsScreenState extends ConsumerState<ShipmentDetailsScreen> {
   bool _isAccepting = false;
 
   Future<void> _acceptShipment() async {
@@ -29,7 +28,8 @@ class _ShipmentDetailsScreenState
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Accept Shipment?'),
         content: const Text(
-            'This will add the products to your inventory. This action cannot be undone.'),
+          'This will add the products to your inventory. This action cannot be undone.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -40,7 +40,8 @@ class _ShipmentDetailsScreenState
               backgroundColor: const Color(0xFF006B2C),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Accept'),
@@ -56,7 +57,9 @@ class _ShipmentDetailsScreenState
       final dio = ref.read(apiClientProvider).dio;
       await dio.post('/api/shipments/${widget.shipmentId}/accept');
       if (mounted) {
-        context.showSuccessSnackBar('Shipment accepted! Products added to inventory.');
+        context.showSuccessSnackBar(
+          'Shipment accepted! Products added to inventory.',
+        );
         // Refresh providers
         ref.invalidate(sellerShipmentDetailProvider(widget.shipmentId));
         ref.invalidate(sellerAllShipmentsProvider);
@@ -64,7 +67,9 @@ class _ShipmentDetailsScreenState
       }
     } catch (e) {
       if (mounted) {
-        context.showErrorSnackBar('Failed to accept shipment. Please try again.');
+        context.showErrorSnackBar(
+          'Failed to accept shipment. Please try again.',
+        );
       }
     } finally {
       if (mounted) setState(() => _isAccepting = false);
@@ -73,8 +78,9 @@ class _ShipmentDetailsScreenState
 
   @override
   Widget build(BuildContext context) {
-    final detailState =
-        ref.watch(sellerShipmentDetailProvider(widget.shipmentId));
+    final detailState = ref.watch(
+      sellerShipmentDetailProvider(widget.shipmentId),
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FB),
@@ -95,8 +101,8 @@ class _ShipmentDetailsScreenState
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded, color: Color(0xFF3E4A3D)),
-            onPressed: () => ref
-                .invalidate(sellerShipmentDetailProvider(widget.shipmentId)),
+            onPressed: () =>
+                ref.invalidate(sellerShipmentDetailProvider(widget.shipmentId)),
           ),
         ],
       ),
@@ -106,8 +112,8 @@ class _ShipmentDetailsScreenState
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => _ErrorView(
             error: e.toString(),
-            onRetry: () => ref
-                .invalidate(sellerShipmentDetailProvider(widget.shipmentId)),
+            onRetry: () =>
+                ref.invalidate(sellerShipmentDetailProvider(widget.shipmentId)),
           ),
         ),
       ),
@@ -231,24 +237,27 @@ class _ShipmentDetailsScreenState
         // ── Products Section ──────────────────────────────────────────
         const Row(
           children: [
-            Icon(Icons.battery_charging_full_rounded,
-                size: 20, color: Color(0xFF006B2C)),
+            Icon(
+              Icons.battery_charging_full_rounded,
+              size: 20,
+              color: Color(0xFF006B2C),
+            ),
             SizedBox(width: 8),
             Text(
               'Products in this Shipment',
               style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF191C1E)),
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF191C1E),
+              ),
             ),
           ],
         ),
         const SizedBox(height: 12),
 
         ...items.asMap().entries.map(
-              (entry) =>
-                  _ProductCard(item: entry.value, index: entry.key + 1),
-            ),
+          (entry) => _ProductCard(item: entry.value, index: entry.key + 1),
+        ),
 
         // ── Accept Button (only if PENDING) ──────────────────────────
         if (status.toUpperCase() == 'PENDING') ...[
@@ -262,7 +271,9 @@ class _ShipmentDetailsScreenState
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
                     )
                   : const Icon(Icons.check_circle_outline_rounded),
               label: Text(_isAccepting ? 'Accepting...' : 'Accept Shipment'),
@@ -271,9 +282,12 @@ class _ShipmentDetailsScreenState
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 textStyle: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold),
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
+                  borderRadius: BorderRadius.circular(14),
+                ),
                 elevation: 2,
               ),
             ),
@@ -342,7 +356,10 @@ class _StatusBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+      padding: EdgeInsets.symmetric(
+        vertical: ResponsiveHelper.isSmallPhone(context) ? 12 : 16,
+        horizontal: ResponsiveHelper.isSmallPhone(context) ? 16 : 20,
+      ),
       decoration: BoxDecoration(
         color: _bg,
         borderRadius: BorderRadius.circular(16),
@@ -356,9 +373,10 @@ class _StatusBanner extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Shipment Status',
-                    style:
-                        TextStyle(fontSize: 12, color: Color(0xFF586377))),
+                const Text(
+                  'Shipment Status',
+                  style: TextStyle(fontSize: 12, color: Color(0xFF586377)),
+                ),
                 const SizedBox(height: 2),
                 Text(
                   status.toUpperCase(),
@@ -384,8 +402,11 @@ class _SectionCard extends StatelessWidget {
   final String title;
   final IconData icon;
   final List<Widget> children;
-  const _SectionCard(
-      {required this.title, required this.icon, required this.children});
+  const _SectionCard({
+    required this.title,
+    required this.icon,
+    required this.children,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -395,7 +416,10 @@ class _SectionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: const [
           BoxShadow(
-              color: Color(0x0A000000), blurRadius: 12, offset: Offset(0, 4))
+            color: Color(0x0A000000),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
         ],
       ),
       padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
@@ -431,8 +455,11 @@ class _InfoRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
-  const _InfoRow(
-      {required this.icon, required this.label, required this.value});
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -445,15 +472,19 @@ class _InfoRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label,
-                  style: const TextStyle(
-                      fontSize: 11, color: Color(0xFF586377))),
+              Text(
+                label,
+                style: const TextStyle(fontSize: 11, color: Color(0xFF586377)),
+              ),
               const SizedBox(height: 2),
-              Text(value,
-                  style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF191C1E))),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF191C1E),
+                ),
+              ),
             ],
           ),
         ),
@@ -494,20 +525,25 @@ class _StatBox extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 22, color: iconColor),
-          const SizedBox(height: 8),
+          Icon(
+            icon,
+            size: ResponsiveHelper.iconSize(context, 22),
+            color: iconColor,
+          ),
+          SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 6 : 8),
           Text(
             value,
             style: TextStyle(
-              fontSize: 24,
+              fontSize: ResponsiveHelper.fontSize(context, 24),
               fontWeight: FontWeight.bold,
               color: iconColor,
             ),
           ),
-          const SizedBox(height: 2),
-          Text(label,
-              style:
-                  const TextStyle(fontSize: 12, color: Color(0xFF586377))),
+          SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 1 : 2),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 12, color: Color(0xFF586377)),
+          ),
         ],
       ),
     );
@@ -545,7 +581,10 @@ class _ProductCard extends StatelessWidget {
         border: Border.all(color: const Color(0xFFECEEF0)),
         boxShadow: const [
           BoxShadow(
-              color: Color(0x06000000), blurRadius: 8, offset: Offset(0, 2))
+            color: Color(0x06000000),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
         ],
       ),
       child: Padding(
@@ -595,7 +634,9 @@ class _ProductCard extends StatelessWidget {
                       if (productName.isNotEmpty) productName,
                     ].join(' • '),
                     style: const TextStyle(
-                        fontSize: 12, color: Color(0xFF586377)),
+                      fontSize: 12,
+                      color: Color(0xFF586377),
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -607,13 +648,11 @@ class _ProductCard extends StatelessWidget {
                     children: [
                       _Chip(
                         icon: Icons.inventory_2_outlined,
-                        label:
-                            '$quantity unit${quantity != 1 ? 's' : ''}',
+                        label: '$quantity unit${quantity != 1 ? 's' : ''}',
                         color: const Color(0xFF006B2C),
                         bg: const Color(0xFFE8F5E9),
                       ),
-                      if (serialNumber != null &&
-                          serialNumber.isNotEmpty)
+                      if (serialNumber != null && serialNumber.isNotEmpty)
                         _Chip(
                           icon: Icons.qr_code_rounded,
                           label: serialNumber,
@@ -637,18 +676,21 @@ class _Chip extends StatelessWidget {
   final String label;
   final Color color;
   final Color bg;
-  const _Chip(
-      {required this.icon,
-      required this.label,
-      required this.color,
-      required this.bg});
+  const _Chip({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.bg,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration:
-          BoxDecoration(color: bg, borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -657,7 +699,10 @@ class _Chip extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-                fontSize: 11, fontWeight: FontWeight.w600, color: color),
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
           ),
         ],
       ),
@@ -680,21 +725,20 @@ class _ErrorView extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline,
-                size: 56, color: Color(0xFFBA1A1A)),
+            const Icon(Icons.error_outline, size: 56, color: Color(0xFFBA1A1A)),
             const SizedBox(height: 16),
             const Text(
               'Failed to load shipment',
               style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF191C1E)),
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF191C1E),
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               error,
-              style: const TextStyle(
-                  fontSize: 13, color: Color(0xFF586377)),
+              style: const TextStyle(fontSize: 13, color: Color(0xFF586377)),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -706,9 +750,12 @@ class _ErrorView extends StatelessWidget {
                 backgroundColor: const Color(0xFF006B2C),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 24, vertical: 12),
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ],

@@ -209,7 +209,7 @@ class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScr
 
     return ListView.builder(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+      padding: EdgeInsets.fromLTRB(ResponsiveHelper.responsivePadding(context), 12, ResponsiveHelper.responsivePadding(context), 20),
       itemCount: state.sales.length,
       itemBuilder: (context, index) {
         final sale = state.sales[index];
@@ -221,7 +221,7 @@ class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScr
   Widget _buildShimmerCard() {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
-      height: 180,
+      height: ResponsiveHelper.isSmallPhone(context) ? 160 : 180,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
