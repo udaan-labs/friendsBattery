@@ -56,7 +56,7 @@ class _SellerCardState extends State<SellerCard> {
           onTapCancel: () => setState(() => _isPressed = false),
           onTap: widget.onTap,
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

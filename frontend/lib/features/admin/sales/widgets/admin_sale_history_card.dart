@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 import '../models/admin_sale_history.dart';
 
 class AdminSaleHistoryCard extends StatelessWidget {
@@ -13,7 +14,7 @@ class AdminSaleHistoryCard extends StatelessWidget {
     final formattedDate = dateFormatter.format(sale.soldAt);
 
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
+      margin: EdgeInsets.symmetric(vertical: 8, horizontal: ResponsiveHelper.responsiveHorizontalMargin(context)),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -41,7 +42,7 @@ class AdminSaleHistoryCard extends StatelessWidget {
             ),
 
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -53,14 +54,16 @@ class AdminSaleHistoryCard extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              sale.productName,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF191C1E),
-                              ),
+                          Text(
+                            sale.productName,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF191C1E),
                             ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                             const SizedBox(height: 2),
                             Text(
                               sale.productModel,
@@ -104,8 +107,8 @@ class AdminSaleHistoryCard extends StatelessWidget {
                           ),
                           Container(
                             margin: const EdgeInsets.only(top: 4),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 3),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: ResponsiveHelper.isSmallPhone(context) ? 6 : 8, vertical: 3),
                             decoration: BoxDecoration(
                               color: const Color(0xFF16A34A).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(20),
@@ -175,8 +178,8 @@ class AdminSaleHistoryCard extends StatelessWidget {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: ResponsiveHelper.isSmallPhone(context) ? 6 : 8, vertical: 3),
                           decoration: BoxDecoration(
                             color: const Color(0xFF7C3AED).withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(20),
@@ -338,7 +341,7 @@ class _ShipmentRow extends StatelessWidget {
         const SizedBox(width: 8),
         Container(
           padding:
-              const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              EdgeInsets.symmetric(horizontal: ResponsiveHelper.isSmallPhone(context) ? 8 : 10, vertical: 4),
           decoration: BoxDecoration(
             color: _statusBg(shipment!.status),
             borderRadius: BorderRadius.circular(20),
@@ -364,9 +367,9 @@ class _Divider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 12),
-      child: Divider(height: 1, color: Color(0xFFEEF0F2)),
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: ResponsiveHelper.cardPadding(context) * 0.75),
+      child: const Divider(height: 1, color: Color(0xFFEEF0F2)),
     );
   }
 }
@@ -390,7 +393,7 @@ class _SectionRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
-          padding: const EdgeInsets.all(6),
+          padding: EdgeInsets.all(ResponsiveHelper.isSmallPhone(context) ? 4 : 6),
           decoration: BoxDecoration(
             color: iconBgColor,
             borderRadius: BorderRadius.circular(8),

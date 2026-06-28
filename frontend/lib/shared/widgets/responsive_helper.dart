@@ -35,4 +35,31 @@ class ResponsiveHelper {
     if (width < 600) return 16.0;
     return 20.0;
   }
+
+  static double fontSize(BuildContext context, double baseSize) {
+    final width = MediaQuery.of(context).size.width;
+    if (width < 360) return baseSize * 0.85;
+    if (width < 400) return baseSize * 0.9;
+    if (width < 600) return baseSize * 0.95;
+    return baseSize;
+  }
+
+  static double headingSize(BuildContext context) {
+    return fontSize(context, 32);
+  }
+
+  static double subheadingSize(BuildContext context) {
+    return fontSize(context, 18);
+  }
+
+  static double bodySize(BuildContext context) {
+    return fontSize(context, 16);
+  }
+
+  static double iconSize(BuildContext context, double baseSize) {
+    final width = MediaQuery.of(context).size.width;
+    if (width < 360) return baseSize * 0.8;
+    if (width < 400) return baseSize * 0.9;
+    return baseSize;
+  }
 }

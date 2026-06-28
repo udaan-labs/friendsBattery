@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 
 class InventoryProductCard extends StatelessWidget {
   final Map<String, dynamic> inventoryItem;
@@ -32,7 +33,7 @@ class InventoryProductCard extends StatelessWidget {
     final offerPrice = inventoryItem['offer_price']?.toString();
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12, left: ResponsiveHelper.responsiveHorizontalMargin(context), right: ResponsiveHelper.responsiveHorizontalMargin(context)),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -50,7 +51,7 @@ class InventoryProductCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -66,7 +67,7 @@ class InventoryProductCard extends StatelessWidget {
                         letterSpacing: 0.5,
                       ),
                     ),
-                    _buildBadge(statusText, statusColor),
+                    _buildBadge(statusText, statusColor, context),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -121,9 +122,9 @@ class InventoryProductCard extends StatelessWidget {
     );
   }
 
-  Widget _buildBadge(String label, Color color) {
+  Widget _buildBadge(String label, Color color, BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: ResponsiveHelper.isSmallPhone(context) ? 6 : 8, vertical: 4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),

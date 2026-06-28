@@ -29,33 +29,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Icon(
+              Icon(
                 Icons.battery_charging_full,
-                size: 64,
+                size: ResponsiveHelper.isSmallPhone(context) ? 48 : 64,
                 color: AppTheme.primary,
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Welcome Back',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: 'Inter',
-                  fontSize: 32,
+                  fontSize: ResponsiveHelper.isSmallPhone(context) ? 24 : 32,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF191C1E),
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Sign in to manage your battery systems',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: 'Inter',
-                  fontSize: 16,
+                  fontSize: ResponsiveHelper.isSmallPhone(context) ? 14 : 16,
                   color: Color(0xFF545F73),
                 ),
               ),
-              const SizedBox(height: 48),
+              SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 24 : 48),
               Container(
                 decoration: BoxDecoration(
                   color: AppTheme.surface,
@@ -94,7 +94,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       obscureText: _obscurePassword,
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 20 : 32),
                     if (authState.isLoading)
                       const Center(child: CircularProgressIndicator())
                     else

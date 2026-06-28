@@ -84,7 +84,7 @@ class ShipmentListScreen extends ConsumerWidget {
               return ListView(
                 children: [
                   SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.6,
+                    height: MediaQuery.of(context).size.height * (ResponsiveHelper.isSmallPhone(context) ? 0.5 : 0.6),
                     child: Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -116,8 +116,8 @@ class ShipmentListScreen extends ConsumerWidget {
               );
             }
 
-            return ListView.builder(
-              padding: EdgeInsets.all(ResponsiveHelper.responsiveHorizontalMargin(context)),
+              return ListView.builder(
+              padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
               itemCount: shipments.length,
               itemBuilder: (context, index) {
                 final shipment = shipments[index];
@@ -143,7 +143,7 @@ class ShipmentListScreen extends ConsumerWidget {
                       context.push('/admin/shipments/${shipment.shipmentId}');
                     },
                     child: Padding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [

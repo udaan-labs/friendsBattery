@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 import '../../../../theme/app_theme.dart';
 import '../providers/seller_sales_provider.dart';
 import '../widgets/seller_sale_card.dart';
@@ -60,7 +61,7 @@ class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScr
             // Search Bar
             Container(
               color: Colors.white,
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+              padding: EdgeInsets.fromLTRB(ResponsiveHelper.responsivePadding(context), 0, ResponsiveHelper.responsivePadding(context), 14),
               child: TextField(
                 controller: _searchController,
                 onChanged: _onSearchChanged,
@@ -70,7 +71,7 @@ class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScr
                   prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF586377), size: 20),
                   filled: true,
                   fillColor: const Color(0xFFF7F9FB),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -109,7 +110,7 @@ class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScr
     if (state.isLoading) {
       return ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+        padding: EdgeInsets.fromLTRB(ResponsiveHelper.responsivePadding(context), 12, ResponsiveHelper.responsivePadding(context), 20),
         itemCount: 5,
         itemBuilder: (context, index) => _buildShimmerCard(),
       );
@@ -123,12 +124,12 @@ class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScr
             height: MediaQuery.of(context).size.height * 0.55,
             child: Center(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
+                padding: EdgeInsets.symmetric(horizontal: ResponsiveHelper.responsivePadding(context)),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
                       decoration: BoxDecoration(
                         color: AppTheme.error.withValues(alpha: 0.08),
                         shape: BoxShape.circle,
@@ -154,7 +155,7 @@ class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScr
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF16A34A),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+                        padding: EdgeInsets.symmetric(horizontal: ResponsiveHelper.responsivePadding(context), vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                         elevation: 0,
                       ),
@@ -179,7 +180,7 @@ class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScr
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(20),
+                    padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
                     decoration: BoxDecoration(
                       color: Colors.grey.withValues(alpha: 0.08),
                       shape: BoxShape.circle,

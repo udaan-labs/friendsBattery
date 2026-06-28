@@ -315,7 +315,7 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
                         ),
                       ],
                     ),
-                    padding: const EdgeInsets.all(24),
+                    padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
                     child: Form(
                       key: _formKey,
                       child: Column(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 import '../providers/seller_dashboard_providers.dart';
 import 'seller_shell_screen.dart';
 
@@ -38,30 +39,33 @@ class SellerReceivedShipmentsScreen extends ConsumerWidget {
           data: (shipments) {
             if (shipments.isEmpty) {
               return ListView(
-                children: const [
-                  SizedBox(height: 120),
-                  Center(
-                    child: Column(
-                      children: [
-                        Icon(Icons.local_shipping_outlined, size: 64, color: Color(0xFF545F73)),
-                        SizedBox(height: 16),
-                        Text(
-                          'No shipments yet',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF191C1E)),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Shipments assigned to you will appear here.',
-                          style: TextStyle(fontSize: 14, color: Color(0xFF545F73)),
-                        ),
-                      ],
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.2,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.local_shipping_outlined, size: ResponsiveHelper.isSmallPhone(context) ? 48 : 64, color: const Color(0xFF545F73)),
+                          SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 12 : 16),
+                          Text(
+                            'No shipments yet',
+                            style: TextStyle(fontSize: ResponsiveHelper.isSmallPhone(context) ? 16 : 18, fontWeight: FontWeight.bold, color: const Color(0xFF191C1E)),
+                          ),
+                          SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 6 : 8),
+                          Text(
+                            'Shipments assigned to you will appear here.',
+                            style: TextStyle(fontSize: ResponsiveHelper.isSmallPhone(context) ? 13 : 14, color: const Color(0xFF545F73)),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
               );
             }
             return ListView.separated(
-              padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
               itemCount: shipments.length,
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
@@ -97,8 +101,8 @@ class SellerReceivedShipmentsScreen extends ConsumerWidget {
                       context.push('/seller/shipments/${shipment.shipmentId}');
                     }
                   },
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
+                  child:                     Container(
+              padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
@@ -133,17 +137,21 @@ class SellerReceivedShipmentsScreen extends ConsumerWidget {
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xFF191C1E),
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 '$itemCount product type${itemCount != 1 ? 's' : ''} • $totalQty unit${totalQty != 1 ? 's' : ''}',
                                 style: const TextStyle(fontSize: 13, color: Color(0xFF545F73)),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          padding: EdgeInsets.symmetric(horizontal: ResponsiveHelper.isSmallPhone(context) ? 8 : 10, vertical: 5),
                           decoration: BoxDecoration(
                             color: statusBg,
                             borderRadius: BorderRadius.circular(20),

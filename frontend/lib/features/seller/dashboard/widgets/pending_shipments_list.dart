@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 import '../providers/seller_dashboard_providers.dart';
 import '../providers/seller_dashboard_controller.dart';
 import '../../../../theme/app_theme.dart';
@@ -116,7 +117,7 @@ class _PendingShipmentsListState extends ConsumerState<PendingShipmentsList> {
               if (shipments.isEmpty) {
                 return Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(24),
+                  padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
@@ -163,7 +164,7 @@ class _PendingShipmentsListState extends ConsumerState<PendingShipmentsList> {
                   borderRadius: BorderRadius.circular(16),
                   child: Scrollbar(
                     child: ListView.separated(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      padding: EdgeInsets.symmetric(vertical: ResponsiveHelper.isSmallPhone(context) ? 4 : 8),
                       shrinkWrap: true,
                       itemCount: shipments.length,
                       separatorBuilder: (context, index) => const Divider(
@@ -247,7 +248,7 @@ class _PendingShipmentsListState extends ConsumerState<PendingShipmentsList> {
                                   },
                                   style: OutlinedButton.styleFrom(
                                     side: const BorderSide(color: Color(0xFFBDCABA)),
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    padding: EdgeInsets.symmetric(horizontal: ResponsiveHelper.isSmallPhone(context) ? 10 : 16, vertical: 8),
                                     minimumSize: const Size(60, 36),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8),
@@ -270,7 +271,7 @@ class _PendingShipmentsListState extends ConsumerState<PendingShipmentsList> {
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFF16A34A),
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    padding: EdgeInsets.symmetric(horizontal: ResponsiveHelper.isSmallPhone(context) ? 10 : 16, vertical: 8),
                                     minimumSize: const Size(70, 36),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8),
@@ -289,7 +290,7 @@ class _PendingShipmentsListState extends ConsumerState<PendingShipmentsList> {
                             );
 
                             return Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                              padding: EdgeInsets.symmetric(horizontal: ResponsiveHelper.cardPadding(context), vertical: 12.0),
                               child: isNarrow
                                   ? Column(
                                       crossAxisAlignment: CrossAxisAlignment.stretch,

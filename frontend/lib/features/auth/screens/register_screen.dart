@@ -88,23 +88,23 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Icon(
+              Icon(
                 Icons.person_add_alt_1,
-                size: 64,
+                size: ResponsiveHelper.isSmallPhone(context) ? 48 : 64,
                 color: AppTheme.primary,
               ),
               const SizedBox(height: 16),
               Text(
                 widget.isAdminFlow ? 'Create Seller Account' : 'Create Account',
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Inter',
-                  fontSize: 32,
+                  fontSize: ResponsiveHelper.isSmallPhone(context) ? 24 : 32,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF191C1E),
                 ),
               ),
-              const SizedBox(height: 48),
+              SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 24 : 48),
               Container(
                 decoration: BoxDecoration(
                   color: AppTheme.surface,
@@ -177,7 +177,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       ),
                       obscureText: _obscureConfirmPassword,
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 20 : 32),
                     ElevatedButton(
                       onPressed: isLoading ? null : _register,
                       child: isLoading 

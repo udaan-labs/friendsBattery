@@ -170,7 +170,7 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
   Widget _buildEmptyInventoryState() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(32),
+      padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),

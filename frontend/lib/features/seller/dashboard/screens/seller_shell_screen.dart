@@ -102,7 +102,7 @@ class _SellerDrawer extends StatelessWidget {
             // Drawer Header
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+              padding: EdgeInsets.fromLTRB(ResponsiveHelper.isSmallPhone(context) ? 16 : 24, ResponsiveHelper.isSmallPhone(context) ? 16 : 24, ResponsiveHelper.isSmallPhone(context) ? 16 : 24, ResponsiveHelper.isSmallPhone(context) ? 16 : 20),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   colors: [Color(0xFF16A34A), Color(0xFF006B2C)],
@@ -225,7 +225,7 @@ class _SellerDrawer extends StatelessWidget {
 
             // Footer
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(ResponsiveHelper.responsiveHorizontalMargin(context)),
               child: Text(
                 'BatteryPro v1.0',
                 style: TextStyle(

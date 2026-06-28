@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 import '../providers/dashboard_providers.dart';
 
 class RecentActivityTimeline extends ConsumerWidget {
@@ -28,17 +29,19 @@ class RecentActivityTimeline extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Recent Activity',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF191C1E),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: ResponsiveHelper.responsiveHorizontalMargin(context)),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Recent Activity',
+                  style: TextStyle(
+                    fontSize: ResponsiveHelper.isSmallPhone(context) ? 16 : 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF191C1E),
+                  ),
                 ),
-              ),
               InkWell(
                 onTap: () {},
                 child: const Row(
@@ -63,7 +66,8 @@ class RecentActivityTimeline extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+        ),
+        SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 12 : 16),
           activityState.when(
             data: (activities) {
               if (activities.isEmpty) {
@@ -122,7 +126,7 @@ class _ActivityItem extends StatelessWidget {
           ),
         ],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: ResponsiveHelper.isSmallPhone(context) ? 12 : 16, vertical: ResponsiveHelper.isSmallPhone(context) ? 10 : 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [

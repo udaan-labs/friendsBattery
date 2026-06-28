@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 import '../models/seller_sale.dart';
 
 class SellerSaleCard extends StatelessWidget {
@@ -12,7 +13,7 @@ class SellerSaleCard extends StatelessWidget {
     final formattedDate = DateFormat('dd MMM yyyy, hh:mm a').format(sale.soldAt);
 
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
+      margin: EdgeInsets.symmetric(vertical: 8, horizontal: ResponsiveHelper.responsiveHorizontalMargin(context)),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
@@ -33,7 +34,7 @@ class SellerSaleCard extends StatelessWidget {
             // Optional: Navigate to detail screen if implemented later
           },
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -53,6 +54,8 @@ class SellerSaleCard extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                               color: Color(0xFF191C1E),
                             ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 2),
                           Text(
@@ -76,9 +79,9 @@ class SellerSaleCard extends StatelessWidget {
                   ],
                 ),
                 
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  child: Divider(height: 1, color: Color(0xFFE0E4E8)),
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: ResponsiveHelper.cardPadding(context) * 0.75),
+                  child: const Divider(height: 1, color: Color(0xFFE0E4E8)),
                 ),
 
                 // Customer Information
@@ -143,9 +146,9 @@ class SellerSaleCard extends StatelessWidget {
                   },
                 ),
 
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  child: Divider(height: 1, color: Color(0xFFE0E4E8)),
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: ResponsiveHelper.cardPadding(context) * 0.75),
+                  child: const Divider(height: 1, color: Color(0xFFE0E4E8)),
                 ),
 
                 // Bottom Row
@@ -175,7 +178,7 @@ class SellerSaleCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: EdgeInsets.symmetric(horizontal: ResponsiveHelper.isSmallPhone(context) ? 8 : 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: const Color(0xFF16A34A).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),

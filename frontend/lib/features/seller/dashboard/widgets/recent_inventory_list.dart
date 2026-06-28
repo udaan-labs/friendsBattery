@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 import '../providers/seller_dashboard_providers.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
 
@@ -64,7 +65,7 @@ class RecentInventoryList extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   final item = items[index];
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                    padding: EdgeInsets.symmetric(horizontal: ResponsiveHelper.cardPadding(context), vertical: 12.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -115,7 +116,7 @@ class RecentInventoryList extends ConsumerWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           flex: 0,
-                          child: _buildStatusBadge(item.status),
+                          child: _buildStatusBadge(item.status, context),
                         ),
                       ],
                     ),
@@ -123,15 +124,15 @@ class RecentInventoryList extends ConsumerWidget {
                 },
               ),
             ),
-            loading: () => const Center(
+            loading: () => Center(
               child: Padding(
-                padding: EdgeInsets.all(24.0),
+                padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
                 child: CircularProgressIndicator(),
               ),
             ),
             error: (e, st) => Center(
               child: Padding(
-                padding: const EdgeInsets.all(24.0),
+                padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
                 child: Text('Error: $e', style: const TextStyle(color: Colors.red)),
               ),
             ),
@@ -141,7 +142,7 @@ class RecentInventoryList extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatusBadge(String status) {
+  Widget _buildStatusBadge(String status, BuildContext context) {
     Color bgColor;
     Color textColor;
 
@@ -162,7 +163,7 @@ class RecentInventoryList extends ConsumerWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: ResponsiveHelper.isSmallPhone(context) ? 8 : 12, vertical: 6),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(12),

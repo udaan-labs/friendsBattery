@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 import '../repository/shared_inventory_repository.dart';
 
 class InventoryProductCard extends StatelessWidget {
@@ -16,7 +17,7 @@ class InventoryProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: ResponsiveHelper.responsiveHorizontalMargin(context)),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -34,7 +35,7 @@ class InventoryProductCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           onTap: onTap ?? () {},
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

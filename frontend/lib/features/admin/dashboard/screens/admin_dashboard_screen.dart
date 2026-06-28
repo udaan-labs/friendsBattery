@@ -209,10 +209,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             // Drawer Header
             Container(
               padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top + 24,
-                bottom: 24,
-                left: 16,
-                right: 16,
+                top: MediaQuery.of(context).padding.top + (ResponsiveHelper.isSmallPhone(context) ? 16 : 24),
+                bottom: ResponsiveHelper.isSmallPhone(context) ? 16 : 24,
+                left: ResponsiveHelper.isSmallPhone(context) ? 12 : 16,
+                right: ResponsiveHelper.isSmallPhone(context) ? 12 : 16,
               ),
               decoration: const BoxDecoration(
                 color: Color(0xFFECEEF0), // bg-surface-container
@@ -248,18 +248,21 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           'System Administrator',
                           style: TextStyle(color: Color(0xFF3E4A3D), fontSize: 13), // text-on-surface-variant
                         ),
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 4 : 8),
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
                             color: const Color(0xFFE0E3E5), // bg-surface-container-highest
                             borderRadius: BorderRadius.circular(999),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Fleet Manager v1.0.4',
-                            style: TextStyle(color: Color(0xFF3E4A3D), fontSize: 10, fontWeight: FontWeight.bold),
+                            style: TextStyle(color: Color(0xFF3E4A3D), fontSize: ResponsiveHelper.isSmallPhone(context) ? 9 : 10, fontWeight: FontWeight.bold),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                          ),
                       ],
                     ),
                   ),
@@ -341,7 +344,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             const Divider(height: 1),
             // Drawer Footer
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(ResponsiveHelper.responsiveHorizontalMargin(context)),
               child: ListTile(
                 leading: const Icon(Icons.logout, color: Color(0xFFBA1A1A)), // text-error
                 title: const Text(
@@ -650,8 +653,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   Widget _buildPlaceholderTabView(String tabId) {
     return Center(
       child: Container(
-        margin: const EdgeInsets.all(24),
-        padding: const EdgeInsets.all(32),
+        margin: EdgeInsets.all(ResponsiveHelper.responsivePadding(context)),
+        padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
         constraints: const BoxConstraints(maxWidth: 400),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -663,14 +666,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.construction, color: Color(0xFF006B2C), size: 64),
-            const SizedBox(height: 16),
+            Icon(Icons.construction, color: Color(0xFF006B2C), size: ResponsiveHelper.isSmallPhone(context) ? 48 : 64),
+            SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 12 : 16),
             Text(
               '${tabId[0].toUpperCase()}${tabId.substring(1).replaceAll('_', ' ')} Tab',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF191C1E)),
+              style: TextStyle(fontSize: ResponsiveHelper.isSmallPhone(context) ? 16 : 20, fontWeight: FontWeight.bold, color: Color(0xFF191C1E)),
             ),
-            const SizedBox(height: 8),
-            const Text(
+            SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 6 : 8),
+            Text(
               'This module interface section is being configured. Check back soon for transactional integrations.',
               textAlign: TextAlign.center,
               style: TextStyle(color: Color(0xFF3E4A3D), fontSize: 13),

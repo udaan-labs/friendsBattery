@@ -435,7 +435,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                       ),
                     ],
                   ),
-                  padding: const EdgeInsets.all(24),
+                  padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -578,7 +578,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                         ),
                       ],
                     ),
-                    padding: const EdgeInsets.all(20),
+                    padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
