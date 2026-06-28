@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
+import '../../../../../shared/widgets/responsive_helper.dart';
 import '../../../../../core/network/api_client_provider.dart';
 import '../../../../../shared/widgets/snackbar_helper.dart';
 
@@ -158,7 +159,7 @@ class _AddProductModelFormState extends ConsumerState<AddProductModelForm> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.all(ResponsiveHelper.responsivePadding(context)),
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 600),
@@ -170,7 +171,7 @@ class _AddProductModelFormState extends ConsumerState<AddProductModelForm> {
                     BoxShadow(color: Color(0x0A000000), blurRadius: 12, offset: Offset(0, 4)),
                   ],
                 ),
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
                 child: Form(
                   key: _formKey,
                   child: Column(

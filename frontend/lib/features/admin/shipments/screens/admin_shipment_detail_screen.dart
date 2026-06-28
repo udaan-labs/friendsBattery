@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../providers/shipment_provider.dart';
 import '../repository/shipment_repository.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 import '../../../../theme/app_theme.dart';
 
 // ─── Screen ────────────────────────────────────────────────────────────────
@@ -64,7 +65,7 @@ class _ShipmentDetailBody extends StatelessWidget {
     final dateFmt = DateFormat('dd MMM yyyy, hh:mm a');
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(ResponsiveHelper.responsivePadding(context)),
       children: [
         // ── Status Banner ───────────────────────────────────────────────
         _StatusBanner(status: detail.status),
@@ -294,7 +295,7 @@ class _SectionCard extends StatelessWidget {
               color: Color(0x0A000000), blurRadius: 12, offset: Offset(0, 4))
         ],
       ),
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -302,12 +303,15 @@ class _SectionCard extends StatelessWidget {
             children: [
               Icon(icon, size: 18, color: const Color(0xFF006B2C)),
               const SizedBox(width: 8),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF191C1E),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF191C1E),
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -482,6 +486,8 @@ class _ProductCard extends StatelessWidget {
                       fontSize: 12,
                       color: Color(0xFF586377),
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
 
@@ -560,7 +566,7 @@ class _ErrorView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.all(ResponsiveHelper.responsivePadding(context)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

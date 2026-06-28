@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 
 import 'forms/create_complete_hierarchy_form.dart';
 import 'forms/add_category_form.dart';
@@ -12,7 +13,7 @@ class AddProductScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
+      padding: EdgeInsets.all(ResponsiveHelper.responsivePadding(context)),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),

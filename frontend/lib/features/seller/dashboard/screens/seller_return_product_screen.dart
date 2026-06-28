@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
+import '../../../../shared/widgets/responsive_helper.dart';
 import '../../../../core/network/api_client_provider.dart';
 import '../providers/seller_dashboard_controller.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
@@ -283,7 +284,7 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.all(ResponsiveHelper.responsivePadding(context)),
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 600),
@@ -294,7 +295,7 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
             children: [
               // Info banner
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
                 decoration: BoxDecoration(
                   color: const Color(0xFFD5E0F8).withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(12),
@@ -327,7 +328,7 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
                     ),
                   ],
                 ),
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -475,7 +476,7 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
                     ),
                   ],
                 ),
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [

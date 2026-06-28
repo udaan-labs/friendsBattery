@@ -110,6 +110,12 @@ spacing:
   margin-desktop: 48px
 ---
 
+# Frontend Guidelines
+
+This document contains the consolidated design system, API integration workflow, and UI discovery questions for the frontend.
+
+## Part 1: Design System
+
 ## Brand & Style
 The brand personality is rooted in reliability, efficiency, and environmental consciousness. As a battery management system, the interface must communicate "health" and "stability" at a glance. The target audience ranges from homeowners monitoring solar storage to fleet managers overseeing electric vehicle batteries; therefore, the UI avoids technical jargon in favor of intuitive visual cues.
 
@@ -175,3 +181,162 @@ The shape language is defined by **Soft Roundedness**. A standard corner radius 
 ### Specialized Components
 - **Battery Level Indicator:** A custom vertical or horizontal bar component using the primary green. Segmented bars are preferred to indicate discrete capacity steps.
 - **Data Lists:** Use 1px soft-gray horizontal dividers with 16px vertical padding per row to ensure readability in data-heavy views.
+
+
+---
+
+## Part 2: API Integration Workflow
+
+This section serves as an instruction manual for AI agents and developers on how to properly integrate new backend APIs into the Flutter frontend architecture. 
+
+Whenever a backend API is created or modified, follow these **5 exact steps**:
+
+### 1. Update the Frontend Models
+Run the `generate_api.bat` script located in the project root. 
+This script automatically parses the backend OpenAPI schema and updates the `friends_battery_api` package (located at `frontend/lib/api/`) with the newest endpoints, request/response models, and classes.
+
+### 2. Create or Update a Repository Method
+Navigate to the appropriate feature module within the frontend (e.g., `lib/features/admin/products/repository/`).
+Write a function in the Repository class that calls the newly generated API method. The Repository serves as a buffer between the raw generated API client and the UI, handling custom error mapping or caching if needed.
+
+```dart
+// Example: lib/features/admin/products/repository/product_repository.dart
+Future<Product> addProduct(Product newProduct) async {
+  // api is injected into the repository, allowing access to the generated methods
+  final response = await api.createProduct(newProduct);
+  return response; 
+}
+```
+
+### 3. Create a Riverpod Provider
+Create a Provider that links to the repository method so the UI can easily access and react to it.
+Use `FutureProvider` for reading/fetching data, and `StateNotifierProvider` or `NotifierProvider` for mutations (creating/updating/deleting data).
+
+```dart
+// Example: lib/features/admin/products/providers/product_provider.dart
+final productProvider = FutureProvider<List<Product>>((ref) {
+  return ref.watch(productRepositoryProvider).getProducts();
+});
+```
+
+### 4. Connect to the UI
+In the Flutter screen, use `ConsumerWidget` or `ConsumerStatefulWidget` and call `ref.watch()` on the provider. The UI will automatically handle loading, error, and data states, and will rebuild whenever the data changes!
+
+```dart
+// Example: lib/features/admin/products/screens/product_screen.dart
+@override
+Widget build(BuildContext context, WidgetRef ref) {
+  final productsState = ref.watch(productProvider);
+  
+  return productsState.when(
+    data: (products) => ListView.builder(...),
+    loading: () => const CircularProgressIndicator(),
+    error: (err, stack) => Text('Error: $err'),
+  );
+}
+```
+
+### 5. Architectural Rule Reminders
+- **DO NOT** modify the `frontend/lib/api/` package manually. It is strictly auto-generated.
+- **DO NOT** make raw HTTP or Dio requests in the UI or Providers. All network requests must go through the generated API package wrapped by a feature Repository.
+- **DO NOT** use `flutter_hooks`. We strictly use `flutter_riverpod` for all state management, dependency injection, and data fetching.
+
+
+---
+
+## Part 3: Frontend UI Discovery Questions
+
+These questions must be answered before generating UI designs, wireframes, widgets, or screen implementations.
+
+### 1. Admin Dashboard
+When Admin opens the app, what are the TOP 5 most important numbers?
+(Total Inventory, Total Sellers, Total Batteries Sold, Pending Stock Requests, Inventory Value, Low Stock Sellers, Recent Sales, Recent Shipments)
+Answer:
+
+### 2. Seller Dashboard
+When Seller opens the app, what should be visible immediately?
+(Current Stock, Today's Sales, This Month Sales, Pending Stock Requests, Recent Transactions, Low Stock Warning)
+Answer:
+
+### 3. Sale Flow
+Explain the exact sale process. (e.g., Seller → Scan Battery → Enter Customer Name → Enter Customer Phone → Enter Sale Price → Confirm Sale)
+Answer:
+
+### 4. Inventory Tracking
+How is inventory tracked? (Serial Number Only, Quantity Only, Both)
+Answer:
+
+### 5. Barcode Behavior
+What happens after scanning? (e.g., Scan → Product Found → Show Product Details → Sell Product)
+Answer:
+
+### 6. Search Usage
+Most common search type? (Battery Serial Number, Customer Name, Customer Number, Seller Name, Product Name, Product Model)
+Answer:
+
+### 7. Inventory Screen
+What is most important? (Fast Search, Data Density, Visual Design, Quick Actions)
+Answer:
+
+### 8. Product Catalog
+Will products be: (Batteries only, Batteries + Future Products)
+Answer:
+
+### 9. Stock Transfer
+Admin sends stock to seller. Which flow is preferred? 
+Option A: Select Seller → Select Product → Enter Quantity → Transfer
+Option B: Select Seller → Scan Products → Transfer
+Answer:
+
+### 10. Stock Request
+When seller requests stock, what fields are required?
+Answer:
+
+### 11. Notifications
+Should notifications be: (In-App Only, Push Notifications, Both)
+Answer:
+
+### 12. Reports
+Most important report? (Sales Report, Inventory Report, Seller Performance, Stock Movement, Product Report, Customer Report)
+Answer:
+
+### 13. Tablet Layout
+For tablets: (Same Mobile Layout, Split Screen Layout, Desktop Style Sidebar)
+Answer:
+
+### 14. Theme
+Preferred style? (Option A: Clean White/Light Green, Option B: Dark Gray/Green, Option C: Both)
+Answer:
+
+### 15. Admin Navigation
+Rank by importance.
+Answer:
+
+### 16. Seller Navigation
+Rank by importance.
+Answer:
+
+### 17. Inventory Card
+What information must always be visible? (e.g., Product Name, Serial Number, Stock, Status)
+Answer:
+
+### 18. Sale Speed
+Maximum taps to complete a sale? (Under 3, Under 5, Under 8)
+Answer:
+
+### 19. AI Assistant Features
+What should AI do? (Product Recommendation, Battery Matching, FAQ Assistant, Troubleshooting, All)
+Answer:
+
+### 20. Code Requirements
+Confirm:
+* Use generated OpenAPI models only
+* Never duplicate API models
+* Prefer shared widgets
+* Prefer reusable components
+* Small widgets only
+* Riverpod only
+* GoRouter only
+* No Clean Architecture
+* No AI-generated giant widgets
+Answer: YES / NO
