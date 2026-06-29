@@ -101,9 +101,16 @@ class ProductsService {
    * Get products available in the authenticated user's inventory.
    * Returns data grouped by product name, with models and stock counts.
    * Excludes products with zero available quantity.
+   * For admin: uses stockQuantity from the Product model.
+   * For seller: counts available ProductUnit records.
    */
-  async getInventoryProducts(userId) {
-    const products = await productsRepository.findInventoryProducts(userId);
+  async getInventoryProducts(userId, role) {
+    let products;
+    if (role === 'ADMIN') {
+      products = await productsRepository.findAdminInventoryProducts();
+    } else {
+      products = await productsRepository.findInventoryProducts(userId);
+    }
 
     const groupedMap = new Map();
 
@@ -112,14 +119,20 @@ class ProductsService {
       if (!groupedMap.has(nameKey)) {
         groupedMap.set(nameKey, {
           productName: nameKey,
+          productNameId: Number(product.productNameId),
           models: []
         });
       }
 
+      const availableQuantity = role === 'ADMIN'
+        ? Number(product.stockQuantity)
+        : product._count.units;
+
       groupedMap.get(nameKey).models.push({
         id: Number(product.id),
+        productModelId: Number(product.productModelId),
         productModel: product.productModel.name,
-        availableQuantity: product._count.units,
+        availableQuantity,
         minSellPrice: Number(product.minPrice)
       });
     }

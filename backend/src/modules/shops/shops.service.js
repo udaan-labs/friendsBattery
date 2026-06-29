@@ -33,7 +33,8 @@ class ShopsService {
           is_active: user.isActive,
           created_at: user.createdAt,
           totalStock,
-          todaySales,
+          todaySales: todaySales.count,
+          todaySalesAmount: todaySales.amount,
           pendingShipments
         };
       })
@@ -64,7 +65,7 @@ class ShopsService {
       shopsRepository.getSellerProductsCount(sellerId),
       shopsRepository.getSellerSalesCount(sellerId),
       shopsRepository.getSellerReturnsCount(sellerId),
-      inventoryService.getInventory(sellerId, { page: 1, limit: 1000000 })
+      inventoryService.getInventory(sellerId, 'SELLER', { page: 1, limit: 1000000 })
     ]);
 
     if (!user) {

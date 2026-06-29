@@ -52,20 +52,22 @@ class SalesService {
       });
     }
 
-    // 2. Check if the provided real serial number is already in use
-    const existingUnit = await salesRepository.checkSerialNumberExists(data.serial_number);
-    if (existingUnit) {
-      const error = new Error('This serial number is already registered in the system.');
-      error.statusCode = 400;
+    // 3. Find the specific available product unit by serial number
+    const productUnit = await salesRepository.findAvailableProductUnit(data.serial_number, sellerId);
+    
+    if (!productUnit) {
+      const error = new Error('The scanned serial number is not available in your inventory.');
+      error.statusCode = 404;
       throw error;
     }
 
-    // 3. Find an available product unit for the requested product
-    const productUnit = await salesRepository.findAvailableProductUnitByProductId(data.product_id, sellerId);
-    
-    if (!productUnit) {
-      const error = new Error('No available stock for this product in your inventory.');
-      error.statusCode = 404;
+    // 4. Validate that it matches the selected product name and model
+    if (
+      Number(productUnit.product.productNameId) !== Number(data.product_name_id) ||
+      Number(productUnit.product.productModelId) !== Number(data.product_model_id)
+    ) {
+      const error = new Error('The scanned serial number does not match the selected Product Name or Model.');
+      error.statusCode = 400;
       throw error;
     }
 

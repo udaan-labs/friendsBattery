@@ -120,7 +120,7 @@ final sellerRecentInventoryProvider = FutureProvider<List<RecentInventoryItem>>(
       }
       return RecentInventoryItem(
         name: name.isNotEmpty ? name : 'Battery unit',
-        serialNumber: 'SN: BATT-0${item['product_id']}-XW',
+        serialNumber: 'Quantity: $quantity units',
         status: status,
       );
     }).toList();

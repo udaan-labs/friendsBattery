@@ -34,7 +34,9 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
   @override
   void initState() {
     super.initState();
-    _loadProductNames();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadProductNames();
+    });
   }
 
   @override
@@ -305,25 +307,49 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
                     ),
                     const SizedBox(height: 8),
                     _isLoadingNames
-                        ? const Center(child: CircularProgressIndicator())
-                        : DropdownMenu<String>(
-                            expandedInsets: EdgeInsets.zero,
-                            enableFilter: true,
-                            hintText: 'Select Product Name',
-                            requestFocusOnTap: true,
-                            dropdownMenuEntries: _productNames.map((name) {
-                              return DropdownMenuEntry<String>(
-                                value: name['id']!,
-                                label: name['name']!,
-                              );
-                            }).toList(),
-                            onSelected: (id) {
-                              if (id != null) {
-                                setState(() => _selectedProductNameId = id);
-                                _loadProductModels(id);
-                              }
-                            },
-                          ),
+                        ? const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16.0),
+                            child: Center(
+                              child: SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            ),
+                          )
+                        : (_productNames.isEmpty
+                            ? TextFormField(
+                                enabled: false,
+                                decoration: InputDecoration(
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  hintText: 'No products available. Please contact admin.',
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                  filled: true,
+                                  fillColor: Colors.grey.shade100,
+                                ),
+                              )
+                            : DropdownButtonFormField<String>(
+                                isExpanded: true,
+                                decoration: InputDecoration(
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                ),
+                                hint: const Text('Select Product Name'),
+                                items: _productNames.map((name) {
+                                  return DropdownMenuItem<String>(
+                                    value: name['id']!,
+                                    child: Text(name['name']!),
+                                  );
+                                }).toList(),
+                                onChanged: (id) {
+                                  if (id != null) {
+                                    setState(() => _selectedProductNameId = id);
+                                    _loadProductModels(id);
+                                  }
+                                },
+                              )),
                     const SizedBox(height: 20),
 
                     // Product Model
@@ -333,27 +359,61 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
                     ),
                     const SizedBox(height: 8),
                     _isLoadingModels
-                        ? const Center(child: CircularProgressIndicator())
-                        : DropdownMenu<String>(
-                            key: ValueKey('model_$_selectedProductNameId'),
-                            expandedInsets: EdgeInsets.zero,
-                            enableFilter: true,
-                            enabled: _selectedProductNameId != null,
-                            hintText: 'Select Product Model',
-                            requestFocusOnTap: true,
-                            dropdownMenuEntries: _productModels.map((model) {
-                              return DropdownMenuEntry<String>(
-                                value: model['id']!,
-                                label: model['name']!,
-                              );
-                            }).toList(),
-                            onSelected: (id) {
-                              if (id != null) {
-                                setState(() => _selectedProductModelId = id);
-                                _loadSoldSerials(id);
-                              }
-                            },
-                          ),
+                        ? const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16.0),
+                            child: Center(
+                              child: SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            ),
+                          )
+                        : (_selectedProductNameId == null
+                            ? TextFormField(
+                                enabled: false,
+                                decoration: InputDecoration(
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  hintText: 'Select Product Name first',
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                  filled: true,
+                                  fillColor: Colors.grey.shade100,
+                                ),
+                              )
+                            : (_productModels.isEmpty
+                                ? TextFormField(
+                                    enabled: false,
+                                    decoration: InputDecoration(
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                      hintText: 'No models available for this product.',
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                      filled: true,
+                                      fillColor: Colors.grey.shade100,
+                                    ),
+                                  )
+                                : DropdownButtonFormField<String>(
+                                    key: ValueKey('model_$_selectedProductNameId'),
+                                    isExpanded: true,
+                                    decoration: InputDecoration(
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                    ),
+                                    hint: const Text('Select Product Model'),
+                                    items: _productModels.map((model) {
+                                      return DropdownMenuItem<String>(
+                                        value: model['id']!,
+                                        child: Text(model['name']!),
+                                      );
+                                    }).toList(),
+                                    onChanged: (id) {
+                                      if (id != null) {
+                                        setState(() => _selectedProductModelId = id);
+                                        _loadSoldSerials(id);
+                                      }
+                                    },
+                                  ))),
                     const SizedBox(height: 20),
 
                     // Serial Number – free text for returns

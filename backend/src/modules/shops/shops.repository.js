@@ -29,7 +29,7 @@ class ShopsRepository {
   async findSellerById(sellerId) {
     return prisma.user.findFirst({
       where: {
-        id: sellerId,
+        id: BigInt(sellerId),
         role: 'SELLER'
       }
     });
@@ -43,8 +43,8 @@ class ShopsRepository {
   async getSellerStock(sellerId) {
     return prisma.productUnit.count({
       where: {
-        ownerId: sellerId,
-        status: 'IN_STOCK'
+        ownerId: BigInt(sellerId),
+        status: 'AVAILABLE'
       }
     });
   }
@@ -57,8 +57,8 @@ class ShopsRepository {
   async getSellerProductsCount(sellerId) {
     const products = await prisma.productUnit.findMany({
       where: {
-        ownerId: sellerId,
-        status: 'IN_STOCK'
+        ownerId: BigInt(sellerId),
+        status: 'AVAILABLE'
       },
       distinct: ['productId'],
       select: {
@@ -76,7 +76,7 @@ class ShopsRepository {
   async getSellerSalesCount(sellerId) {
     return prisma.salesTransaction.count({
       where: {
-        sellerId: sellerId
+        sellerId: BigInt(sellerId)
       }
     });
   }
@@ -89,7 +89,7 @@ class ShopsRepository {
   async getSellerReturnsCount(sellerId) {
     return prisma.returnProduct.count({
       where: {
-        returnById: sellerId
+        returnById: BigInt(sellerId)
       }
     });
   }

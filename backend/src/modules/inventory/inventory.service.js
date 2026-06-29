@@ -15,9 +15,11 @@ class InventoryService {
    * Input: userId, search, page, limit
    * Output: Array of inventory items mapped to response format
    */
-  async getInventory(userId, { search, page = 1, limit = 10 }) {
+  async getInventory(userId, role, { search, page = 1, limit = 10 }) {
     const skip = (page - 1) * limit;
-    const [products, total] = await Promise.all([
+
+    let products, total;
+    [products, total] = await Promise.all([
       inventoryRepository.findInventory(userId, { search, skip, take: limit }),
       inventoryRepository.countInventory(userId, { search })
     ]);
@@ -45,8 +47,9 @@ class InventoryService {
    * Input: userId, productId
    * Output: Inventory item details
    */
-  async getInventoryItem(userId, productId) {
-    const product = await inventoryRepository.findInventoryByProduct(userId, productId);
+  async getInventoryItem(userId, role, productId) {
+    let product;
+    product = await inventoryRepository.findInventoryByProduct(userId, productId);
     
     if (!product) {
       const error = new Error('Inventory item not found');
@@ -82,7 +85,7 @@ class InventoryService {
           productId: product_id,
           ownerId: user_id,
           serialNumber: `ADJ-${Date.now()}-${crypto.randomUUID()}`,
-          status: 'IN_STOCK'
+          status: 'AVAILABLE'
         }));
 
         const createdUnits = await inventoryRepository.createInventory(unitsData, tx);
@@ -253,7 +256,7 @@ class InventoryService {
    * Input: adminId, payload
    * Output: updated stock details
    */
-  async updateStock(adminId, { productNameId, productModelId, quantity, minSellPrice, minUnitCountAdmin, minUnitCountSeller }) {
+  async updateStock(adminId, { productNameId, productModelId, quantity, minSellPrice }) {
     // 1. Validate product name existence
     const productName = await prisma.productName.findUnique({
       where: { id: BigInt(productNameId) }
@@ -284,68 +287,41 @@ class InventoryService {
       });
 
       if (!product) {
-        // Create new product
+        // Create new product with stockQuantity
         product = await tx.product.create({
           data: {
             productNameId: BigInt(productNameId),
             productModelId: BigInt(productModelId),
             minPrice: minSellPrice !== undefined ? minSellPrice : 0,
             onSale: false,
-            minUnitCountAdmin: minUnitCountAdmin !== undefined ? minUnitCountAdmin : 0,
-            minUnitCountSeller: minUnitCountSeller !== undefined ? minUnitCountSeller : 0
+            stockQuantity: quantity
           }
         });
       } else {
-        const updateData = {};
-        if (minSellPrice !== undefined) updateData.minPrice = minSellPrice;
-        if (minUnitCountAdmin !== undefined) updateData.minUnitCountAdmin = minUnitCountAdmin;
-        if (minUnitCountSeller !== undefined) updateData.minUnitCountSeller = minUnitCountSeller;
-        
-        if (Object.keys(updateData).length > 0) {
-          product = await tx.product.update({
-            where: { id: product.id },
-            data: updateData
-          });
-        }
+        // Update existing product - increment stockQuantity
+        product = await tx.product.update({
+          where: { id: product.id },
+          data: {
+            stockQuantity: { increment: quantity },
+            ...(minSellPrice !== undefined ? { minPrice: minSellPrice } : {})
+          }
+        });
       }
 
-      // Count existing units for this admin
-      const existingQuantity = await tx.productUnit.count({
-        where: {
+      if (quantity > 0) {
+        const unitsData = Array.from({ length: quantity }).map(() => ({
           productId: product.id,
-          ownerId: BigInt(adminId),
-          status: 'IN_STOCK'
-        }
-      });
-
-      // Create new product units
-      const unitsData = Array.from({ length: quantity }).map(() => ({
-        productId: product.id,
-        ownerId: BigInt(adminId),
-        serialNumber: `STOCK-${Date.now()}-${crypto.randomUUID()}`,
-        status: 'IN_STOCK'
-      }));
-
-      const createdUnits = await tx.productUnit.createManyAndReturn({
-        data: unitsData
-      });
-
-      // Create inventory transactions for the immutable ledger
-      const transactionLogs = createdUnits.map(unit => ({
-        productUnitId: unit.id,
-        fromUserId: null,
-        toUserId: BigInt(adminId),
-        action: 'RECEIVED'
-      }));
-
-      await tx.inventoryTransaction.createMany({
-        data: transactionLogs
-      });
+          ownerId: adminId,
+          serialNumber: `STK-${Date.now()}-${crypto.randomUUID()}`,
+          status: 'AVAILABLE'
+        }));
+        await inventoryRepository.createInventory(unitsData, tx);
+      }
 
       return {
         productNameId,
         productModelId,
-        quantity: existingQuantity + quantity,
+        quantity: Number(product.stockQuantity),
         minSellPrice: Number(product.minPrice)
       };
     });
@@ -354,7 +330,7 @@ class InventoryService {
   /**
    * Fetch details of a product (stock count & min sell price) by product name and model IDs
    */
-  async getProductDetails(userId, { productNameId, productModelId }) {
+  async getProductDetails(userId, role, { productNameId, productModelId }) {
     // 1. Find product
     const product = await prisma.product.findFirst({
       where: {
@@ -371,12 +347,12 @@ class InventoryService {
       };
     }
 
-    // 2. Count stock
-    const stockCount = await prisma.productUnit.count({
+    // 2. Determine stock based on ProductUnit count
+    let stockCount = await prisma.productUnit.count({
       where: {
         productId: product.id,
         ownerId: BigInt(userId),
-        status: 'IN_STOCK'
+        status: 'AVAILABLE'
       }
     });
 
@@ -454,7 +430,7 @@ class InventoryService {
 
       if (status === 'SOLD') {
         countMap[pid].sold += count;
-      } else if (status === 'IN_STOCK') {
+      } else if (status === 'AVAILABLE') {
         countMap[pid].remaining += count;
       }
     }

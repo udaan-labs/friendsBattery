@@ -93,7 +93,8 @@ class ProductsController {
   async getInventoryProducts(req, res) {
     try {
       const userId = Number(req.user.id);
-      const products = await productsService.getInventoryProducts(userId);
+      const role = req.user.role;
+      const products = await productsService.getInventoryProducts(userId, role);
       return successResponse(res, 200, 'Inventory products fetched successfully', products);
     } catch (error) {
       console.error('Get Inventory Products Error:', error);

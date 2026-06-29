@@ -49,32 +49,56 @@ class ShipmentsRepository {
       where: {
         productId: BigInt(productId),
         ownerId: BigInt(ownerId),
-        status: 'IN_STOCK'
+        status: 'AVAILABLE'
       },
       take: limit
     });
   }
 
-  async createShipment(data, tx = prisma) {
-    return tx.newShipment.create({
-      data: {
-        shipmentNumber: data.shipmentNumber,
-        sellerId: BigInt(data.sellerId),
-        createdByAdminId: BigInt(data.createdByAdminId),
-        status: 'PENDING',
-        items: {
-          create: data.items.map(item => ({
-            productNameId: BigInt(item.productNameId),
-            productModelId: BigInt(item.productModelId),
-            productId: BigInt(item.productId),
-            productUnitId: BigInt(item.productItemId),
-            quantity: item.quantity
-          }))
+  async createShipment(data) {
+    return prisma.$transaction(async (tx) => {
+      // 1. Create ProductUnit records with real serial numbers
+      const createdUnits = await tx.productUnit.createManyAndReturn({
+        data: data.units
+      });
+
+      // 2. Map shipment items to created units
+      let unitIndex = 0;
+      const itemCreates = data.items.map(item => ({
+        productNameId: BigInt(item.productNameId),
+        productModelId: BigInt(item.productModelId),
+        productId: BigInt(item.productId),
+        productUnitId: createdUnits[unitIndex++].id,
+        quantity: item.quantity
+      }));
+
+      // 3. Create the shipment with items
+      const shipment = await tx.newShipment.create({
+        data: {
+          shipmentNumber: data.shipmentNumber,
+          sellerId: BigInt(data.sellerId),
+          createdByAdminId: BigInt(data.createdByAdminId),
+          status: 'PENDING',
+          items: {
+            create: itemCreates
+          }
+        },
+        include: {
+          items: true
         }
-      },
-      include: {
-        items: true
+      });
+
+      // 4. Decrement stockQuantity for each product
+      for (const update of data.stockUpdates) {
+        await tx.product.update({
+          where: { id: BigInt(update.productId) },
+          data: {
+            stockQuantity: { decrement: update.decrementBy }
+          }
+        });
       }
+
+      return shipment;
     });
   }
 
@@ -188,7 +212,8 @@ class ShipmentsRepository {
           where: { id: { in: productUnitIds } },
           data: {
             ownerId: BigInt(sellerId),
-            status: 'IN_STOCK'
+            ownerType: 'SELLER',
+            status: 'AVAILABLE'
           }
         });
 

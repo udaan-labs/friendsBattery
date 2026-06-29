@@ -11,48 +11,84 @@ class ShipmentsService {
       throw error;
     }
 
-    // 2. Fetch available units and map to shipment items
-    const shipmentItems = [];
-    
+    // 2. Validate each item and prepare batch data
+    const shipmentItemsData = [];
+    const productUnitsToCreate = [];
+    const productStockUpdates = [];
+
     for (const item of data.items) {
-      // Find product to get its relations
-      const product = await shipmentsRepository.findProductById(item.product_id);
+      // Find product to validate and get its ID
+      const product = await prisma.product.findFirst({
+        where: {
+          productNameId: BigInt(item.product_name_id),
+          productModelId: BigInt(item.product_model_id)
+        }
+      });
       if (!product) {
-        const error = new Error(`Product ID ${item.product_id} not found`);
+        const error = new Error(`Product not found for Name ID ${item.product_name_id} and Model ID ${item.product_model_id}`);
         error.statusCode = 400;
         throw error;
       }
 
-      // Find available units for this admin
-      const availableUnits = await shipmentsRepository.getAvailableUnits(item.product_id, adminId, item.quantity);
-      if (availableUnits.length < item.quantity) {
-        const error = new Error(`Insufficient stock for Product ID ${item.product_id}. Requested: ${item.quantity}, Available: ${availableUnits.length}`);
+      // Check if any of these serials already exist in the system
+      const existingUnits = await prisma.productUnit.findMany({
+        where: {
+          serialNumber: { in: item.serial_numbers }
+        }
+      });
+      if (existingUnits.length > 0) {
+        const dupes = existingUnits.map(u => u.serialNumber).join(', ');
+        const error = new Error(`The following serial numbers already exist in the system: ${dupes}`);
         error.statusCode = 400;
         throw error;
       }
 
-      // Create one shipment item per unit
-      for (const unit of availableUnits) {
-        shipmentItems.push({
-          productNameId: product.productNameId,
-          productModelId: product.productModelId,
-          productId: product.id,
-          productItemId: unit.id,
-          quantity: 1
-        });
+      // Check sufficient stock
+      if (Number(product.stockQuantity) < item.serial_numbers.length) {
+        const error = new Error(`Insufficient stock for Product Name ID ${item.product_name_id} and Model ID ${item.product_model_id}. Required: ${item.serial_numbers.length}, Available: ${product.stockQuantity}`);
+        error.statusCode = 400;
+        throw error;
       }
+
+      // Prepare ProductUnit records for batch creation
+      const unitEntries = item.serial_numbers.map(serial => ({
+        productId: product.id,
+        ownerId: BigInt(adminId),
+        ownerType: 'ADMIN',
+        serialNumber: serial,
+        status: 'IN_SHIPMENT'
+      }));
+
+      // Prepare shipment item entries (will link productUnit IDs after creation)
+      const itemEntries = item.serial_numbers.map(() => ({
+        productNameId: product.productNameId,
+        productModelId: product.productModelId,
+        productId: product.id,
+        quantity: 1
+      }));
+
+      productUnitsToCreate.push(...unitEntries);
+      shipmentItemsData.push(...itemEntries);
+
+      // Track stock decrement per product
+      productStockUpdates.push({
+        productId: product.id,
+        decrementBy: item.serial_numbers.length
+      });
     }
 
     // 3. Generate unique shipment number
     const count = await prisma.newShipment.count();
     const shipmentNumber = `SHP-${100 + count + 1}`;
 
-    // 4. Create shipment record
+    // 4. Create shipment, product units, and update stock in a single transaction
     await shipmentsRepository.createShipment({
       shipmentNumber,
       sellerId: data.sellerId,
       createdByAdminId: adminId,
-      items: shipmentItems
+      items: shipmentItemsData,
+      units: productUnitsToCreate,
+      stockUpdates: productStockUpdates
     });
 
     return {

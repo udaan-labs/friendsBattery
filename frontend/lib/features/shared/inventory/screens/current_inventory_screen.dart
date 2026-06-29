@@ -187,7 +187,7 @@ class _CurrentInventoryScreenState extends ConsumerState<CurrentInventoryScreen>
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text('Showing $start to $end of $total entries',
+                Text('Showing $start to $end of $total products',
                     style: TextStyle(color: Colors.grey.shade600, fontSize: 11),
                     textAlign: TextAlign.center),
                 const SizedBox(height: 8),
@@ -214,7 +214,7 @@ class _CurrentInventoryScreenState extends ConsumerState<CurrentInventoryScreen>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Flexible(
-                child: Text('Showing $start to $end of $total entries',
+                child: Text('Showing $start to $end of $total products',
                     style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
                     overflow: TextOverflow.ellipsis),
               ),

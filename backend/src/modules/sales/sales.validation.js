@@ -5,7 +5,8 @@ const { z } = require('zod');
  */
 const createSaleSchema = z.object({
   body: z.object({
-    product_id: z.number().int().positive('Product ID must be a valid positive integer'),
+    product_name_id: z.number().int().positive('Product Name ID must be a valid positive integer'),
+    product_model_id: z.number().int().positive('Product Model ID must be a valid positive integer'),
     serial_number: z.string().min(1, 'Serial number is required').max(100, 'Serial number is too long'),
     customer_name: z.string().min(1, 'Customer name is required').max(100, 'Customer name is too long'),
     customer_number: z.string().min(10, 'Customer number must be at least 10 characters').max(20, 'Customer number is too long'),

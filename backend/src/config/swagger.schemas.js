@@ -80,7 +80,7 @@ module.exports = {
       productId: { type: 'string' },
       ownerId: { type: 'string' },
       serialNumber: { type: 'string' },
-      status: { type: 'string', enum: ['IN_STOCK', 'IN_TRANSIT', 'SOLD', 'RETURNED', 'DEFECTIVE'] },
+      status: { type: 'string', enum: ['AVAILABLE', 'IN_TRANSIT', 'SOLD', 'RETURNED', 'DEFECTIVE'] },
       createdAt: { type: 'string', format: 'date-time' },
       updatedAt: { type: 'string', format: 'date-time' }
     }

@@ -35,8 +35,11 @@ class SalesRepository {
     return prisma.productUnit.findFirst({
       where: {
         serialNumber,
-        ownerId: sellerId,
-        status: 'IN_STOCK'
+        ownerId: BigInt(sellerId),
+        status: 'AVAILABLE'
+      },
+      include: {
+        product: true
       }
     });
   }
@@ -48,8 +51,8 @@ class SalesRepository {
     return prisma.productUnit.findFirst({
       where: {
         productId: productId,
-        ownerId: sellerId,
-        status: 'IN_STOCK'
+        ownerId: BigInt(sellerId),
+        status: 'AVAILABLE'
       }
     });
   }
@@ -74,7 +77,8 @@ class SalesRepository {
         where: { id: saleData.productUnitId },
         data: { 
           status: 'SOLD',
-          serialNumber: saleData.serialNumber 
+          soldDate: new Date()
+          // serialNumber doesn't change since we are scanning the actual serial
         }
       });
 
@@ -84,7 +88,7 @@ class SalesRepository {
           productId: saleData.productId,
           productUnitId: saleData.productUnitId,
           customerId: saleData.customerId,
-          sellerId: saleData.sellerId,
+          sellerId: BigInt(saleData.sellerId),
           sellPrice: saleData.sellPrice,
           serialNumber: saleData.serialNumber,
           vehicleNumber: saleData.vehicleNumber
@@ -95,8 +99,8 @@ class SalesRepository {
       await tx.inventoryTransaction.create({
         data: {
           productUnitId: saleData.productUnitId,
-          fromUserId: saleData.sellerId,
-          toUserId: saleData.sellerId, // Required by schema, we set it back to seller since customer isn't a User
+          fromUserId: BigInt(saleData.sellerId),
+          toUserId: BigInt(saleData.sellerId), // Required by schema, we set it back to seller since customer isn't a User
           action: 'SOLD'
         }
       });
@@ -129,7 +133,7 @@ class SalesRepository {
    */
   async getSalesBySeller(sellerId) {
     return prisma.salesTransaction.findMany({
-      where: { sellerId },
+      where: { sellerId: BigInt(sellerId) },
       include: {
         customer: true,
         seller: { select: { id: true, userName: true, shopName: true } },
@@ -171,7 +175,7 @@ class SalesRepository {
     const { skip, take } = pagination;
 
     const whereClause = {
-      sellerId,
+      sellerId: BigInt(sellerId),
       ...(searchCustomer && {
         customer: {
           name: {
@@ -217,7 +221,7 @@ class SalesRepository {
     const { searchCustomer, searchSerial, fromDate, toDate } = filters;
 
     const whereClause = {
-      sellerId,
+      sellerId: BigInt(sellerId),
       ...(searchCustomer && {
         customer: {
           name: {

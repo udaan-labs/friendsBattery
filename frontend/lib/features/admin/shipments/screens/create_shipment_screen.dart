@@ -10,6 +10,7 @@ import '../providers/shipment_provider.dart';
 import '../repository/shipment_repository.dart';
 import '../../dashboard/providers/dashboard_controller.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
+import '../../../../shared/widgets/scanner_screen.dart';
 
 class TransferRowState {
   String? productNameId;
@@ -17,19 +18,19 @@ class TransferRowState {
   int? productId; // resolved actual product database ID
   int? availableStock;
 
-  final quantityController = TextEditingController();
   final priceController = TextEditingController();
+  final manualSerialController = TextEditingController();
+  List<String> scannedSerials = [];
 
   List<Map<String, String>> productModels = [];
 
   TransferRowState() {
-    quantityController.text = '';
     priceController.text = '';
   }
 
   void dispose() {
-    quantityController.dispose();
     priceController.dispose();
+    manualSerialController.dispose();
   }
 }
 
@@ -62,7 +63,9 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
     super.initState();
     _dispatchDate = DateTime.now(); // default to today
     _addRow();
-    _loadInitialData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadInitialData();
+    });
   }
 
   @override
@@ -96,41 +99,62 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
     try {
       final repo = ref.read(shipmentRepositoryProvider);
       final sellersList = await repo.getSellers();
+      if (mounted) {
+        setState(() {
+          _sellers = sellersList;
+          _isLoadingSellers = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading sellers: $e');
+      if (mounted) setState(() => _isLoadingSellers = false);
+    }
 
+    try {
       final dio = ApiClient().dio;
       final response = await dio.get('/api/products/inventory-products');
       final body = response.data;
 
-      List<Map<String, dynamic>> inventoryList = [];
-      if (body is Map<String, dynamic> && body['data'] is List) {
-        inventoryList = (body['data'] as List).cast<Map<String, dynamic>>();
+      List<dynamic> rawList = [];
+      if (body is Map && body['data'] is List) {
+        rawList = body['data'];
       }
 
-      List<Map<String, String>> namesList = inventoryList.map((item) => {
-        'id': item['productName'] as String,
-        'name': item['productName'] as String,
-      }).toList();
+      List<Map<String, String>> namesList = [];
+      List<Map<String, dynamic>> inventoryList = [];
+      
+      for (var item in rawList) {
+        if (item is Map<String, dynamic>) {
+          inventoryList.add(item);
+          final productName = item['productName']?.toString() ?? '';
+          final productNameId = item['productNameId']?.toString() ?? '';
+          if (productName.isNotEmpty && productNameId.isNotEmpty) {
+            namesList.add({
+              'id': productNameId,
+              'name': productName,
+            });
+          }
+        }
+      }
 
-      setState(() {
-        _sellers = sellersList;
-        _inventoryProducts = inventoryList;
-        _productNames = namesList;
-      });
+      if (mounted) {
+        setState(() {
+          _inventoryProducts = inventoryList;
+          _productNames = namesList;
+          _isLoadingNames = false;
+        });
+      }
     } catch (e) {
-      // Handled automatically by ApiInterceptor
-    } finally {
-      setState(() {
-        _isLoadingSellers = false;
-        _isLoadingNames = false;
-      });
+      debugPrint('Error loading inventory products: $e');
+      if (mounted) setState(() => _isLoadingNames = false);
     }
   }
 
-  void _onProductNameSelected(int rowIndex, String productName) {
+  void _onProductNameSelected(int rowIndex, String productNameId) {
     final row = _rows[rowIndex];
 
     final group = _inventoryProducts.firstWhere(
-      (g) => g['productName'] == productName,
+      (g) => g['productNameId'].toString() == productNameId,
       orElse: () => <String, dynamic>{},
     );
 
@@ -138,14 +162,14 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
     if (group.isNotEmpty && group['models'] is List) {
       for (final m in group['models'] as List) {
         models.add({
-          'id': m['id'].toString(),
+          'id': m['productModelId'].toString(),
           'name': m['productModel'].toString(),
         });
       }
     }
 
     setState(() {
-      row.productNameId = productName;
+      row.productNameId = productNameId;
       row.productModels = models;
       row.productModelId = null;
       row.productId = null;
@@ -156,7 +180,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
   void _onProductModelSelected(int rowIndex, String modelId) {
     final row = _rows[rowIndex];
     final group = _inventoryProducts.firstWhere(
-      (g) => g['productName'] == row.productNameId,
+      (g) => g['productNameId'].toString() == row.productNameId,
       orElse: () => <String, dynamic>{},
     );
 
@@ -164,7 +188,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
     int? stockCount;
     if (group.isNotEmpty && group['models'] is List) {
       for (final m in group['models'] as List) {
-        if (m['id'].toString() == modelId) {
+        if (m['productModelId'].toString() == modelId) {
           resolvedProdId = m['id'];
           stockCount = m['availableQuantity'] as int?;
           break;
@@ -252,15 +276,14 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
       }
       productIds.add(row.productId!);
 
-      final quantity = int.tryParse(row.quantityController.text) ?? 0;
-      final price = double.tryParse(row.priceController.text) ?? 0.0;
-
-      if (quantity <= 0) {
-        context.showErrorSnackBar('Quantity must be greater than zero on row ${i + 1}');
+      if (row.scannedSerials.isEmpty) {
+        context.showErrorSnackBar('Please scan at least one serial number on row ${i + 1}');
         return;
       }
 
-      if (row.availableStock != null && quantity > row.availableStock!) {
+      final price = double.tryParse(row.priceController.text) ?? 0.0;
+
+      if (row.availableStock != null && row.scannedSerials.length > row.availableStock!) {
         context.showErrorSnackBar('Quantity exceeds available stock on row ${i + 1}');
         return;
       }
@@ -271,8 +294,9 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
       }
 
       itemsPayload.add({
-        'product_id': row.productId!,
-        'quantity': quantity,
+        'product_name_id': int.parse(row.productNameId!),
+        'product_model_id': int.parse(row.productModelId!),
+        'serial_numbers': row.scannedSerials,
         'price_per_piece': price,
       });
     }
@@ -363,23 +387,40 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                           const SizedBox(height: 8),
                           _isLoadingSellers
                               ? const Center(child: CircularProgressIndicator())
-                              : DropdownMenu<int>(
-                                  expandedInsets: EdgeInsets.zero,
-                                  enableFilter: true,
-                                  hintText: 'Search & Select Seller',
-                                  requestFocusOnTap: true,
-                                  dropdownMenuEntries: _sellers.map((seller) {
-                                    return DropdownMenuEntry<int>(
-                                      value: seller.id,
-                                      label: '${seller.shopName} (${seller.userName})',
-                                    );
-                                  }).toList(),
-                                  onSelected: (id) {
-                                    setState(() {
-                                      _selectedSellerId = id;
-                                    });
-                                  },
-                                ),
+                              : (_sellers.isEmpty
+                                  ? TextFormField(
+                                      enabled: false,
+                                      decoration: InputDecoration(
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                        hintText: 'No sellers available. Please create one first.',
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                        filled: true,
+                                        fillColor: Colors.grey.shade100,
+                                      ),
+                                    )
+                                  : DropdownButtonFormField<int>(
+                                      isExpanded: true,
+                                      decoration: InputDecoration(
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                      ),
+                                      hint: const Text('Search & Select Seller'),
+                                      items: _sellers.map((seller) {
+                                        return DropdownMenuItem<int>(
+                                          value: seller.id,
+                                          child: Text('${seller.shopName} (${seller.userName})'),
+                                        );
+                                      }).toList(),
+                                      onChanged: (id) {
+                                        if (id != null) {
+                                          setState(() {
+                                            _selectedSellerId = id;
+                                          });
+                                        }
+                                      },
+                                    )),
                           const SizedBox(height: 20),
 
                           // Dates Row
@@ -523,24 +564,39 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                             const SizedBox(height: 6),
                             _isLoadingNames
                                 ? const Center(child: CircularProgressIndicator())
-                                : DropdownMenu<String>(
-                                    key: ValueKey('name_$index'),
-                                    expandedInsets: EdgeInsets.zero,
-                                    enableFilter: true,
-                                    hintText: 'Select Product Name',
-                                    requestFocusOnTap: true,
-                                    dropdownMenuEntries: _productNames.map((name) {
-                                      return DropdownMenuEntry<String>(
-                                        value: name['id']!,
-                                        label: name['name']!,
-                                      );
-                                    }).toList(),
-                                    onSelected: (id) {
-                                      if (id != null) {
-                                        _onProductNameSelected(index, id);
-                                      }
-                                    },
-                                  ),
+                                : (_productNames.isEmpty
+                                    ? TextFormField(
+                                        enabled: false,
+                                        decoration: InputDecoration(
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                          hintText: 'No products available.',
+                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                          filled: true,
+                                          fillColor: Colors.grey.shade100,
+                                        ),
+                                      )
+                                    : DropdownButtonFormField<String>(
+                                        key: ValueKey('name_$index'),
+                                        isExpanded: true,
+                                        decoration: InputDecoration(
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                          filled: true,
+                                          fillColor: Colors.white,
+                                        ),
+                                        hint: const Text('Select Product Name'),
+                                        items: _productNames.map((name) {
+                                          return DropdownMenuItem<String>(
+                                            value: name['id']!,
+                                            child: Text(name['name']!),
+                                          );
+                                        }).toList(),
+                                        onChanged: (id) {
+                                          if (id != null) {
+                                            _onProductNameSelected(index, id);
+                                          }
+                                        },
+                                      )),
                             const SizedBox(height: 16),
 
                             // Product Model Dropdown
@@ -549,25 +605,50 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                               style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
                             ),
                             const SizedBox(height: 6),
-                            DropdownMenu<String>(
-                                    key: ValueKey('model_${index}_${row.productNameId}'),
-                                    expandedInsets: EdgeInsets.zero,
-                                    enableFilter: true,
-                                    enabled: row.productNameId != null,
-                                    hintText: 'Select Product Model',
-                                    requestFocusOnTap: true,
-                                    dropdownMenuEntries: row.productModels.map((model) {
-                                      return DropdownMenuEntry<String>(
-                                        value: model['id']!,
-                                        label: model['name']!,
-                                      );
-                                    }).toList(),
-                                    onSelected: (id) {
-                                      if (id != null) {
-                                        _onProductModelSelected(index, id);
-                                      }
-                                    },
-                                  ),
+                            row.productNameId == null
+                                ? TextFormField(
+                                    enabled: false,
+                                    decoration: InputDecoration(
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                      hintText: 'Select Product Name first',
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                      filled: true,
+                                      fillColor: Colors.grey.shade100,
+                                    ),
+                                  )
+                                : (row.productModels.isEmpty
+                                    ? TextFormField(
+                                        enabled: false,
+                                        decoration: InputDecoration(
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                          hintText: 'No models available.',
+                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                          filled: true,
+                                          fillColor: Colors.grey.shade100,
+                                        ),
+                                      )
+                                    : DropdownButtonFormField<String>(
+                                        key: ValueKey('model_${index}_${row.productNameId}'),
+                                        isExpanded: true,
+                                        decoration: InputDecoration(
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                          filled: true,
+                                          fillColor: Colors.white,
+                                        ),
+                                        hint: const Text('Select Product Model'),
+                                        items: row.productModels.map((model) {
+                                          return DropdownMenuItem<String>(
+                                            value: model['id']!,
+                                            child: Text(model['name']!),
+                                          );
+                                        }).toList(),
+                                        onChanged: (id) {
+                                          if (id != null) {
+                                            _onProductModelSelected(index, id);
+                                          }
+                                        },
+                                      )),
                             const SizedBox(height: 16),
 
                             // Info Box (Stock Detail)
@@ -593,35 +674,66 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                             // Quantity & Price
                             Row(
                               children: [
-                                // Quantity
+                                // Serial Numbers
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
-                                        'Quantity',
-                                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            'Serial Numbers (${row.scannedSerials.length})',
+                                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.qr_code_scanner, size: 20),
+                                            onPressed: () async {
+                                              final scanned = await Navigator.of(context).push<String>(
+                                                MaterialPageRoute(builder: (_) => const ScannerScreen()),
+                                              );
+                                              if (scanned != null && scanned.trim().isNotEmpty) {
+                                                if (!row.scannedSerials.contains(scanned.trim())) {
+                                                  setState(() {
+                                                    row.scannedSerials.add(scanned.trim());
+                                                  });
+                                                } else {
+                                                  if (mounted) context.showErrorSnackBar('Serial number already scanned');
+                                                }
+                                              }
+                                            },
+                                          ),
+                                        ],
                                       ),
-                                      const SizedBox(height: 6),
-                                      TextFormField(
-                                        controller: row.quantityController,
-                                        keyboardType: TextInputType.number,
-                                        decoration: const InputDecoration(
-                                          hintText: 'Qty',
-                                        ),
-                                        validator: (val) {
-                                          if (val == null || val.trim().isEmpty) {
-                                            return 'Required';
-                                          }
-                                          final parsed = int.tryParse(val);
-                                          if (parsed == null || parsed <= 0) {
-                                            return '> 0';
-                                          }
-                                          if (row.availableStock != null && parsed > row.availableStock!) {
-                                            return 'Exceeds stock';
-                                          }
-                                          return null;
-                                        },
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: TextFormField(
+                                              controller: row.manualSerialController,
+                                              decoration: const InputDecoration(
+                                                hintText: 'Manual Add',
+                                                isDense: true,
+                                                contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                                              ),
+                                            ),
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.add_circle_outline),
+                                            onPressed: () {
+                                              final val = row.manualSerialController.text.trim();
+                                              if (val.isNotEmpty) {
+                                                if (!row.scannedSerials.contains(val)) {
+                                                  setState(() {
+                                                    row.scannedSerials.add(val);
+                                                    row.manualSerialController.clear();
+                                                  });
+                                                } else {
+                                                  context.showErrorSnackBar('Serial number already added');
+                                                }
+                                              }
+                                            },
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),

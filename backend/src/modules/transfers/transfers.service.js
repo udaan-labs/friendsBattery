@@ -13,7 +13,7 @@ class TransfersService {
    * Business Logic:
    * - Validate seller exists
    * - Validate every product exists
-   * - Validate admin has sufficient IN_STOCK inventory for each product
+   * - Validate admin has sufficient AVAILABLE inventory for each product
    * - Calculate total quantity and total price
    * - Create shipment record with PENDING status
    * - No inventory changes at creation time

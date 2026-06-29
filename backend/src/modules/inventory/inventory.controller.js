@@ -17,10 +17,11 @@ class InventoryController {
   async getInventory(req, res) {
     try {
       const userId = Number(req.user.id);
+      const role = req.user.role;
       const { search, page, limit } = req.query;
 
       // Call business layer
-      const inventory = await inventoryService.getInventory(userId, { search, page, limit });
+      const inventory = await inventoryService.getInventory(userId, role, { search, page, limit });
 
       // Return standardized success response
       return successResponse(res, 200, 'Inventory fetched successfully', inventory);
@@ -36,10 +37,11 @@ class InventoryController {
   async getInventoryItem(req, res) {
     try {
       const userId = Number(req.user.id);
+      const role = req.user.role;
       const { productId } = req.params;
 
       // Call business layer
-      const inventoryItem = await inventoryService.getInventoryItem(userId, productId);
+      const inventoryItem = await inventoryService.getInventoryItem(userId, role, productId);
 
       // Return standardized success response
       return successResponse(res, 200, 'Inventory item fetched successfully', inventoryItem);
@@ -123,16 +125,14 @@ class InventoryController {
   async updateStock(req, res) {
     try {
       const adminId = Number(req.user.id);
-      const { productNameId, productModelId, quantity, minSellPrice, minUnitCountAdmin, minUnitCountSeller } = req.body;
+      const { productNameId, productModelId, quantity, minSellPrice } = req.body;
 
       // Call business layer
       const result = await inventoryService.updateStock(adminId, {
         productNameId,
         productModelId,
         quantity,
-        minSellPrice,
-        minUnitCountAdmin,
-        minUnitCountSeller
+        minSellPrice
       });
 
       // Return standardized success response
@@ -152,9 +152,10 @@ class InventoryController {
   async getProductDetails(req, res) {
     try {
       const userId = Number(req.user.id);
+      const role = req.user.role;
       const { product_name_id, product_model_id } = req.query;
 
-      const details = await inventoryService.getProductDetails(userId, {
+      const details = await inventoryService.getProductDetails(userId, role, {
         productNameId: Number(product_name_id),
         productModelId: Number(product_model_id)
       });

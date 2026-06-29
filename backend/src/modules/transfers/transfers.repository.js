@@ -33,7 +33,7 @@ class TransfersRepository {
   }
 
   /**
-   * Count available IN_STOCK units for a specific product owned by a user
+   * Count available AVAILABLE units for a specific product owned by a user
    * Input: ownerId, productId
    * Output: Number of available units
    */
@@ -42,7 +42,7 @@ class TransfersRepository {
       where: {
         ownerId,
         productId,
-        status: 'IN_STOCK'
+        status: 'AVAILABLE'
       }
     });
   }
@@ -141,12 +141,12 @@ class TransfersRepository {
     return prisma.$transaction(async (tx) => {
       // Process each shipment item
       for (const item of shipment.items) {
-        // 1. Find available IN_STOCK units owned by admin for this product
+        // 1. Find available AVAILABLE units owned by admin for this product
         const availableUnits = await tx.productUnit.findMany({
           where: {
             ownerId: shipment.fromUserId,
             productId: item.productId,
-            status: 'IN_STOCK'
+            status: 'AVAILABLE'
           },
           take: item.quantity
         });

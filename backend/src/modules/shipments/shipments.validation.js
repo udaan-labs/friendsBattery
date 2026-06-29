@@ -6,9 +6,10 @@ const createShipmentSchema = z.object({
     items: z
       .array(
         z.object({
-          product_id: z.number().int().positive('Product ID must be a positive integer'),
-          quantity: z.number().int().positive('Quantity must be a positive integer'),
-          price_per_piece: z.number().positive('Price per piece must be a positive number')
+          product_name_id: z.number().int().positive('Product Name ID must be a positive integer'),
+          product_model_id: z.number().int().positive('Product Model ID must be a positive integer'),
+          serial_numbers: z.array(z.string()).min(1, 'At least one serial number is required'),
+          price_per_piece: z.number().nonnegative('Price per piece must be non-negative').optional()
         })
       )
       .min(1, 'At least one item is required')

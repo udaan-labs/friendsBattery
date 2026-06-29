@@ -221,10 +221,15 @@ class ShipmentRepository {
     final body = response.data;
     if (body is Map && body['data'] is List) {
       final list = body['data'] as List;
-      return list
-          .whereType<Map<String, dynamic>>()
-          .map(SellerModel.fromJson)
-          .toList();
+      final List<SellerModel> sellers = [];
+      for (var item in list) {
+        if (item is Map<String, dynamic>) {
+          sellers.add(SellerModel.fromJson(item));
+        } else if (item is Map) {
+          sellers.add(SellerModel.fromJson(Map<String, dynamic>.from(item)));
+        }
+      }
+      return sellers;
     }
     return [];
   }

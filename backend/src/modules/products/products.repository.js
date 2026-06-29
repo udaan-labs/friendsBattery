@@ -114,7 +114,26 @@ class ProductsRepository {
   }
 
   /**
-   * Find products that the user has available (IN_STOCK) inventory for
+   * Find products that the admin has stock for (stockQuantity > 0)
+   */
+  async findAdminInventoryProducts() {
+    return prisma.product.findMany({
+      where: {
+        stockQuantity: { gt: 0 }
+      },
+      include: {
+        productName: true,
+        productModel: true
+      },
+      orderBy: [
+        { productName: { name: 'asc' } },
+        { productModel: { name: 'asc' } }
+      ]
+    });
+  }
+
+  /**
+   * Find products that the user has available (AVAILABLE) inventory for
    */
   async findInventoryProducts(userId) {
     return prisma.product.findMany({
@@ -122,7 +141,7 @@ class ProductsRepository {
         units: {
           some: {
             ownerId: BigInt(userId),
-            status: 'IN_STOCK'
+            status: 'AVAILABLE'
           }
         }
       },
@@ -134,7 +153,7 @@ class ProductsRepository {
             units: {
               where: {
                 ownerId: BigInt(userId),
-                status: 'IN_STOCK'
+                status: 'AVAILABLE'
               }
             }
           }

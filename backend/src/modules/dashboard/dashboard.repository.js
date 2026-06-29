@@ -9,7 +9,7 @@ class DashboardRepository {
   async getTotalStock() {
     return prisma.productUnit.count({
       where: {
-        status: 'IN_STOCK',
+        status: 'AVAILABLE',
         owner: {
           role: 'ADMIN'
         }
@@ -87,7 +87,7 @@ class DashboardRepository {
     return prisma.productUnit.count({
       where: {
         ownerId: BigInt(sellerId),
-        status: 'IN_STOCK'
+        status: 'AVAILABLE'
       }
     });
   }

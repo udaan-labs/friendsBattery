@@ -17,8 +17,8 @@ class InventoryRepository {
     const whereClause = {
       units: {
         some: {
-          ownerId: userId,
-          status: 'IN_STOCK'
+          ownerId: BigInt(userId),
+          status: 'AVAILABLE'
         }
       }
     };
@@ -39,8 +39,8 @@ class InventoryRepository {
           select: {
             units: {
               where: {
-                ownerId: userId,
-                status: 'IN_STOCK'
+                ownerId: BigInt(userId),
+                status: 'AVAILABLE'
               }
             }
           }
@@ -57,14 +57,80 @@ class InventoryRepository {
   }
 
   /**
+   * Retrieves admin inventory (products with stockQuantity > 0).
+   */
+  async findAdminInventory({ search, skip, take }) {
+    const whereClause = {
+      stockQuantity: { gt: 0 }
+    };
+
+    if (search) {
+      whereClause.OR = [
+        { productName: { name: { contains: search, mode: 'insensitive' } } },
+        { productModel: { name: { contains: search, mode: 'insensitive' } } }
+      ];
+    }
+
+    const queryOptions = {
+      where: whereClause,
+      include: {
+        productName: true,
+        productModel: true
+      },
+      orderBy: { id: 'asc' }
+    };
+
+    if (skip !== undefined && take !== undefined) {
+      queryOptions.skip = Number(skip);
+      queryOptions.take = Number(take);
+    }
+
+    return prisma.product.findMany(queryOptions);
+  }
+
+  /**
+   * Counts admin inventory products.
+   */
+  async countAdminInventory({ search }) {
+    const whereClause = {
+      stockQuantity: { gt: 0 }
+    };
+
+    if (search) {
+      whereClause.OR = [
+        { productName: { name: { contains: search, mode: 'insensitive' } } },
+        { productModel: { name: { contains: search, mode: 'insensitive' } } }
+      ];
+    }
+
+    return prisma.product.count({ where: whereClause });
+  }
+
+  /**
+   * Find a single product by ID for admin (checks stockQuantity > 0).
+   */
+  async findAdminInventoryByProduct(productId) {
+    return prisma.product.findFirst({
+      where: {
+        id: productId,
+        stockQuantity: { gt: 0 }
+      },
+      include: {
+        productName: true,
+        productModel: true
+      }
+    });
+  }
+
+  /**
    * Retrieves the total count of inventory items for a user based on search criteria.
    */
   async countInventory(userId, { search }) {
     const whereClause = {
       units: {
         some: {
-          ownerId: userId,
-          status: 'IN_STOCK'
+          ownerId: BigInt(userId),
+          status: 'AVAILABLE'
         }
       }
     };
@@ -89,7 +155,7 @@ class InventoryRepository {
         units: {
           some: {
             ownerId: userId,
-            status: 'IN_STOCK'
+            status: 'AVAILABLE'
           }
         }
       },
@@ -101,7 +167,7 @@ class InventoryRepository {
             units: {
               where: {
                 ownerId: userId,
-                status: 'IN_STOCK'
+                status: 'AVAILABLE'
               }
             }
           }
@@ -132,14 +198,14 @@ class InventoryRepository {
   }
 
   /**
-   * Retrieves available IN_STOCK units for a specific product and user.
+   * Retrieves available AVAILABLE units for a specific product and user.
    */
   async findAvailableUnits(userId, productId, quantity, tx = prisma) {
     return tx.productUnit.findMany({
       where: {
         ownerId: userId,
         productId: productId,
-        status: 'IN_STOCK'
+        status: 'AVAILABLE'
       },
       take: quantity
     });
@@ -218,12 +284,12 @@ class InventoryRepository {
       return [];
     }
 
-    // 2. Find units that are IN_STOCK
+    // 2. Find units that are AVAILABLE
     const units = await prisma.productUnit.findMany({
       where: {
         productId: product.id,
         ownerId: BigInt(userId),
-        status: 'IN_STOCK'
+        status: 'AVAILABLE'
       },
       select: {
         serialNumber: true
@@ -314,7 +380,7 @@ class InventoryRepository {
       prisma.productUnit.count({
         where: {
           product: { productNameId: BigInt(productNameId) },
-          status: 'IN_STOCK',
+          status: 'AVAILABLE',
           ...ownerFilter
         }
       })

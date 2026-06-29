@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../../shared/widgets/scanner_screen.dart';
 import '../providers/inventory_provider.dart';
 import '../../dashboard/providers/dashboard_controller.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
@@ -38,7 +39,9 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProductNames();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadProductNames();
+    });
   }
 
   @override
@@ -136,12 +139,24 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
       context.showErrorSnackBar('Please select Product Name and Product Model');
       return;
     }
+    if (_quantityController.text.trim().isEmpty) {
+      context.showErrorSnackBar('Please enter a quantity');
+      return;
+    }
+    final quantity = int.tryParse(_quantityController.text.trim());
+    if (quantity == null || quantity <= 0) {
+      context.showErrorSnackBar('Quantity must be a positive number');
+      return;
+    }
+    if (_selectedProductNameId == null || _selectedProductModelId == null) {
+      context.showErrorSnackBar('Please select Product Name and Product Model');
+      return;
+    }
 
     setState(() => _isSubmitting = true);
 
     try {
       final dio = ApiClient().dio;
-      final quantity = int.parse(_quantityController.text);
       final minPrice = _minPriceController.text.isNotEmpty ? num.parse(_minPriceController.text) : null;
 
       await dio.post('/api/inventory/update-stock', data: {
@@ -222,25 +237,49 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
                           ),
                           const SizedBox(height: 8),
                           _isLoadingNames
-                              ? const Center(child: CircularProgressIndicator())
-                              : DropdownMenu<String>(
-                                  expandedInsets: EdgeInsets.zero,
-                                  enableFilter: true,
-                                  hintText: 'Select Product Name',
-                                  requestFocusOnTap: true,
-                                  dropdownMenuEntries: _productNames.map((name) {
-                                    return DropdownMenuEntry<String>(
-                                      value: name['id']!,
-                                      label: name['name']!,
-                                    );
-                                  }).toList(),
-                                  onSelected: (id) {
-                                    if (id != null) {
-                                      setState(() => _selectedProductNameId = id);
-                                      _loadProductModels(id);
-                                    }
-                                  },
-                                ),
+                              ? const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 16.0),
+                                  child: Center(
+                                    child: SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    ),
+                                  ),
+                                )
+                              : (_productNames.isEmpty
+                                  ? TextFormField(
+                                      enabled: false,
+                                      decoration: InputDecoration(
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                        hintText: 'No products available. Please create one first.',
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                        filled: true,
+                                        fillColor: Colors.grey.shade100,
+                                      ),
+                                    )
+                                  : DropdownButtonFormField<String>(
+                                      isExpanded: true,
+                                      decoration: InputDecoration(
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                      ),
+                                      hint: const Text('Select Product Name'),
+                                      items: _productNames.map((name) {
+                                        return DropdownMenuItem<String>(
+                                          value: name['id']!,
+                                          child: Text(name['name']!),
+                                        );
+                                      }).toList(),
+                                      onChanged: (id) {
+                                        if (id != null) {
+                                          setState(() => _selectedProductNameId = id);
+                                          _loadProductModels(id);
+                                        }
+                                      },
+                                    )),
                           const SizedBox(height: 20),
 
                           // Product Model
@@ -250,27 +289,61 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
                           ),
                           const SizedBox(height: 8),
                           _isLoadingModels
-                              ? const Center(child: CircularProgressIndicator())
-                              : DropdownMenu<String>(
-                                  key: ValueKey('model_$_selectedProductNameId'),
-                                  expandedInsets: EdgeInsets.zero,
-                                  enableFilter: true,
-                                  enabled: _selectedProductNameId != null,
-                                  hintText: 'Select Product Model',
-                                  requestFocusOnTap: true,
-                                  dropdownMenuEntries: _productModels.map((model) {
-                                    return DropdownMenuEntry<String>(
-                                      value: model['id']!,
-                                      label: model['name']!,
-                                    );
-                                  }).toList(),
-                                  onSelected: (id) {
-                                    if (id != null) {
-                                      setState(() => _selectedProductModelId = id);
-                                      _loadProductDetails(id);
-                                    }
-                                  },
-                                ),
+                              ? const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 16.0),
+                                  child: Center(
+                                    child: SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    ),
+                                  ),
+                                )
+                              : (_selectedProductNameId == null
+                                  ? TextFormField(
+                                      enabled: false,
+                                      decoration: InputDecoration(
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                        hintText: 'Select Product Name first',
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                        filled: true,
+                                        fillColor: Colors.grey.shade100,
+                                      ),
+                                    )
+                                  : (_productModels.isEmpty
+                                      ? TextFormField(
+                                          enabled: false,
+                                          decoration: InputDecoration(
+                                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                            hintText: 'No models available for this product.',
+                                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                            filled: true,
+                                            fillColor: Colors.grey.shade100,
+                                          ),
+                                        )
+                                      : DropdownButtonFormField<String>(
+                                          key: ValueKey('model_$_selectedProductNameId'),
+                                          isExpanded: true,
+                                          decoration: InputDecoration(
+                                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                            filled: true,
+                                            fillColor: Colors.white,
+                                          ),
+                                          hint: const Text('Select Product Model'),
+                                          items: _productModels.map((model) {
+                                            return DropdownMenuItem<String>(
+                                              value: model['id']!,
+                                              child: Text(model['name']!),
+                                            );
+                                          }).toList(),
+                                          onChanged: (id) {
+                                            if (id != null) {
+                                              setState(() => _selectedProductModelId = id);
+                                              _loadProductDetails(id);
+                                            }
+                                          },
+                                        ))),
                           const SizedBox(height: 20),
 
                           // Product Information Section
@@ -315,9 +388,9 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
                             const SizedBox(height: 20),
                           ],
 
-                          // Quantity to Add
+                          // Quantity
                           const Text(
-                            'Quantity to Add',
+                            'Quantity',
                             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
                           ),
                           const SizedBox(height: 8),
@@ -325,15 +398,15 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
                             controller: _quantityController,
                             keyboardType: TextInputType.number,
                             decoration: const InputDecoration(
-                              hintText: 'Enter quantity',
+                              hintText: 'Enter quantity to add',
                             ),
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return 'Quantity is required';
+                                return 'Please enter a quantity';
                               }
                               final parsed = int.tryParse(value);
                               if (parsed == null || parsed <= 0) {
-                                return 'Quantity must be greater than 0';
+                                return 'Quantity must be a positive number';
                               }
                               return null;
                             },

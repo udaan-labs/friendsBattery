@@ -26,7 +26,9 @@ class _AddProductModelFormState extends ConsumerState<AddProductModelForm> {
   @override
   void initState() {
     super.initState();
-    _loadProductNames();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadProductNames();
+    });
   }
 
   @override
@@ -119,14 +121,44 @@ class _AddProductModelFormState extends ConsumerState<AddProductModelForm> {
                       const Text('Product Name', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E))),
                       const SizedBox(height: 8),
                       _isLoadingNames
-                          ? const Center(child: CircularProgressIndicator())
-                          : DropdownMenu<String>(
-                              expandedInsets: EdgeInsets.zero,
-                              enableFilter: true,
-                              hintText: 'Select Existing Product Name',
-                              dropdownMenuEntries: _productNames.map((n) => DropdownMenuEntry(value: n['id']!, label: n['name']!)).toList(),
-                              onSelected: (id) => setState(() => _selectedProductNameId = id),
-                            ),
+                          ? const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 16.0),
+                              child: Center(
+                                child: SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ),
+                            )
+                          : (_productNames.isEmpty
+                              ? TextFormField(
+                                  enabled: false,
+                                  decoration: InputDecoration(
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                    hintText: 'No products available. Please create one first.',
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                    filled: true,
+                                    fillColor: Colors.grey.shade100,
+                                  ),
+                                )
+                              : DropdownButtonFormField<String>(
+                                  isExpanded: true,
+                                  decoration: InputDecoration(
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                  ),
+                                  hint: const Text('Select Existing Product Name'),
+                                  items: _productNames.map((n) {
+                                    return DropdownMenuItem<String>(
+                                      value: n['id']!,
+                                      child: Text(n['name']!),
+                                    );
+                                  }).toList(),
+                                  onChanged: (id) => setState(() => _selectedProductNameId = id),
+                                )),
                       const SizedBox(height: 16),
 
                       _buildTextField('Product Model Name', _productModelController),
