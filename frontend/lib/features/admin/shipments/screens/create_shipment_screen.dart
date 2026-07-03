@@ -672,104 +672,109 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                             ],
 
                             // Quantity & Price
-                            Row(
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 // Serial Numbers
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            'Serial Numbers (${row.scannedSerials.length})',
-                                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                                          ),
-                                          IconButton(
-                                            icon: const Icon(Icons.qr_code_scanner, size: 20),
-                                            onPressed: () async {
-                                              final scanned = await Navigator.of(context).push<String>(
-                                                MaterialPageRoute(builder: (_) => const ScannerScreen()),
-                                              );
-                                              if (scanned != null && scanned.trim().isNotEmpty) {
-                                                if (!row.scannedSerials.contains(scanned.trim())) {
-                                                  setState(() {
-                                                    row.scannedSerials.add(scanned.trim());
-                                                  });
-                                                } else {
-                                                  if (mounted) context.showErrorSnackBar('Serial number already scanned');
-                                                }
-                                              }
-                                            },
-                                          ),
-                                        ],
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    Text(
+                                      'Serial Numbers (${row.scannedSerials.length})',
+                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    ElevatedButton.icon(
+                                      icon: const Icon(Icons.qr_code_scanner),
+                                      label: const Text('Scan Serial Number'),
+                                      style: ElevatedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                        backgroundColor: const Color(0xFF006B2C),
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
                                       ),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: TextFormField(
-                                              controller: row.manualSerialController,
-                                              decoration: const InputDecoration(
-                                                hintText: 'Manual Add',
-                                                isDense: true,
-                                                contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                                              ),
+                                      onPressed: () async {
+                                        final scanned = await Navigator.of(context).push<String>(
+                                          MaterialPageRoute(builder: (_) => const ScannerScreen()),
+                                        );
+                                        if (scanned != null && scanned.trim().isNotEmpty) {
+                                          if (!row.scannedSerials.contains(scanned.trim())) {
+                                            setState(() {
+                                              row.scannedSerials.add(scanned.trim());
+                                            });
+                                          } else {
+                                            if (mounted) context.showErrorSnackBar('Serial number already scanned');
+                                          }
+                                        }
+                                      },
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: TextFormField(
+                                            controller: row.manualSerialController,
+                                            decoration: InputDecoration(
+                                              hintText: 'Manual Add (Fallback)',
+                                              isDense: true,
+                                              contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                                             ),
                                           ),
-                                          IconButton(
-                                            icon: const Icon(Icons.add_circle_outline),
-                                            onPressed: () {
-                                              final val = row.manualSerialController.text.trim();
-                                              if (val.isNotEmpty) {
-                                                if (!row.scannedSerials.contains(val)) {
-                                                  setState(() {
-                                                    row.scannedSerials.add(val);
-                                                    row.manualSerialController.clear();
-                                                  });
-                                                } else {
-                                                  context.showErrorSnackBar('Serial number already added');
-                                                }
+                                        ),
+                                        const SizedBox(width: 8),
+                                        IconButton(
+                                          icon: const Icon(Icons.add_circle, color: Color(0xFF006B2C), size: 32),
+                                          onPressed: () {
+                                            final val = row.manualSerialController.text.trim();
+                                            if (val.isNotEmpty) {
+                                              if (!row.scannedSerials.contains(val)) {
+                                                setState(() {
+                                                  row.scannedSerials.add(val);
+                                                  row.manualSerialController.clear();
+                                                });
+                                              } else {
+                                                context.showErrorSnackBar('Serial number already added');
                                               }
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
+                                            }
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 16),
+                                const SizedBox(height: 16),
 
                                 // Price Per Piece
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        'Price per Piece',
-                                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Price per Piece',
+                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    TextFormField(
+                                      controller: row.priceController,
+                                      keyboardType: TextInputType.number,
+                                      decoration: const InputDecoration(
+                                        hintText: 'Price',
+                                        prefixText: '₹ ',
                                       ),
-                                      const SizedBox(height: 6),
-                                      TextFormField(
-                                        controller: row.priceController,
-                                        keyboardType: TextInputType.number,
-                                        decoration: const InputDecoration(
-                                          hintText: 'Price',
-                                          prefixText: '₹ ',
-                                        ),
-                                        validator: (val) {
-                                          if (val == null || val.trim().isEmpty) {
-                                            return 'Required';
-                                          }
-                                          final parsed = double.tryParse(val);
-                                          if (parsed == null || parsed <= 0) {
-                                            return '> 0';
-                                          }
-                                          return null;
-                                        },
-                                      ),
-                                    ],
-                                  ),
+                                      validator: (val) {
+                                        if (val == null || val.trim().isEmpty) {
+                                          return 'Required';
+                                        }
+                                        final parsed = double.tryParse(val);
+                                        if (parsed == null || parsed <= 0) {
+                                          return '> 0';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),

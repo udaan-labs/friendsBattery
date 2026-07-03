@@ -17,112 +17,110 @@ class InventoryProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: ResponsiveHelper.responsiveHorizontalMargin(context)),
+      margin: EdgeInsets.symmetric(
+          vertical: 6.0,
+          horizontal: ResponsiveHelper.responsiveHorizontalMargin(context)),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: const [
           BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Color(0x05000000),
+            blurRadius: 8,
+            offset: Offset(0, 2),
           ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(12),
           onTap: onTap ?? () {},
           child: Padding(
-            padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Top Row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        '$index',
+                // Index Badge
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    '$index',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+
+                // Middle Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.productModel,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          fontSize: 15,
+                          color: Color(0xFF191C1E),
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    _buildStatusBadge(item.quantity, item.minStock),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Divider(color: Colors.grey.shade200, height: 1),
-                const SizedBox(height: 12),
-                
-                // Body columns
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    if (constraints.maxWidth < 380) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      const SizedBox(height: 4),
+                      Text(
+                        item.productName,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
                         children: [
-                          _buildField(icon: Icons.local_offer_outlined, iconColor: Colors.orange, label: 'Product Name', value: item.productName),
-                          const SizedBox(height: 12),
-                          _buildField(icon: Icons.precision_manufacturing_outlined, iconColor: Colors.purple, label: 'Product Model', value: item.productModel),
-                          const SizedBox(height: 12),
-                          _buildQuantityField(),
-                          const SizedBox(height: 12),
-                          _buildField(icon: Icons.currency_rupee_outlined, iconColor: Colors.pink, label: 'Minimum Price', value: '₹${item.minPrice.toStringAsFixed(0)}'),
+                          _buildSmallChip(
+                            icon: Icons.inventory_2_outlined,
+                            label: '${item.quantity} Units',
+                            color: item.quantity == 0
+                                ? Colors.red
+                                : (item.quantity <= item.minStock
+                                    ? Colors.orange
+                                    : Colors.green),
+                            bgColor: item.quantity == 0
+                                ? Colors.red.shade50
+                                : (item.quantity <= item.minStock
+                                    ? Colors.orange.shade50
+                                    : Colors.green.shade50),
+                          ),
+                          _buildSmallChip(
+                            icon: Icons.currency_rupee_outlined,
+                            label: 'Min: ₹${item.minPrice.toStringAsFixed(0)}',
+                            color: Colors.blue.shade700,
+                            bgColor: Colors.blue.shade50,
+                          ),
                         ],
-                      );
-                    }
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildField(icon: Icons.local_offer_outlined, iconColor: Colors.orange, label: 'Product Name', value: item.productName),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildField(icon: Icons.precision_manufacturing_outlined, iconColor: Colors.purple, label: 'Product Model', value: item.productModel),
-                              const SizedBox(height: 16),
-                              _buildQuantityField(),
-                              const SizedBox(height: 16),
-                              _buildField(icon: Icons.currency_rupee_outlined, iconColor: Colors.pink, label: 'Minimum Price', value: '₹${item.minPrice.toStringAsFixed(0)}'),
-                            ],
-                          ),
-                        ),
-                      ],
-                    );
-                  },
+                      ),
+                    ],
+                  ),
                 ),
-                
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Icon(
-                      Icons.arrow_forward_ios,
-                      size: 14,
-                      color: Colors.grey.shade400,
-                    ),
-                  ],
-                ),
+
+                // Status Badge
+                const SizedBox(width: 12),
+                _buildStatusDot(item.quantity, item.minStock),
               ],
             ),
           ),
@@ -131,124 +129,47 @@ class InventoryProductCard extends StatelessWidget {
     );
   }
 
-  Widget _buildField({
+  Widget _buildSmallChip({
     required IconData icon,
-    required Color iconColor,
     required String label,
-    required String value,
+    required Color color,
+    required Color bgColor,
   }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 18, color: iconColor),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _buildQuantityField() {
-    Color qtyColor;
-    if (item.quantity == 0) {
-      qtyColor = Colors.red;
-    } else if (item.quantity <= item.minStock) {
-      qtyColor = Colors.orange;
-    } else {
-      qtyColor = Colors.green;
-    }
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Icon(Icons.bar_chart_outlined, size: 18, color: Colors.blue),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Quantity',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                '${item.quantity}',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: qtyColor,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatusBadge(int quantity, int minStock) {
-    Color color;
-    String text;
-
-    if (quantity == 0) {
-      color = Colors.red;
-      text = 'Out of Stock';
-    } else if (quantity <= minStock) {
-      color = Colors.orange;
-      text = 'Low Stock';
-    } else {
-      color = Colors.green;
-      text = 'In Stock';
-    }
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(width: 6),
-        Text(
-          text,
-          style: TextStyle(
-            color: color,
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
-          ),
-        ),
-      ],
+  Widget _buildStatusDot(int quantity, int minStock) {
+    Color color = quantity == 0
+        ? Colors.red
+        : (quantity <= minStock ? Colors.orange : Colors.green);
+    return Container(
+      width: 10,
+      height: 10,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+      ),
     );
   }
 }

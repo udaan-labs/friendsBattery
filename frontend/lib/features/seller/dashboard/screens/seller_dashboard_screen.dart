@@ -33,7 +33,7 @@ class SellerDashboardScreen extends ConsumerWidget {
           onPressed: () => sellerScaffoldKey.currentState?.openDrawer(),
         ),
         title: Text(
-          'BatteryPro',
+          'Friends Battery',
           style: TextStyle(
             fontSize: ResponsiveHelper.isSmallPhone(context) ? 22 : 28,
             fontWeight: FontWeight.bold,

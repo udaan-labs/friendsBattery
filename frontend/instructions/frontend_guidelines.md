@@ -1,5 +1,5 @@
 ---
-name: BatteryPro Design System
+name: Friends Battery Design System
 colors:
   surface: '#f7f9fb'
   surface-dim: '#d8dadc'

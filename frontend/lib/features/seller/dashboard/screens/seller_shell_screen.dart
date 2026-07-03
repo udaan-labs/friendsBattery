@@ -127,7 +127,7 @@ class _SellerDrawer extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   const Text(
-                    'BatteryPro',
+                    'Friends Battery',
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -227,7 +227,7 @@ class _SellerDrawer extends StatelessWidget {
             Padding(
               padding: EdgeInsets.all(ResponsiveHelper.responsiveHorizontalMargin(context)),
               child: Text(
-                'BatteryPro v1.0',
+                'Friends Battery v1.0',
                 style: TextStyle(
                   fontSize: 11,
                   color: Colors.grey.shade500,

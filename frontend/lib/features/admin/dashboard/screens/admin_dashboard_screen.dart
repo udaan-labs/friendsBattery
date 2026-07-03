@@ -173,7 +173,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           },
         ),
         title: Text(
-          'BatteryPro',
+          'Friends Battery',
           style: TextStyle(
             fontSize: ResponsiveHelper.isSmallPhone(context) ? 20 : 24,
             fontWeight: FontWeight.bold,

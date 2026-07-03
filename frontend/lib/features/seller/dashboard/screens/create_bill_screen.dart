@@ -422,20 +422,33 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                                 )),
                       const SizedBox(height: 20),
 
-                      // Serial Number TextField
+                      // Serial Number
                       const Text(
                         'Serial Number',
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
                       ),
                       const SizedBox(height: 8),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.qr_code_scanner),
+                        label: const Text('Scan Serial Number'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          backgroundColor: const Color(0xFF006B2C),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onPressed: _scanSerialNumber,
+                      ),
+                      const SizedBox(height: 12),
                       TextFormField(
                         controller: _serialNumberController,
                         decoration: InputDecoration(
-                          hintText: 'Enter product serial number',
-                          suffixIcon: IconButton(
-                            icon: const Icon(Icons.qr_code_scanner),
-                            onPressed: _scanSerialNumber,
-                          ),
+                          hintText: 'Manual Add (Fallback)',
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {

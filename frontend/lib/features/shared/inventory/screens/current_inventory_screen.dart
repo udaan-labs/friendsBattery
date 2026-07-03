@@ -93,7 +93,7 @@ class _CurrentInventoryScreenState extends ConsumerState<CurrentInventoryScreen>
               decoration: InputDecoration(
                 hintText: ResponsiveHelper.isSmallPhone(context)
                     ? "Search inventory..."
-                    : "Search by product group, category, model or product name...",
+                    : "Search by category, model or product name...",
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),

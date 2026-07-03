@@ -53,7 +53,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             ),
             SizedBox(height: isSmall ? 16 : 24),
             Text(
-              'BatteryPro',
+              'Friends Battery',
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: ResponsiveHelper.fontSize(context, 32),

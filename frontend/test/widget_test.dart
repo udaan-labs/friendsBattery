@@ -108,7 +108,7 @@ void main() {
         const SplashScreen(), overrides: _base(),
       ));
       await tester.pump();
-      expect(find.text('BatteryPro'), findsOneWidget);
+      expect(find.text('Friends Battery'), findsOneWidget);
       expect(find.byIcon(Icons.battery_charging_full), findsOneWidget);
       // Advance past the 2-second splash delay to avoid pending timer
       await tester.pump(const Duration(seconds: 3));
@@ -179,7 +179,7 @@ void main() {
                 Provider<DashboardController>((ref) => _DashCtrl(ref))),
           ]));
       await tester.pumpAndSettle();
-      expect(find.text('BatteryPro'), findsOneWidget);
+      expect(find.text('Friends Battery'), findsOneWidget);
       expect(find.byIcon(Icons.notifications_none_outlined), findsOneWidget);
       expect(find.byIcon(Icons.exit_to_app), findsOneWidget);
     });
@@ -373,7 +373,7 @@ void main() {
             Provider<SellerDashboardController>((ref) => _SellDashCtrl(ref))),
       ]));
       await tester.pumpAndSettle();
-      expect(find.text('BatteryPro'), findsOneWidget);
+      expect(find.text('Friends Battery'), findsOneWidget);
       expect(find.textContaining('Rahul'), findsOneWidget);
       expect(find.text('New Bill'), findsOneWidget);
       expect(find.byIcon(Icons.menu), findsOneWidget);
@@ -482,7 +482,7 @@ void main() {
         child: const BatteryApp(),
       ));
       await tester.pump();
-      expect(find.text('BatteryPro'), findsOneWidget);
+      expect(find.text('Friends Battery'), findsOneWidget);
       // Advance past the splash delay to avoid timer pending errors
       await tester.pump(const Duration(seconds: 3));
     });
