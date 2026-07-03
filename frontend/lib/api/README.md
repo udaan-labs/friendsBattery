@@ -73,24 +73,20 @@ Class | Method | HTTP request | Description
 [*DashboardApi*](doc/DashboardApi.md) | [**apiSellerDashboardStatsGet**](doc/DashboardApi.md#apisellerdashboardstatsget) | **GET** /api/seller/dashboard/stats | Get seller dashboard statistics
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryAdjustPatch**](doc/InventoryApi.md#apiinventoryadjustpatch) | **PATCH** /api/inventory/adjust | Adjust inventory stock levels
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryAvailableSerialsGet**](doc/InventoryApi.md#apiinventoryavailableserialsget) | **GET** /api/inventory/available-serials | Fetch available serial numbers for a product owned by the logged-in seller
-[*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryDetailsGet**](doc/InventoryApi.md#apiinventorydetailsget) | **GET** /api/inventory/details | Return a complete inventory summary grouped by Category, Subcategory, and Product Name
+[*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryDetailsGet**](doc/InventoryApi.md#apiinventorydetailsget) | **GET** /api/inventory/details | Return a complete inventory summary grouped by Product Name and Product Model
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryGet**](doc/InventoryApi.md#apiinventoryget) | **GET** /api/inventory | Return logged-in user&#39;s inventory
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryHistoryGet**](doc/InventoryApi.md#apiinventoryhistoryget) | **GET** /api/inventory/history | Return inventory movement history
-[*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryProductDetailsGet**](doc/InventoryApi.md#apiinventoryproductdetailsget) | **GET** /api/inventory/product-details | Fetch details of a product (stock count &amp; min sell price) by category, product name, and model IDs
+[*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryProductDetailsGet**](doc/InventoryApi.md#apiinventoryproductdetailsget) | **GET** /api/inventory/product-details | Fetch details of a product (stock count &amp; min sell price) by product name and model IDs
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryProductIdGet**](doc/InventoryApi.md#apiinventoryproductidget) | **GET** /api/inventory/{productId} | Return one inventory item
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryTransferPost**](doc/InventoryApi.md#apiinventorytransferpost) | **POST** /api/inventory/transfer | Transfer inventory from admin to seller
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryUpdateStockPost**](doc/InventoryApi.md#apiinventoryupdatestockpost) | **POST** /api/inventory/update-stock | Update admin&#39;s own inventory stock (Admin only)
-[*ProductsApi*](doc/ProductsApi.md) | [**apiProductsCategoriesGet**](doc/ProductsApi.md#apiproductscategoriesget) | **GET** /api/products/categories | Return all categories
-[*ProductsApi*](doc/ProductsApi.md) | [**apiProductsCategoriesListPost**](doc/ProductsApi.md#apiproductscategorieslistpost) | **POST** /api/products/categories/list | Return all categories belonging to a group
-[*ProductsApi*](doc/ProductsApi.md) | [**apiProductsCategoriesPost**](doc/ProductsApi.md#apiproductscategoriespost) | **POST** /api/products/categories | Create a new product category
-[*ProductsApi*](doc/ProductsApi.md) | [**apiProductsGroupsGet**](doc/ProductsApi.md#apiproductsgroupsget) | **GET** /api/products/groups | Return all groups
-[*ProductsApi*](doc/ProductsApi.md) | [**apiProductsGroupsPost**](doc/ProductsApi.md#apiproductsgroupspost) | **POST** /api/products/groups | Create a new product group
+[*ProductsApi*](doc/ProductsApi.md) | [**apiProductsInventoryProductsGet**](doc/ProductsApi.md#apiproductsinventoryproductsget) | **GET** /api/products/inventory-products | Get products in the authenticated user&#39;s inventory
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsListPost**](doc/ProductsApi.md#apiproductslistpost) | **POST** /api/products/list | Return all products matching filters
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsPost**](doc/ProductsApi.md#apiproductspost) | **POST** /api/products | Create a new product
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsProductModelsListPost**](doc/ProductsApi.md#apiproductsproductmodelslistpost) | **POST** /api/products/product-models/list | Return all models belonging to a product name
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsProductModelsPost**](doc/ProductsApi.md#apiproductsproductmodelspost) | **POST** /api/products/product-models | Create a product model
-[*ProductsApi*](doc/ProductsApi.md) | [**apiProductsProductNamesListPost**](doc/ProductsApi.md#apiproductsproductnameslistpost) | **POST** /api/products/product-names/list | Return all product names belonging to a category
-[*ProductsApi*](doc/ProductsApi.md) | [**apiProductsProductNamesPost**](doc/ProductsApi.md#apiproductsproductnamespost) | **POST** /api/products/product-names | Create a product name under a category
+[*ProductsApi*](doc/ProductsApi.md) | [**apiProductsProductNamesGet**](doc/ProductsApi.md#apiproductsproductnamesget) | **GET** /api/products/product-names | Return all product names
+[*ProductsApi*](doc/ProductsApi.md) | [**apiProductsProductNamesPost**](doc/ProductsApi.md#apiproductsproductnamespost) | **POST** /api/products/product-names | Create a product name
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesAdminHistoryGet**](doc/SalesApi.md#apisalesadminhistoryget) | **GET** /api/sales/admin/history | Return all sales across all sellers with pagination, search, filters, and shipment tracing (Admin only)
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesGet**](doc/SalesApi.md#apisalesget) | **GET** /api/sales | Return all sales based on role (Admin sees all, Seller sees own)
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesHistoryGet**](doc/SalesApi.md#apisaleshistoryget) | **GET** /api/sales/history | Return seller&#39;s own sales history with pagination, search, and date filtering
@@ -119,30 +115,15 @@ Class | Method | HTTP request | Description
  - [ApiDashboardStatsGet200Response](doc/ApiDashboardStatsGet200Response.md)
  - [ApiDashboardStatsGet200ResponseData](doc/ApiDashboardStatsGet200ResponseData.md)
  - [ApiInventoryAdjustPatchRequest](doc/ApiInventoryAdjustPatchRequest.md)
- - [ApiInventoryAvailableSerialsGet200Response](doc/ApiInventoryAvailableSerialsGet200Response.md)
- - [ApiInventoryDetailsGet200Response](doc/ApiInventoryDetailsGet200Response.md)
- - [ApiInventoryDetailsGet200ResponseData](doc/ApiInventoryDetailsGet200ResponseData.md)
- - [ApiInventoryDetailsGet200ResponseDataCategoriesInner](doc/ApiInventoryDetailsGet200ResponseDataCategoriesInner.md)
- - [ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner](doc/ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner.md)
- - [ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner](doc/ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner.md)
- - [ApiInventoryDetailsGet200ResponseDataPagination](doc/ApiInventoryDetailsGet200ResponseDataPagination.md)
- - [ApiInventoryProductDetailsGet200Response](doc/ApiInventoryProductDetailsGet200Response.md)
- - [ApiInventoryProductDetailsGet200ResponseData](doc/ApiInventoryProductDetailsGet200ResponseData.md)
  - [ApiInventoryProductIdGet200Response](doc/ApiInventoryProductIdGet200Response.md)
  - [ApiInventoryProductIdGet200ResponseData](doc/ApiInventoryProductIdGet200ResponseData.md)
  - [ApiInventoryTransferPostRequest](doc/ApiInventoryTransferPostRequest.md)
  - [ApiInventoryTransferPostRequestProductsInner](doc/ApiInventoryTransferPostRequestProductsInner.md)
- - [ApiInventoryUpdateStockPost200Response](doc/ApiInventoryUpdateStockPost200Response.md)
- - [ApiInventoryUpdateStockPost200ResponseData](doc/ApiInventoryUpdateStockPost200ResponseData.md)
  - [ApiInventoryUpdateStockPostRequest](doc/ApiInventoryUpdateStockPostRequest.md)
- - [ApiProductsCategoriesListPostRequest](doc/ApiProductsCategoriesListPostRequest.md)
- - [ApiProductsCategoriesPostRequest](doc/ApiProductsCategoriesPostRequest.md)
- - [ApiProductsGroupsPostRequest](doc/ApiProductsGroupsPostRequest.md)
  - [ApiProductsListPostRequest](doc/ApiProductsListPostRequest.md)
  - [ApiProductsPostRequest](doc/ApiProductsPostRequest.md)
  - [ApiProductsProductModelsListPostRequest](doc/ApiProductsProductModelsListPostRequest.md)
  - [ApiProductsProductModelsPostRequest](doc/ApiProductsProductModelsPostRequest.md)
- - [ApiProductsProductNamesListPostRequest](doc/ApiProductsProductNamesListPostRequest.md)
  - [ApiProductsProductNamesPostRequest](doc/ApiProductsProductNamesPostRequest.md)
  - [ApiSalesPostRequest](doc/ApiSalesPostRequest.md)
  - [ApiSellerDashboardPendingShipmentsGet200Response](doc/ApiSellerDashboardPendingShipmentsGet200Response.md)

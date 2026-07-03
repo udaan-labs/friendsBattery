@@ -93,6 +93,22 @@ class ShopsRepository {
       }
     });
   }
+  /**
+   * Fetch a list of seller IDs who have at least one product with available stock <= min_unit_count_seller.
+   * Uses a single raw SQL query for performance.
+   * Output: Array of Numbers representing seller IDs
+   */
+  async getLowStockSellers() {
+    const rawResult = await prisma.$queryRaw`
+      SELECT pu.owner_id as seller_id
+      FROM product_units pu
+      JOIN products p ON pu.product_id = p.id
+      WHERE pu.owner_type = 'SELLER'
+      GROUP BY pu.owner_id, pu.product_id, p.min_unit_count_seller
+      HAVING COUNT(CASE WHEN pu.status = 'AVAILABLE' THEN 1 END) <= p.min_unit_count_seller
+    `;
+    return rawResult.map(r => Number(r.seller_id));
+  }
 }
 
 module.exports = new ShopsRepository();

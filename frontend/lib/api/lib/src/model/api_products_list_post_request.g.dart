@@ -8,8 +8,6 @@ part of 'api_products_list_post_request.dart';
 
 class _$ApiProductsListPostRequest extends ApiProductsListPostRequest {
   @override
-  final int? categoryId;
-  @override
   final int? productNameId;
   @override
   final int? productModelId;
@@ -18,11 +16,8 @@ class _$ApiProductsListPostRequest extends ApiProductsListPostRequest {
     void Function(ApiProductsListPostRequestBuilder)? updates,
   ]) => (ApiProductsListPostRequestBuilder()..update(updates))._build();
 
-  _$ApiProductsListPostRequest._({
-    this.categoryId,
-    this.productNameId,
-    this.productModelId,
-  }) : super._();
+  _$ApiProductsListPostRequest._({this.productNameId, this.productModelId})
+    : super._();
   @override
   ApiProductsListPostRequest rebuild(
     void Function(ApiProductsListPostRequestBuilder) updates,
@@ -36,7 +31,6 @@ class _$ApiProductsListPostRequest extends ApiProductsListPostRequest {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is ApiProductsListPostRequest &&
-        categoryId == other.categoryId &&
         productNameId == other.productNameId &&
         productModelId == other.productModelId;
   }
@@ -44,7 +38,6 @@ class _$ApiProductsListPostRequest extends ApiProductsListPostRequest {
   @override
   int get hashCode {
     var _$hash = 0;
-    _$hash = $jc(_$hash, categoryId.hashCode);
     _$hash = $jc(_$hash, productNameId.hashCode);
     _$hash = $jc(_$hash, productModelId.hashCode);
     _$hash = $jf(_$hash);
@@ -54,7 +47,6 @@ class _$ApiProductsListPostRequest extends ApiProductsListPostRequest {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'ApiProductsListPostRequest')
-          ..add('categoryId', categoryId)
           ..add('productNameId', productNameId)
           ..add('productModelId', productModelId))
         .toString();
@@ -65,10 +57,6 @@ class ApiProductsListPostRequestBuilder
     implements
         Builder<ApiProductsListPostRequest, ApiProductsListPostRequestBuilder> {
   _$ApiProductsListPostRequest? _$v;
-
-  int? _categoryId;
-  int? get categoryId => _$this._categoryId;
-  set categoryId(int? categoryId) => _$this._categoryId = categoryId;
 
   int? _productNameId;
   int? get productNameId => _$this._productNameId;
@@ -87,7 +75,6 @@ class ApiProductsListPostRequestBuilder
   ApiProductsListPostRequestBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _categoryId = $v.categoryId;
       _productNameId = $v.productNameId;
       _productModelId = $v.productModelId;
       _$v = null;
@@ -112,7 +99,6 @@ class ApiProductsListPostRequestBuilder
     final _$result =
         _$v ??
         _$ApiProductsListPostRequest._(
-          categoryId: categoryId,
           productNameId: productNameId,
           productModelId: productModelId,
         );

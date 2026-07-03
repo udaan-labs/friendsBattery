@@ -35,7 +35,7 @@ abstract class ProductUnit implements Built<ProductUnit, ProductUnitBuilder> {
 
   @BuiltValueField(wireName: r'status')
   ProductUnitStatusEnum? get status;
-  // enum statusEnum {  IN_STOCK,  IN_TRANSIT,  SOLD,  RETURNED,  DEFECTIVE,  };
+  // enum statusEnum {  AVAILABLE,  IN_TRANSIT,  SOLD,  RETURNED,  DEFECTIVE,  };
 
   @BuiltValueField(wireName: r'createdAt')
   DateTime? get createdAt;
@@ -218,8 +218,8 @@ class _$ProductUnitSerializer implements PrimitiveSerializer<ProductUnit> {
 
 class ProductUnitStatusEnum extends EnumClass {
 
-  @BuiltValueEnumConst(wireName: r'IN_STOCK')
-  static const ProductUnitStatusEnum IN_STOCK = _$productUnitStatusEnum_IN_STOCK;
+  @BuiltValueEnumConst(wireName: r'AVAILABLE')
+  static const ProductUnitStatusEnum AVAILABLE = _$productUnitStatusEnum_AVAILABLE;
   @BuiltValueEnumConst(wireName: r'IN_TRANSIT')
   static const ProductUnitStatusEnum IN_TRANSIT = _$productUnitStatusEnum_IN_TRANSIT;
   @BuiltValueEnumConst(wireName: r'SOLD')

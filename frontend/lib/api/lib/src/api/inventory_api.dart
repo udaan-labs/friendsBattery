@@ -10,12 +10,8 @@ import 'package:dio/dio.dart';
 
 import 'package:friends_battery_api/src/api_util.dart';
 import 'package:friends_battery_api/src/model/api_inventory_adjust_patch_request.dart';
-import 'package:friends_battery_api/src/model/api_inventory_available_serials_get200_response.dart';
-import 'package:friends_battery_api/src/model/api_inventory_details_get200_response.dart';
-import 'package:friends_battery_api/src/model/api_inventory_product_details_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_inventory_product_id_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_inventory_transfer_post_request.dart';
-import 'package:friends_battery_api/src/model/api_inventory_update_stock_post200_response.dart';
 import 'package:friends_battery_api/src/model/api_inventory_update_stock_post_request.dart';
 import 'package:friends_battery_api/src/model/date.dart';
 
@@ -104,7 +100,6 @@ class InventoryApi {
   /// 
   ///
   /// Parameters:
-  /// * [categoryId] 
   /// * [productNameId] 
   /// * [productModelId] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -114,10 +109,9 @@ class InventoryApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future] containing a [Response] with a [ApiInventoryAvailableSerialsGet200Response] as data
+  /// Returns a [Future]
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ApiInventoryAvailableSerialsGet200Response>> apiInventoryAvailableSerialsGet({ 
-    required String categoryId,
+  Future<Response<void>> apiInventoryAvailableSerialsGet({ 
     required String productNameId,
     required String productModelId,
     CancelToken? cancelToken,
@@ -147,7 +141,6 @@ class InventoryApi {
     );
 
     final _queryParameters = <String, dynamic>{
-      r'category_id': encodeQueryParameter(_serializers, categoryId, const FullType(String)),
       r'product_name_id': encodeQueryParameter(_serializers, productNameId, const FullType(String)),
       r'product_model_id': encodeQueryParameter(_serializers, productModelId, const FullType(String)),
     };
@@ -161,43 +154,14 @@ class InventoryApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    ApiInventoryAvailableSerialsGet200Response? _responseData;
-
-    try {
-      final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(ApiInventoryAvailableSerialsGet200Response),
-      ) as ApiInventoryAvailableSerialsGet200Response;
-
-    } catch (error, stackTrace) {
-      throw DioException(
-        requestOptions: _response.requestOptions,
-        response: _response,
-        type: DioExceptionType.unknown,
-        error: error,
-        stackTrace: stackTrace,
-      );
-    }
-
-    return Response<ApiInventoryAvailableSerialsGet200Response>(
-      data: _responseData,
-      headers: _response.headers,
-      isRedirect: _response.isRedirect,
-      requestOptions: _response.requestOptions,
-      redirects: _response.redirects,
-      statusCode: _response.statusCode,
-      statusMessage: _response.statusMessage,
-      extra: _response.extra,
-    );
+    return _response;
   }
 
-  /// Return a complete inventory summary grouped by Category, Subcategory, and Product Name
+  /// Return a complete inventory summary grouped by Product Name and Product Model
   /// 
   ///
   /// Parameters:
-  /// * [categoryId] - Filter by Category ID
-  /// * [subcategoryId] - Filter by Subcategory (Product Name) ID
+  /// * [productNameId] - Filter by Product Name ID
   /// * [search] - Search by Product Model Name or Product Name
   /// * [page] - Page number for pagination
   /// * [limit] - Number of items per page
@@ -208,11 +172,10 @@ class InventoryApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future] containing a [Response] with a [ApiInventoryDetailsGet200Response] as data
+  /// Returns a [Future]
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ApiInventoryDetailsGet200Response>> apiInventoryDetailsGet({ 
-    int? categoryId,
-    int? subcategoryId,
+  Future<Response<void>> apiInventoryDetailsGet({ 
+    int? productNameId,
     String? search,
     int? page = 1,
     int? limit = 10,
@@ -243,8 +206,7 @@ class InventoryApi {
     );
 
     final _queryParameters = <String, dynamic>{
-      if (categoryId != null) r'category_id': encodeQueryParameter(_serializers, categoryId, const FullType(int)),
-      if (subcategoryId != null) r'subcategory_id': encodeQueryParameter(_serializers, subcategoryId, const FullType(int)),
+      if (productNameId != null) r'product_name_id': encodeQueryParameter(_serializers, productNameId, const FullType(int)),
       if (search != null) r'search': encodeQueryParameter(_serializers, search, const FullType(String)),
       if (page != null) r'page': encodeQueryParameter(_serializers, page, const FullType(int)),
       if (limit != null) r'limit': encodeQueryParameter(_serializers, limit, const FullType(int)),
@@ -259,35 +221,7 @@ class InventoryApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    ApiInventoryDetailsGet200Response? _responseData;
-
-    try {
-      final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(ApiInventoryDetailsGet200Response),
-      ) as ApiInventoryDetailsGet200Response;
-
-    } catch (error, stackTrace) {
-      throw DioException(
-        requestOptions: _response.requestOptions,
-        response: _response,
-        type: DioExceptionType.unknown,
-        error: error,
-        stackTrace: stackTrace,
-      );
-    }
-
-    return Response<ApiInventoryDetailsGet200Response>(
-      data: _responseData,
-      headers: _response.headers,
-      isRedirect: _response.isRedirect,
-      requestOptions: _response.requestOptions,
-      redirects: _response.redirects,
-      statusCode: _response.statusCode,
-      statusMessage: _response.statusMessage,
-      extra: _response.extra,
-    );
+    return _response;
   }
 
   /// Return logged-in user&#39;s inventory
@@ -427,11 +361,10 @@ class InventoryApi {
     return _response;
   }
 
-  /// Fetch details of a product (stock count &amp; min sell price) by category, product name, and model IDs
+  /// Fetch details of a product (stock count &amp; min sell price) by product name and model IDs
   /// 
   ///
   /// Parameters:
-  /// * [categoryId] 
   /// * [productNameId] 
   /// * [productModelId] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -441,10 +374,9 @@ class InventoryApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future] containing a [Response] with a [ApiInventoryProductDetailsGet200Response] as data
+  /// Returns a [Future]
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ApiInventoryProductDetailsGet200Response>> apiInventoryProductDetailsGet({ 
-    required String categoryId,
+  Future<Response<void>> apiInventoryProductDetailsGet({ 
     required String productNameId,
     required String productModelId,
     CancelToken? cancelToken,
@@ -474,7 +406,6 @@ class InventoryApi {
     );
 
     final _queryParameters = <String, dynamic>{
-      r'category_id': encodeQueryParameter(_serializers, categoryId, const FullType(String)),
       r'product_name_id': encodeQueryParameter(_serializers, productNameId, const FullType(String)),
       r'product_model_id': encodeQueryParameter(_serializers, productModelId, const FullType(String)),
     };
@@ -488,35 +419,7 @@ class InventoryApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    ApiInventoryProductDetailsGet200Response? _responseData;
-
-    try {
-      final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(ApiInventoryProductDetailsGet200Response),
-      ) as ApiInventoryProductDetailsGet200Response;
-
-    } catch (error, stackTrace) {
-      throw DioException(
-        requestOptions: _response.requestOptions,
-        response: _response,
-        type: DioExceptionType.unknown,
-        error: error,
-        stackTrace: stackTrace,
-      );
-    }
-
-    return Response<ApiInventoryProductDetailsGet200Response>(
-      data: _responseData,
-      headers: _response.headers,
-      isRedirect: _response.isRedirect,
-      requestOptions: _response.requestOptions,
-      redirects: _response.redirects,
-      statusCode: _response.statusCode,
-      statusMessage: _response.statusMessage,
-      extra: _response.extra,
-    );
+    return _response;
   }
 
   /// Return one inventory item
@@ -685,9 +588,9 @@ class InventoryApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future] containing a [Response] with a [ApiInventoryUpdateStockPost200Response] as data
+  /// Returns a [Future]
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ApiInventoryUpdateStockPost200Response>> apiInventoryUpdateStockPost({ 
+  Future<Response<void>> apiInventoryUpdateStockPost({ 
     required ApiInventoryUpdateStockPostRequest apiInventoryUpdateStockPostRequest,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -743,35 +646,7 @@ class InventoryApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    ApiInventoryUpdateStockPost200Response? _responseData;
-
-    try {
-      final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(ApiInventoryUpdateStockPost200Response),
-      ) as ApiInventoryUpdateStockPost200Response;
-
-    } catch (error, stackTrace) {
-      throw DioException(
-        requestOptions: _response.requestOptions,
-        response: _response,
-        type: DioExceptionType.unknown,
-        error: error,
-        stackTrace: stackTrace,
-      );
-    }
-
-    return Response<ApiInventoryUpdateStockPost200Response>(
-      data: _responseData,
-      headers: _response.headers,
-      isRedirect: _response.isRedirect,
-      requestOptions: _response.requestOptions,
-      redirects: _response.redirects,
-      statusCode: _response.statusCode,
-      statusMessage: _response.statusMessage,
-      extra: _response.extra,
-    );
+    return _response;
   }
 
 }

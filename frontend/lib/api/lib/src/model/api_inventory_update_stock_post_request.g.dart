@@ -9,8 +9,6 @@ part of 'api_inventory_update_stock_post_request.dart';
 class _$ApiInventoryUpdateStockPostRequest
     extends ApiInventoryUpdateStockPostRequest {
   @override
-  final int productCategoryId;
-  @override
   final int productNameId;
   @override
   final int productModelId;
@@ -28,7 +26,6 @@ class _$ApiInventoryUpdateStockPostRequest
   ]) => (ApiInventoryUpdateStockPostRequestBuilder()..update(updates))._build();
 
   _$ApiInventoryUpdateStockPostRequest._({
-    required this.productCategoryId,
     required this.productNameId,
     required this.productModelId,
     required this.quantity,
@@ -49,7 +46,6 @@ class _$ApiInventoryUpdateStockPostRequest
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is ApiInventoryUpdateStockPostRequest &&
-        productCategoryId == other.productCategoryId &&
         productNameId == other.productNameId &&
         productModelId == other.productModelId &&
         quantity == other.quantity &&
@@ -61,7 +57,6 @@ class _$ApiInventoryUpdateStockPostRequest
   @override
   int get hashCode {
     var _$hash = 0;
-    _$hash = $jc(_$hash, productCategoryId.hashCode);
     _$hash = $jc(_$hash, productNameId.hashCode);
     _$hash = $jc(_$hash, productModelId.hashCode);
     _$hash = $jc(_$hash, quantity.hashCode);
@@ -75,7 +70,6 @@ class _$ApiInventoryUpdateStockPostRequest
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'ApiInventoryUpdateStockPostRequest')
-          ..add('productCategoryId', productCategoryId)
           ..add('productNameId', productNameId)
           ..add('productModelId', productModelId)
           ..add('quantity', quantity)
@@ -93,11 +87,6 @@ class ApiInventoryUpdateStockPostRequestBuilder
           ApiInventoryUpdateStockPostRequestBuilder
         > {
   _$ApiInventoryUpdateStockPostRequest? _$v;
-
-  int? _productCategoryId;
-  int? get productCategoryId => _$this._productCategoryId;
-  set productCategoryId(int? productCategoryId) =>
-      _$this._productCategoryId = productCategoryId;
 
   int? _productNameId;
   int? get productNameId => _$this._productNameId;
@@ -134,7 +123,6 @@ class ApiInventoryUpdateStockPostRequestBuilder
   ApiInventoryUpdateStockPostRequestBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _productCategoryId = $v.productCategoryId;
       _productNameId = $v.productNameId;
       _productModelId = $v.productModelId;
       _quantity = $v.quantity;
@@ -165,11 +153,6 @@ class ApiInventoryUpdateStockPostRequestBuilder
     final _$result =
         _$v ??
         _$ApiInventoryUpdateStockPostRequest._(
-          productCategoryId: BuiltValueNullFieldError.checkNotNull(
-            productCategoryId,
-            r'ApiInventoryUpdateStockPostRequest',
-            'productCategoryId',
-          ),
           productNameId: BuiltValueNullFieldError.checkNotNull(
             productNameId,
             r'ApiInventoryUpdateStockPostRequest',

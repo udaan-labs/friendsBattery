@@ -306,7 +306,6 @@ class _ShimmerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
-      height: ResponsiveHelper.isSmallPhone(context) ? 240 : 280,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),

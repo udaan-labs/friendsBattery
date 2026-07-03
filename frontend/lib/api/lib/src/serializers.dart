@@ -20,30 +20,15 @@ import 'package:friends_battery_api/src/model/api_auth_register_post_request.dar
 import 'package:friends_battery_api/src/model/api_dashboard_stats_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_dashboard_stats_get200_response_data.dart';
 import 'package:friends_battery_api/src/model/api_inventory_adjust_patch_request.dart';
-import 'package:friends_battery_api/src/model/api_inventory_available_serials_get200_response.dart';
-import 'package:friends_battery_api/src/model/api_inventory_details_get200_response.dart';
-import 'package:friends_battery_api/src/model/api_inventory_details_get200_response_data.dart';
-import 'package:friends_battery_api/src/model/api_inventory_details_get200_response_data_categories_inner.dart';
-import 'package:friends_battery_api/src/model/api_inventory_details_get200_response_data_categories_inner_subcategories_inner.dart';
-import 'package:friends_battery_api/src/model/api_inventory_details_get200_response_data_categories_inner_subcategories_inner_products_inner.dart';
-import 'package:friends_battery_api/src/model/api_inventory_details_get200_response_data_pagination.dart';
-import 'package:friends_battery_api/src/model/api_inventory_product_details_get200_response.dart';
-import 'package:friends_battery_api/src/model/api_inventory_product_details_get200_response_data.dart';
 import 'package:friends_battery_api/src/model/api_inventory_product_id_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_inventory_product_id_get200_response_data.dart';
 import 'package:friends_battery_api/src/model/api_inventory_transfer_post_request.dart';
 import 'package:friends_battery_api/src/model/api_inventory_transfer_post_request_products_inner.dart';
-import 'package:friends_battery_api/src/model/api_inventory_update_stock_post200_response.dart';
-import 'package:friends_battery_api/src/model/api_inventory_update_stock_post200_response_data.dart';
 import 'package:friends_battery_api/src/model/api_inventory_update_stock_post_request.dart';
-import 'package:friends_battery_api/src/model/api_products_categories_list_post_request.dart';
-import 'package:friends_battery_api/src/model/api_products_categories_post_request.dart';
-import 'package:friends_battery_api/src/model/api_products_groups_post_request.dart';
 import 'package:friends_battery_api/src/model/api_products_list_post_request.dart';
 import 'package:friends_battery_api/src/model/api_products_post_request.dart';
 import 'package:friends_battery_api/src/model/api_products_product_models_list_post_request.dart';
 import 'package:friends_battery_api/src/model/api_products_product_models_post_request.dart';
-import 'package:friends_battery_api/src/model/api_products_product_names_list_post_request.dart';
 import 'package:friends_battery_api/src/model/api_products_product_names_post_request.dart';
 import 'package:friends_battery_api/src/model/api_sales_post_request.dart';
 import 'package:friends_battery_api/src/model/api_seller_dashboard_pending_shipments_get200_response.dart';
@@ -89,30 +74,15 @@ part 'serializers.g.dart';
   ApiDashboardStatsGet200Response,
   ApiDashboardStatsGet200ResponseData,
   ApiInventoryAdjustPatchRequest,
-  ApiInventoryAvailableSerialsGet200Response,
-  ApiInventoryDetailsGet200Response,
-  ApiInventoryDetailsGet200ResponseData,
-  ApiInventoryDetailsGet200ResponseDataCategoriesInner,
-  ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner,
-  ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner,
-  ApiInventoryDetailsGet200ResponseDataPagination,
-  ApiInventoryProductDetailsGet200Response,
-  ApiInventoryProductDetailsGet200ResponseData,
   ApiInventoryProductIdGet200Response,
   ApiInventoryProductIdGet200ResponseData,
   ApiInventoryTransferPostRequest,
   ApiInventoryTransferPostRequestProductsInner,
-  ApiInventoryUpdateStockPost200Response,
-  ApiInventoryUpdateStockPost200ResponseData,
   ApiInventoryUpdateStockPostRequest,
-  ApiProductsCategoriesListPostRequest,
-  ApiProductsCategoriesPostRequest,
-  ApiProductsGroupsPostRequest,
   ApiProductsListPostRequest,
   ApiProductsPostRequest,
   ApiProductsProductModelsListPostRequest,
   ApiProductsProductModelsPostRequest,
-  ApiProductsProductNamesListPostRequest,
   ApiProductsProductNamesPostRequest,
   ApiSalesPostRequest,
   ApiSellerDashboardPendingShipmentsGet200Response,

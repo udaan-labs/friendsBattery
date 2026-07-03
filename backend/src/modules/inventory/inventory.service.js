@@ -31,7 +31,9 @@ class InventoryService {
         model: p.productModel?.name || '',
         quantity: p._count.units,
         min_price: Number(p.minPrice),
-        offer_price: p.offerPrice ? Number(p.offerPrice) : null
+        offer_price: p.offerPrice ? Number(p.offerPrice) : null,
+        min_unit_count_seller: Number(p.minUnitCountSeller),
+        is_low_stock: p._count.units <= Number(p.minUnitCountSeller)
       })),
       pagination: {
         total,
@@ -63,7 +65,9 @@ class InventoryService {
       model: product.productModel?.name || '',
       quantity: product._count.units,
       min_price: Number(product.minPrice),
-      offer_price: product.offerPrice ? Number(product.offerPrice) : null
+      offer_price: product.offerPrice ? Number(product.offerPrice) : null,
+      min_unit_count_seller: Number(product.minUnitCountSeller),
+      is_low_stock: product._count.units <= Number(product.minUnitCountSeller)
     };
   }
 

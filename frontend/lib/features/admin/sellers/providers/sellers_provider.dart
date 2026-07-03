@@ -7,12 +7,14 @@ class SellerData {
   final int totalStock;
   final int todaySales;
   final int pendingShipments;
+  final bool? hasLowStock;
 
   SellerData({
     required this.seller,
     required this.totalStock,
     required this.todaySales,
     required this.pendingShipments,
+    this.hasLowStock = false,
   });
 }
 
@@ -47,6 +49,7 @@ final sellersProvider = FutureProvider<List<SellerData>>((ref) async {
         totalStock: item['totalStock'] ?? 0,
         todaySales: item['todaySales'] ?? 0,
         pendingShipments: item['pendingShipments'] ?? 0,
+        hasLowStock: item['hasLowStock'] == true,
       ));
     }
   }

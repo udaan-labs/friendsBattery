@@ -11,14 +11,10 @@ part 'api_products_list_post_request.g.dart';
 /// ApiProductsListPostRequest
 ///
 /// Properties:
-/// * [categoryId] 
 /// * [productNameId] 
 /// * [productModelId] 
 @BuiltValue()
 abstract class ApiProductsListPostRequest implements Built<ApiProductsListPostRequest, ApiProductsListPostRequestBuilder> {
-  @BuiltValueField(wireName: r'category_id')
-  int? get categoryId;
-
   @BuiltValueField(wireName: r'product_name_id')
   int? get productNameId;
 
@@ -48,13 +44,6 @@ class _$ApiProductsListPostRequestSerializer implements PrimitiveSerializer<ApiP
     ApiProductsListPostRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    if (object.categoryId != null) {
-      yield r'category_id';
-      yield serializers.serialize(
-        object.categoryId,
-        specifiedType: const FullType(int),
-      );
-    }
     if (object.productNameId != null) {
       yield r'product_name_id';
       yield serializers.serialize(
@@ -92,13 +81,6 @@ class _$ApiProductsListPostRequestSerializer implements PrimitiveSerializer<ApiP
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'category_id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
-          result.categoryId = valueDes;
-          break;
         case r'product_name_id':
           final valueDes = serializers.deserialize(
             value,

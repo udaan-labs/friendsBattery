@@ -11,7 +11,6 @@ part 'api_inventory_update_stock_post_request.g.dart';
 /// ApiInventoryUpdateStockPostRequest
 ///
 /// Properties:
-/// * [productCategoryId] 
 /// * [productNameId] 
 /// * [productModelId] 
 /// * [quantity] 
@@ -20,9 +19,6 @@ part 'api_inventory_update_stock_post_request.g.dart';
 /// * [minUnitCountSeller] 
 @BuiltValue()
 abstract class ApiInventoryUpdateStockPostRequest implements Built<ApiInventoryUpdateStockPostRequest, ApiInventoryUpdateStockPostRequestBuilder> {
-  @BuiltValueField(wireName: r'productCategoryId')
-  int get productCategoryId;
-
   @BuiltValueField(wireName: r'productNameId')
   int get productNameId;
 
@@ -64,11 +60,6 @@ class _$ApiInventoryUpdateStockPostRequestSerializer implements PrimitiveSeriali
     ApiInventoryUpdateStockPostRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'productCategoryId';
-    yield serializers.serialize(
-      object.productCategoryId,
-      specifiedType: const FullType(int),
-    );
     yield r'productNameId';
     yield serializers.serialize(
       object.productNameId,
@@ -128,13 +119,6 @@ class _$ApiInventoryUpdateStockPostRequestSerializer implements PrimitiveSeriali
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'productCategoryId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
-          result.productCategoryId = valueDes;
-          break;
         case r'productNameId':
           final valueDes = serializers.deserialize(
             value,

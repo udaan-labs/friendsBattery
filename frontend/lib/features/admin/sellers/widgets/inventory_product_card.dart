@@ -18,10 +18,12 @@ class InventoryProductCard extends StatelessWidget {
     // Status Logic
     String statusText;
     Color statusColor;
+    final isLowStock = inventoryItem['is_low_stock'] == true;
+    
     if (quantity <= 0) {
       statusText = 'Out of Stock';
       statusColor = Colors.red;
-    } else if (quantity < 10) {
+    } else if (isLowStock) {
       statusText = 'Low Stock';
       statusColor = Colors.orange;
     } else {

@@ -6,8 +6,8 @@ part of 'product_unit.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const ProductUnitStatusEnum _$productUnitStatusEnum_IN_STOCK =
-    const ProductUnitStatusEnum._('IN_STOCK');
+const ProductUnitStatusEnum _$productUnitStatusEnum_AVAILABLE =
+    const ProductUnitStatusEnum._('AVAILABLE');
 const ProductUnitStatusEnum _$productUnitStatusEnum_IN_TRANSIT =
     const ProductUnitStatusEnum._('IN_TRANSIT');
 const ProductUnitStatusEnum _$productUnitStatusEnum_SOLD =
@@ -19,8 +19,8 @@ const ProductUnitStatusEnum _$productUnitStatusEnum_DEFECTIVE =
 
 ProductUnitStatusEnum _$productUnitStatusEnumValueOf(String name) {
   switch (name) {
-    case 'IN_STOCK':
-      return _$productUnitStatusEnum_IN_STOCK;
+    case 'AVAILABLE':
+      return _$productUnitStatusEnum_AVAILABLE;
     case 'IN_TRANSIT':
       return _$productUnitStatusEnum_IN_TRANSIT;
     case 'SOLD':
@@ -36,7 +36,7 @@ ProductUnitStatusEnum _$productUnitStatusEnumValueOf(String name) {
 
 final BuiltSet<ProductUnitStatusEnum> _$productUnitStatusEnumValues =
     BuiltSet<ProductUnitStatusEnum>(const <ProductUnitStatusEnum>[
-      _$productUnitStatusEnum_IN_STOCK,
+      _$productUnitStatusEnum_AVAILABLE,
       _$productUnitStatusEnum_IN_TRANSIT,
       _$productUnitStatusEnum_SOLD,
       _$productUnitStatusEnum_RETURNED,
@@ -49,14 +49,14 @@ Serializer<ProductUnitStatusEnum> _$productUnitStatusEnumSerializer =
 class _$ProductUnitStatusEnumSerializer
     implements PrimitiveSerializer<ProductUnitStatusEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
-    'IN_STOCK': 'IN_STOCK',
+    'AVAILABLE': 'AVAILABLE',
     'IN_TRANSIT': 'IN_TRANSIT',
     'SOLD': 'SOLD',
     'RETURNED': 'RETURNED',
     'DEFECTIVE': 'DEFECTIVE',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
-    'IN_STOCK': 'IN_STOCK',
+    'AVAILABLE': 'AVAILABLE',
     'IN_TRANSIT': 'IN_TRANSIT',
     'SOLD': 'SOLD',
     'RETURNED': 'RETURNED',

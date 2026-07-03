@@ -9,16 +9,13 @@ part of 'api_products_product_names_post_request.dart';
 class _$ApiProductsProductNamesPostRequest
     extends ApiProductsProductNamesPostRequest {
   @override
-  final int? categoryId;
-  @override
   final String? name;
 
   factory _$ApiProductsProductNamesPostRequest([
     void Function(ApiProductsProductNamesPostRequestBuilder)? updates,
   ]) => (ApiProductsProductNamesPostRequestBuilder()..update(updates))._build();
 
-  _$ApiProductsProductNamesPostRequest._({this.categoryId, this.name})
-    : super._();
+  _$ApiProductsProductNamesPostRequest._({this.name}) : super._();
   @override
   ApiProductsProductNamesPostRequest rebuild(
     void Function(ApiProductsProductNamesPostRequestBuilder) updates,
@@ -31,15 +28,12 @@ class _$ApiProductsProductNamesPostRequest
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is ApiProductsProductNamesPostRequest &&
-        categoryId == other.categoryId &&
-        name == other.name;
+    return other is ApiProductsProductNamesPostRequest && name == other.name;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
-    _$hash = $jc(_$hash, categoryId.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -47,10 +41,9 @@ class _$ApiProductsProductNamesPostRequest
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'ApiProductsProductNamesPostRequest')
-          ..add('categoryId', categoryId)
-          ..add('name', name))
-        .toString();
+    return (newBuiltValueToStringHelper(
+      r'ApiProductsProductNamesPostRequest',
+    )..add('name', name)).toString();
   }
 }
 
@@ -61,10 +54,6 @@ class ApiProductsProductNamesPostRequestBuilder
           ApiProductsProductNamesPostRequestBuilder
         > {
   _$ApiProductsProductNamesPostRequest? _$v;
-
-  int? _categoryId;
-  int? get categoryId => _$this._categoryId;
-  set categoryId(int? categoryId) => _$this._categoryId = categoryId;
 
   String? _name;
   String? get name => _$this._name;
@@ -77,7 +66,6 @@ class ApiProductsProductNamesPostRequestBuilder
   ApiProductsProductNamesPostRequestBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _categoryId = $v.categoryId;
       _name = $v.name;
       _$v = null;
     }
@@ -100,12 +88,7 @@ class ApiProductsProductNamesPostRequestBuilder
   ApiProductsProductNamesPostRequest build() => _build();
 
   _$ApiProductsProductNamesPostRequest _build() {
-    final _$result =
-        _$v ??
-        _$ApiProductsProductNamesPostRequest._(
-          categoryId: categoryId,
-          name: name,
-        );
+    final _$result = _$v ?? _$ApiProductsProductNamesPostRequest._(name: name);
     replace(_$result);
     return _$result;
   }

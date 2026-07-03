@@ -16,6 +16,10 @@ class ShopsService {
     const sellers = await shopsRepository.findSellers();
     const dashboardRepository = require('../dashboard/dashboard.repository');
 
+    // Fetch low stock sellers efficiently
+    const lowStockSellerIds = await shopsRepository.getLowStockSellers();
+    const lowStockSellerIdSet = new Set(lowStockSellerIds);
+
     // Enrich each seller with live stats in parallel
     const enriched = await Promise.all(
       sellers.map(async (user) => {
@@ -35,7 +39,8 @@ class ShopsService {
           totalStock,
           todaySales: todaySales.count,
           todaySalesAmount: todaySales.amount,
-          pendingShipments
+          pendingShipments,
+          hasLowStock: lowStockSellerIdSet.has(Number(user.id))
         };
       })
     );
