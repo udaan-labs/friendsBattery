@@ -76,7 +76,7 @@ class KpiGrid extends ConsumerWidget {
                     context.push('/shared/inventory');
                   })),
                   SizedBox(width: spacing),
-                  Expanded(child: buildCard('TOTAL SALES', todaySales, 'Transactions', Icons.trending_up_outlined, onTap: () {
+                  Expanded(child: buildCard('TODAY\'S SALES', todaySales, 'Transactions', Icons.trending_up_outlined, onTap: () {
                     context.push('/admin/sales');
                   })),
                 ],
