@@ -8,7 +8,6 @@ import 'package:friends_battery_api/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**productId** | **int** |  | [optional] 
 **productName** | **String** |  | [optional] 
 **totalQuantity** | **int** |  | [optional] 
 **soldQuantity** | **int** |  | [optional] 

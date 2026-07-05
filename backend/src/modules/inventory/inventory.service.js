@@ -20,8 +20,8 @@ class InventoryService {
 
     let products, total;
     [products, total] = await Promise.all([
-      inventoryRepository.findInventory(userId, { search, skip, take: limit }),
-      inventoryRepository.countInventory(userId, { search })
+      inventoryRepository.findInventory(userId, role, { search, skip, take: limit }),
+      inventoryRepository.countInventory(userId, role, { search })
     ]);
 
     return {
@@ -51,7 +51,7 @@ class InventoryService {
    */
   async getInventoryItem(userId, role, productId) {
     let product;
-    product = await inventoryRepository.findInventoryByProduct(userId, productId);
+    product = await inventoryRepository.findInventoryByProduct(userId, role, productId);
     
     if (!product) {
       const error = new Error('Inventory item not found');
@@ -384,10 +384,8 @@ class InventoryService {
     const limitNum = Number(limit);
     const skip = (pageNum - 1) * limitNum;
 
-    // Filter stock counts to only show the logged-in user's own stock
-    const ownerFilter = {
-      ownerId: BigInt(userId)
-    };
+    // Filter stock counts to only show the logged-in user's own stock, or all admins' stock if admin
+    const ownerFilter = role === 'ADMIN' ? { owner: { role: 'ADMIN' } } : { ownerId: BigInt(userId) };
 
     const filters = {
       productNameId: product_name_id,

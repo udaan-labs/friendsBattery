@@ -10,6 +10,7 @@ import 'package:dio/dio.dart';
 
 import 'package:friends_battery_api/src/api_util.dart';
 import 'package:friends_battery_api/src/model/api_inventory_adjust_patch_request.dart';
+import 'package:friends_battery_api/src/model/api_inventory_details_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_inventory_product_id_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_inventory_transfer_post_request.dart';
 import 'package:friends_battery_api/src/model/api_inventory_update_stock_post_request.dart';
@@ -172,9 +173,9 @@ class InventoryApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future]
+  /// Returns a [Future] containing a [Response] with a [ApiInventoryDetailsGet200Response] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<void>> apiInventoryDetailsGet({ 
+  Future<Response<ApiInventoryDetailsGet200Response>> apiInventoryDetailsGet({ 
     int? productNameId,
     String? search,
     int? page = 1,
@@ -221,7 +222,35 @@ class InventoryApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    return _response;
+    ApiInventoryDetailsGet200Response? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(ApiInventoryDetailsGet200Response),
+      ) as ApiInventoryDetailsGet200Response;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<ApiInventoryDetailsGet200Response>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
   }
 
   /// Return logged-in user&#39;s inventory

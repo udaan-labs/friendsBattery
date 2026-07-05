@@ -26,6 +26,12 @@ export 'package:friends_battery_api/src/model/api_auth_register_post_request.dar
 export 'package:friends_battery_api/src/model/api_dashboard_stats_get200_response.dart';
 export 'package:friends_battery_api/src/model/api_dashboard_stats_get200_response_data.dart';
 export 'package:friends_battery_api/src/model/api_inventory_adjust_patch_request.dart';
+export 'package:friends_battery_api/src/model/api_inventory_details_get200_response.dart';
+export 'package:friends_battery_api/src/model/api_inventory_details_get200_response_data.dart';
+export 'package:friends_battery_api/src/model/api_inventory_details_get200_response_data_categories_inner.dart';
+export 'package:friends_battery_api/src/model/api_inventory_details_get200_response_data_categories_inner_subcategories_inner.dart';
+export 'package:friends_battery_api/src/model/api_inventory_details_get200_response_data_categories_inner_subcategories_inner_products_inner.dart';
+export 'package:friends_battery_api/src/model/api_inventory_details_get200_response_data_pagination.dart';
 export 'package:friends_battery_api/src/model/api_inventory_product_id_get200_response.dart';
 export 'package:friends_battery_api/src/model/api_inventory_product_id_get200_response_data.dart';
 export 'package:friends_battery_api/src/model/api_inventory_transfer_post_request.dart';

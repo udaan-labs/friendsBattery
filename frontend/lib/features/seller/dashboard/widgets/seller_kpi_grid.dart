@@ -227,12 +227,7 @@ class SellerKpiGrid extends ConsumerWidget {
         stats.salesGrowthPercentage,
       ),
       loading: () => buildGrid(0, 0, 0, 0),
-      error: (e, st) => SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text('Error: $e', style: const TextStyle(color: Colors.red)),
-        ),
-      ),
+      error: (e, st) => const SliverToBoxAdapter(child: SizedBox.shrink()),
     );
   }
 }

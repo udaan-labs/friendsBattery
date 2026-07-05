@@ -11,16 +11,12 @@ part 'api_inventory_details_get200_response_data_categories_inner_subcategories_
 /// ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner
 ///
 /// Properties:
-/// * [productId] 
 /// * [productName] 
 /// * [totalQuantity] 
 /// * [soldQuantity] 
 /// * [remainingQuantity] 
 @BuiltValue()
 abstract class ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner implements Built<ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner, ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInnerBuilder> {
-  @BuiltValueField(wireName: r'productId')
-  int? get productId;
-
   @BuiltValueField(wireName: r'productName')
   String? get productName;
 
@@ -56,13 +52,6 @@ class _$ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerPr
     ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    if (object.productId != null) {
-      yield r'productId';
-      yield serializers.serialize(
-        object.productId,
-        specifiedType: const FullType(int),
-      );
-    }
     if (object.productName != null) {
       yield r'productName';
       yield serializers.serialize(
@@ -114,13 +103,6 @@ class _$ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerPr
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'productId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
-          result.productId = valueDes;
-          break;
         case r'productName':
           final valueDes = serializers.deserialize(
             value,

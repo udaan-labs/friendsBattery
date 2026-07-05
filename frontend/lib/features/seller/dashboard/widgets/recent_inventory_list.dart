@@ -130,12 +130,7 @@ class RecentInventoryList extends ConsumerWidget {
                 child: CircularProgressIndicator(),
               ),
             ),
-            error: (e, st) => Center(
-              child: Padding(
-                padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
-                child: Text('Error: $e', style: const TextStyle(color: Colors.red)),
-              ),
-            ),
+            error: (e, st) => const SizedBox.shrink(),
           ),
         ],
       ),

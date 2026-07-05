@@ -14,6 +14,18 @@ Serializers _$serializers =
           ..add(ApiDashboardStatsGet200Response.serializer)
           ..add(ApiDashboardStatsGet200ResponseData.serializer)
           ..add(ApiInventoryAdjustPatchRequest.serializer)
+          ..add(ApiInventoryDetailsGet200Response.serializer)
+          ..add(ApiInventoryDetailsGet200ResponseData.serializer)
+          ..add(ApiInventoryDetailsGet200ResponseDataCategoriesInner.serializer)
+          ..add(
+            ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner
+                .serializer,
+          )
+          ..add(
+            ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner
+                .serializer,
+          )
+          ..add(ApiInventoryDetailsGet200ResponseDataPagination.serializer)
           ..add(ApiInventoryProductIdGet200Response.serializer)
           ..add(ApiInventoryProductIdGet200ResponseData.serializer)
           ..add(ApiInventoryTransferPostRequest.serializer)
@@ -63,6 +75,39 @@ Serializers _$serializers =
           ..add(StockRequestStatusEnum.serializer)
           ..add(User.serializer)
           ..add(UserRoleEnum.serializer)
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                ApiInventoryDetailsGet200ResponseDataCategoriesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  ApiInventoryDetailsGet200ResponseDataCategoriesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner
+                >(),
+          )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(ApiInventoryTransferPostRequestProductsInner),

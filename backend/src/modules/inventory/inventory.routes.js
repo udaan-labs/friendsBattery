@@ -87,6 +87,47 @@ router.get(
  *     responses:
  *       200:
  *         description: Inventory details summary fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     categories:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           categoryId: { type: 'string' }
+ *                           categoryName: { type: 'string' }
+ *                           subcategories:
+ *                             type: array
+ *                             items:
+ *                               type: object
+ *                               properties:
+ *                                 subcategoryName: { type: 'string' }
+ *                                 products:
+ *                                   type: array
+ *                                   items:
+ *                                     type: object
+ *                                     properties:
+ *                                       productName: { type: 'string' }
+ *                                       totalQuantity: { type: 'integer' }
+ *                                       soldQuantity: { type: 'integer' }
+ *                                       remainingQuantity: { type: 'integer' }
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         total: { type: 'integer' }
+ *                         page: { type: 'integer' }
+ *                         limit: { type: 'integer' }
+ *                         totalPages: { type: 'integer' }
  *       401:
  *         description: Unauthorized
  *       500:

@@ -13,11 +13,13 @@ class InventoryRepository {
    * Input: userId (BigInt)
    * Output: Array of products with their unit count for the user.
    */
-  async findInventory(userId, { search, skip, take }) {
+  async findInventory(userId, role, { search, skip, take }) {
+    const ownerFilter = role === 'ADMIN' ? { owner: { role: 'ADMIN' } } : { ownerId: BigInt(userId) };
+
     const whereClause = {
       units: {
         some: {
-          ownerId: BigInt(userId),
+          ...ownerFilter,
           status: 'AVAILABLE'
         }
       }
@@ -39,7 +41,7 @@ class InventoryRepository {
           select: {
             units: {
               where: {
-                ownerId: BigInt(userId),
+                ...ownerFilter,
                 status: 'AVAILABLE'
               }
             }
@@ -125,11 +127,13 @@ class InventoryRepository {
   /**
    * Retrieves the total count of inventory items for a user based on search criteria.
    */
-  async countInventory(userId, { search }) {
+  async countInventory(userId, role, { search }) {
+    const ownerFilter = role === 'ADMIN' ? { owner: { role: 'ADMIN' } } : { ownerId: BigInt(userId) };
+
     const whereClause = {
       units: {
         some: {
-          ownerId: BigInt(userId),
+          ...ownerFilter,
           status: 'AVAILABLE'
         }
       }
@@ -148,13 +152,15 @@ class InventoryRepository {
   /**
    * Retrieves a single inventory item details for a user.
    */
-  async findInventoryByProduct(userId, productId) {
+  async findInventoryByProduct(userId, role, productId) {
+    const ownerFilter = role === 'ADMIN' ? { owner: { role: 'ADMIN' } } : { ownerId: BigInt(userId) };
+
     return prisma.product.findFirst({
       where: {
         id: productId,
         units: {
           some: {
-            ownerId: userId,
+            ...ownerFilter,
             status: 'AVAILABLE'
           }
         }
@@ -166,7 +172,7 @@ class InventoryRepository {
           select: {
             units: {
               where: {
-                ownerId: userId,
+                ...ownerFilter,
                 status: 'AVAILABLE'
               }
             }

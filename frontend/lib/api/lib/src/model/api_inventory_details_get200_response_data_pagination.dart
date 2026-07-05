@@ -26,7 +26,7 @@ abstract class ApiInventoryDetailsGet200ResponseDataPagination implements Built<
   @BuiltValueField(wireName: r'limit')
   int? get limit;
 
-  @BuiltValueField(wireName: r'total_pages')
+  @BuiltValueField(wireName: r'totalPages')
   int? get totalPages;
 
   ApiInventoryDetailsGet200ResponseDataPagination._();
@@ -74,7 +74,7 @@ class _$ApiInventoryDetailsGet200ResponseDataPaginationSerializer implements Pri
       );
     }
     if (object.totalPages != null) {
-      yield r'total_pages';
+      yield r'totalPages';
       yield serializers.serialize(
         object.totalPages,
         specifiedType: const FullType(int),
@@ -124,7 +124,7 @@ class _$ApiInventoryDetailsGet200ResponseDataPaginationSerializer implements Pri
           ) as int;
           result.limit = valueDes;
           break;
-        case r'total_pages':
+        case r'totalPages':
           final valueDes = serializers.deserialize(
             value,
             specifiedType: const FullType(int),

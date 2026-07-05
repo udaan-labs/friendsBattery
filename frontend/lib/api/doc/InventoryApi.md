@@ -103,7 +103,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiInventoryDetailsGet**
-> apiInventoryDetailsGet(productNameId, search, page, limit)
+> ApiInventoryDetailsGet200Response apiInventoryDetailsGet(productNameId, search, page, limit)
 
 Return a complete inventory summary grouped by Product Name and Product Model
 
@@ -118,7 +118,8 @@ final int page = 56; // int | Page number for pagination
 final int limit = 56; // int | Number of items per page
 
 try {
-    api.apiInventoryDetailsGet(productNameId, search, page, limit);
+    final response = api.apiInventoryDetailsGet(productNameId, search, page, limit);
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling InventoryApi->apiInventoryDetailsGet: $e\n');
 }
@@ -135,7 +136,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-void (empty response body)
+[**ApiInventoryDetailsGet200Response**](ApiInventoryDetailsGet200Response.md)
 
 ### Authorization
 
@@ -144,7 +145,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

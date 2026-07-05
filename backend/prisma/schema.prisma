@@ -137,6 +137,7 @@ model ProductUnit {
   ownerId      BigInt     @map("owner_id")
   ownerType    Role       @default(ADMIN) @map("owner_type")
   serialNumber String     @unique @map("serial_number") @db.VarChar(100)
+  qrCode       String?    @unique @map("qr_code") @db.VarChar(100)
   status       UnitStatus @default(AVAILABLE)
   soldDate     DateTime?  @map("sold_date") @db.Timestamp()
   createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamp()

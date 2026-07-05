@@ -22,6 +22,7 @@ import '../../features/seller/sales/screens/seller_sales_history_screen.dart';
 import '../../features/shared/inventory/screens/current_inventory_screen.dart';
 import '../../features/admin/sellers/screens/sellers_list_screen.dart';
 import '../../features/admin/sellers/screens/seller_details_screen.dart';
+import '../../features/shared/product_lookup/screens/verify_product_screen.dart';
 import '../../shared/providers/auth_provider.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -100,6 +101,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const CreateShipmentScreen(),
           ),
           GoRoute(
+            path: '/admin/verify-product',
+            builder: (context, state) => const VerifyProductScreen(),
+          ),
+          GoRoute(
             path: '/admin/sellers',
             builder: (context, state) => const SellersListScreen(),
           ),
@@ -131,6 +136,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/seller/dashboard',
             builder: (context, state) => const SellerDashboardScreen(),
+          ),
+          GoRoute(
+            path: '/seller/verify-product',
+            builder: (context, state) => const VerifyProductScreen(),
           ),
           GoRoute(
             path: '/seller/inventory',

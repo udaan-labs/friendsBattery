@@ -89,7 +89,7 @@ class RecentActivityTimeline extends ConsumerWidget {
               );
             },
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, st) => Text('Error: $e'),
+            error: (e, st) => const SizedBox.shrink(),
           ),
         ],
       ),

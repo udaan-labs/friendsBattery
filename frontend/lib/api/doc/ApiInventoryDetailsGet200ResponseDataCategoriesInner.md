@@ -8,10 +8,8 @@ import 'package:friends_battery_api/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**categoryId** | **int** |  | [optional] 
+**categoryId** | **String** |  | [optional] 
 **categoryName** | **String** |  | [optional] 
-**totalProducts** | **int** |  | [optional] 
-**totalInventory** | **int** |  | [optional] 
 **subcategories** | [**BuiltList&lt;ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner&gt;**](ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner.md) |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

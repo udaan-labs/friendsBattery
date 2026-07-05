@@ -10,8 +10,6 @@ class _$ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerPr
     extends
         ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner {
   @override
-  final int? productId;
-  @override
   final String? productName;
   @override
   final int? totalQuantity;
@@ -31,7 +29,6 @@ class _$ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerPr
           ._build();
 
   _$ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner._({
-    this.productId,
     this.productName,
     this.totalQuantity,
     this.soldQuantity,
@@ -57,7 +54,6 @@ class _$ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerPr
     if (identical(other, this)) return true;
     return other
             is ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner &&
-        productId == other.productId &&
         productName == other.productName &&
         totalQuantity == other.totalQuantity &&
         soldQuantity == other.soldQuantity &&
@@ -67,7 +63,6 @@ class _$ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerPr
   @override
   int get hashCode {
     var _$hash = 0;
-    _$hash = $jc(_$hash, productId.hashCode);
     _$hash = $jc(_$hash, productName.hashCode);
     _$hash = $jc(_$hash, totalQuantity.hashCode);
     _$hash = $jc(_$hash, soldQuantity.hashCode);
@@ -81,7 +76,6 @@ class _$ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerPr
     return (newBuiltValueToStringHelper(
             r'ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner',
           )
-          ..add('productId', productId)
           ..add('productName', productName)
           ..add('totalQuantity', totalQuantity)
           ..add('soldQuantity', soldQuantity)
@@ -98,10 +92,6 @@ class ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProd
         > {
   _$ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner?
   _$v;
-
-  int? _productId;
-  int? get productId => _$this._productId;
-  set productId(int? productId) => _$this._productId = productId;
 
   String? _productName;
   String? get productName => _$this._productName;
@@ -131,7 +121,6 @@ class ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProd
   get _$this {
     final $v = _$v;
     if ($v != null) {
-      _productId = $v.productId;
       _productName = $v.productName;
       _totalQuantity = $v.totalQuantity;
       _soldQuantity = $v.soldQuantity;
@@ -171,7 +160,6 @@ class ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProd
         _$v ??
         _$ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner
             ._(
-              productId: productId,
               productName: productName,
               totalQuantity: totalQuantity,
               soldQuantity: soldQuantity,

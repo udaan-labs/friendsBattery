@@ -107,10 +107,7 @@ class KpiGrid extends ConsumerWidget {
         stats.pendingShipments.toString(),
       ),
       loading: () => buildGrid('--', '--', '--', '--'),
-      error: (e, st) => Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Text('Error: $e', style: const TextStyle(color: Colors.red)),
-      ),
+      error: (e, st) => const SizedBox.shrink(),
     );
   }
 }

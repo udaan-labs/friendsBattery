@@ -295,6 +295,16 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     },
                   ),
                   _buildDrawerItem(
+                    icon: Icons.qr_code_scanner_outlined,
+                    activeIcon: Icons.qr_code_scanner,
+                    title: 'Verify Product',
+                    tabId: 'verify_product',
+                    onTap: () {
+                      context.pop();
+                      context.push('/admin/verify-product');
+                    },
+                  ),
+                  _buildDrawerItem(
                     icon: Icons.people_outline,
                     activeIcon: Icons.people,
                     title: 'Manage Sellers',
@@ -323,18 +333,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       context.pop();
                       context.go('/admin/shipments');
                     },
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.assessment_outlined,
-                    activeIcon: Icons.assessment,
-                    title: 'Reports',
-                    tabId: 'reports',
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.settings_outlined,
-                    activeIcon: Icons.settings,
-                    title: 'Settings',
-                    tabId: 'settings',
                   ),
                 ],
               ),
@@ -412,8 +410,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         });
         return const Center(child: CircularProgressIndicator());
       case 'stock_transfer':
-      case 'reports':
-      case 'settings':
       default:
         return _buildPlaceholderTabView(_currentTab);
     }

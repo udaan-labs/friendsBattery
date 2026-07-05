@@ -23,7 +23,7 @@ class InventoryScreen extends ConsumerWidget {
           },
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+        error: (err, stack) => const SizedBox.shrink(),
       ),
     );
   }

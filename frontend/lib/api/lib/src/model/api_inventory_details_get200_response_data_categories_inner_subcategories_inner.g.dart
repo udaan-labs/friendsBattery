@@ -10,13 +10,7 @@ class _$ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner
     extends
         ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner {
   @override
-  final int? subcategoryId;
-  @override
   final String? subcategoryName;
-  @override
-  final int? totalProducts;
-  @override
-  final int? totalInventory;
   @override
   final BuiltList<
     ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner
@@ -34,10 +28,7 @@ class _$ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner
           ._build();
 
   _$ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner._({
-    this.subcategoryId,
     this.subcategoryName,
-    this.totalProducts,
-    this.totalInventory,
     this.products,
   }) : super._();
   @override
@@ -60,20 +51,14 @@ class _$ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner
     if (identical(other, this)) return true;
     return other
             is ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner &&
-        subcategoryId == other.subcategoryId &&
         subcategoryName == other.subcategoryName &&
-        totalProducts == other.totalProducts &&
-        totalInventory == other.totalInventory &&
         products == other.products;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
-    _$hash = $jc(_$hash, subcategoryId.hashCode);
     _$hash = $jc(_$hash, subcategoryName.hashCode);
-    _$hash = $jc(_$hash, totalProducts.hashCode);
-    _$hash = $jc(_$hash, totalInventory.hashCode);
     _$hash = $jc(_$hash, products.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -84,10 +69,7 @@ class _$ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner
     return (newBuiltValueToStringHelper(
             r'ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner',
           )
-          ..add('subcategoryId', subcategoryId)
           ..add('subcategoryName', subcategoryName)
-          ..add('totalProducts', totalProducts)
-          ..add('totalInventory', totalInventory)
           ..add('products', products))
         .toString();
   }
@@ -101,25 +83,10 @@ class ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerBuil
         > {
   _$ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner? _$v;
 
-  int? _subcategoryId;
-  int? get subcategoryId => _$this._subcategoryId;
-  set subcategoryId(int? subcategoryId) =>
-      _$this._subcategoryId = subcategoryId;
-
   String? _subcategoryName;
   String? get subcategoryName => _$this._subcategoryName;
   set subcategoryName(String? subcategoryName) =>
       _$this._subcategoryName = subcategoryName;
-
-  int? _totalProducts;
-  int? get totalProducts => _$this._totalProducts;
-  set totalProducts(int? totalProducts) =>
-      _$this._totalProducts = totalProducts;
-
-  int? _totalInventory;
-  int? get totalInventory => _$this._totalInventory;
-  set totalInventory(int? totalInventory) =>
-      _$this._totalInventory = totalInventory;
 
   ListBuilder<
     ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner
@@ -149,10 +116,7 @@ class ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerBuil
   get _$this {
     final $v = _$v;
     if ($v != null) {
-      _subcategoryId = $v.subcategoryId;
       _subcategoryName = $v.subcategoryName;
-      _totalProducts = $v.totalProducts;
-      _totalInventory = $v.totalInventory;
       _products = $v.products?.toBuilder();
       _$v = null;
     }
@@ -192,10 +156,7 @@ class ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerBuil
           _$v ??
           _$ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner
               ._(
-                subcategoryId: subcategoryId,
                 subcategoryName: subcategoryName,
-                totalProducts: totalProducts,
-                totalInventory: totalInventory,
                 products: _products?.build(),
               );
     } catch (_) {

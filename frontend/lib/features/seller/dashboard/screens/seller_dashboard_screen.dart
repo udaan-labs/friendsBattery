@@ -121,14 +121,16 @@ class SellerDashboardScreen extends ConsumerWidget {
                           ],
                         ),
                         child: TextField(
+                          readOnly: true,
+                          onTap: () => context.push('/seller/verify-product'),
                           decoration: InputDecoration(
-                            hintText: 'Search Battery by Serial Number',
+                            hintText: 'Verify / Lookup Product by Serial Number',
                             hintStyle: const TextStyle(color: Color(0xFF545F73)),
                             prefixIcon: const Icon(Icons.search, color: Color(0xFF545F73)),
                             suffixIcon: IconButton(
                               icon: const Icon(Icons.qr_code_scanner, color: Color(0xFF16A34A)),
                               onPressed: () {
-                                context.showInfoSnackBar('QR Code scanner tapped');
+                                context.push('/seller/verify-product');
                               },
                             ),
                             border: InputBorder.none,
