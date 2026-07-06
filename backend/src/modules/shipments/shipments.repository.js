@@ -217,7 +217,33 @@ class ShipmentsRepository {
           }
         });
 
-        // 3. Create InventoryTransaction records in bulk
+        // 3. Remove equivalent dummy units from Admin's available inventory
+        const productCounts = items.reduce((acc, item) => {
+          const pid = Number(item.productId);
+          acc[pid] = (acc[pid] || 0) + 1;
+          return acc;
+        }, {});
+
+        for (const [productId, count] of Object.entries(productCounts)) {
+          const dummyUnits = await tx.productUnit.findMany({
+            where: {
+              productId: BigInt(productId),
+              ownerId: updatedShipment.createdByAdminId,
+              status: 'AVAILABLE'
+            },
+            take: count,
+            select: { id: true }
+          });
+
+          if (dummyUnits.length > 0) {
+            const dummyIds = dummyUnits.map(u => u.id);
+            await tx.productUnit.deleteMany({
+              where: { id: { in: dummyIds } }
+            });
+          }
+        }
+
+        // 4. Create InventoryTransaction records in bulk
         const transactionsData = items.map(item => ({
           productUnitId: BigInt(item.productUnitId),
           fromUserId: updatedShipment.createdByAdminId,

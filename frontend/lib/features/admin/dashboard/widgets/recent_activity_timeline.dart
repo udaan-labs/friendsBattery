@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
+import 'package:go_router/go_router.dart';
 import '../providers/dashboard_providers.dart';
 
 class RecentActivityTimeline extends ConsumerWidget {
@@ -43,7 +44,9 @@ class RecentActivityTimeline extends ConsumerWidget {
                   ),
                 ),
               InkWell(
-                onTap: () {},
+                onTap: () {
+                  context.push('/admin/activity-history');
+                },
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [

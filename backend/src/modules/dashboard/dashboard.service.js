@@ -51,6 +51,16 @@ class DashboardService {
   async getRecentActivity() {
     return dashboardRepository.getRecentActivity();
   }
+
+  /**
+   * Get paginated activity history.
+   * @param {number} page
+   * @param {number} limit
+   * @returns {Promise<{data: Array, total: number}>}
+   */
+  async getActivityHistory(page, limit) {
+    return dashboardRepository.getActivityHistory(page, limit);
+  }
 }
 
 module.exports = new DashboardService();

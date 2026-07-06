@@ -6,6 +6,7 @@ import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
 import '../../features/admin/dashboard/screens/admin_dashboard_screen.dart';
 import '../../features/admin/dashboard/screens/admin_shell_screen.dart';
+import '../../features/admin/dashboard/screens/admin_activity_history_screen.dart';
 import '../../features/admin/inventory/screens/add_stock_screen.dart';
 import '../../features/admin/shipments/screens/shipment_list_screen.dart';
 import '../../features/admin/shipments/screens/create_shipment_screen.dart';
@@ -125,6 +126,10 @@ final routerProvider = Provider<GoRouter>((ref) {
               final idStr = state.pathParameters['id']!;
               return AdminShipmentDetailScreen(shipmentId: int.parse(idStr));
             },
+          ),
+          GoRoute(
+            path: '/admin/activity-history',
+            builder: (context, state) => const AdminActivityHistoryScreen(),
           ),
         ],
       ),

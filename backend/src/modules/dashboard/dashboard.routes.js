@@ -78,5 +78,23 @@ router.get(
   dashboardController.getRecentActivity.bind(dashboardController)
 );
 
-module.exports = router;
+/**
+ * @swagger
+ * /api/dashboard/activity-history:
+ *   get:
+ *     summary: Get paginated activity history (Admin only)
+ *     tags: [Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Activity history retrieved successfully
+ */
+router.get(
+  '/activity-history',
+  authenticate,
+  requireAdmin,
+  dashboardController.getActivityHistory.bind(dashboardController)
+);
 
+module.exports = router;

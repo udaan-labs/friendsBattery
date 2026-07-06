@@ -27,5 +27,19 @@ class DashboardApiService {
       throw Exception('Failed to load dashboard stats: $e');
     }
   }
+  Future<Map<String, dynamic>> getActivityHistory(int page, int limit) async {
+    try {
+      final response = await dio.get('/api/dashboard/activity-history', queryParameters: {
+        'page': page,
+        'limit': limit,
+      });
+      final body = response.data;
+      if (body is Map && body['success'] == true) {
+        return body['data'] as Map<String, dynamic>;
+      }
+      throw Exception(body['message'] ?? 'Failed to load activity history');
+    } catch (e) {
+      throw Exception('Failed to load activity history: $e');
+    }
+  }
 }
-
