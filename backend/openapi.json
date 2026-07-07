@@ -2033,6 +2033,32 @@
         }
       }
     },
+    "/api/inventory/scan-for-sale": {
+      "get": {
+        "summary": "Scan a serial number to fetch product details for a sale",
+        "tags": [
+          "Inventory"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "serial_number",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product found successfully"
+          },
+          "404": {
+            "description": "Product not found in available inventory"
+          }
+        }
+      }
+    },
     "/api/seller/dashboard/stats": {
       "get": {
         "summary": "Get seller dashboard statistics",
@@ -2175,6 +2201,24 @@
         "responses": {
           "200": {
             "description": "Recent activity retrieved successfully"
+          }
+        }
+      }
+    },
+    "/api/dashboard/activity-history": {
+      "get": {
+        "summary": "Get paginated activity history (Admin only)",
+        "tags": [
+          "Dashboard"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Activity history retrieved successfully"
           }
         }
       }

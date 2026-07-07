@@ -9,10 +9,47 @@ All URIs are relative to *http://localhost:3000*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**apiDashboardActivityHistoryGet**](DashboardApi.md#apidashboardactivityhistoryget) | **GET** /api/dashboard/activity-history | Get paginated activity history (Admin only)
 [**apiDashboardRecentActivityGet**](DashboardApi.md#apidashboardrecentactivityget) | **GET** /api/dashboard/recent-activity | Get recent activity feed (Admin only)
 [**apiDashboardStatsGet**](DashboardApi.md#apidashboardstatsget) | **GET** /api/dashboard/stats | Get dashboard statistics
 [**apiSellerDashboardStatsGet**](DashboardApi.md#apisellerdashboardstatsget) | **GET** /api/seller/dashboard/stats | Get seller dashboard statistics
 
+
+# **apiDashboardActivityHistoryGet**
+> apiDashboardActivityHistoryGet()
+
+Get paginated activity history (Admin only)
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getDashboardApi();
+
+try {
+    api.apiDashboardActivityHistoryGet();
+} on DioException catch (e) {
+    print('Exception when calling DashboardApi->apiDashboardActivityHistoryGet: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiDashboardRecentActivityGet**
 > apiDashboardRecentActivityGet()
