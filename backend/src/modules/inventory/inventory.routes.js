@@ -243,6 +243,30 @@ router.get(
 
 /**
  * @swagger
+ * /api/inventory/scan-for-sale:
+ *   get:
+ *     summary: Scan a serial number to fetch product details for a sale
+ *     tags: [Inventory]
+ *     parameters:
+ *       - in: query
+ *         name: serial_number
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Product found successfully
+ *       404:
+ *         description: Product not found in available inventory
+ */
+router.get(
+  '/scan-for-sale',
+  authenticate,
+  inventoryController.scanForSale.bind(inventoryController)
+);
+
+/**
+ * @swagger
  * /api/inventory/{productId}:
  *   get:
  *     summary: Return one inventory item
@@ -420,28 +444,4 @@ router.post(
   validateRequest(updateStockSchema),
   inventoryController.updateStock
 );
-/**
- * @swagger
- * /api/inventory/scan-for-sale:
- *   get:
- *     summary: Scan a serial number to fetch product details for a sale
- *     tags: [Inventory]
- *     parameters:
- *       - in: query
- *         name: serial_number
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Product found successfully
- *       404:
- *         description: Product not found in available inventory
- */
-router.get(
-  '/scan-for-sale',
-  authenticate,
-  inventoryController.scanForSale.bind(inventoryController)
-);
-
 module.exports = router;

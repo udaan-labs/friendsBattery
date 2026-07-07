@@ -31,6 +31,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
   String? _selectedProductModelId;
   String? _selectedProductName;
   String? _selectedProductModel;
+  String? _fetchedSerialNumber;
 
   int? _productId;
   num? _minPrice;
@@ -79,6 +80,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
       _selectedProductModelId = null;
       _selectedProductName = null;
       _selectedProductModel = null;
+      _fetchedSerialNumber = null;
       _minPrice = null;
     });
 
@@ -98,6 +100,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
           _selectedProductModelId = data['productModelId']?.toString();
           _selectedProductName = data['productName'] as String?;
           _selectedProductModel = data['productModel'] as String?;
+          _fetchedSerialNumber = serial.trim();
           _minPrice = data['minSellPrice'] as num?;
         });
         if (mounted) {
@@ -130,6 +133,12 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (_productId == null || _selectedProductNameId == null || _selectedProductModelId == null) {
       context.showErrorSnackBar('Please scan a valid serial number and fetch product details');
+      return;
+    }
+
+    final serialValue = _serialNumberController.text.trim();
+    if (_fetchedSerialNumber == null || _fetchedSerialNumber != serialValue) {
+      context.showErrorSnackBar('Serial number changed. Please fetch product details again.');
       return;
     }
 
@@ -325,6 +334,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                                       ? null
                                       : () => _fetchProductDetails(_serialNumberController.text),
                                   style: ElevatedButton.styleFrom(
+                                    minimumSize: const Size(0, 48), // override infinite width from theme
                                     padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                                     backgroundColor: const Color(0xFF191C1E),
                                     foregroundColor: Colors.white,
