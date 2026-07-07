@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 import '../models/seller_sale.dart';
@@ -31,7 +32,7 @@ class SellerSaleCard extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
           onTap: () {
-            // Optional: Navigate to detail screen if implemented later
+            context.push('/seller/sales/${sale.id}');
           },
           child: Padding(
             padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),

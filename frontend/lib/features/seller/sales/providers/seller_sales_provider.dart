@@ -73,3 +73,8 @@ final sellerSalesProvider = StateNotifierProvider<SellerSalesNotifier, SellerSal
   final repository = ref.watch(sellerSalesRepositoryProvider);
   return SellerSalesNotifier(repository);
 });
+
+final sellerSaleDetailsProvider = FutureProvider.family<SellerSale, int>((ref, id) async {
+  final repository = ref.watch(sellerSalesRepositoryProvider);
+  return await repository.getSaleById(id);
+});

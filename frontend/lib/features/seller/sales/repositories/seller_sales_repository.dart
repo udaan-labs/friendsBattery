@@ -42,4 +42,13 @@ class SellerSalesRepository {
 
     return rawList.whereType<Map<String, dynamic>>().map((e) => SellerSale.fromJson(e)).toList();
   }
+
+  Future<SellerSale> getSaleById(int id) async {
+    final response = await _dio.get('/api/sales/$id');
+    final body = response.data;
+    if (body is Map && body['success'] == true) {
+      return SellerSale.fromJson(body['data']);
+    }
+    throw Exception(body['message'] ?? 'Failed to fetch sale details');
+  }
 }

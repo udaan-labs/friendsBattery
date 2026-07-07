@@ -20,6 +20,7 @@ import '../../features/seller/dashboard/screens/seller_received_shipments_screen
 import '../../features/seller/dashboard/screens/sale_success_screen.dart';
 import '../../features/seller/dashboard/screens/seller_return_product_screen.dart';
 import '../../features/seller/sales/screens/seller_sales_history_screen.dart';
+import '../../features/seller/sales/screens/seller_sale_details_screen.dart';
 import '../../features/shared/inventory/screens/current_inventory_screen.dart';
 import '../../features/admin/sellers/screens/sellers_list_screen.dart';
 import '../../features/admin/sellers/screens/seller_details_screen.dart';
@@ -168,6 +169,13 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/seller/sales-history',
             builder: (context, state) => const SellerSalesHistoryScreen(),
+          ),
+          GoRoute(
+            path: '/seller/sales/:id',
+            builder: (context, state) {
+              final idStr = state.pathParameters['id']!;
+              return SellerSaleDetailsScreen(saleId: int.parse(idStr));
+            },
           ),
           GoRoute(
             path: '/seller/return-product',
