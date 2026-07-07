@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import '../../../../core/network/api_client_provider.dart';
 import '../../../../core/storage/local_storage.dart';
+import '../../sales/models/seller_sale.dart';
 
 class SellerProfile {
   final String userName;
@@ -53,6 +54,7 @@ class SellerKpiStats {
   final int todaySalesCount;
   final double salesGrowthPercentage;
   final int pendingShipments;
+  final List<SellerSale> recentSales;
 
   SellerKpiStats({
     required this.currentStock,
@@ -60,6 +62,7 @@ class SellerKpiStats {
     required this.todaySalesCount,
     required this.salesGrowthPercentage,
     required this.pendingShipments,
+    required this.recentSales,
   });
 }
 
@@ -79,6 +82,9 @@ final sellerKpiProvider = FutureProvider<SellerKpiStats>((ref) async {
     final todaySalesCount = (d['todaySales'] ?? 0) as int;
     final todaySalesAmount = (d['todaySalesAmount'] ?? 0).toDouble();
     final pendingShipmentsCount = (d['pendingShipments'] ?? 0) as int;
+    
+    final recentSalesList = (d['recentSales'] as List?) ?? [];
+    final recentSales = recentSalesList.map((e) => SellerSale.fromJson(e)).toList();
 
     return SellerKpiStats(
       currentStock: totalStock,
@@ -86,6 +92,7 @@ final sellerKpiProvider = FutureProvider<SellerKpiStats>((ref) async {
       todaySalesCount: todaySalesCount,
       salesGrowthPercentage: 12.0,
       pendingShipments: pendingShipmentsCount,
+      recentSales: recentSales,
     );
   } catch (e) {
     rethrow;

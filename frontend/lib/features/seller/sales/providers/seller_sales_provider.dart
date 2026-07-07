@@ -13,12 +13,16 @@ class SellerSalesState {
   final bool isLoading;
   final String? error;
   final String searchQuery; // Combines customer or serial search based on what user types
+  final String filter; // 'today', 'all', 'date'
+  final DateTime? selectedDate;
 
   SellerSalesState({
     this.sales = const [],
     this.isLoading = true,
     this.error,
     this.searchQuery = '',
+    this.filter = 'today',
+    this.selectedDate,
   });
 
   SellerSalesState copyWith({
@@ -26,12 +30,16 @@ class SellerSalesState {
     bool? isLoading,
     String? error,
     String? searchQuery,
+    String? filter,
+    DateTime? selectedDate,
   }) {
     return SellerSalesState(
       sales: sales ?? this.sales,
       isLoading: isLoading ?? this.isLoading,
       error: error,
       searchQuery: searchQuery ?? this.searchQuery,
+      filter: filter ?? this.filter,
+      selectedDate: selectedDate ?? this.selectedDate,
     );
   }
 }
@@ -56,11 +64,23 @@ class SellerSalesNotifier extends StateNotifier<SellerSalesState> {
       final sales = await _repository.getSalesHistory(
         searchCustomer: state.searchQuery,
         searchSerial: state.searchQuery,
+        filter: state.filter,
+        date: state.selectedDate?.toIso8601String(),
       );
       state = state.copyWith(sales: sales, isLoading: false, error: null);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
+  }
+
+  void setFilter(String filter) {
+    state = state.copyWith(filter: filter);
+    fetchSales();
+  }
+
+  void setDate(DateTime date) {
+    state = state.copyWith(filter: 'date', selectedDate: date);
+    fetchSales();
   }
 
   void updateSearch(String query) {

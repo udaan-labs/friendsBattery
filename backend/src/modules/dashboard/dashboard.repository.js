@@ -147,6 +147,44 @@ class DashboardRepository {
   }
 
   /**
+   * Get the 10 most recent sales made today for a specific seller.
+   * @param {string|number|bigint} sellerId
+   * @returns {Promise<Array>}
+   */
+  async getSellerRecentSales(sellerId) {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+
+    const sales = await prisma.salesTransaction.findMany({
+      where: {
+        sellerId: BigInt(sellerId),
+        soldAt: {
+          gte: startOfToday,
+          lte: endOfToday
+        }
+      },
+      orderBy: { soldAt: 'desc' },
+      take: 10,
+      include: {
+        customer: { select: { name: true } },
+        product: { include: { productModel: true, productName: true } }
+      }
+    });
+
+    return sales.map(s => ({
+      id: Number(s.id),
+      customerName: s.customer?.name || 'Unknown',
+      productName: s.product?.productName?.name || 'Unknown',
+      productModel: s.product?.productModel?.name || 'Unknown',
+      serialNumber: s.serialNumber,
+      sellPrice: Number(s.sellPrice),
+      soldAt: s.soldAt
+    }));
+  }
+
+  /**
    * Get the count of all PENDING shipments for Admin dashboard KPI.
    * Uses NewShipment (shipments table) — the active shipment flow.
    * @returns {Promise<number>}

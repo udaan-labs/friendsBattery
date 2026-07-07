@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 import '../../../../theme/app_theme.dart';
+import 'package:intl/intl.dart';
 import '../providers/seller_sales_provider.dart';
 import '../widgets/seller_sale_card.dart';
 
@@ -28,6 +29,34 @@ class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScr
 
   Future<void> _onRefresh() {
     return ref.read(sellerSalesProvider.notifier).fetchSales(isRefresh: true);
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final state = ref.read(sellerSalesProvider);
+    final initialDate = state.selectedDate ?? DateTime.now();
+
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF16A34A),
+              onPrimary: Colors.white,
+              onSurface: Color(0xFF191C1E),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      ref.read(sellerSalesProvider.notifier).setDate(picked);
+    }
   }
 
   @override
@@ -88,6 +117,21 @@ class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScr
               ),
             ),
 
+            // Filter Chips
+            Container(
+              color: Colors.white,
+              padding: EdgeInsets.fromLTRB(ResponsiveHelper.responsivePadding(context), 0, ResponsiveHelper.responsivePadding(context), 12),
+              child: Row(
+                children: [
+                  _buildFilterChip('Today', 'today', state),
+                  const SizedBox(width: 8),
+                  _buildFilterChip('All', 'all', state),
+                  const SizedBox(width: 8),
+                  _buildDateFilterChip(state),
+                ],
+              ),
+            ),
+
             // Thin divider between search and list
             const Divider(height: 1, thickness: 1, color: Color(0xFFEEF0F2)),
 
@@ -103,6 +147,56 @@ class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScr
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildFilterChip(String label, String filterValue, SellerSalesState state) {
+    final isSelected = state.filter == filterValue;
+    return ActionChip(
+      label: Text(label),
+      labelStyle: TextStyle(
+        color: isSelected ? Colors.white : const Color(0xFF545F73),
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        fontSize: 13,
+      ),
+      backgroundColor: isSelected ? const Color(0xFF16A34A) : const Color(0xFFF7F9FB),
+      side: BorderSide(
+        color: isSelected ? const Color(0xFF16A34A) : const Color(0xFFEEF0F2),
+      ),
+      onPressed: () => ref.read(sellerSalesProvider.notifier).setFilter(filterValue),
+    );
+  }
+
+  Widget _buildDateFilterChip(SellerSalesState state) {
+    final isSelected = state.filter == 'date';
+    String label = 'Date';
+    if (isSelected && state.selectedDate != null) {
+      label = DateFormat('MMM d, yyyy').format(state.selectedDate!);
+    }
+
+    return ActionChip(
+      label: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.calendar_today_rounded,
+            size: 14,
+            color: isSelected ? Colors.white : const Color(0xFF545F73),
+          ),
+          const SizedBox(width: 4),
+          Text(label),
+        ],
+      ),
+      labelStyle: TextStyle(
+        color: isSelected ? Colors.white : const Color(0xFF545F73),
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        fontSize: 13,
+      ),
+      backgroundColor: isSelected ? const Color(0xFF16A34A) : const Color(0xFFF7F9FB),
+      side: BorderSide(
+        color: isSelected ? const Color(0xFF16A34A) : const Color(0xFFEEF0F2),
+      ),
+      onPressed: () => _selectDate(context),
     );
   }
 

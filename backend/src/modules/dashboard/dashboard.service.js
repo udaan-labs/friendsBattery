@@ -30,17 +30,19 @@ class DashboardService {
    * @returns {Promise<Object>}
    */
   async getSellerStats(sellerId) {
-    const [totalStock, todaySales, pendingShipments] = await Promise.all([
+    const [totalStock, todaySales, pendingShipments, recentSales] = await Promise.all([
       dashboardRepository.getSellerTotalStock(sellerId),
       dashboardRepository.getSellerTodaySales(sellerId),
-      dashboardRepository.getSellerPendingShipmentsCount(sellerId)
+      dashboardRepository.getSellerPendingShipmentsCount(sellerId),
+      dashboardRepository.getSellerRecentSales(sellerId)
     ]);
 
     return {
       totalStock,
       todaySales: todaySales.count,
       todaySalesAmount: todaySales.amount,
-      pendingShipments
+      pendingShipments,
+      recentSales
     };
   }
 

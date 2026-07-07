@@ -9,14 +9,20 @@ class SellerSalesRepository {
   Future<List<SellerSale>> getSalesHistory({
     String? searchCustomer,
     String? searchSerial,
+    String filter = 'today',
+    String? date,
     int page = 1,
     int limit = 50,
   }) async {
     final queryParameters = <String, dynamic>{
       'page': page,
       'limit': limit,
+      'filter': filter,
     };
 
+    if (date != null && date.isNotEmpty) {
+      queryParameters['date'] = date;
+    }
     if (searchCustomer != null && searchCustomer.isNotEmpty) {
       queryParameters['searchCustomer'] = searchCustomer;
     }

@@ -1815,6 +1815,32 @@
         }
       }
     },
+    "/api/inventory/scan-for-sale": {
+      "get": {
+        "summary": "Scan a serial number to fetch product details for a sale",
+        "tags": [
+          "Inventory"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "serial_number",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product found successfully"
+          },
+          "404": {
+            "description": "Product not found in available inventory"
+          }
+        }
+      }
+    },
     "/api/inventory/{productId}": {
       "get": {
         "summary": "Return one inventory item",
@@ -2029,32 +2055,6 @@
           },
           "404": {
             "description": "Product name or product model not found"
-          }
-        }
-      }
-    },
-    "/api/inventory/scan-for-sale": {
-      "get": {
-        "summary": "Scan a serial number to fetch product details for a sale",
-        "tags": [
-          "Inventory"
-        ],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "serial_number",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Product found successfully"
-          },
-          "404": {
-            "description": "Product not found in available inventory"
           }
         }
       }

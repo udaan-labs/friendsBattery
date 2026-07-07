@@ -120,7 +120,26 @@ class SalesService {
   async getSalesHistory(sellerId, query) {
     const page = parseInt(query.page, 10) || 1;
     const limit = parseInt(query.limit, 10) || 10;
-    const { searchCustomer, searchSerial, fromDate, toDate } = query;
+    let { searchCustomer, searchSerial, fromDate, toDate, filter, date } = query;
+
+    if (filter === 'today') {
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      const end = new Date();
+      end.setHours(23, 59, 59, 999);
+      fromDate = start.toISOString();
+      toDate = end.toISOString();
+    } else if (filter === 'date' && date) {
+      const selectedDate = new Date(date);
+      selectedDate.setHours(0, 0, 0, 0);
+      const end = new Date(selectedDate);
+      end.setHours(23, 59, 59, 999);
+      fromDate = selectedDate.toISOString();
+      toDate = end.toISOString();
+    } else if (filter === 'all') {
+      fromDate = undefined;
+      toDate = undefined;
+    }
 
     const filters = {
       searchCustomer,
