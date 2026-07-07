@@ -24,15 +24,13 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
   final _vehicleNumberController = TextEditingController();
   final _sellPriceController = TextEditingController();
 
-  bool _isLoadingNames = false;
+  bool _isFetchingDetails = false;
   bool _isSubmitting = false;
-
-  List<Map<String, dynamic>> _inventoryProducts = [];
-  List<Map<String, String>> _productNames = [];
-  List<Map<String, String>> _productModels = [];
 
   String? _selectedProductNameId;
   String? _selectedProductModelId;
+  String? _selectedProductName;
+  String? _selectedProductModel;
 
   int? _productId;
   num? _minPrice;
@@ -41,9 +39,6 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _loadInventoryProducts();
-    });
     _sellPriceController.addListener(() {
       final val = num.tryParse(_sellPriceController.text);
       setState(() {
@@ -69,102 +64,72 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
     );
     
     if (result != null && result.isNotEmpty) {
-      setState(() {
-        _serialNumberController.text = result;
-      });
+      _serialNumberController.text = result;
+      _fetchProductDetails(result);
     }
   }
 
-  Future<void> _loadInventoryProducts() async {
+  Future<void> _fetchProductDetails(String serial) async {
+    if (serial.trim().isEmpty) return;
+
     setState(() {
-      _isLoadingNames = true;
+      _isFetchingDetails = true;
+      _productId = null;
+      _selectedProductNameId = null;
+      _selectedProductModelId = null;
+      _selectedProductName = null;
+      _selectedProductModel = null;
+      _minPrice = null;
     });
 
     try {
       final dio = ApiClient().dio;
-      final response = await dio.get('/api/products/inventory-products');
+      final response = await dio.get(
+        '/api/inventory/scan-for-sale',
+        queryParameters: {'serial_number': serial.trim()},
+      );
+
       final body = response.data;
-      if (body is Map<String, dynamic> && body['data'] is List) {
-        final list = body['data'] as List;
+      if (body is Map<String, dynamic> && body['success'] == true) {
+        final data = body['data'] as Map<String, dynamic>;
         setState(() {
-          _inventoryProducts = list.cast<Map<String, dynamic>>();
-          _productNames = list.map((item) {
-            return {
-              'id': item['productNameId'].toString(),
-              'name': item['productName'] as String,
-            };
-          }).toList();
+          _productId = data['productId'] as int?;
+          _selectedProductNameId = data['productNameId']?.toString();
+          _selectedProductModelId = data['productModelId']?.toString();
+          _selectedProductName = data['productName'] as String?;
+          _selectedProductModel = data['productModel'] as String?;
+          _minPrice = data['minSellPrice'] as num?;
         });
-      }
-    } catch (e) {
-      // Handled automatically by ApiInterceptor
-    } finally {
-      setState(() {
-        _isLoadingNames = false;
-      });
-    }
-  }
-
-  void _onProductNameSelected(String productNameId) {
-    final group = _inventoryProducts.firstWhere(
-      (g) => g['productNameId'].toString() == productNameId,
-      orElse: () => <String, dynamic>{},
-    );
-
-    final List<Map<String, String>> models = [];
-    if (group.isNotEmpty && group['models'] is List) {
-      for (final m in group['models'] as List) {
-        models.add({
-          'id': m['id'].toString(),
-          'name': m['productModel'].toString(),
-        });
-      }
-    }
-
-    setState(() {
-      _selectedProductNameId = productNameId;
-      _productModels = models;
-      _selectedProductModelId = null;
-      _serialNumberController.clear();
-      _productId = null;
-      _minPrice = null;
-    });
-  }
-
-  void _onProductModelSelected(String modelId) {
-    final group = _inventoryProducts.firstWhere(
-      (g) => g['productNameId'].toString() == _selectedProductNameId,
-      orElse: () => <String, dynamic>{},
-    );
-
-    int? resolvedProdId;
-    num? resolvedMinPrice;
-    if (group.isNotEmpty && group['models'] is List) {
-      for (final m in group['models'] as List) {
-        if (m['id'].toString() == modelId) {
-          resolvedProdId = m['id'];
-          resolvedMinPrice = (m['minSellPrice'] ?? 0).toDouble();
-          break;
+        if (mounted) {
+          context.showSuccessSnackBar('Product details fetched successfully!');
+        }
+      } else {
+        if (mounted) {
+          context.showErrorSnackBar(body['message'] ?? 'Failed to fetch details');
         }
       }
+    } catch (e) {
+      if (mounted) {
+        if (e is DioException && e.response != null) {
+          final errorData = e.response!.data;
+          context.showErrorSnackBar(errorData['message'] ?? 'Product not found in your available inventory');
+        } else {
+          context.showErrorSnackBar('Error: $e');
+        }
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isFetchingDetails = false;
+        });
+      }
     }
-
-    setState(() {
-      _selectedProductModelId = modelId;
-      _serialNumberController.clear();
-      _productId = resolvedProdId;
-      _minPrice = resolvedMinPrice ?? 0;
-    });
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedProductNameId == null || _selectedProductModelId == null) {
-      context.showErrorSnackBar('Please select all product fields');
-      return;
-    }
-    if (_productId == null) {
-      context.showErrorSnackBar('Product ID could not be resolved');
+    if (_productId == null || _selectedProductNameId == null || _selectedProductModelId == null) {
+      context.showErrorSnackBar('Please scan a valid serial number and fetch product details');
       return;
     }
 
@@ -192,13 +157,10 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
         // Refresh dashboard statistics, recent inventories & current stock
         await ref.read(sellerDashboardControllerProvider).refreshAllData();
         if (mounted) {
-          final selectedProductName = _productNames.firstWhere((p) => p['id'] == _selectedProductNameId, orElse: () => {'name': 'Product'})['name'];
-          final selectedModelName = _productModels.firstWhere((m) => m['id'] == _selectedProductModelId, orElse: () => {'name': ''})['name'];
-          
           final saleData = {
             'customer_name': _customerNameController.text,
             'customer_number': _customerMobileController.text,
-            'product_name': '$selectedProductName $selectedModelName',
+            'product_name': '$_selectedProductName $_selectedProductModel',
             'serial_number': serialValue,
             'sell_price': sellPrice,
             'invoice_number': 'INV-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}',
@@ -215,15 +177,16 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
       }
       // DioExceptions are handled automatically by ApiInterceptor
     } finally {
-      setState(() {
-        _isSubmitting = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
     }
   }
 
   bool _hasUnsavedChanges() {
-    return _selectedProductNameId != null ||
-        _serialNumberController.text.isNotEmpty ||
+    return _serialNumberController.text.isNotEmpty ||
         _customerNameController.text.isNotEmpty ||
         _customerMobileController.text.isNotEmpty ||
         _vehicleNumberController.text.isNotEmpty ||
@@ -270,11 +233,6 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final selectedModelName = _productModels.firstWhere(
-      (m) => m['id'] == _selectedProductModelId,
-      orElse: () => {'name': ''},
-    )['name'];
-
     return PopScope(
       canPop: !_hasUnsavedChanges(),
       onPopInvokedWithResult: (didPop, result) {
@@ -283,399 +241,339 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
       },
       child: Scaffold(
         backgroundColor: const Color(0xFFF7F9FB),
-      appBar: AppBar(
-        title: const Text('Create Bill'),
-        backgroundColor: const Color(0xFFF7F9FB),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF3E4A3D)),
-          onPressed: _onBackPressed,
+        appBar: AppBar(
+          title: const Text('Create Bill'),
+          backgroundColor: const Color(0xFFF7F9FB),
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF3E4A3D)),
+            onPressed: _onBackPressed,
+          ),
         ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(ResponsiveHelper.responsivePadding(context)),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 600),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: AppTheme.background,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x0A000000),
-                      blurRadius: 12,
-                      offset: Offset(0, 4),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(ResponsiveHelper.responsivePadding(context)),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppTheme.background,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 12,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // Serial Number First
+                            const Text(
+                              'Serial Number',
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
+                            ),
+                            const SizedBox(height: 8),
+                            ElevatedButton.icon(
+                              icon: const Icon(Icons.qr_code_scanner),
+                              label: const Text('Scan Serial Number'),
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                backgroundColor: const Color(0xFF006B2C),
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              onPressed: _scanSerialNumber,
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: _serialNumberController,
+                                    decoration: InputDecoration(
+                                      hintText: 'Manual Add (Fallback)',
+                                      isDense: true,
+                                      contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.trim().isEmpty) {
+                                        return 'Serial Number is required';
+                                      }
+                                      return null;
+                                    },
+                                    onFieldSubmitted: (val) {
+                                      _fetchProductDetails(val);
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                ElevatedButton(
+                                  onPressed: _isFetchingDetails
+                                      ? null
+                                      : () => _fetchProductDetails(_serialNumberController.text),
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                                    backgroundColor: const Color(0xFF191C1E),
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  child: _isFetchingDetails
+                                      ? const SizedBox(
+                                          height: 20,
+                                          width: 20,
+                                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                        )
+                                      : const Text('Fetch Details'),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+
+                            // Product Information Card
+                            if (_productId != null) ...[
+                              Container(
+                                padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE8F5E9),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: const Color(0xFF006B2C)),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Row(
+                                      children: [
+                                        Icon(Icons.check_circle, color: Color(0xFF006B2C), size: 16),
+                                        SizedBox(width: 6),
+                                        Text(
+                                          'Product Verified',
+                                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF006B2C)),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      'Brand: $_selectedProductName',
+                                      style: const TextStyle(fontSize: 13, color: Color(0xFF191C1E), fontWeight: FontWeight.w600),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Model: $_selectedProductModel',
+                                      style: const TextStyle(fontSize: 13, color: Color(0xFF191C1E), fontWeight: FontWeight.w600),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Min Sell Price: ₹${_minPrice ?? 0}',
+                                      style: const TextStyle(fontSize: 13, color: Color(0xFF3E4A3D)),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                            ],
+
+                            // Customer Name
+                            const Text(
+                              'Customer Name',
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
+                            ),
+                            const SizedBox(height: 8),
+                            TextFormField(
+                              controller: _customerNameController,
+                              decoration: const InputDecoration(
+                                hintText: 'Enter Customer Name',
+                              ),
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Customer Name is required';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 20),
+
+                            // Customer Mobile Number
+                            const Text(
+                              'Customer Mobile Number',
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
+                            ),
+                            const SizedBox(height: 8),
+                            TextFormField(
+                              controller: _customerMobileController,
+                              keyboardType: TextInputType.phone,
+                              decoration: const InputDecoration(
+                                hintText: 'Enter Mobile Number',
+                              ),
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Mobile number is required';
+                                }
+                                if (value.trim().length < 10) {
+                                  return 'Mobile number must be at least 10 digits';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 20),
+
+                            // Vehicle Number
+                            const Text(
+                              'Vehicle Number',
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
+                            ),
+                            const SizedBox(height: 8),
+                            TextFormField(
+                              controller: _vehicleNumberController,
+                              textCapitalization: TextCapitalization.characters,
+                              decoration: const InputDecoration(
+                                hintText: 'e.g. MH12AB1234 (optional)',
+                              ),
+                              validator: null,
+                            ),
+                            const SizedBox(height: 20),
+
+                            // Sell Price
+                            const Text(
+                              'Selling Price',
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
+                            ),
+                            const SizedBox(height: 8),
+                            TextFormField(
+                              controller: _sellPriceController,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                hintText: 'Enter Final Sale Price',
+                                prefixText: '₹ ',
+                              ),
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Sell price is required';
+                                }
+                                final parsed = double.tryParse(value);
+                                if (parsed == null || parsed <= 0) {
+                                  return 'Sell price must be greater than 0';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 12),
+
+                            // Selling below recommended warning
+                            if (_minPrice != null && _userSellPrice != null && _userSellPrice! < _minPrice!) ...[
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFEBEE),
+                                  border: Border.all(color: const Color(0xFFDC2626)),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.warning_amber_rounded, color: Color(0xFFDC2626)),
+                                    SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        'Warning: Selling below minimum recommended price.',
+                                        style: TextStyle(color: Color(0xFFDC2626), fontSize: 13, fontWeight: FontWeight.w500),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                            ],
+
+                            // Summary Card
+                            if (_productId != null && _customerNameController.text.isNotEmpty && _userSellPrice != null) ...[
+                              Container(
+                                margin: const EdgeInsets.only(top: 16),
+                                padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFD5E0F8).withOpacity(0.3),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: const Color(0xFFD5E0F8)),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _selectedProductModel ?? 'Product',
+                                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF191C1E)),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Customer: ${_customerNameController.text}',
+                                      style: const TextStyle(fontSize: 13, color: Color(0xFF191C1E)),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        const Text('Price:', style: TextStyle(fontSize: 13, color: Color(0xFF545F73))),
+                                        Text(
+                                          '₹${_userSellPrice!.toStringAsFixed(0)}',
+                                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF006B2C)),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                            ],
+
+                            // Generate Bill Button
+                            ElevatedButton(
+                              onPressed: _isSubmitting ? null : _submit,
+                              style: ElevatedButton.styleFrom(
+                                minimumSize: const Size.fromHeight(56),
+                                backgroundColor: const Color(0xFF006B2C),
+                                foregroundColor: Colors.white,
+                              ),
+                              child: _isSubmitting
+                                  ? const SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Generate Bill',
+                                      style: TextStyle(
+                                        fontFamily: 'Inter',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Product Name
-                      const Text(
-                        'Product Name',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                      ),
-                      const SizedBox(height: 8),
-                      _isLoadingNames
-                          ? const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 16.0),
-                              child: Center(
-                                child: SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                ),
-                              ),
-                            )
-                          : (_productNames.isEmpty
-                              ? TextFormField(
-                                  enabled: false,
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                    hintText: 'No products available. Please contact admin.',
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                    filled: true,
-                                    fillColor: Colors.grey.shade100,
-                                  ),
-                                )
-                              : DropdownButtonFormField<String>(
-                                  isExpanded: true,
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                    filled: true,
-                                    fillColor: Colors.white,
-                                  ),
-                                  hint: const Text('Select Product Name'),
-                                  items: _productNames.map((name) {
-                                    return DropdownMenuItem<String>(
-                                      value: name['id']!,
-                                      child: Text(name['name']!),
-                                    );
-                                  }).toList(),
-                                  onChanged: (id) {
-                                    if (id != null) {
-                                      _onProductNameSelected(id);
-                                    }
-                                  },
-                                )),
-                      const SizedBox(height: 20),
-
-                      // Product Model
-                      const Text(
-                        'Product Model',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                      ),
-                      const SizedBox(height: 8),
-                      _selectedProductNameId == null
-                          ? TextFormField(
-                              enabled: false,
-                              decoration: InputDecoration(
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                hintText: 'Select Product Name first',
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                filled: true,
-                                fillColor: Colors.grey.shade100,
-                              ),
-                            )
-                          : (_productModels.isEmpty
-                              ? TextFormField(
-                                  enabled: false,
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                    hintText: 'No models available for this product.',
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                    filled: true,
-                                    fillColor: Colors.grey.shade100,
-                                  ),
-                                )
-                              : DropdownButtonFormField<String>(
-                                  key: ValueKey('model_$_selectedProductNameId'),
-                                  isExpanded: true,
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                    filled: true,
-                                    fillColor: Colors.white,
-                                  ),
-                                  hint: const Text('Select Product Model'),
-                                  items: _productModels.map((model) {
-                                    return DropdownMenuItem<String>(
-                                      value: model['id']!,
-                                      child: Text(model['name']!),
-                                    );
-                                  }).toList(),
-                                  onChanged: (id) {
-                                    if (id != null) {
-                                      _onProductModelSelected(id);
-                                    }
-                                  },
-                                )),
-                      const SizedBox(height: 20),
-
-                      // Serial Number
-                      const Text(
-                        'Serial Number',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                      ),
-                      const SizedBox(height: 8),
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.qr_code_scanner),
-                        label: const Text('Scan Serial Number'),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          backgroundColor: const Color(0xFF006B2C),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        onPressed: _scanSerialNumber,
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _serialNumberController,
-                        decoration: InputDecoration(
-                          hintText: 'Manual Add (Fallback)',
-                          isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Serial Number is required';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Product Information Card
-                      if (_productId != null) ...[
-                        Container(
-                          padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFECEEF0),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Product Details',
-                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF191C1E)),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Model: $selectedModelName',
-                                style: const TextStyle(fontSize: 13, color: Color(0xFF3E4A3D)),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Min Sell Price: ₹${_minPrice ?? 0}',
-                                style: const TextStyle(fontSize: 13, color: Color(0xFF3E4A3D)),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                      ],
-
-                      // Customer Name
-                      const Text(
-                        'Customer Name',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _customerNameController,
-                        decoration: const InputDecoration(
-                          hintText: 'Enter Customer Name',
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Customer Name is required';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Customer Mobile Number
-                      const Text(
-                        'Customer Mobile Number',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _customerMobileController,
-                        keyboardType: TextInputType.phone,
-                        decoration: const InputDecoration(
-                          hintText: 'Enter Mobile Number',
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Mobile number is required';
-                          }
-                          if (value.trim().length < 10) {
-                            return 'Mobile number must be at least 10 digits';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Vehicle Number
-                      const Text(
-                        'Vehicle Number',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _vehicleNumberController,
-                        textCapitalization: TextCapitalization.characters,
-                        decoration: const InputDecoration(
-                          hintText: 'e.g. MH12AB1234 (optional)',
-                        ),
-                        // Vehicle number is optional per the API
-                        validator: null,
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Sell Price
-                      const Text(
-                        'Selling Price',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _sellPriceController,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          hintText: 'Enter Final Sale Price',
-                          prefixText: '₹ ',
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Sell price is required';
-                          }
-                          final parsed = double.tryParse(value);
-                          if (parsed == null || parsed <= 0) {
-                            return 'Sell price must be greater than 0';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Selling below recommended warning
-                      if (_minPrice != null && _userSellPrice != null && _userSellPrice! < _minPrice!) ...[
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFEBEE),
-                            border: Border.all(color: const Color(0xFFDC2626)),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Row(
-                            children: [
-                              Icon(Icons.warning_amber_rounded, color: Color(0xFFDC2626)),
-                              SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Warning: Selling below minimum recommended price.',
-                                  style: TextStyle(color: Color(0xFFDC2626), fontSize: 13, fontWeight: FontWeight.w500),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                      ],
-
-                      // Summary Card
-                      if (_productId != null && _customerNameController.text.isNotEmpty && _userSellPrice != null) ...[
-                        Container(
-                          margin: const EdgeInsets.only(top: 16),
-                          padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFD5E0F8).withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFD5E0F8)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                selectedModelName ?? 'Product',
-                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF191C1E)),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Customer: ${_customerNameController.text}',
-                                style: const TextStyle(fontSize: 13, color: Color(0xFF191C1E)),
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text('Price:', style: TextStyle(fontSize: 13, color: Color(0xFF545F73))),
-                                  Text(
-                                    '₹${_userSellPrice!.toStringAsFixed(0)}',
-                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF006B2C)),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                      ],
-
-                      // Generate Bill Button
-                      ElevatedButton(
-                        onPressed: _isSubmitting ? null : _submit,
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size.fromHeight(56),
-                        ),
-                        child: _isSubmitting
-                            ? const SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Text(
-                                'Generate Bill',
-                                style: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                      ),
-                    ],
-                  ),
-                ),
               ),
-            ],
+            ),
           ),
         ),
       ),
-    ),
-  ),
-),
-);
-}
+    );
+  }
 }

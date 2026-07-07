@@ -211,6 +211,28 @@ class InventoryController {
       return errorResponse(res, 500, 'Internal server error');
     }
   }
+  /**
+   * Scan a serial number to fetch product details for a sale
+   */
+  async scanForSale(req, res) {
+    try {
+      const { serial_number } = req.query;
+      const sellerId = req.user.id;
+
+      if (!serial_number) {
+        return errorResponse(res, 400, 'Serial number is required');
+      }
+
+      const productDetails = await inventoryService.scanForSale(serial_number, sellerId);
+      return successResponse(res, 200, 'Product found successfully', productDetails);
+    } catch (error) {
+      if (error.message === 'Product not found in your available inventory') {
+        return errorResponse(res, 404, error.message);
+      }
+      console.error('Scan For Sale Error:', error);
+      return errorResponse(res, 500, 'Internal server error while scanning product');
+    }
+  }
 }
 
 module.exports = new InventoryController();

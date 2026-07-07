@@ -488,6 +488,43 @@ class InventoryService {
       }
     };
   }
+
+  /**
+   * Scan a serial number to fetch product details for a sale
+   * @param {string} serialNumber
+   * @param {number|string|bigint} sellerId
+   * @returns {Promise<Object>}
+   */
+  async scanForSale(serialNumber, sellerId) {
+    const unit = await prisma.productUnit.findFirst({
+      where: {
+        serialNumber: serialNumber,
+        ownerId: BigInt(sellerId),
+        status: 'AVAILABLE'
+      },
+      include: {
+        product: {
+          include: {
+            productName: true,
+            productModel: true
+          }
+        }
+      }
+    });
+
+    if (!unit) {
+      throw new Error('Product not found in your available inventory');
+    }
+
+    return {
+      productId: Number(unit.productId),
+      productNameId: Number(unit.product.productNameId),
+      productModelId: Number(unit.product.productModelId),
+      productName: unit.product.productName.name,
+      productModel: unit.product.productModel.name,
+      minSellPrice: Number(unit.product.minPrice)
+    };
+  }
 }
 
 module.exports = new InventoryService();
