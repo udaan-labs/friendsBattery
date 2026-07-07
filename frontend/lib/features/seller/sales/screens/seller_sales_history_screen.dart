@@ -6,6 +6,7 @@ import '../../../../theme/app_theme.dart';
 import 'package:intl/intl.dart';
 import '../providers/seller_sales_provider.dart';
 import '../widgets/seller_sale_card.dart';
+import '../../dashboard/screens/seller_shell_screen.dart';
 
 class SellerSalesHistoryScreen extends ConsumerStatefulWidget {
   const SellerSalesHistoryScreen({super.key});
@@ -73,16 +74,17 @@ class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScr
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: const Color(0xFF191C1E),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF3E4A3D)),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/seller/dashboard');
-            }
-          },
-        ),
+        leading: context.canPop()
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF3E4A3D)),
+                onPressed: () {
+                  context.pop();
+                },
+              )
+            : IconButton(
+                icon: const Icon(Icons.menu, color: Color(0xFF3E4A3D)),
+                onPressed: () => sellerScaffoldKey.currentState?.openDrawer(),
+              ),
       ),
       body: SafeArea(
         child: Column(

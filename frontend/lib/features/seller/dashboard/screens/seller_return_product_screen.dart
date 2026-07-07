@@ -6,6 +6,7 @@ import '../../../../shared/widgets/responsive_helper.dart';
 import '../../../../core/network/api_client.dart';
 import '../providers/seller_dashboard_controller.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
+import 'seller_shell_screen.dart';
 
 class SellerReturnProductScreen extends ConsumerStatefulWidget {
   const SellerReturnProductScreen({super.key});
@@ -235,10 +236,15 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
         ),
         backgroundColor: const Color(0xFFF7F9FB),
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF3E4A3D)),
-          onPressed: _onBackPressed,
-        ),
+        leading: context.canPop()
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: Color(0xFF3E4A3D)),
+                onPressed: _onBackPressed,
+              )
+            : IconButton(
+                icon: const Icon(Icons.menu, color: Color(0xFF3E4A3D)),
+                onPressed: () => sellerScaffoldKey.currentState?.openDrawer(),
+              ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(

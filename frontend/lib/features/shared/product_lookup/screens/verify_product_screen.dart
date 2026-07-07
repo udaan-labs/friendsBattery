@@ -4,6 +4,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'product_details_screen.dart';
 import '../providers/product_lookup_provider.dart';
 import '../../../../core/theme/app_colors.dart';
+import 'package:go_router/go_router.dart';
 
 class VerifyProductScreen extends ConsumerStatefulWidget {
   const VerifyProductScreen({super.key});
@@ -66,6 +67,21 @@ class _VerifyProductScreenState extends ConsumerState<VerifyProductScreen> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              final isSeller = GoRouterState.of(context).uri.toString().startsWith('/seller');
+              if (isSeller) {
+                context.go('/seller/dashboard');
+              } else {
+                context.go('/admin/dashboard');
+              }
+            }
+          },
+        ),
       ),
       backgroundColor: AppColors.background,
       body: _isScanning 

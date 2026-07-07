@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/network/api_client.dart';
+import '../../../seller/dashboard/screens/seller_shell_screen.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 import '../providers/inventory_provider.dart';
 import '../widgets/inventory_product_card.dart';
@@ -76,6 +78,25 @@ class _CurrentInventoryScreenState extends ConsumerState<CurrentInventoryScreen>
         backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 0,
+        leading: context.canPop() || !isSeller
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF3E4A3D)),
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    if (isSeller) {
+                      context.go('/seller/dashboard');
+                    } else {
+                      context.go('/admin/dashboard');
+                    }
+                  }
+                },
+              )
+            : IconButton(
+                icon: const Icon(Icons.menu, color: Color(0xFF3E4A3D)),
+                onPressed: () => sellerScaffoldKey.currentState?.openDrawer(),
+              ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

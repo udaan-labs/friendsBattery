@@ -27,10 +27,17 @@ class SellerReceivedShipmentsScreen extends ConsumerWidget {
         ),
         backgroundColor: const Color(0xFFF7F9FB),
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: Color(0xFF3E4A3D)),
-          onPressed: () => sellerScaffoldKey.currentState?.openDrawer(),
-        ),
+        leading: context.canPop()
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF3E4A3D)),
+                onPressed: () {
+                  context.pop();
+                },
+              )
+            : IconButton(
+                icon: const Icon(Icons.menu, color: Color(0xFF3E4A3D)),
+                onPressed: () => sellerScaffoldKey.currentState?.openDrawer(),
+              ),
       ),
       body: SafeArea(
         child: RefreshIndicator(

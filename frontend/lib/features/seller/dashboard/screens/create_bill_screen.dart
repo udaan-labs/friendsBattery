@@ -8,6 +8,7 @@ import '../../../../core/network/api_client.dart';
 import '../providers/seller_dashboard_controller.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
 import '../../../../shared/widgets/scanner_screen.dart';
+import 'seller_shell_screen.dart';
 
 class CreateBillScreen extends ConsumerStatefulWidget {
   const CreateBillScreen({super.key});
@@ -254,10 +255,15 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
           title: const Text('Create Bill'),
           backgroundColor: const Color(0xFFF7F9FB),
           elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Color(0xFF3E4A3D)),
-            onPressed: _onBackPressed,
-          ),
+          leading: context.canPop()
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Color(0xFF3E4A3D)),
+                  onPressed: _onBackPressed,
+                )
+              : IconButton(
+                  icon: const Icon(Icons.menu, color: Color(0xFF3E4A3D)),
+                  onPressed: () => sellerScaffoldKey.currentState?.openDrawer(),
+                ),
         ),
         body: SafeArea(
           child: SingleChildScrollView(
