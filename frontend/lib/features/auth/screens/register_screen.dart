@@ -37,6 +37,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<void> _register() async {
+    final number = _userNumberController.text.trim();
+    if (!RegExp(r'^\d{10}$').hasMatch(number)) {
+      context.showErrorSnackBar('Mobile number must be exactly 10 digits');
+      return;
+    }
+
     if (_passwordController.text != _confirmPasswordController.text) {
       context.showErrorSnackBar('Passwords do not match');
       return;
