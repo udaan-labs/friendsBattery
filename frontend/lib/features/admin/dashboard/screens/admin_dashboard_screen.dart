@@ -181,10 +181,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           ),
         ),
         actions: [
-          IconButton(
-            icon: Icon(Icons.search, color: const Color(0xFF3E4A3D), size: ResponsiveHelper.isSmallPhone(context) ? 24 : 28),
-            onPressed: () {},
-          ),
+
           IconButton(
             icon: Badge(
               label: const Text('3'),

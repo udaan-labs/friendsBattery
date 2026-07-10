@@ -156,8 +156,8 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
         context.showSuccessSnackBar('Return request submitted successfully');
         await ref.read(sellerDashboardControllerProvider).refreshAllData();
         if (mounted) {
-          if (context.canPop()) {
-            context.pop();
+          if (Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
           } else {
             context.go('/seller/dashboard');
           }
@@ -183,8 +183,8 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
 
   Future<void> _onBackPressed() async {
     if (!_hasUnsavedChanges()) {
-      if (context.canPop()) {
-        context.pop();
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
       } else {
         context.go('/seller/dashboard');
       }
@@ -211,8 +211,8 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
     );
 
     if (shouldDiscard == true && mounted) {
-      if (context.canPop()) {
-        context.pop();
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
       } else {
         context.go('/seller/dashboard');
       }
@@ -222,7 +222,7 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: !_hasUnsavedChanges(),
+      canPop: Navigator.of(context).canPop() && !_hasUnsavedChanges(),
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         _onBackPressed();
