@@ -19,139 +19,96 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
   final _formKey = GlobalKey<FormState>();
   final _reasonController = TextEditingController();
   final _customerMobileController = TextEditingController();
+  final _serialController = TextEditingController();
 
-  bool _isLoadingNames = false;
-  bool _isLoadingModels = false;
+  bool _isVerifying = false;
   bool _isSubmitting = false;
 
-  List<Map<String, String>> _productNames = [];
-  List<Map<String, String>> _productModels = [];
-
-  String? _selectedProductNameId;
-  String? _selectedProductModelId;
-  String? _selectedSerial;
-  int? _productId;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _loadProductNames();
-    });
-  }
+  String? _verifiedProductName;
+  String? _verifiedProductModel;
+  String? _verifiedStatus;
+  bool _isVerifiedValid = false;
 
   @override
   void dispose() {
     _reasonController.dispose();
     _customerMobileController.dispose();
+    _serialController.dispose();
     super.dispose();
   }
 
-  Future<void> _loadProductNames() async {
-    setState(() {
-      _isLoadingNames = true;
-      _productNames = [];
-      _selectedProductNameId = null;
-      _productModels = [];
-      _selectedProductModelId = null;
-      _selectedSerial = null;
-      _productId = null;
-    });
-
-    try {
-      final dio = ApiClient().dio;
-      final response = await dio.get('/api/products/product-names');
-      final data = response.data;
-      if (data is Map<String, dynamic> && data['data'] is List) {
-        final list = data['data'] as List;
-        setState(() {
-          _productNames = list
-              .map((item) => {
-                    'id': item['id'].toString(),
-                    'name': item['name'].toString(),
-                  })
-              .toList();
-        });
-      }
-    } catch (_) {
-    } finally {
-      setState(() => _isLoadingNames = false);
+  Future<void> _verifySerialNumber() async {
+    final serial = _serialController.text.trim();
+    if (serial.isEmpty) {
+      context.showErrorSnackBar('Please enter a serial number');
+      return;
     }
-  }
 
-  Future<void> _loadProductModels(String productNameId) async {
     setState(() {
-      _isLoadingModels = true;
-      _productModels = [];
-      _selectedProductModelId = null;
-      _selectedSerial = null;
-      _productId = null;
+      _isVerifying = true;
+      _isVerifiedValid = false;
+      _verifiedProductName = null;
+      _verifiedProductModel = null;
+      _verifiedStatus = null;
     });
 
     try {
       final dio = ApiClient().dio;
-      final response = await dio.post('/api/products/product-models/list', data: {
-        'product_name_id': int.parse(productNameId),
+      final response = await dio.post('/api/product-units/verify', data: {
+        'identifier': serial,
       });
-      final data = response.data;
-      if (data is Map<String, dynamic> && data['data'] is List) {
-        final list = data['data'] as List;
-        setState(() {
-          _productModels = list
-              .map((item) => {
-                    'id': item['id'].toString(),
-                    'name': item['name'].toString(),
-                  })
-              .toList();
-        });
-      }
-    } catch (_) {
-    } finally {
-      setState(() => _isLoadingModels = false);
-    }
-  }
 
-  Future<void> _loadSoldSerials(String productModelId) async {
-    setState(() {
-      _selectedSerial = null;
-      _productId = null;
-    });
-
-    try {
-      final dio = ApiClient().dio;
-      final response = await dio.get('/api/inventory/product-details', queryParameters: {
-        'product_name_id': _selectedProductNameId!,
-        'product_model_id': productModelId,
-      });
       final data = response.data;
       if (data is Map<String, dynamic> && data['data'] != null) {
+        final productUnit = data['data']['productUnit'];
+        final product = data['data']['product'];
+        
+        final status = productUnit['status'];
+
         setState(() {
-          _productId = data['data']['productId'];
+          _verifiedProductName = product['name'];
+          _verifiedProductModel = product['model'];
+          _verifiedStatus = status;
+
+          if (status == 'SOLD') {
+            _isVerifiedValid = true;
+            context.showSuccessSnackBar('Product verified successfully.');
+          } else {
+            context.showErrorSnackBar('Product is not in SOLD status (Current: $status)');
+          }
         });
       }
-    } catch (_) {
+    } catch (e) {
+      if (mounted) {
+        String errorMsg = 'Failed to verify product.';
+        if (e is DioException && e.response?.data != null) {
+          errorMsg = e.response?.data['message'] ?? errorMsg;
+        }
+        context.showErrorSnackBar(errorMsg);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isVerifying = false);
+      }
     }
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedProductNameId == null ||
-        _selectedProductModelId == null ||
-        _selectedSerial == null ||
-        _selectedSerial!.trim().isEmpty) {
-      context.showErrorSnackBar('Please fill in all product fields and serial number');
-      return;
-    }
-    if (_productId == null) {
-      context.showErrorSnackBar('Product ID could not be resolved. Please reselect the product.');
+    if (!_isVerifiedValid) {
+      context.showErrorSnackBar('Please verify a valid sold product first.');
       return;
     }
 
     setState(() => _isSubmitting = true);
 
     try {
-      // In production this would call POST /api/returns with the payload below.
-      // For now, display a success message to confirm the flow works.
+      final dio = ApiClient().dio;
+      await dio.post('/api/returns', data: {
+        'serial_number': _serialController.text.trim(),
+        'reason': _reasonController.text.trim(),
+      });
+
       if (mounted) {
         context.showSuccessSnackBar('Return request submitted successfully');
         await ref.read(sellerDashboardControllerProvider).refreshAllData();
@@ -165,7 +122,11 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
       }
     } catch (e) {
       if (mounted) {
-        context.showErrorSnackBar('Failed to submit return. Please try again.');
+        String errorMsg = 'Failed to submit return. Please try again.';
+        if (e is DioException && e.response?.data != null) {
+          errorMsg = e.response?.data['message'] ?? errorMsg;
+        }
+        context.showErrorSnackBar(errorMsg);
       }
     } finally {
       if (mounted) {
@@ -175,8 +136,7 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
   }
 
   bool _hasUnsavedChanges() {
-    return _selectedProductNameId != null ||
-        (_selectedSerial != null && _selectedSerial!.isNotEmpty) ||
+    return _serialController.text.isNotEmpty ||
         _customerMobileController.text.isNotEmpty ||
         _reasonController.text.isNotEmpty;
   }
@@ -262,11 +222,11 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.info_outline, color: Color(0xFF16A34A), size: 20),
+                    Icon(Icons.qr_code_scanner, color: Color(0xFF16A34A), size: 20),
                     SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Use this form to initiate a product return. Enter the sold product details and serial number.',
+                        'Scan or enter the battery serial number to verify the product before returning.',
                         style: TextStyle(fontSize: 13, color: Color(0xFF3E4A3D)),
                       ),
                     ),
@@ -292,7 +252,7 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const Text(
-                      'Product Selection',
+                      'Verify Product',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -300,262 +260,211 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
                       ),
                     ),
                     const SizedBox(height: 20),
-
-                    // Product Name
-                    const Text(
-                      'Product Name',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                    ),
-                    const SizedBox(height: 8),
-                    _isLoadingNames
-                        ? const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 16.0),
-                            child: Center(
-                              child: SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                            ),
-                          )
-                        : (_productNames.isEmpty
-                            ? TextFormField(
-                                enabled: false,
-                                decoration: InputDecoration(
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                  hintText: 'No products available. Please contact admin.',
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                  filled: true,
-                                  fillColor: Colors.grey.shade100,
-                                ),
-                              )
-                            : DropdownButtonFormField<String>(
-                                isExpanded: true,
-                                decoration: InputDecoration(
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                ),
-                                hint: const Text('Select Product Name'),
-                                items: _productNames.map((name) {
-                                  return DropdownMenuItem<String>(
-                                    value: name['id']!,
-                                    child: Text(name['name']!),
-                                  );
-                                }).toList(),
-                                onChanged: (id) {
-                                  if (id != null) {
-                                    setState(() => _selectedProductNameId = id);
-                                    _loadProductModels(id);
-                                  }
-                                },
-                              )),
-                    const SizedBox(height: 20),
-
-                    // Product Model
-                    const Text(
-                      'Product Model',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                    ),
-                    const SizedBox(height: 8),
-                    _isLoadingModels
-                        ? const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 16.0),
-                            child: Center(
-                              child: SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                            ),
-                          )
-                        : (_selectedProductNameId == null
-                            ? TextFormField(
-                                enabled: false,
-                                decoration: InputDecoration(
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                  hintText: 'Select Product Name first',
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                  filled: true,
-                                  fillColor: Colors.grey.shade100,
-                                ),
-                              )
-                            : (_productModels.isEmpty
-                                ? TextFormField(
-                                    enabled: false,
-                                    decoration: InputDecoration(
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                      hintText: 'No models available for this product.',
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                      filled: true,
-                                      fillColor: Colors.grey.shade100,
-                                    ),
-                                  )
-                                : DropdownButtonFormField<String>(
-                                    key: ValueKey('model_$_selectedProductNameId'),
-                                    isExpanded: true,
-                                    decoration: InputDecoration(
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                      filled: true,
-                                      fillColor: Colors.white,
-                                    ),
-                                    hint: const Text('Select Product Model'),
-                                    items: _productModels.map((model) {
-                                      return DropdownMenuItem<String>(
-                                        value: model['id']!,
-                                        child: Text(model['name']!),
-                                      );
-                                    }).toList(),
-                                    onChanged: (id) {
-                                      if (id != null) {
-                                        setState(() => _selectedProductModelId = id);
-                                        _loadSoldSerials(id);
-                                      }
-                                    },
-                                  ))),
-                    const SizedBox(height: 20),
-
-                    // Serial Number – free text for returns
                     const Text(
                       'Battery Serial Number',
                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
                     ),
                     const SizedBox(height: 8),
-                    TextFormField(
-                      enabled: _selectedProductModelId != null,
-                      onChanged: (v) => setState(() => _selectedSerial = v),
-                      decoration: InputDecoration(
-                        hintText: 'Enter the sold battery serial number',
-                        hintStyle: TextStyle(color: Colors.grey.shade400),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _serialController,
+                            decoration: InputDecoration(
+                              hintText: 'Enter serial number',
+                              hintStyle: TextStyle(color: Colors.grey.shade400),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide(color: Colors.grey.shade300),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide(color: Colors.grey.shade300),
+                              ),
+                            ),
+                            validator: (v) {
+                              if (v == null || v.trim().isEmpty) {
+                                return 'Serial number is required';
+                              }
+                              return null;
+                            },
+                          ),
                         ),
-                        enabledBorder: OutlineInputBorder(
+                        const SizedBox(width: 12),
+                        ElevatedButton(
+                          onPressed: _isVerifying ? null : _verifySerialNumber,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1A73E8),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          child: _isVerifying
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text('Verify', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+
+                    if (_verifiedProductName != null) ...[
+                      const SizedBox(height: 24),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: _isVerifiedValid ? Colors.green.shade50 : Colors.red.shade50,
                           borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
+                          border: Border.all(color: _isVerifiedValid ? Colors.green.shade200 : Colors.red.shade200),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Product: $_verifiedProductName',
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Model: $_verifiedProductModel',
+                              style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                const Text('Status: ', style: TextStyle(fontSize: 14)),
+                                Text(
+                                  '$_verifiedStatus',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: _isVerifiedValid ? Colors.green.shade700 : Colors.red.shade700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) {
-                          return 'Serial number is required';
-                        }
-                        return null;
-                      },
-                    ),
+                    ],
                   ],
                 ),
               ),
               const SizedBox(height: 16),
 
-              // Return Reason
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x0A000000),
-                      blurRadius: 12,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text(
-                      'Return Details',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF191C1E),
+              if (_isVerifiedValid) ...[
+                // Return Reason
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x0A000000),
+                        blurRadius: 12,
+                        offset: Offset(0, 4),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Customer Mobile (optional)',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                    ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _customerMobileController,
-                      keyboardType: TextInputType.phone,
-                      decoration: InputDecoration(
-                        hintText: 'Enter customer mobile for lookup',
-                        hintStyle: TextStyle(color: Colors.grey.shade400),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Reason for Return',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                    ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _reasonController,
-                      maxLines: 3,
-                      decoration: InputDecoration(
-                        hintText: 'Describe the reason for returning this product...',
-                        hintStyle: TextStyle(color: Colors.grey.shade400),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                      ),
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) {
-                          return 'Please provide a reason for the return';
-                        }
-                        return null;
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              ElevatedButton(
-                onPressed: _isSubmitting ? null : _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF16A34A),
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size.fromHeight(56),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: _isSubmitting
-                    ? const SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Text(
-                        'Submit Return Request',
+                    ],
+                  ),
+                  padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Return Details',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
+                          color: Color(0xFF191C1E),
                         ),
                       ),
-              ),
-              const SizedBox(height: 16),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Customer Mobile (optional)',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _customerMobileController,
+                        keyboardType: TextInputType.phone,
+                        decoration: InputDecoration(
+                          hintText: 'Enter customer mobile for lookup',
+                          hintStyle: TextStyle(color: Colors.grey.shade400),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Reason for Return',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _reasonController,
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          hintText: 'Describe the reason for returning this product...',
+                          hintStyle: TextStyle(color: Colors.grey.shade400),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                        ),
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) {
+                            return 'Please provide a reason for the return';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                ElevatedButton(
+                  onPressed: _isSubmitting ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF16A34A),
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size.fromHeight(56),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'Submit Return Request',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                ),
+                const SizedBox(height: 16),
+              ],
             ],
           ),
             ),
