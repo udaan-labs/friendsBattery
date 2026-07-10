@@ -60,32 +60,38 @@ class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScr
     }
   }
 
-  @override
   Widget build(BuildContext context) {
     final state = ref.watch(sellerSalesProvider);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FB),
-      appBar: AppBar(
-        title: const Text(
-          'Sales History',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+    return PopScope(
+      canPop: Navigator.of(context).canPop(),
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) {
+          context.go('/seller/dashboard');
+        }
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF7F9FB),
+        appBar: AppBar(
+          title: const Text(
+            'Sales History',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          backgroundColor: Colors.white,
+          elevation: 0,
+          foregroundColor: const Color(0xFF191C1E),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF3E4A3D)),
+            onPressed: () {
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              } else {
+                context.go('/seller/dashboard');
+              }
+            },
+          ),
         ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        foregroundColor: const Color(0xFF191C1E),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF3E4A3D)),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/seller/dashboard');
-            }
-          },
-        ),
-      ),
-      body: SafeArea(
+        body: SafeArea(
         child: Column(
           children: [
             // Search Bar
@@ -148,6 +154,7 @@ class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScr
           ],
         ),
       ),
+    ),
     );
   }
 

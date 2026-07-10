@@ -24,9 +24,16 @@ class AdminShellScreen extends StatelessWidget {
       currentIndex = 3;
     }
 
-    return Scaffold(
-      body: child,
-      bottomNavigationBar: !isDesktop
+    return PopScope(
+      canPop: currentIndex == 0,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && currentIndex != 0) {
+          context.go('/admin/dashboard');
+        }
+      },
+      child: Scaffold(
+        body: child,
+        bottomNavigationBar: !isDesktop
           ? BottomNavigationBar(
               currentIndex: currentIndex,
               onTap: (index) {
@@ -71,6 +78,7 @@ class AdminShellScreen extends StatelessWidget {
               ],
             )
           : null,
+      ),
     );
   }
 }

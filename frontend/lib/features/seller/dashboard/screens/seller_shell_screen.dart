@@ -28,10 +28,17 @@ class SellerShellScreen extends ConsumerWidget {
       currentIndex = 3;
     }
 
-    return Scaffold(
-      key: sellerScaffoldKey,
-      drawer: _SellerDrawer(currentLocation: location, ref: ref),
-      body: child,
+    return PopScope(
+      canPop: currentIndex == 0,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && currentIndex != 0) {
+          context.go('/seller/dashboard');
+        }
+      },
+      child: Scaffold(
+        key: sellerScaffoldKey,
+        drawer: _SellerDrawer(currentLocation: location, ref: ref),
+        body: child,
       bottomNavigationBar: !isDesktop
           ? BottomNavigationBar(
               currentIndex: currentIndex.clamp(0, 3),
@@ -77,6 +84,7 @@ class SellerShellScreen extends ConsumerWidget {
               ],
             )
           : null,
+      ),
     );
   }
 }

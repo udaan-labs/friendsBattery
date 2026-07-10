@@ -335,7 +335,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                                       ? null
                                       : () => _fetchProductDetails(_serialNumberController.text),
                                   style: ElevatedButton.styleFrom(
-                                    minimumSize: const Size(0, 48), // override infinite width from theme
+                                    fixedSize: const Size(130, 48),
                                     padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                                     backgroundColor: const Color(0xFF191C1E),
                                     foregroundColor: Colors.white,

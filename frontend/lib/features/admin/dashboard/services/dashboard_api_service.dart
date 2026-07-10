@@ -35,7 +35,7 @@ class DashboardApiService {
       });
       final body = response.data;
       if (body is Map && body['success'] == true) {
-        return body['data'] as Map<String, dynamic>;
+        return body as Map<String, dynamic>;
       }
       throw Exception(body['message'] ?? 'Failed to load activity history');
     } catch (e) {

@@ -51,43 +51,50 @@ class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(adminSalesHistoryProvider);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FB),
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Sales History',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            if (!state.isLoading && state.total > 0)
-              Text(
-                '${state.total} total sales',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.normal,
-                  color: Color(0xFF586377),
-                ),
+    return PopScope(
+      canPop: Navigator.of(context).canPop(),
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) {
+          context.go('/admin/dashboard');
+        }
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF7F9FB),
+        appBar: AppBar(
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Sales History',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
-          ],
+              if (!state.isLoading && state.total > 0)
+                Text(
+                  '${state.total} total sales',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.normal,
+                    color: Color(0xFF586377),
+                  ),
+                ),
+            ],
+          ),
+          backgroundColor: Colors.white,
+          elevation: 0,
+          foregroundColor: const Color(0xFF191C1E),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                color: Color(0xFF3E4A3D)),
+            onPressed: () {
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              } else {
+                context.go('/admin/dashboard');
+              }
+            },
+          ),
         ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        foregroundColor: const Color(0xFF191C1E),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded,
-              color: Color(0xFF3E4A3D)),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/admin/dashboard');
-            }
-          },
-        ),
-      ),
-      body: SafeArea(
+        body: SafeArea(
         child: Column(
           children: [
           // ── Search bar ──────────────────────────────────────────────
@@ -149,8 +156,9 @@ class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
         ],
       ),
     ),
-  );
-}
+    ),
+    );
+  }
 
   Widget _buildBody(AdminSalesHistoryState state) {
     // Initial loading shimmer
