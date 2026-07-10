@@ -177,7 +177,7 @@ class _ActivityItem extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            time,
+            _formatTime(time),
             style: const TextStyle(
               fontSize: 10,
               color: Color(0xFF586377),
@@ -186,5 +186,20 @@ class _ActivityItem extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _formatTime(String timeIso) {
+    try {
+      final dt = DateTime.parse(timeIso).toLocal();
+      // Only show date and time without milliseconds
+      return '${dt.day.toString().padLeft(2, '0')} ${_getMonth(dt.month)} ${dt.hour > 12 ? dt.hour - 12 : dt.hour == 0 ? 12 : dt.hour}:${dt.minute.toString().padLeft(2, '0')} ${dt.hour >= 12 ? 'PM' : 'AM'}';
+    } catch (e) {
+      return timeIso;
+    }
+  }
+
+  String _getMonth(int month) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months[month - 1];
   }
 }

@@ -168,6 +168,13 @@ class InventoryRepository {
       include: {
         productName: true,
         productModel: true,
+        units: {
+          where: {
+            ...ownerFilter,
+            status: 'AVAILABLE'
+          },
+          select: { serialNumber: true }
+        },
         _count: {
           select: {
             units: {

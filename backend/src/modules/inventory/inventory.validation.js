@@ -62,7 +62,7 @@ const updateStockSchema = z.object({
   body: z.object({
     productNameId: z.number().int().positive({ message: 'Invalid product name id' }),
     productModelId: z.number().int().positive({ message: 'Invalid product model id' }),
-    quantity: z.number().int().positive({ message: 'Quantity must be a positive integer' }),
+    quantity: z.number().int().positive({ message: 'Quantity must be a positive integer' }).optional(),
     minSellPrice: z.number().nonnegative({ message: 'minSellPrice must be greater than or equal to 0' }).optional()
   })
 });

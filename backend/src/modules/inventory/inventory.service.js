@@ -27,6 +27,8 @@ class InventoryService {
     return {
       data: products.map(p => ({
         product_id: Number(p.id),
+        product_name_id: Number(p.productNameId),
+        product_model_id: Number(p.productModelId),
         brand: p.productName?.name || '',
         model: p.productModel?.name || '',
         quantity: p._count.units,
@@ -67,7 +69,8 @@ class InventoryService {
       min_price: Number(product.minPrice),
       offer_price: product.offerPrice ? Number(product.offerPrice) : null,
       min_unit_count_seller: Number(product.minUnitCountSeller),
-      is_low_stock: product._count.units <= Number(product.minUnitCountSeller)
+      is_low_stock: product._count.units <= Number(product.minUnitCountSeller),
+      serial_numbers: product.units?.map(u => u.serialNumber) || []
     };
   }
 
@@ -81,13 +84,16 @@ class InventoryService {
       return { success: true, message: 'No adjustment needed' };
     }
 
+    const productIdBig = BigInt(product_id);
+    const userIdBig = BigInt(user_id);
+
     // Wrap in a transaction to ensure atomicity
     return prisma.$transaction(async (tx) => {
       if (adjustment_quantity > 0) {
         // Positive adjustment: increase stock by creating new product units
         const unitsData = Array.from({ length: adjustment_quantity }).map(() => ({
-          productId: product_id,
-          ownerId: user_id,
+          productId: productIdBig,
+          ownerId: userIdBig,
           serialNumber: `ADJ-${Date.now()}-${crypto.randomUUID()}`,
           status: 'AVAILABLE'
         }));
@@ -95,14 +101,14 @@ class InventoryService {
         const createdUnits = await inventoryRepository.createInventory(unitsData, tx);
         const auditLogs = createdUnits.map(unit => ({
           productUnitId: unit.id,
-          toUserId: user_id,
-          action: 'ADJUSTED_IN'
+          toUserId: userIdBig,
+          action: 'RECEIVED' // Using RECEIVED as fallback for ADJUSTED_IN
         }));
         await inventoryRepository.createInventoryTransaction(auditLogs, tx);
       } else {
         // Negative adjustment: decrease stock
         const decreaseAmount = Math.abs(adjustment_quantity);
-        const availableUnits = await inventoryRepository.findAvailableUnits(user_id, product_id, decreaseAmount, tx);
+        const availableUnits = await inventoryRepository.findAvailableUnits(userIdBig, productIdBig, decreaseAmount, tx);
 
         if (availableUnits.length < decreaseAmount) {
           const error = new Error('Not enough stock to decrease');
@@ -112,14 +118,14 @@ class InventoryService {
 
         const unitIds = availableUnits.map(u => u.id);
 
-        // Mark units as ADJUSTED_OUT to simulate decrease
-        await inventoryRepository.updateInventory(unitIds, { status: 'ADJUSTED_OUT' }, tx);
+        // Mark units as DEFECTIVE to simulate decrease (since ADJUSTED_OUT is not in schema)
+        await inventoryRepository.updateInventory(unitIds, { status: 'DEFECTIVE' }, tx);
 
         // Create audit logs
         const auditLogs = unitIds.map(unitId => ({
           productUnitId: unitId,
-          toUserId: user_id,
-          action: 'ADJUSTED_OUT'
+          toUserId: userIdBig,
+          action: 'RETURNED' // Using RETURNED as fallback
         }));
         await inventoryRepository.createInventoryTransaction(auditLogs, tx);
       }
@@ -298,7 +304,7 @@ class InventoryService {
             productModelId: BigInt(productModelId),
             minPrice: minSellPrice !== undefined ? minSellPrice : 0,
             onSale: false,
-            stockQuantity: quantity
+            stockQuantity: quantity ?? 0
           }
         });
       } else {
@@ -306,13 +312,13 @@ class InventoryService {
         product = await tx.product.update({
           where: { id: product.id },
           data: {
-            stockQuantity: { increment: quantity },
+            ...(quantity ? { stockQuantity: { increment: quantity } } : {}),
             ...(minSellPrice !== undefined ? { minPrice: minSellPrice } : {})
           }
         });
       }
 
-      if (quantity > 0) {
+      if (quantity && quantity > 0) {
         const unitsData = Array.from({ length: quantity }).map(() => ({
           productId: product.id,
           ownerId: adminId,

@@ -7,6 +7,8 @@ import '../../../seller/dashboard/screens/seller_shell_screen.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 import '../providers/inventory_provider.dart';
 import '../widgets/inventory_product_card.dart';
+import '../../../../shared/providers/auth_provider.dart';
+import '../../../admin/inventory/widgets/admin_edit_inventory_bottom_sheet.dart';
 
 class CurrentInventoryScreen extends ConsumerStatefulWidget {
   const CurrentInventoryScreen({super.key});
@@ -158,6 +160,21 @@ class _CurrentInventoryScreenState extends ConsumerState<CurrentInventoryScreen>
                             return InventoryProductCard(
                               item: item,
                               index: serialNumber,
+                              onTap: () {
+                                final authState = ref.read(authProvider);
+                                if (authState.role == UserRole.admin) {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                                    ),
+                                    builder: (ctx) => AdminEditInventoryBottomSheet(item: item),
+                                  );
+                                } else {
+                                  context.push('/shared/inventory/${item.productId}');
+                                }
+                              },
                             );
                           },
                         ),

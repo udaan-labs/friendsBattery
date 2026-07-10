@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dio/dio.dart';
@@ -427,6 +428,10 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                             TextFormField(
                               controller: _customerMobileController,
                               keyboardType: TextInputType.phone,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(10),
+                              ],
                               decoration: const InputDecoration(
                                 hintText: 'Enter Mobile Number',
                               ),

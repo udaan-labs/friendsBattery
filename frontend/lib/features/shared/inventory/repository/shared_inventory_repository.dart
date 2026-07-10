@@ -2,6 +2,9 @@ import 'package:dio/dio.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 
 class SharedInventoryItemModel {
+  final int productId;
+  final int productNameId;
+  final int productModelId;
   final String productModel;
   final String productName;
   final int quantity;
@@ -9,6 +12,9 @@ class SharedInventoryItemModel {
   final int minStock; // Assuming we have this or default to 10
 
   SharedInventoryItemModel({
+    required this.productId,
+    required this.productNameId,
+    required this.productModelId,
     required this.productModel,
     required this.productName,
     required this.quantity,
@@ -21,11 +27,49 @@ class SharedInventoryItemModel {
     // We map: productGroup=category, category=brand, productModel=model, productName=brand
     final brandName = json['brand']?.toString() ?? 'N/A';
     return SharedInventoryItemModel(
+      productId: (json['product_id'] as num?)?.toInt() ?? 0,
+      productNameId: (json['product_name_id'] as num?)?.toInt() ?? 0,
+      productModelId: (json['product_model_id'] as num?)?.toInt() ?? 0,
       productModel: json['model']?.toString() ?? 'N/A',
       productName: brandName,
       quantity: (json['quantity'] as num?)?.toInt() ?? 0,
       minPrice: (json['min_price'] as num?)?.toDouble() ?? 0.0,
       minStock: (json['min_stock'] as num?)?.toInt() ?? 5,
+    );
+  }
+}
+
+class InventoryProductDetailModel {
+  final int productId;
+  final String productModel;
+  final String productName;
+  final int quantity;
+  final double minPrice;
+  final int minStock;
+  final List<String> serialNumbers;
+
+  InventoryProductDetailModel({
+    required this.productId,
+    required this.productModel,
+    required this.productName,
+    required this.quantity,
+    required this.minPrice,
+    required this.minStock,
+    required this.serialNumbers,
+  });
+
+  factory InventoryProductDetailModel.fromJson(Map<String, dynamic> json) {
+    final brandName = json['brand']?.toString() ?? 'N/A';
+    final serials = json['serial_numbers'] as List<dynamic>?;
+    
+    return InventoryProductDetailModel(
+      productId: (json['product_id'] as num?)?.toInt() ?? 0,
+      productModel: json['model']?.toString() ?? 'N/A',
+      productName: brandName,
+      quantity: (json['quantity'] as num?)?.toInt() ?? 0,
+      minPrice: (json['min_price'] as num?)?.toDouble() ?? 0.0,
+      minStock: (json['min_stock'] as num?)?.toInt() ?? 5,
+      serialNumbers: serials?.map((e) => e.toString()).toList() ?? [],
     );
   }
 }
@@ -86,6 +130,19 @@ class SharedInventoryRepository {
       return PaginatedInventoryResponse(items: [], total: 0);
     } catch (e) {
       throw Exception('Failed to fetch inventory: $e');
+    }
+  }
+
+  Future<InventoryProductDetailModel> getProductDetail(int productId) async {
+    try {
+      final response = await dio.get('/api/inventory/$productId');
+      final data = response.data;
+      if (data is Map<String, dynamic> && data['data'] != null) {
+        return InventoryProductDetailModel.fromJson(data['data']);
+      }
+      throw Exception('Invalid response format');
+    } catch (e) {
+      throw Exception('Failed to fetch product detail: $e');
     }
   }
 }

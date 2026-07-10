@@ -42,3 +42,8 @@ final sharedInventoryProvider = FutureProvider<PaginatedInventoryResponse>((ref)
     limit: query.limit,
   );
 });
+
+final sharedInventoryProductDetailProvider = FutureProvider.family<InventoryProductDetailModel, int>((ref, productId) async {
+  final repository = ref.watch(sharedInventoryRepositoryProvider);
+  return repository.getProductDetail(productId);
+});
