@@ -255,15 +255,10 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
           title: const Text('Create Bill'),
           backgroundColor: const Color(0xFFF7F9FB),
           elevation: 0,
-          leading: context.canPop()
-              ? IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Color(0xFF3E4A3D)),
-                  onPressed: _onBackPressed,
-                )
-              : IconButton(
-                  icon: const Icon(Icons.menu, color: Color(0xFF3E4A3D)),
-                  onPressed: () => sellerScaffoldKey.currentState?.openDrawer(),
-                ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF3E4A3D)),
+            onPressed: _onBackPressed,
+          ),
         ),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -439,8 +434,8 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                                 if (value == null || value.trim().isEmpty) {
                                   return 'Mobile number is required';
                                 }
-                                if (value.trim().length < 10) {
-                                  return 'Mobile number must be at least 10 digits';
+                                if (value.trim().length != 10) {
+                                  return 'Mobile number must be exactly 10 digits';
                                 }
                                 return null;
                               },
@@ -459,7 +454,15 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                               decoration: const InputDecoration(
                                 hintText: 'e.g. MH12AB1234 (optional)',
                               ),
-                              validator: null,
+                              validator: (value) {
+                                if (value != null && value.trim().isNotEmpty) {
+                                  final vehicleRegex = RegExp(r'^[A-Z]{2}[0-9]{1,2}[A-Z]{1,2}[0-9]{4}$');
+                                  if (!vehicleRegex.hasMatch(value.trim().replaceAll(' ', '').toUpperCase())) {
+                                    return 'Enter a valid Vehicle Number (e.g. MH12AB1234)';
+                                  }
+                                }
+                                return null;
+                              },
                             ),
                             const SizedBox(height: 20),
 

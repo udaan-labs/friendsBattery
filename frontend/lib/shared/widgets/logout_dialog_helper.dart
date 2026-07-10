@@ -22,7 +22,10 @@ void showLogoutConfirmationDialog(BuildContext context, WidgetRef ref) {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel', style: TextStyle(color: Color(0xFF006B2C))),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF545F73),
+            ),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -30,11 +33,13 @@ void showLogoutConfirmationDialog(BuildContext context, WidgetRef ref) {
               await ref.read(authProvider.notifier).logout();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.grey,
+              backgroundColor: const Color(0xFFDC2626),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
-            child: const Text('Logout'),
+            child: const Text('Logout', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       );

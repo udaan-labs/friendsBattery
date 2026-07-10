@@ -236,15 +236,10 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
         ),
         backgroundColor: const Color(0xFFF7F9FB),
         elevation: 0,
-        leading: context.canPop()
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back, color: Color(0xFF3E4A3D)),
-                onPressed: _onBackPressed,
-              )
-            : IconButton(
-                icon: const Icon(Icons.menu, color: Color(0xFF3E4A3D)),
-                onPressed: () => sellerScaffoldKey.currentState?.openDrawer(),
-              ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF3E4A3D)),
+          onPressed: _onBackPressed,
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
