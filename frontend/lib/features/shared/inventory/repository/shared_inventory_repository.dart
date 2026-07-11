@@ -74,6 +74,7 @@ class InventoryProductDetailModel {
       productName: brandName,
       quantity: (json['quantity'] as num?)?.toInt() ?? 0,
       minPrice: (json['min_price'] as num?)?.toDouble() ?? 0.0,
+      isLowStock: json['is_low_stock'] == true,
       serialNumbers: serials?.map((e) => e.toString()).toList() ?? [],
     );
   }
