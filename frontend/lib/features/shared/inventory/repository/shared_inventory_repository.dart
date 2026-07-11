@@ -37,7 +37,6 @@ class SharedInventoryItemModel {
       productName: brandName,
       quantity: (json['quantity'] as num?)?.toInt() ?? 0,
       minPrice: (json['min_price'] as num?)?.toDouble() ?? 0.0,
-      minStock: (json['min_stock'] as num?)?.toInt() ?? 5,
       minUnitCountAdmin: (json['min_unit_count_admin'] as num?)?.toInt() ?? 0,
       minUnitCountSeller: (json['min_unit_count_seller'] as num?)?.toInt() ?? 0,
       onSale: json['on_sale'] == true || json['on_sale'] == 1,
@@ -75,7 +74,6 @@ class InventoryProductDetailModel {
       productName: brandName,
       quantity: (json['quantity'] as num?)?.toInt() ?? 0,
       minPrice: (json['min_price'] as num?)?.toDouble() ?? 0.0,
-      minStock: (json['min_stock'] as num?)?.toInt() ?? 5,
       serialNumbers: serials?.map((e) => e.toString()).toList() ?? [],
     );
   }

@@ -58,7 +58,6 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
           'Seller Details',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
-        ],
       ),
       body: SafeArea(
         child: RefreshIndicator(
