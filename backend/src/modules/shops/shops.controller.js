@@ -42,9 +42,10 @@ class ShopsController {
   async viewSeller(req, res) {
     try {
       const { sellerId } = req.params;
+      const { includeOutOfStock } = req.query;
 
       // Call business layer
-      const seller = await shopsService.viewSeller(Number(sellerId));
+      const seller = await shopsService.viewSeller(Number(sellerId), includeOutOfStock);
 
       // Return standardized success response
       return successResponse(res, 200, 'Seller fetched successfully', seller);

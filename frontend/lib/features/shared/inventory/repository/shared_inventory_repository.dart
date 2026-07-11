@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:friends_battery_api/friends_battery_api.dart';
 
 class SharedInventoryItemModel {
   final int productId;
@@ -9,7 +8,10 @@ class SharedInventoryItemModel {
   final String productName;
   final int quantity;
   final double minPrice;
-  final int minStock; // Assuming we have this or default to 10
+  final int minUnitCountAdmin;
+  final int minUnitCountSeller;
+  final bool onSale;
+  final bool isLowStock;
 
   SharedInventoryItemModel({
     required this.productId,
@@ -19,12 +21,13 @@ class SharedInventoryItemModel {
     required this.productName,
     required this.quantity,
     required this.minPrice,
-    this.minStock = 10, // Default threshold if API doesn't provide it
+    this.minUnitCountAdmin = 0,
+    this.minUnitCountSeller = 0,
+    this.onSale = false,
+    this.isLowStock = false,
   });
 
   factory SharedInventoryItemModel.fromJson(Map<String, dynamic> json) {
-    // API returns: category (top-level group), brand (product name/series), model
-    // We map: productGroup=category, category=brand, productModel=model, productName=brand
     final brandName = json['brand']?.toString() ?? 'N/A';
     return SharedInventoryItemModel(
       productId: (json['product_id'] as num?)?.toInt() ?? 0,
@@ -35,6 +38,10 @@ class SharedInventoryItemModel {
       quantity: (json['quantity'] as num?)?.toInt() ?? 0,
       minPrice: (json['min_price'] as num?)?.toDouble() ?? 0.0,
       minStock: (json['min_stock'] as num?)?.toInt() ?? 5,
+      minUnitCountAdmin: (json['min_unit_count_admin'] as num?)?.toInt() ?? 0,
+      minUnitCountSeller: (json['min_unit_count_seller'] as num?)?.toInt() ?? 0,
+      onSale: json['on_sale'] == true || json['on_sale'] == 1,
+      isLowStock: json['is_low_stock'] == true,
     );
   }
 }
@@ -45,7 +52,7 @@ class InventoryProductDetailModel {
   final String productName;
   final int quantity;
   final double minPrice;
-  final int minStock;
+  final bool isLowStock;
   final List<String> serialNumbers;
 
   InventoryProductDetailModel({
@@ -54,7 +61,7 @@ class InventoryProductDetailModel {
     required this.productName,
     required this.quantity,
     required this.minPrice,
-    required this.minStock,
+    required this.isLowStock,
     required this.serialNumbers,
   });
 
@@ -82,10 +89,9 @@ class PaginatedInventoryResponse {
 }
 
 class SharedInventoryRepository {
-  final InventoryApi api;
   final Dio dio;
 
-  SharedInventoryRepository({required this.api, required this.dio});
+  SharedInventoryRepository({required this.dio});
 
   Future<PaginatedInventoryResponse> getInventory({
     String? search,
@@ -95,7 +101,7 @@ class SharedInventoryRepository {
     try {
       // Using Dio directly because the generated API returns Response<void> and we need raw data
       final response = await dio.get(
-        '/api/inventory', // the base path might need to be prefixed with baseUrl, but dio usually handles it if configured
+        '/api/inventory',
         queryParameters: {
           if (search != null && search.isNotEmpty) 'search': search,
           'page': page,
@@ -122,7 +128,6 @@ class SharedInventoryRepository {
           return PaginatedInventoryResponse(items: items, total: total);
         }
       } else if (data is List) {
-        // Fallback if the API returns a direct list
         final items = data.map((e) => SharedInventoryItemModel.fromJson(e as Map<String, dynamic>)).toList();
         return PaginatedInventoryResponse(items: items, total: items.length);
       }

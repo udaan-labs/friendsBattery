@@ -13,17 +13,24 @@ class InventoryRepository {
    * Input: userId (BigInt)
    * Output: Array of products with their unit count for the user.
    */
-  async findInventory(userId, role, { search, skip, take }) {
+  async findInventory(userId, role, { search, skip, take, includeOutOfStock }) {
     const ownerFilter = role === 'ADMIN' ? { owner: { role: 'ADMIN' } } : { ownerId: BigInt(userId) };
 
-    const whereClause = {
-      units: {
+    const whereClause = {};
+    if (!includeOutOfStock) {
+      whereClause.units = {
         some: {
           ...ownerFilter,
           status: 'AVAILABLE'
         }
-      }
-    };
+      };
+    } else {
+      whereClause.units = {
+        some: {
+          ...ownerFilter
+        }
+      };
+    }
 
     if (search) {
       whereClause.OR = [
@@ -58,86 +65,28 @@ class InventoryRepository {
     return prisma.product.findMany(queryOptions);
   }
 
-  /**
-   * Retrieves admin inventory (products with stockQuantity > 0).
-   */
-  async findAdminInventory({ search, skip, take }) {
-    const whereClause = {
-      stockQuantity: { gt: 0 }
-    };
-
-    if (search) {
-      whereClause.OR = [
-        { productName: { name: { contains: search, mode: 'insensitive' } } },
-        { productModel: { name: { contains: search, mode: 'insensitive' } } }
-      ];
-    }
-
-    const queryOptions = {
-      where: whereClause,
-      include: {
-        productName: true,
-        productModel: true
-      },
-      orderBy: { id: 'asc' }
-    };
-
-    if (skip !== undefined && take !== undefined) {
-      queryOptions.skip = Number(skip);
-      queryOptions.take = Number(take);
-    }
-
-    return prisma.product.findMany(queryOptions);
-  }
-
-  /**
-   * Counts admin inventory products.
-   */
-  async countAdminInventory({ search }) {
-    const whereClause = {
-      stockQuantity: { gt: 0 }
-    };
-
-    if (search) {
-      whereClause.OR = [
-        { productName: { name: { contains: search, mode: 'insensitive' } } },
-        { productModel: { name: { contains: search, mode: 'insensitive' } } }
-      ];
-    }
-
-    return prisma.product.count({ where: whereClause });
-  }
-
-  /**
-   * Find a single product by ID for admin (checks stockQuantity > 0).
-   */
-  async findAdminInventoryByProduct(productId) {
-    return prisma.product.findFirst({
-      where: {
-        id: productId,
-        stockQuantity: { gt: 0 }
-      },
-      include: {
-        productName: true,
-        productModel: true
-      }
-    });
-  }
 
   /**
    * Retrieves the total count of inventory items for a user based on search criteria.
    */
-  async countInventory(userId, role, { search }) {
+  async countInventory(userId, role, { search, includeOutOfStock }) {
     const ownerFilter = role === 'ADMIN' ? { owner: { role: 'ADMIN' } } : { ownerId: BigInt(userId) };
 
-    const whereClause = {
-      units: {
+    const whereClause = {};
+    if (!includeOutOfStock) {
+      whereClause.units = {
         some: {
           ...ownerFilter,
           status: 'AVAILABLE'
         }
-      }
-    };
+      };
+    } else {
+      whereClause.units = {
+        some: {
+          ...ownerFilter
+        }
+      };
+    }
 
     if (search) {
       whereClause.OR = [

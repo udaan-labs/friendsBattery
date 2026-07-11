@@ -18,10 +18,10 @@ class InventoryController {
     try {
       const userId = Number(req.user.id);
       const role = req.user.role;
-      const { search, page, limit } = req.query;
+      const { search, page, limit, includeOutOfStock } = req.query;
 
       // Call business layer
-      const inventory = await inventoryService.getInventory(userId, role, { search, page, limit });
+      const inventory = await inventoryService.getInventory(userId, role, { search, page, limit, includeOutOfStock });
 
       // Return standardized success response
       return successResponse(res, 200, 'Inventory fetched successfully', inventory);
@@ -125,14 +125,17 @@ class InventoryController {
   async updateStock(req, res) {
     try {
       const adminId = Number(req.user.id);
-      const { productNameId, productModelId, quantity, minSellPrice } = req.body;
+      const { productNameId, productModelId, quantity, minSellPrice, minUnitCountAdmin, minUnitCountSeller, onSale } = req.body;
 
       // Call business layer
       const result = await inventoryService.updateStock(adminId, {
         productNameId,
         productModelId,
         quantity,
-        minSellPrice
+        minSellPrice,
+        minUnitCountAdmin,
+        minUnitCountSeller,
+        onSale
       });
 
       // Return standardized success response

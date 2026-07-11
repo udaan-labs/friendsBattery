@@ -2,9 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
-import '../../../../core/network/api_client.dart';
+import '../../../../core/network/api_client_provider.dart';
 import '../../../../core/storage/session_manager.dart';
-import '../../../../core/storage/local_storage.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
 import '../../../shared/inventory/repository/shared_inventory_repository.dart';
 import '../../../shared/inventory/providers/inventory_provider.dart';
@@ -26,6 +25,9 @@ class _AdminEditInventoryBottomSheetState extends ConsumerState<AdminEditInvento
   final _quantityController = TextEditingController();
   final _removeQuantityController = TextEditingController();
   final _minPriceController = TextEditingController();
+  final _minAdminQuantityController = TextEditingController();
+  final _minSellerQuantityController = TextEditingController();
+  bool _onSale = false;
   bool _isSubmitting = false;
   bool _isEditing = false;
 
@@ -33,6 +35,9 @@ class _AdminEditInventoryBottomSheetState extends ConsumerState<AdminEditInvento
   void initState() {
     super.initState();
     _minPriceController.text = widget.item.minPrice.toStringAsFixed(0);
+    _minAdminQuantityController.text = widget.item.minUnitCountAdmin.toString();
+    _minSellerQuantityController.text = widget.item.minUnitCountSeller.toString();
+    _onSale = widget.item.onSale;
   }
 
   @override
@@ -40,6 +45,8 @@ class _AdminEditInventoryBottomSheetState extends ConsumerState<AdminEditInvento
     _quantityController.dispose();
     _removeQuantityController.dispose();
     _minPriceController.dispose();
+    _minAdminQuantityController.dispose();
+    _minSellerQuantityController.dispose();
     super.dispose();
   }
 
@@ -49,17 +56,22 @@ class _AdminEditInventoryBottomSheetState extends ConsumerState<AdminEditInvento
     setState(() => _isSubmitting = true);
 
     try {
-      final dio = ApiClient().dio;
+      final dio = ref.read(dioProvider);
       final quantityToAdd = int.tryParse(_quantityController.text) ?? 0;
       final quantityToRemove = int.tryParse(_removeQuantityController.text) ?? 0;
       final minPrice = num.tryParse(_minPriceController.text);
+      final minAdminQty = int.tryParse(_minAdminQuantityController.text);
+      final minSellerQty = int.tryParse(_minSellerQuantityController.text);
 
-      if (quantityToAdd > 0 || minPrice != null) {
+      if (quantityToAdd > 0 || minPrice != null || minAdminQty != null || minSellerQty != null || _onSale != widget.item.onSale) {
         await dio.post('/api/inventory/update-stock', data: {
           'productNameId': widget.item.productNameId,
           'productModelId': widget.item.productModelId,
           if (quantityToAdd > 0) 'quantity': quantityToAdd,
           if (minPrice != null) 'minSellPrice': minPrice,
+          if (minAdminQty != null) 'minUnitCountAdmin': minAdminQty,
+          if (minSellerQty != null) 'minUnitCountSeller': minSellerQty,
+          'onSale': _onSale,
         });
       }
 
@@ -107,13 +119,14 @@ class _AdminEditInventoryBottomSheetState extends ConsumerState<AdminEditInvento
         right: 16,
         top: 24,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
               const Text(
                 'Quick Edit Inventory',
                 style: TextStyle(
@@ -234,6 +247,67 @@ class _AdminEditInventoryBottomSheetState extends ConsumerState<AdminEditInvento
                     return null;
                   },
                 ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Minimum Admin Quantity',
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _minAdminQuantityController,
+                  keyboardType: TextInputType.number,
+                  enabled: _isEditing,
+                  decoration: InputDecoration(
+                    hintText: 'Enter minimum alert threshold',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
+                  validator: (value) {
+                    if (value != null && value.isNotEmpty) {
+                      final val = int.tryParse(value);
+                      if (val == null || val < 0) return 'Enter a valid number';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Minimum Seller Quantity',
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _minSellerQuantityController,
+                  keyboardType: TextInputType.number,
+                  enabled: _isEditing,
+                  decoration: InputDecoration(
+                    hintText: 'Enter minimum alert threshold for sellers',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
+                  validator: (value) {
+                    if (value != null && value.isNotEmpty) {
+                      final val = int.tryParse(value);
+                      if (val == null || val < 0) return 'Enter a valid number';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Is On Sale',
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                    ),
+                    Switch(
+                      value: _onSale,
+                      onChanged: _isEditing ? (val) => setState(() => _onSale = val) : null,
+                      activeColor: const Color(0xFF006B2C),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
@@ -264,6 +338,7 @@ class _AdminEditInventoryBottomSheetState extends ConsumerState<AdminEditInvento
             ),
           ),
         ],
+      ),
       ),
     );
   }

@@ -97,12 +97,12 @@ class InventoryProductCard extends StatelessWidget {
                             label: '${item.quantity} Units',
                             color: item.quantity == 0
                                 ? Colors.red
-                                : (item.quantity <= item.minStock
+                                : (item.isLowStock
                                     ? Colors.orange
                                     : Colors.green),
                             bgColor: item.quantity == 0
                                 ? Colors.red.shade50
-                                : (item.quantity <= item.minStock
+                                : (item.isLowStock
                                     ? Colors.orange.shade50
                                     : Colors.green.shade50),
                           ),
@@ -112,6 +112,25 @@ class InventoryProductCard extends StatelessWidget {
                             color: Colors.blue.shade700,
                             bgColor: Colors.blue.shade50,
                           ),
+                          _buildSmallChip(
+                            icon: Icons.admin_panel_settings_outlined,
+                            label: 'Admin Min: ${item.minUnitCountAdmin}',
+                            color: Colors.purple.shade700,
+                            bgColor: Colors.purple.shade50,
+                          ),
+                          _buildSmallChip(
+                            icon: Icons.store_outlined,
+                            label: 'Seller Min: ${item.minUnitCountSeller}',
+                            color: Colors.teal.shade700,
+                            bgColor: Colors.teal.shade50,
+                          ),
+                          if (item.onSale)
+                            _buildSmallChip(
+                              icon: Icons.local_offer_outlined,
+                              label: 'On Sale',
+                              color: Colors.pink.shade700,
+                              bgColor: Colors.pink.shade50,
+                            ),
                         ],
                       ),
                     ],
@@ -120,7 +139,7 @@ class InventoryProductCard extends StatelessWidget {
 
                 // Status Badge
                 const SizedBox(width: 12),
-                _buildStatusDot(item.quantity, item.minStock),
+                _buildStatusDot(item.quantity, item.isLowStock),
               ],
             ),
           ),
@@ -159,10 +178,10 @@ class InventoryProductCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusDot(int quantity, int minStock) {
+  Widget _buildStatusDot(int quantity, bool isLowStock) {
     Color color = quantity == 0
         ? Colors.red
-        : (quantity <= minStock ? Colors.orange : Colors.green);
+        : (isLowStock ? Colors.orange : Colors.green);
     return Container(
       width: 10,
       height: 10,

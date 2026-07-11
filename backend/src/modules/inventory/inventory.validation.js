@@ -12,7 +12,7 @@ const getInventorySchema = z.object({
     search: z.string().optional(),
     page: z.string().regex(/^\d+$/).transform(Number).refine(val => val > 0, { message: 'Page must be positive' }).optional(),
     limit: z.string().regex(/^\d+$/).transform(Number).refine(val => val > 0, { message: 'Limit must be positive' }).optional(),
-    sort: z.string().optional(),
+    includeOutOfStock: z.string().optional(),
   })
 });
 
@@ -63,7 +63,10 @@ const updateStockSchema = z.object({
     productNameId: z.number().int().positive({ message: 'Invalid product name id' }),
     productModelId: z.number().int().positive({ message: 'Invalid product model id' }),
     quantity: z.number().int().positive({ message: 'Quantity must be a positive integer' }).optional(),
-    minSellPrice: z.number().nonnegative({ message: 'minSellPrice must be greater than or equal to 0' }).optional()
+    minSellPrice: z.number().nonnegative({ message: 'minSellPrice must be greater than or equal to 0' }).optional(),
+    minUnitCountAdmin: z.number().int().nonnegative().optional(),
+    minUnitCountSeller: z.number().int().nonnegative().optional(),
+    onSale: z.boolean().optional()
   })
 });
 

@@ -80,8 +80,8 @@ class InventoryProductDetailScreen extends ConsumerWidget {
                               Expanded(
                                 child: _buildStatItem(
                                   icon: Icons.inventory_2_rounded,
-                                  iconColor: product.quantity > product.minStock ? Colors.green : Colors.orange,
-                                  iconBg: product.quantity > product.minStock ? Colors.green.shade50 : Colors.orange.shade50,
+                                  iconColor: product.isLowStock ? Colors.orange : Colors.green,
+                                  iconBg: product.isLowStock ? Colors.orange.shade50 : Colors.green.shade50,
                                   label: 'In Stock',
                                   value: '${product.quantity} Units',
                                 ),

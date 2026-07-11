@@ -18,6 +18,7 @@ class SellerDetailsScreen extends ConsumerStatefulWidget {
 
 class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
+  bool _showOutOfStock = false;
 
   @override
   void initState() {
@@ -36,7 +37,7 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
 
   @override
   Widget build(BuildContext context) {
-    final asyncData = ref.watch(sellerDetailsProvider(widget.sellerId));
+    final asyncData = ref.watch(sellerDetailsProvider((sellerId: widget.sellerId, includeOutOfStock: _showOutOfStock)));
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
@@ -57,17 +58,12 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
           'Seller Details',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert, color: Colors.black),
-            onPressed: () {},
-          ),
         ],
       ),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            ref.invalidate(sellerDetailsProvider(widget.sellerId));
+            ref.invalidate(sellerDetailsProvider((sellerId: widget.sellerId, includeOutOfStock: _showOutOfStock)));
           },
           child: asyncData.when(
             data: (data) => _buildContent(data),
@@ -136,13 +132,28 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
           ),
           
           SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 24 : 32),
-          Text(
-            'Current Inventory',
-            style: TextStyle(
-              fontSize: ResponsiveHelper.fontSize(context, 20),
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Current Inventory',
+                style: TextStyle(
+                  fontSize: ResponsiveHelper.fontSize(context, 20),
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              Row(
+                children: [
+                  const Text('Show Out of Stock', style: TextStyle(fontSize: 12, color: Colors.black54)),
+                  Switch(
+                    value: _showOutOfStock,
+                    onChanged: (val) => setState(() => _showOutOfStock = val),
+                    activeColor: const Color(0xFF006B2C),
+                  ),
+                ],
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           
@@ -156,9 +167,7 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
               itemBuilder: (context, index) {
                 return InventoryProductCard(
                   inventoryItem: data.inventory[index],
-                  onTap: () {
-                    // Navigate to product details if needed
-                  },
+                  onTap: () {},
                 );
               },
             ),
@@ -268,7 +277,7 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => ref.invalidate(sellerDetailsProvider(widget.sellerId)),
+              onPressed: () => ref.invalidate(sellerDetailsProvider((sellerId: widget.sellerId, includeOutOfStock: _showOutOfStock))),
               child: const Text('Retry'),
             ),
           ],

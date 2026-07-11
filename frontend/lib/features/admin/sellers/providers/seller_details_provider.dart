@@ -21,9 +21,12 @@ class SellerDetailsData {
   List<dynamic> get inventory => rawData['inventory'] ?? [];
 }
 
-final sellerDetailsProvider = FutureProvider.family<SellerDetailsData, int>((ref, sellerId) async {
+final sellerDetailsProvider = FutureProvider.family<SellerDetailsData, ({int sellerId, bool includeOutOfStock})>((ref, params) async {
   final dio = ref.watch(apiClientProvider).dio;
-  final response = await dio.get('/api/shops/sellers/$sellerId');
+  final response = await dio.get(
+    '/api/shops/sellers/${params.sellerId}',
+    queryParameters: {'includeOutOfStock': params.includeOutOfStock},
+  );
   
   final dynamic data = response.data;
   

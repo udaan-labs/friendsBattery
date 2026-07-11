@@ -53,7 +53,7 @@ class ShopsService {
    * Input: sellerId
    * Output: Seller details mapped to response format
    */
-  async viewSeller(sellerId) {
+  async viewSeller(sellerId, includeOutOfStock = false) {
     const inventoryService = require('../inventory/inventory.service');
     // We use Promise.all() to execute independent database queries in parallel.
     // This reduces the total response time instead of waiting for each query sequentially.
@@ -70,7 +70,7 @@ class ShopsService {
       shopsRepository.getSellerProductsCount(sellerId),
       shopsRepository.getSellerSalesCount(sellerId),
       shopsRepository.getSellerReturnsCount(sellerId),
-      inventoryService.getInventory(sellerId, 'SELLER', { page: 1, limit: 1000000 })
+      inventoryService.getInventory(sellerId, 'SELLER', { page: 1, limit: 1000000, includeOutOfStock })
     ]);
 
     if (!user) {

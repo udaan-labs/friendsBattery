@@ -32,7 +32,6 @@ class InventoryProductCard extends StatelessWidget {
     }
 
     final minPrice = inventoryItem['min_price']?.toString() ?? '0';
-    final offerPrice = inventoryItem['offer_price']?.toString();
 
     return Container(
       margin: EdgeInsets.only(bottom: 12, left: ResponsiveHelper.responsiveHorizontalMargin(context), right: ResponsiveHelper.responsiveHorizontalMargin(context)),
@@ -97,21 +96,33 @@ class InventoryProductCard extends StatelessWidget {
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              Expanded(child: _buildInfoColumn('Offer Price', offerPrice != null ? '₹$offerPrice' : '—', Icons.local_offer_outlined)),
-                              const Spacer(),
-                              const Icon(Icons.chevron_right_rounded, color: Colors.grey),
+                              Expanded(child: _buildInfoColumn('Admin Min', inventoryItem['min_unit_count_admin']?.toString() ?? '0', Icons.admin_panel_settings_outlined)),
+                              const SizedBox(width: 8),
+                              Expanded(child: _buildInfoColumn('Seller Min', inventoryItem['min_unit_count_seller']?.toString() ?? '0', Icons.store_outlined)),
                             ],
                           ),
+                          const SizedBox(height: 8),
+                          if (inventoryItem['on_sale'] == true || inventoryItem['on_sale'] == 1)
+                            Row(
+                              children: [
+                                Expanded(child: _buildInfoColumn('On Sale', 'Yes', Icons.local_offer_outlined)),
+                                const Spacer(),
+                                const Icon(Icons.chevron_right_rounded, color: Colors.grey),
+                              ],
+                            ),
                         ],
                       );
                     }
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    return Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
                       children: [
                         _buildInfoColumn('Quantity', quantity.toString(), Icons.inventory_2_outlined),
                         _buildInfoColumn('Min Price', '₹$minPrice', Icons.price_change_outlined),
-                        _buildInfoColumn('Offer Price', offerPrice != null ? '₹$offerPrice' : '—', Icons.local_offer_outlined),
-                        const Icon(Icons.chevron_right_rounded, color: Colors.grey),
+                        _buildInfoColumn('Admin Min', inventoryItem['min_unit_count_admin']?.toString() ?? '0', Icons.admin_panel_settings_outlined),
+                        _buildInfoColumn('Seller Min', inventoryItem['min_unit_count_seller']?.toString() ?? '0', Icons.store_outlined),
+                        if (inventoryItem['on_sale'] == true || inventoryItem['on_sale'] == 1)
+                          _buildInfoColumn('On Sale', 'Yes', Icons.local_offer_outlined),
                       ],
                     );
                   },

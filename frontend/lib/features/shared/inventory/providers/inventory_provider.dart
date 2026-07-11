@@ -3,10 +3,9 @@ import '../../../../core/network/api_client_provider.dart';
 import '../repository/shared_inventory_repository.dart';
 
 final sharedInventoryRepositoryProvider = Provider<SharedInventoryRepository>((ref) {
-  final apiClient = ref.watch(apiClientProvider);
+  final dio = ref.watch(dioProvider);
   return SharedInventoryRepository(
-    api: apiClient.getInventoryApi(),
-    dio: apiClient.dio,
+    dio: dio,
   );
 });
 

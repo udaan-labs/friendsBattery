@@ -15,13 +15,14 @@ class InventoryService {
    * Input: userId, search, page, limit
    * Output: Array of inventory items mapped to response format
    */
-  async getInventory(userId, role, { search, page = 1, limit = 10 }) {
+  async getInventory(userId, role, { search, page = 1, limit = 10, includeOutOfStock = false }) {
     const skip = (page - 1) * limit;
+    const includeOOS = String(includeOutOfStock) === 'true';
 
     let products, total;
     [products, total] = await Promise.all([
-      inventoryRepository.findInventory(userId, role, { search, skip, take: limit }),
-      inventoryRepository.countInventory(userId, role, { search })
+      inventoryRepository.findInventory(userId, role, { search, skip, take: limit, includeOutOfStock: includeOOS }),
+      inventoryRepository.countInventory(userId, role, { search, includeOutOfStock: includeOOS })
     ]);
 
     return {
@@ -35,7 +36,11 @@ class InventoryService {
         min_price: Number(p.minPrice),
         offer_price: p.offerPrice ? Number(p.offerPrice) : null,
         min_unit_count_seller: Number(p.minUnitCountSeller),
-        is_low_stock: p._count.units <= Number(p.minUnitCountSeller)
+        min_unit_count_admin: Number(p.minUnitCountAdmin),
+        on_sale: p.onSale,
+        is_low_stock: role === 'ADMIN' 
+          ? p._count.units <= Number(p.minUnitCountAdmin)
+          : p._count.units <= Number(p.minUnitCountSeller)
       })),
       pagination: {
         total,
@@ -63,13 +68,19 @@ class InventoryService {
 
     return {
       product_id: Number(product.id),
+      product_name_id: Number(product.productNameId),
+      product_model_id: Number(product.productModelId),
       brand: product.productName?.name || '',
       model: product.productModel?.name || '',
       quantity: product._count.units,
       min_price: Number(product.minPrice),
       offer_price: product.offerPrice ? Number(product.offerPrice) : null,
       min_unit_count_seller: Number(product.minUnitCountSeller),
-      is_low_stock: product._count.units <= Number(product.minUnitCountSeller),
+      min_unit_count_admin: Number(product.minUnitCountAdmin),
+      on_sale: product.onSale,
+      is_low_stock: role === 'ADMIN'
+        ? product._count.units <= Number(product.minUnitCountAdmin)
+        : product._count.units <= Number(product.minUnitCountSeller),
       serial_numbers: product.units?.map(u => u.serialNumber) || []
     };
   }
@@ -176,7 +187,7 @@ class InventoryService {
       }
 
       // Decrease admin inventory & Increase seller inventory (Changing ownerId)
-      await inventoryRepository.updateInventory(unitIdsToTransfer, { ownerId: sellerId }, tx);
+      await inventoryRepository.updateInventory(unitIdsToTransfer, { ownerId: sellerId, ownerType: 'SELLER' }, tx);
 
       // Create shipment record
       const shipment = await inventoryRepository.createShipment({
@@ -266,7 +277,7 @@ class InventoryService {
    * Input: adminId, payload
    * Output: updated stock details
    */
-  async updateStock(adminId, { productNameId, productModelId, quantity, minSellPrice }) {
+  async updateStock(adminId, { productNameId, productModelId, quantity, minSellPrice, minUnitCountAdmin, minUnitCountSeller, onSale }) {
     // 1. Validate product name existence
     const productName = await prisma.productName.findUnique({
       where: { id: BigInt(productNameId) }
@@ -303,8 +314,10 @@ class InventoryService {
             productNameId: BigInt(productNameId),
             productModelId: BigInt(productModelId),
             minPrice: minSellPrice !== undefined ? minSellPrice : 0,
-            onSale: false,
-            stockQuantity: quantity ?? 0
+            onSale: onSale !== undefined ? onSale : false,
+            stockQuantity: quantity ?? 0,
+            minUnitCountAdmin: minUnitCountAdmin !== undefined ? minUnitCountAdmin : 0,
+            minUnitCountSeller: minUnitCountSeller !== undefined ? minUnitCountSeller : 0
           }
         });
       } else {
@@ -313,7 +326,10 @@ class InventoryService {
           where: { id: product.id },
           data: {
             ...(quantity ? { stockQuantity: { increment: quantity } } : {}),
-            ...(minSellPrice !== undefined ? { minPrice: minSellPrice } : {})
+            ...(minSellPrice !== undefined ? { minPrice: minSellPrice } : {}),
+            ...(onSale !== undefined ? { onSale } : {}),
+            ...(minUnitCountAdmin !== undefined ? { minUnitCountAdmin } : {}),
+            ...(minUnitCountSeller !== undefined ? { minUnitCountSeller } : {})
           }
         });
       }
@@ -332,7 +348,10 @@ class InventoryService {
         productNameId,
         productModelId,
         quantity: Number(product.stockQuantity),
-        minSellPrice: Number(product.minPrice)
+        minSellPrice: Number(product.minPrice),
+        minUnitCountAdmin: Number(product.minUnitCountAdmin),
+        minUnitCountSeller: Number(product.minUnitCountSeller),
+        onSale: product.onSale
       };
     });
   }
