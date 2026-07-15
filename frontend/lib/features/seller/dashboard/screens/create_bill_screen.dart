@@ -461,9 +461,9 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                               ),
                               validator: (value) {
                                 if (value != null && value.trim().isNotEmpty) {
-                                  final vehicleRegex = RegExp(r'^[A-Z]{2}[0-9]{1,2}[A-Z]{1,2}[0-9]{4}$');
-                                  if (!vehicleRegex.hasMatch(value.trim().replaceAll(' ', '').toUpperCase())) {
-                                    return 'Enter a valid Vehicle Number (e.g. MH12AB1234)';
+                                  final vehicleRegex = RegExp(r'^[A-Z]{2}\s?\d{1,2}\s?[A-Z]{1,3}\s?\d{4}$');
+                                  if (!vehicleRegex.hasMatch(value.trim().toUpperCase())) {
+                                    return 'Enter a valid Vehicle Number (e.g. MH 12 AB 1234)';
                                   }
                                 }
                                 return null;

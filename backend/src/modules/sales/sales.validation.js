@@ -9,7 +9,7 @@ const createSaleSchema = z.object({
     product_model_id: z.number().int().positive('Product Model ID must be a valid positive integer'),
     serial_number: z.string().min(1, 'Serial number is required').max(100, 'Serial number is too long'),
     customer_name: z.string().min(1, 'Customer name is required').max(100, 'Customer name is too long'),
-    customer_number: z.string().min(10, 'Customer number must be at least 10 characters').max(20, 'Customer number is too long'),
+    customer_number: z.string().length(10, 'Customer mobile number must be exactly 10 digits').regex(/^\d{10}$/, 'Customer mobile number must contain only digits'),
     vehicle_number: z.string().max(50, 'Vehicle number is too long').optional().nullable(),
     sell_price: z.number().positive('Sell price must be a positive number')
   })
