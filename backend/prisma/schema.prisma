@@ -288,6 +288,8 @@ model SalesTransaction {
   productReplaced Product?        @relation("ProductReplaced", fields: [productReplacedId], references: [id])
   returns         ReturnProduct[]
 
+  @@index([soldAt])
+  @@index([sellerId, soldAt])
   @@map("sales_transactions")
 }
 
