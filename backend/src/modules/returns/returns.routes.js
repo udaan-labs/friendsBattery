@@ -3,8 +3,10 @@ const router = express.Router();
 const returnsController = require('./returns.controller');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
 
-// In a YAGNI approach, we only need the POST route. 
-// We add 'authenticate' middleware so we know which seller is making the request.
+// Route to submit/process a product return
 router.post('/', authenticate, returnsController.processReturn);
+
+// Route to list product returns
+router.get('/', authenticate, returnsController.getReturns);
 
 module.exports = router;

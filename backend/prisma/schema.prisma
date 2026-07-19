@@ -150,6 +150,11 @@ model ProductUnit {
   sales            SalesTransaction[]
   newShipmentItems NewShipmentItem[]
 
+  @@index([ownerId])
+  @@index([productId])
+  @@index([status])
+  @@index([ownerId, status])
+  @@index([productId, ownerId, status])
   @@map("product_units")
 }
 
@@ -165,6 +170,9 @@ model InventoryTransaction {
   fromUser    User?       @relation("TransactionFromUser", fields: [fromUserId], references: [id])
   toUser      User        @relation("TransactionToUser", fields: [toUserId], references: [id])
 
+  @@index([productUnitId])
+  @@index([fromUserId])
+  @@index([toUserId])
   @@map("inventory_transactions")
 }
 
@@ -247,6 +255,9 @@ model NewShipment {
 
   items NewShipmentItem[]
 
+  @@index([sellerId])
+  @@index([createdByAdminId])
+  @@index([status])
   @@map("shipments")
 }
 
@@ -265,6 +276,9 @@ model NewShipmentItem {
   product     Product      @relation(fields: [productId], references: [id])
   productUnit ProductUnit  @relation(fields: [productUnitId], references: [id])
 
+  @@index([shipmentId])
+  @@index([productId])
+  @@index([productUnitId])
   @@map("shipment_items")
 }
 

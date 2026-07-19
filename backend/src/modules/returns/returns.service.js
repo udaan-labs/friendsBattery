@@ -67,6 +67,45 @@ class ReturnsService {
       status: result.updatedUnit.status
     };
   }
+
+  /**
+   * Get return history based on user role
+   */
+  async getReturns(user) {
+    const where = {};
+    
+    // If not Admin, filter by user's own returns
+    if (user.role !== 'ADMIN') {
+      where.returnById = user.id;
+    }
+    
+    const returns = await returnsRepository.getReturns(where);
+    
+    // Serialize BigInt to string
+    return returns.map(r => ({
+      ...r,
+      id: r.id.toString(),
+      transactionId: r.transactionId ? r.transactionId.toString() : null,
+      productId: r.productId ? r.productId.toString() : null,
+      returnById: r.returnById ? r.returnById.toString() : null,
+      returnToId: r.returnToId ? r.returnToId.toString() : null,
+      product: r.product ? {
+        ...r.product,
+        id: r.product.id.toString(),
+        productNameId: r.product.productNameId.toString(),
+        productModelId: r.product.productModelId.toString(),
+        productName: r.product.productName ? {
+          ...r.product.productName,
+          id: r.product.productName.id.toString()
+        } : null,
+        productModel: r.product.productModel ? {
+          ...r.product.productModel,
+          id: r.product.productModel.id.toString(),
+          productNameId: r.product.productModel.productNameId.toString()
+        } : null
+      } : null
+    }));
+  }
 }
 
 module.exports = new ReturnsService();

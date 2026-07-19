@@ -21,6 +21,19 @@ class ReturnsController {
       return errorResponse(res, 500, 'Internal server error');
     }
   }
+
+  /**
+   * Get return records
+   */
+  async getReturns(req, res) {
+    try {
+      const returns = await returnsService.getReturns(req.user);
+      return successResponse(res, 200, 'Returns fetched successfully', returns);
+    } catch (error) {
+      console.error('Get Returns Error:', error);
+      return errorResponse(res, 500, 'Internal server error');
+    }
+  }
 }
 
 module.exports = new ReturnsController();
