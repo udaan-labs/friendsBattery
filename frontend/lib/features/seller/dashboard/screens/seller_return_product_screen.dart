@@ -91,13 +91,19 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
   }
 
   Future<void> _scanSerialNumber() async {
-    final result = await Navigator.of(context, rootNavigator: true).push<String>(
-      MaterialPageRoute(builder: (context) => const ScannerScreen()),
-    );
-    
-    if (result != null && result.isNotEmpty) {
-      _serialController.text = result;
-      _verifySerialNumber();
+    try {
+      final result = await Navigator.of(context, rootNavigator: true).push<String>(
+        MaterialPageRoute(builder: (context) => const ScannerScreen()),
+      );
+      
+      if (result != null && result.isNotEmpty) {
+        _serialController.text = result;
+        _verifySerialNumber();
+      }
+    } catch (e) {
+      if (mounted) {
+        context.showErrorSnackBar('Scanner failed to open: $e');
+      }
     }
   }
 
