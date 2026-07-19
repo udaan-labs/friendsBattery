@@ -91,8 +91,7 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
   }
 
   Future<void> _scanSerialNumber() async {
-    final result = await Navigator.push<String>(
-      context,
+    final result = await Navigator.of(context, rootNavigator: true).push<String>(
       MaterialPageRoute(builder: (context) => const ScannerScreen()),
     );
     
