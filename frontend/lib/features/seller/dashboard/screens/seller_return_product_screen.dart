@@ -6,7 +6,7 @@ import '../../../../shared/widgets/responsive_helper.dart';
 import '../../../../core/network/api_client.dart';
 import '../providers/seller_dashboard_controller.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
-
+import '../../../../shared/widgets/scanner_screen.dart';
 import 'package:intl/intl.dart';
 
 class SellerReturnProductScreen extends ConsumerStatefulWidget {
@@ -87,6 +87,18 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
           _isLoadingHistory = false;
         });
       }
+    }
+  }
+
+  Future<void> _scanSerialNumber() async {
+    final result = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (context) => const ScannerScreen()),
+    );
+    
+    if (result != null && result.isNotEmpty) {
+      _serialController.text = result;
+      _verifySerialNumber();
     }
   }
 
@@ -349,6 +361,20 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
                       ),
                       const SizedBox(height: 8),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.qr_code_scanner),
+                        label: const Text('Scan Serial Number'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          backgroundColor: const Color(0xFF16A34A),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onPressed: _scanSerialNumber,
+                      ),
+                      const SizedBox(height: 12),
                       Row(
                         children: [
                           Expanded(
