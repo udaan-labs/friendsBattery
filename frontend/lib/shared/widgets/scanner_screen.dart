@@ -26,7 +26,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
       final barcode = barcodes.first;
       if (barcode.rawValue != null) {
         _isScanned = true;
-        Navigator.of(context).pop(barcode.rawValue);
+        Navigator.of(context).pop(barcode.rawValue!.trim());
       }
     }
   }

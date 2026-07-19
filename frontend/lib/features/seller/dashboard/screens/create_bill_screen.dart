@@ -132,6 +132,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
   }
 
   Future<void> _submit() async {
+    if (_isSubmitting) return;
     if (!_formKey.currentState!.validate()) return;
     if (_productId == null || _selectedProductNameId == null || _selectedProductModelId == null) {
       context.showErrorSnackBar('Please scan a valid serial number and fetch product details');
