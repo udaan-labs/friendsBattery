@@ -521,9 +521,10 @@ class InventoryService {
    * @returns {Promise<Object>}
    */
   async scanForSale(serialNumber, sellerId) {
+    const cleanSerial = serialNumber ? serialNumber.trim() : '';
     const unit = await prisma.productUnit.findFirst({
       where: {
-        serialNumber: serialNumber,
+        serialNumber: { equals: cleanSerial, mode: 'insensitive' },
         ownerId: BigInt(sellerId),
         status: 'AVAILABLE'
       },
