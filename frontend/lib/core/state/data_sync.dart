@@ -19,12 +19,6 @@ import '../../features/shared/products/providers/product_catalog_providers.dart'
 class DataSync {
   DataSync._();
 
-  /// Product catalog (names / models) changed.
-  static void afterProductCatalogChange(WidgetRef ref) {
-    ref.invalidate(productNamesProvider);
-    ref.invalidate(productModelsProvider);
-  }
-
   /// Inventory quantities, prices, thresholds, or units changed.
   static void afterInventoryMutation(WidgetRef ref, {int? productId}) {
     ref.invalidate(sharedInventoryProvider);
@@ -43,13 +37,9 @@ class DataSync {
 
   /// Product name/model created or product configuration saved.
   static void afterProductMutation(WidgetRef ref) {
-    afterProductCatalogChange(ref);
+    ref.invalidate(productNamesProvider);
+    ref.invalidate(productModelsProvider);
     afterInventoryMutation(ref);
-  }
-
-  /// Admin stock adjustment / add stock / edit inventory.
-  static void afterStockMutation(WidgetRef ref, {int? productId}) {
-    afterInventoryMutation(ref, productId: productId);
   }
 
   /// Shipment created (admin) or accepted (seller).

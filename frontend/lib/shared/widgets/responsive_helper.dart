@@ -4,9 +4,6 @@ class ResponsiveHelper {
   static bool isSmallPhone(BuildContext context) =>
       MediaQuery.of(context).size.width < 360;
 
-  static bool isPhone(BuildContext context) =>
-      MediaQuery.of(context).size.width < 600;
-
   static bool isTablet(BuildContext context) =>
       MediaQuery.of(context).size.width >= 600 &&
       MediaQuery.of(context).size.width <= 1024;
@@ -42,18 +39,6 @@ class ResponsiveHelper {
     if (width < 400) return baseSize * 0.9;
     if (width < 600) return baseSize * 0.95;
     return baseSize;
-  }
-
-  static double headingSize(BuildContext context) {
-    return fontSize(context, 32);
-  }
-
-  static double subheadingSize(BuildContext context) {
-    return fontSize(context, 18);
-  }
-
-  static double bodySize(BuildContext context) {
-    return fontSize(context, 16);
   }
 
   static double iconSize(BuildContext context, double baseSize) {

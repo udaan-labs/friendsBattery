@@ -39,30 +39,6 @@ class SellerDashboardScreen extends ConsumerWidget {
             color: const Color(0xFF16A34A),
           ),
         ),
-        actions: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              IconButton(
-                icon: Icon(Icons.notifications, color: const Color(0xFF3E4A3D), size: ResponsiveHelper.isSmallPhone(context) ? 22 : 28),
-                onPressed: () {},
-              ),
-              Positioned(
-                top: 12,
-                right: 12,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFBA1A1A),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(width: ResponsiveHelper.isSmallPhone(context) ? 4 : 8),
-        ],
       ),
       body: SafeArea(
         child: CommonPullToRefresh(

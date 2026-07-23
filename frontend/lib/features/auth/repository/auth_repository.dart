@@ -30,16 +30,21 @@ class AuthRepository {
       if (responseData != null && responseData is Map<String, dynamic> && responseData['success'] == true) {
         final data = responseData['data'] as Map<String, dynamic>? ?? {};
         final user = data['user'] as Map<String, dynamic>? ?? {};
+        final authId = data['auth_id']?.toString();
+        final authKey = data['auth_key']?.toString();
+        if (authId == null || authId.isEmpty || authKey == null || authKey.isEmpty) {
+          throw Exception('Login response missing credentials');
+        }
         return AuthResponse(
-          authId: data['auth_id']?.toString() ?? '123',
-          authKey: data['auth_key']?.toString() ?? 'abc',
+          authId: authId,
+          authKey: authKey,
           role: user['role']?.toString().toLowerCase() ?? 'seller',
           user: user,
         );
       } else if (responseData != null && responseData is Map<String, dynamic>) {
          throw Exception(responseData['message'] ?? 'Login failed');
       }
-      return AuthResponse(authId: '123', authKey: 'abc', role: 'seller', user: {});
+      throw Exception('Login failed');
     } catch (e) {
       String errorMessage = 'Login failed';
       if (e is DioException) {

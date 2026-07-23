@@ -97,7 +97,7 @@ class _AdminEditInventoryBottomSheetState extends ConsumerState<AdminEditInvento
 
       if (mounted) {
         context.showSuccessSnackBar('Stock updated successfully!');
-        DataSync.afterStockMutation(ref, productId: widget.item.productId);
+        DataSync.afterInventoryMutation(ref, productId: widget.item.productId);
         Navigator.of(context).pop();
       }
     } on DioException catch (e) {

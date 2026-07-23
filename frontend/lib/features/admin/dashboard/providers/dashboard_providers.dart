@@ -3,19 +3,22 @@ import 'dart:developer' as developer;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import '../../../../core/network/api_client_provider.dart';
-import '../services/dashboard_api_service.dart';
 
-final dashboardApiServiceProvider = Provider<DashboardApiService>((ref) {
-  return DashboardApiService(api: ref.watch(apiClientProvider));
-});
+DashboardApi _dashboard(Ref ref) => ref.watch(apiClientProvider).getDashboardApi();
 
 final kpiProvider = FutureProvider<AdminDashboardStats>((ref) async {
-  return ref.watch(dashboardApiServiceProvider).getDashboardStats();
+  final response = await _dashboard(ref).apiDashboardStatsGet();
+  final d = response.data?.data;
+  if (d == null) {
+    throw Exception(response.data?.message ?? 'Failed to load dashboard stats');
+  }
+  return d;
 });
 
 /// GET /api/dashboard/recent-activity — OpenAPI [ActivityItem] list.
 final recentActivityProvider = FutureProvider<List<ActivityItem>>((ref) async {
-  return ref.watch(dashboardApiServiceProvider).getRecentActivity();
+  final response = await _dashboard(ref).apiDashboardRecentActivityGet();
+  return response.data?.data?.toList() ?? [];
 });
 
 /// Pull-to-refresh for admin dashboard cards.

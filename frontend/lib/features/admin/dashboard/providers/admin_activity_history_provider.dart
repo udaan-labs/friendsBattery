@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
-import '../services/dashboard_api_service.dart';
-import 'dashboard_providers.dart';
+import '../../../../core/network/api_client_provider.dart';
 
 class ActivityHistoryState {
   final List<ActivityItem> items;
@@ -36,9 +35,9 @@ class ActivityHistoryState {
 }
 
 class AdminActivityHistoryNotifier extends StateNotifier<ActivityHistoryState> {
-  final DashboardApiService _apiService;
+  final FriendsBatteryApi _api;
 
-  AdminActivityHistoryNotifier(this._apiService) : super(ActivityHistoryState()) {
+  AdminActivityHistoryNotifier(this._api) : super(ActivityHistoryState()) {
     loadNextPage();
   }
 
@@ -48,12 +47,16 @@ class AdminActivityHistoryNotifier extends StateNotifier<ActivityHistoryState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final result = await _apiService.getActivityHistory(state.page, 20);
+      final response = await _api.getDashboardApi().apiDashboardActivityHistoryGet(
+        page: state.page,
+        limit: 20,
+      );
+      final body = response.data;
 
       state = state.copyWith(
-        items: [...state.items, ...result.items],
+        items: [...state.items, ...body?.data?.toList() ?? const []],
         page: state.page + 1,
-        hasNextPage: result.hasNextPage,
+        hasNextPage: body?.pagination?.hasNextPage ?? false,
         isLoading: false,
       );
     } catch (e) {
@@ -69,5 +72,5 @@ class AdminActivityHistoryNotifier extends StateNotifier<ActivityHistoryState> {
 
 final adminActivityHistoryProvider =
     StateNotifierProvider.autoDispose<AdminActivityHistoryNotifier, ActivityHistoryState>((ref) {
-  return AdminActivityHistoryNotifier(ref.watch(dashboardApiServiceProvider));
+  return AdminActivityHistoryNotifier(ref.watch(apiClientProvider));
 });

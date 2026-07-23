@@ -127,14 +127,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         actions: [
 
           IconButton(
-            icon: Badge(
-              label: const Text('3'),
-              backgroundColor: const Color(0xFFBA1A1A),
-              child: Icon(Icons.notifications_none_outlined, color: const Color(0xFF3E4A3D), size: ResponsiveHelper.isSmallPhone(context) ? 24 : 28),
+            icon: Icon(
+              Icons.history,
+              color: const Color(0xFF3E4A3D),
+              size: ResponsiveHelper.isSmallPhone(context) ? 24 : 28,
             ),
-            onPressed: () {
-              context.push('/admin/activity-history');
-            },
+            onPressed: () => context.push('/admin/activity-history'),
           ),
           IconButton(
             icon: Icon(Icons.exit_to_app, color: const Color(0xFF3E4A3D), size: ResponsiveHelper.isSmallPhone(context) ? 24 : 28),

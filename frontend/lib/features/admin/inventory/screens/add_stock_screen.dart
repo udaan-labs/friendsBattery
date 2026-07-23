@@ -66,7 +66,7 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
 
       if (mounted) {
         context.showSuccessSnackBar('Stock updated successfully');
-        DataSync.afterStockMutation(ref);
+        DataSync.afterInventoryMutation(ref);
         final nameId = int.tryParse(_selectedProductNameId ?? '');
         final modelId = int.tryParse(_selectedProductModelId ?? '');
         if (nameId != null && modelId != null) {
