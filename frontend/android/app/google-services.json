@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "309730540246",
+    "project_id": "friends-battery",
+    "storage_bucket": "friends-battery.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:309730540246:android:94761ec25855a8ae676777",
+        "android_client_info": {
+          "package_name": "com.friends.batteryapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDs8mTOD4vqkVO0hL-uta-ryito5MWuQdg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

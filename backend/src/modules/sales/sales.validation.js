@@ -35,12 +35,12 @@ const customerSalesSchema = z.object({
 
 const salesHistorySchema = z.object({
   query: z.object({
-    page: z.string().regex(/^\d+$/, 'Page must be numeric').transform(Number).default('1').transform(Number),
-    limit: z.string().regex(/^\d+$/, 'Limit must be numeric').transform(Number).default('10').transform(Number),
+    page: z.string().optional().default('1').transform(Number),
+    limit: z.string().optional().default('10').transform(Number),
     searchCustomer: z.string().optional(),
     searchSerial: z.string().optional(),
-    fromDate: z.string().datetime().optional(),
-    toDate: z.string().datetime().optional(),
+    fromDate: z.string().optional(),
+    toDate: z.string().optional(),
     filter: z.enum(['today', 'date', 'all']).optional(),
     date: z.string().optional(),
   }),
@@ -53,12 +53,12 @@ const salesHistorySchema = z.object({
  */
 const adminSalesHistorySchema = z.object({
   query: z.object({
-    page: z.string().regex(/^\d+$/, 'Page must be numeric').transform(Number).default('1').transform(Number),
-    limit: z.string().regex(/^\d+$/, 'Limit must be numeric').transform(Number).default('10').transform(Number),
+    page: z.string().optional().default('1').transform(Number),
+    limit: z.string().optional().default('10').transform(Number),
     search: z.string().optional(),
     sellerId: z.string().regex(/^\d+$/, 'Seller ID must be numeric').transform(Number).optional(),
-    fromDate: z.string().datetime().optional(),
-    toDate: z.string().datetime().optional(),
+    fromDate: z.string().optional(),
+    toDate: z.string().optional(),
     shipmentStatus: z.enum(['PENDING', 'ACCEPTED', 'REJECTED']).optional(),
   }),
 });

@@ -353,6 +353,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         });
         return const Center(child: CircularProgressIndicator());
       case 'stock_transfer':
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) context.go('/admin/shipments');
+        });
+        return const Center(child: CircularProgressIndicator());
       default:
         return _buildPlaceholderTabView(_currentTab);
     }

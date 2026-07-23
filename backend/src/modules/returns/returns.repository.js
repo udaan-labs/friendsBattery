@@ -68,6 +68,24 @@ class ReturnsRepository {
       };
     });
   }
+
+  /**
+   * Get all returns based on optional filter (e.g. sellerId)
+   */
+  async getReturns(where = {}) {
+    return prisma.returnProduct.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        product: {
+          include: {
+            productName: true,
+            productModel: true
+          }
+        }
+      }
+    });
+  }
 }
 
 module.exports = new ReturnsRepository();

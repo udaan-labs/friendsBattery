@@ -250,6 +250,11 @@ class SalesRepository {
     });
   }
 
+  _sanitizeSearch(str) {
+    if (!str || typeof str !== 'string') return str;
+    return str.trim().replace(/[%_]/g, '\\$&');
+  }
+
   /**
    * Build WHERE clause for admin sales history queries
    */
@@ -269,32 +274,33 @@ class SalesRepository {
       };
     }
 
-    if (search) {
+    if (search && search.trim().length > 0) {
+      const cleanSearch = this._sanitizeSearch(search);
       where.OR = [
         {
           customer: {
-            name: { contains: search, mode: 'insensitive' },
+            name: { contains: cleanSearch, mode: 'insensitive' },
           },
         },
         {
           seller: {
-            userName: { contains: search, mode: 'insensitive' },
+            userName: { contains: cleanSearch, mode: 'insensitive' },
           },
         },
         {
           seller: {
-            shopName: { contains: search, mode: 'insensitive' },
+            shopName: { contains: cleanSearch, mode: 'insensitive' },
           },
         },
         {
           product: {
             productName: {
-              name: { contains: search, mode: 'insensitive' },
+              name: { contains: cleanSearch, mode: 'insensitive' },
             },
           },
         },
         {
-          serialNumber: { contains: search, mode: 'insensitive' },
+          serialNumber: { contains: cleanSearch, mode: 'insensitive' },
         },
       ];
     }

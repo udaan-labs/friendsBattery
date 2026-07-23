@@ -71,6 +71,13 @@ class SalesService {
       throw error;
     }
 
+    // 4.5 Validate that selling price is not below minimum price limit
+    if (productUnit.product && productUnit.product.minPrice && Number(data.sell_price) < Number(productUnit.product.minPrice)) {
+      const error = new Error(`Selling price (₹${data.sell_price}) cannot be less than minimum allowed price (₹${productUnit.product.minPrice}).`);
+      error.statusCode = 400;
+      throw error;
+    }
+
     // 4. Create sale transaction & update inventory (Atomically handled in repository)
     const sale = await salesRepository.createSaleTransaction({
       productUnitId: productUnit.id,

@@ -31,6 +31,10 @@ const { authenticate } = require('../../shared/middleware/auth.middleware');
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
+// Route to submit/process a product return
 router.post('/', authenticate, returnsController.processReturn);
+
+// Route to list product returns
+router.get('/', authenticate, returnsController.getReturns);
 
 module.exports = router;

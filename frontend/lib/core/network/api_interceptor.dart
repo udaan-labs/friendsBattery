@@ -27,6 +27,28 @@ class ApiInterceptor extends Interceptor {
     handler.next(options);
   }
 
+  static String? _lastErrorMessage;
+  static DateTime? _lastErrorTime;
+
+  void _showDebouncedSnackBar(String message) {
+    final now = DateTime.now();
+    if (_lastErrorMessage == message && 
+        _lastErrorTime != null && 
+        now.difference(_lastErrorTime!) < const Duration(seconds: 2)) {
+      return;
+    }
+    _lastErrorMessage = message;
+    _lastErrorTime = now;
+
+    final overlayState = rootNavigatorKey.currentState?.overlay;
+    if (overlayState != null) {
+      showTopSnackBar(
+        overlayState,
+        CustomSnackBar.error(message: message),
+      );
+    }
+  }
+
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     String errorMessage = 'An unexpected error occurred';
@@ -68,14 +90,8 @@ class ApiInterceptor extends Interceptor {
         break;
     }
 
-    // Show the error snackbar automatically using global navigator overlay
-    final overlayState = rootNavigatorKey.currentState?.overlay;
-    if (overlayState != null) {
-      showTopSnackBar(
-        overlayState,
-        CustomSnackBar.error(message: errorMessage),
-      );
-    }
+    // Show debounced error snackbar automatically using global navigator overlay
+    _showDebouncedSnackBar(errorMessage);
 
     if (apiException != null) {
       handler.reject(DioException(
