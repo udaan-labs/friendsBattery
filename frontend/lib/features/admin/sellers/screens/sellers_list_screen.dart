@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../shared/widgets/seller_card.dart';
 import '../providers/sellers_provider.dart';
 
 class SellersListScreen extends ConsumerWidget {
@@ -33,20 +32,6 @@ class SellersListScreen extends ConsumerWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: Colors.black),
-            onPressed: () {
-              // TODO: Implement search
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.filter_list, color: Colors.black),
-            onPressed: () {
-              // TODO: Implement filter
-            },
-          ),
-        ],
       ),
       body: SafeArea(
         child: sellersAsyncValue.when(
