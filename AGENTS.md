@@ -57,32 +57,46 @@ If any answer is no → do not implement.
 - Consistent naming, small focused functions, proper error handling  
 - Existing tests / critical paths still work  
 
-## Networking architecture (OpenAPI migration)
-
-**Target (long-term, feature-by-feature):**
+## Networking architecture (OpenAPI models + Dio transport)
 
 ```text
-Flutter UI → Riverpod → Feature Repository → Generated OpenAPI Client → Backend
+Flutter UI → Riverpod → Feature Repository → Generated OpenAPI Client (friends_battery_api)
+  → Dio (transport + interceptors only) → Backend
 ```
+
+### Models (OpenAPI — not Dio maps)
+
+- **API request/response types** come from the generated package `friends_battery_api` (e.g. `SaleRecord`, `CreateSaleRequest`, `VerifyProductPayload`).
+- The generator is **dart-dio**: Dio is the **HTTP engine**, not the place to invent `Map`/`fromJson` API models.
+- **Do not** hand-write parallel API DTOs with `fromJson` that mirror OpenAPI schemas.
+- Thin **UI presentation models** are OK only when mapped **from** OpenAPI types in a repository (field projection / display helpers).
+- Prefer returning or displaying OpenAPI types over `Map<String, dynamic>` for API data.
+
+### Dio (transport only)
+
+- Shared Dio lives under `frontend/lib/core/network` (base URL, auth interceptor, perf, timeouts).
+- Wire that Dio into `FriendsBatteryApi` via `apiClientProvider`.
+- Catching `DioException` for messages is fine; building URLs or parsing API JSON with Dio in feature code is not (once a generated method exists).
+
+### Other rules
 
 - **OpenAPI is the contract source of truth.** Fix backend Swagger **before** regenerating the client.
 - **Never hand-edit** `frontend/lib/api/` (generated). Regenerate via `generate_api.bat` / `npm run gen`.
-- **Migrated repositories** must not call Dio, build URLs, or hand-parse JSON. Only call generated `*Api` classes and map DTOs → domain models.
-- **UI must not import** `friends_battery_api` types; only repositories (or domain models).
-- **Dio** remains only as shared HTTP transport + interceptors for `FriendsBatteryApi` (`core/network`).
-- **No big-bang rewrite.** One feature slice at a time; app stays working after each step.
-- **No parallel duplicate implementations** for the same endpoint after a feature is migrated.
+- Repositories call generated `*Api` classes only — no raw `dio.get/post` for documented endpoints.
+- Keep network I/O out of pure widgets; use providers/repositories.
+- No parallel raw-Dio implementation after a feature’s generated API is wired.
+- Prefer not adding new raw Dio call sites for endpoints that already have a generated method.
 
-Full roadmap and audit: `frontend/docs/OPENAPI_MIGRATION.md`.
-
-**Until a feature is migrated**, existing Dio usage may remain for that feature only. Prefer not expanding new raw Dio call sites for endpoints that already have a correct generated API.
+Full roadmap and residual debt: `frontend/docs/OPENAPI_MIGRATION.md`.  
+Frontend API workflow: `frontend/instructions/frontend_guidelines.md` (Part 2).
 
 ## Stack
 
 | Area | Tech |
 |------|------|
 | Backend | Node.js, Express 5, Prisma 6, PostgreSQL, Zod, JWT, Swagger |
-| Frontend | Flutter (Dart 3.9+), Riverpod, go_router, Dio (transport only long-term) |
+| Frontend | Flutter (Dart 3.9+), Riverpod, go_router, Dio (**HTTP transport only**) |
+| API models | OpenAPI-generated types in `friends_battery_api` — not hand-rolled Dio/JSON maps |
 | API client | OpenAPI-generated package at `frontend/lib/api/` (`friends_battery_api`) |
 | API tests | OpenCollection YAML under `apiTesting/` |
 | Deploy notes | Backend on Railway; DB is PostgreSQL (Prisma `DATABASE_URL` / `DIRECT_URL`) |
@@ -165,8 +179,9 @@ npm run swagger:export   # writes openapi.json
 - State: **flutter_riverpod only** (no flutter_hooks).
 - Screens: `ConsumerWidget` / `ConsumerStatefulWidget` + `ref.watch`.
 - Feature structure: `screens/`, `providers/`, `repository/` (or `repositories/`), `widgets/`, `models/` as needed.
-- Network path: **UI → Provider → Feature Repository → generated API client**.  
-  Do not call Dio/raw HTTP from UI or providers.
+- Network path: **UI → Provider → Feature Repository → generated OpenAPI client → Dio transport**.  
+  Do not call Dio/raw HTTP from UI or providers when a generated method exists.
+- **API data models:** OpenAPI types from `friends_battery_api` (or thin UI models mapped from them). Not Dio maps / hand-rolled API `fromJson`.
 - **Never hand-edit** `frontend/lib/api/`. Regenerate after API changes.
 
 ### After backend API changes (required order)
@@ -175,9 +190,9 @@ npm run swagger:export   # writes openapi.json
 2. Export + regenerate OpenAPI client from repo root:
    - `cd backend && npm run swagger:export`
    - `generate_api.bat` or `npm run gen`
-3. Update feature **repository** to call **generated** APIs only (no raw Dio for that endpoint).
+3. Update feature **repository** to call **generated** APIs only and use **OpenAPI models** (no raw Dio / map parse for that endpoint).
 4. Add/update **Riverpod** providers if needed (prefer stable provider APIs).
-5. Wire **UI** via repository only — UI does not import generated DTOs.
+5. Wire **UI** through providers/repos; display OpenAPI fields or presentation models mapped from them.
 
 ### Common frontend commands
 

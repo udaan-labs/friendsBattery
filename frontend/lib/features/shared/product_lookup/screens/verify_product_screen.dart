@@ -33,7 +33,7 @@ class _VerifyProductScreenState extends ConsumerState<VerifyProductScreen> {
   Widget build(BuildContext context) {
     final searchState = ref.watch(productLookupProvider);
 
-    ref.listen<AsyncValue<Map<String, dynamic>?>>(productLookupProvider, (previous, next) {
+    ref.listen(productLookupProvider, (previous, next) {
       next.when(
         data: (data) {
           if (data != null) {

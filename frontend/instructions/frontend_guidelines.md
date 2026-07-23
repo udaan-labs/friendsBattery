@@ -187,47 +187,57 @@ The shape language is defined by **Soft Roundedness**. A standard corner radius 
 
 ## Part 2: API Integration Workflow
 
-This section serves as an instruction manual for AI agents and developers on how to properly integrate new backend APIs into the Flutter frontend architecture. 
+This section serves as an instruction manual for AI agents and developers on how to properly integrate new backend APIs into the Flutter frontend architecture.
+
+**Models come from OpenAPI. Dio is only the HTTP transport.**
 
 Whenever a backend API is created or modified, follow these **5 exact steps**:
 
-### 1. Update the Frontend Models
-Run the `generate_api.bat` script located in the project root. 
-This script automatically parses the backend OpenAPI schema and updates the `friends_battery_api` package (located at `frontend/lib/api/`) with the newest endpoints, request/response models, and classes.
+### 1. Regenerate OpenAPI models & client
+1. Update backend Swagger (`@swagger` on routes + schemas) so the contract matches the real handler.
+2. Run from repo root: `generate_api.bat` (or `npm run gen`).
+
+This exports `backend/openapi.json` and regenerates `frontend/lib/api/` (`friends_battery_api`) with **typed** request/response models and `*Api` classes.
+
+You do **not** hand-write Dio `Map`/`fromJson` models for those API shapes.
 
 ### 2. Create or Update a Repository Method
-Navigate to the appropriate feature module within the frontend (e.g., `lib/features/admin/products/repository/`).
-Write a function in the Repository class that calls the newly generated API method. The Repository serves as a buffer between the raw generated API client and the UI, handling custom error mapping or caching if needed.
+Navigate to the appropriate feature module (e.g. `lib/features/.../repository/`).
+Call the generated `*Api` method. Prefer returning OpenAPI types, or map once to a thin UI presentation model.
 
 ```dart
-// Example: lib/features/admin/products/repository/product_repository.dart
-Future<Product> addProduct(Product newProduct) async {
-  // api is injected into the repository, allowing access to the generated methods
-  final response = await api.createProduct(newProduct);
-  return response; 
+// Example — use generated OpenAPI models, not Map/fromJson
+Future<List<SaleRecord>> getSalesHistory() async {
+  final response = await _api.getSalesApi().apiSalesHistoryGet(page: 1, limit: 50);
+  return response.data?.data?.data?.toList() ?? [];
 }
 ```
 
-### 3. Create a Riverpod Provider
-Create a Provider that links to the repository method so the UI can easily access and react to it.
-Use `FutureProvider` for reading/fetching data, and `StateNotifierProvider` or `NotifierProvider` for mutations (creating/updating/deleting data).
+Wrong:
 
 ```dart
-// Example: lib/features/admin/products/providers/product_provider.dart
-final productProvider = FutureProvider<List<Product>>((ref) {
+// Do NOT invent parallel Dio-style API models
+final res = await dio.get('/api/sales/history');
+return (res.data['data'] as List).map((e) => Sale.fromJson(e)).toList();
+```
+
+### 3. Create a Riverpod Provider
+Link the repository so the UI can react. Use `FutureProvider` for reads; `StateNotifierProvider` / `NotifierProvider` for mutations.
+
+```dart
+final productProvider = FutureProvider((ref) {
   return ref.watch(productRepositoryProvider).getProducts();
 });
 ```
 
 ### 4. Connect to the UI
-In the Flutter screen, use `ConsumerWidget` or `ConsumerStatefulWidget` and call `ref.watch()` on the provider. The UI will automatically handle loading, error, and data states, and will rebuild whenever the data changes!
+Use `ConsumerWidget` / `ConsumerStatefulWidget` and `ref.watch`. Display OpenAPI model fields or presentation models mapped from them.
 
 ```dart
-// Example: lib/features/admin/products/screens/product_screen.dart
 @override
 Widget build(BuildContext context, WidgetRef ref) {
   final productsState = ref.watch(productProvider);
-  
+
   return productsState.when(
     data: (products) => ListView.builder(...),
     loading: () => const CircularProgressIndicator(),
@@ -237,9 +247,13 @@ Widget build(BuildContext context, WidgetRef ref) {
 ```
 
 ### 5. Architectural Rule Reminders
-- **DO NOT** modify the `frontend/lib/api/` package manually. It is strictly auto-generated.
-- **DO NOT** make raw HTTP or Dio requests in the UI or Providers. All network requests must go through the generated API package wrapped by a feature Repository.
-- **DO NOT** use `flutter_hooks`. We strictly use `flutter_riverpod` for all state management, dependency injection, and data fetching.
+- **DO** use generated OpenAPI models (`friends_battery_api`) for API data.
+- **DO NOT** modify `frontend/lib/api/` by hand — regenerate only.
+- **DO NOT** make raw Dio/HTTP requests in UI or providers when a generated `*Api` method exists.
+- **DO NOT** duplicate API DTOs with hand-written `fromJson` that shadow OpenAPI schemas.
+- **Dio** is OK only as shared transport under `core/network` (and catching `DioException` for messages).
+- **DO NOT** use `flutter_hooks`. Use `flutter_riverpod` only.
+- Full migration notes: `frontend/docs/OPENAPI_MIGRATION.md`.
 
 
 ---
@@ -330,7 +344,8 @@ Answer:
 
 ### 20. Code Requirements
 Confirm:
-* Use generated OpenAPI models only
+* Use generated **OpenAPI** models for API data (`friends_battery_api`) — not Dio maps / hand-rolled `fromJson` API twins
+* Dio is HTTP transport only (`core/network`)
 * Never duplicate API models
 * Prefer shared widgets
 * Prefer reusable components

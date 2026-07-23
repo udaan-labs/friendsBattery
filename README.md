@@ -1,15 +1,17 @@
 # FriendsBattery
 
-Inventory and stock management application.
+Inventory and stock management application (admin + seller, unit/serial inventory).
 
 ## Tech Stack
 
 ### Backend
-- Node.js
-- Express.js
+- Node.js, Express, Prisma, PostgreSQL
+- OpenAPI/Swagger is the API contract (`backend` JSDoc → `openapi.json`)
 
 ### Frontend
-- Flutter
+- Flutter, Riverpod, go_router
+- **API models:** generated OpenAPI package `friends_battery_api` (`frontend/lib/api/`)
+- **Dio:** HTTP transport only (`frontend/lib/core/network`) — not the source of API models
 
 ---
 

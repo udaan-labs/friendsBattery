@@ -1,6 +1,7 @@
-# OpenAPI Client Migration Plan — FriendsBattery
+# OpenAPI Client Migration — FriendsBattery
 
-**Status:** Nearly complete — Features 1–11 migrated (repos/screens off raw Dio; Dio only as gen-client transport)  
+**Status:** Features 1–11 migrated. HTTP goes through the generated client; **API data models come from OpenAPI (`friends_battery_api`), not hand-rolled Dio maps.**
+
 **Target architecture:**
 
 ```text
@@ -8,49 +9,50 @@ Flutter UI
   → Riverpod
     → Feature Repository
       → Generated OpenAPI Client (friends_battery_api)
-        → Backend
+        → Dio (transport + interceptors only)
+          → Backend
 ```
-
-**Hard rules:**
-
-- No big-bang rewrite  
-- One feature per PR / step  
-- App must build and work after every step  
-- No raw Dio in repositories when a feature is “done”  
-- Never hand-edit `frontend/lib/api/`  
-- Fix OpenAPI on the backend **before** regenerating the client  
 
 ---
 
-## Current baseline (audit)
+## Models: OpenAPI vs Dio (hard rule)
 
-### OpenAPI (backend)
+| Layer | Use | Do **not** use |
+|-------|-----|----------------|
+| API request/response bodies | Generated types under `friends_battery_api` (`SaleRecord`, `CreateSaleRequest`, `InventoryListItem`, …) | Hand-written `fromJson` / `Map<String, dynamic>` that mirror the API |
+| HTTP transport | Shared `Dio` in `core/network` wired into `FriendsBatteryApi` | Raw `dio.get/post(...)` in features for endpoints that already have a generated `*Api` method |
+| Error handling | `DioException` catch is OK (Dio still throws on network/HTTP errors) | Building request URLs or decoding API JSON by hand |
+| UI-only shapes | Optional thin presentation models **mapped from** OpenAPI DTOs in a repository | Duplicating the same fields as a second JSON-parsed “API model” |
 
-| Metric | Value |
-|--------|--------|
-| Documented paths | ~39 operations |
-| Component schemas | ~15 |
-| Export | `backend/npm run swagger:export` → `backend/openapi.json` |
-| Source | JSDoc `@swagger` on routes + `swagger.schemas.js` |
+**Generator:** OpenAPI Generator **dart-dio** produces the Dart package. That name means “Dart client that *uses* Dio for HTTP,” **not** “use Dio maps as your domain models.”
 
-Known contract issues:
+Correct:
 
-- `POST /api/shipments` docs/schemas **do not match** serial-based transfer implementation  
-- Several app endpoints exist in code but have incomplete request/response schemas  
-- Auth headers: JWT bearer documented; app also sends `auth-id` (must be in OpenAPI security/params)  
-- Enums/status values drift (e.g. unit status naming)  
+```dart
+final response = await _sales.apiSalesHistoryGet(...);
+final rows = response.data?.data?.data?.toList() ?? []; // List<SaleRecord>
+```
 
-### Flutter networking (today)
+Wrong:
 
-| Style | Where |
-|-------|--------|
-| **Generated client** | Auth, Shipments, Inventory, Catalog, Dashboards, Sales, Sellers, Returns, Product-units, Health |
-| **Raw Dio in repositories** | Auth still catches `DioException` for messages (calls go through AuthApi) |
-| **Raw Dio in providers/screens** | Error handling via `DioException` only; no path construction |
+```dart
+final res = await dio.get('/api/sales/history');
+final list = (res.data['data']['data'] as List).map((e) => MySale.fromJson(e)).toList();
+```
 
-**Success criteria progress:** App feature HTTP paths use generated client. Leftover: auth response typing polish; any rarely used void endpoints.
+---
 
-### Generation pipeline
+## Hard rules
+
+- No big-bang rewrite of unrelated code  
+- App must build and work after each change  
+- **Never hand-edit** `frontend/lib/api/` — regenerate only  
+- Fix OpenAPI on the backend **before** regenerating the client  
+- No parallel raw Dio implementation for an endpoint once the generated API exists  
+
+---
+
+## Generation pipeline
 
 ```text
 backend swagger (JSDoc) → npm run swagger:export → openapi.json
@@ -62,27 +64,27 @@ Root: `generate_api.bat` / `npm run gen`
 
 ---
 
-## Target layer rules
+## Layer rules
 
-### Repositories (migrated features)
+### Repositories
 
 Must:
 
 - Call only `ref.read(apiClientProvider).getXxxApi()` methods  
-- Map generated DTOs → domain/UI models when needed  
+- Prefer returning **OpenAPI types**, or map them once to a UI presentation model  
 - Keep feature business rules that are not pure HTTP  
 
 Must not:
 
-- Construct URL paths  
-- Manually encode/decode JSON maps for API I/O  
-- Call `Dio` / `ApiClient().dio`  
+- Construct URL paths for API I/O  
+- Manually encode/decode JSON maps for request/response bodies  
+- Call `ApiClient().dio.get/post` when a generated method exists  
 
 ### UI / Riverpod
 
-- UI never imports `friends_battery_api` types  
-- Providers call repositories (or thin services that use repositories)  
-- Prefer keeping existing provider APIs stable during each step  
+- Prefer OpenAPI models (or thin mapped presentation models) — **never** invent Dio-style `Map`/`fromJson` twins of OpenAPI schemas  
+- Providers call repositories (or thin services that use the generated client)  
+- `DioException` may be caught for user-facing messages; that does not mean “use Dio models”  
 
 ### Dio
 
@@ -91,102 +93,53 @@ Must not:
 
 ---
 
-## Migration order (one feature at a time)
+## Migration status
 
-Order balances **risk**, **user impact**, and **dependency** (fix contracts first where transfer already broke the gen client).
-
-| # | Feature slice | Primary endpoints | Current state | Priority |
-|---|---------------|-------------------|---------------|----------|
-| 0 | **Toolchain baseline** | swagger export + gen scripts + auth security scheme | Partial | First |
-| 1 | **Admin stock transfer (shipments write)** | `POST /api/shipments`, available-serials, shops sellers, inventory-products, list/detail | **DONE** — `ShipmentRepository` uses generated client only | High |
-| 2 | **Shared inventory** | GET inventory, GET by id | **DONE** — `SharedInventoryRepository` uses generated client only | High |
-| 3 | **Shipments read + seller accept** | GET shipments, GET by id, accept | **DONE** with Feature 1 | High |
-| 4 | **Inventory mutations** | update-stock, adjust | **DONE** — repo methods + screens off Dio | High |
-| 5 | **Product catalog** | product-names, models, products, product-details | **DONE** — ProductCatalogRepository + forms | Medium |
-| 6 | **Auth polish** | login, register | Mostly generated | Medium |
-| 7 | **Admin dashboard** | stats, recent-activity, activity-history | **DONE** — DashboardApiService gen client | Medium |
-| 8 | **Seller dashboard** | stats, inventory preview, shipment detail | **DONE** — providers use gen client / shared repos | Medium |
-| 9 | **Sales** | create sale, history, admin history, scan-for-sale | **DONE** | Medium |
-| 10 | **Sellers / shops** | sellers list, seller detail | **DONE** | Medium |
-| 11 | **Returns / product-units verify** | returns, verify | **DONE** | Lower |
-| 12 | **Health / leftovers** | health | **DONE** | Last |
-
-**Do not start #N until #N−1 is merged, green, and checklist signed off.**
+| # | Feature slice | State |
+|---|---------------|--------|
+| 0 | Toolchain (export + gen) | Done |
+| 1 | Admin stock transfer / shipments write | Done |
+| 2 | Shared inventory | Done |
+| 3 | Shipments read + seller accept | Done |
+| 4 | Inventory mutations | Done |
+| 5 | Product catalog | Done |
+| 6 | Auth | Mostly — calls generated `AuthApi`; login response still loosely typed (`Response<void>` + map parse) |
+| 7 | Admin dashboard | Done (some activity rows still as maps after mapping from gen client) |
+| 8 | Seller dashboard | Done |
+| 9 | Sales | Done — repos map `SaleRecord` / `AdminSaleRecord` → UI models |
+| 10 | Sellers / shops | Done |
+| 11 | Returns create + product-units verify | Done for POST/verify; **GET `/api/returns` not in OpenAPI** (screen still uses raw Dio for history) |
+| 12 | Health | Done |
 
 ---
 
-## Per-feature procedure (mandatory)
+## Residual debt (OpenAPI models first)
 
-1. **Contract audit** — route handler vs `@swagger` vs Zod vs real response  
-2. **Fix OpenAPI** — request/response schemas, errors, auth, enums, pagination  
-3. **Export** — `npm run swagger:export` (backend)  
-4. **Regenerate** — `npm run gen` / `generate_api.bat` (no hand-edits in `lib/api`)  
-5. **Migrate repository** — replace Dio with generated API; map DTOs → domain  
-6. **Remove duplicates** — old request maps / duplicate models for that feature only  
-7. **Test** — feature manual checklist + `flutter analyze` (or build)  
-8. **Deliverables** for the step (see below)  
-9. **Stop** — do not start the next feature in the same change set  
+1. **GET `/api/returns`** — backend route exists; add Swagger schema → export → regen → replace raw `dio.get` in `seller_return_product_screen.dart`.  
+2. **Auth login/register responses** — typed OpenAPI schemas instead of `Response<void>` + dynamic maps.  
+3. **Remaining UI `Map<String, dynamic>`** — dashboard activity, some inventory/shipment helpers; prefer generated types or explicit presentation models mapped once in repos.  
+4. **UI importing `friends_battery_api`** — allowed for pure DTO display; keep network calls out of widgets (use providers/repos).  
 
 ---
 
-## Deliverables template (every step)
+## Success criteria
 
-```markdown
-## Migration: <Feature name>
-
-### Files changed
-- backend: ...
-- frontend: ...
-
-### OpenAPI changes
-- paths: ...
-- schemas: ...
-
-### Backend code changes
-- (only if needed for correct docs or response shape)
-
-### Generated
-- regenerator run: yes/no
-- notes: no manual edits under frontend/lib/api
-
-### Removed
-- raw Dio call sites for this feature
-- duplicate models
-
-### Manual test checklist
-- [ ] ...
-
-### Verification
-- [ ] flutter analyze / build OK
-- [ ] feature works as before
-```
+- [x] Feature repositories use the generated client for their endpoints  
+- [x] Dio is transport-only under `core/network` (plus temporary residual call sites listed above)  
+- [x] Sales history maps OpenAPI records, not hand-parsed JSON  
+- [ ] 100% of endpoints the app calls exist in OpenAPI with correct schemas  
+- [ ] 0 raw Dio feature call sites  
+- [ ] 0 duplicate API DTOs with `fromJson` shadowing generated models  
+- [x] Client regenerates cleanly; no hand-edits under `frontend/lib/api/`  
 
 ---
 
-## Success criteria (program complete)
+## Per-feature procedure (if new endpoints land)
 
-- [ ] 100% of endpoints used by the app exist in OpenAPI with correct schemas  
-- [ ] 100% of repositories use the generated client  
-- [ ] 0 repositories call Dio directly  
-- [ ] 0 manual API request classes for network I/O  
-- [ ] 0 duplicated API DTOs that shadow generated models  
-- [ ] Client regenerates cleanly from OpenAPI with no hand-edits  
-- [ ] App compiles and behaves as before  
-
----
-
-## Relation to YAGNI / Ponytail
-
-- **YAGNI:** Do not migrate unused endpoints or invent abstractions for “all future APIs.”  
-- **Ponytail:** Per feature — work (contract correct) → clean (repo uses gen) → only then next feature.  
-- **Not premature optimization:** This is maintainability / contract integrity, not micro-perf.  
-
----
-
-## Next action
-
-**Step 0** is optional tooling hygiene.  
-
-**Step 1 (recommended first real migration):** Admin stock transfer / shipments write path — OpenAPI already wrong for serial transfer; `ShipmentRepository` is pure Dio.
-
-When ready, start **only Feature 1** with: OpenAPI fix → gen → migrate `ShipmentRepository` + related screens → checklist.
+1. Contract audit — handler vs `@swagger` vs Zod vs real response  
+2. Fix OpenAPI schemas  
+3. `npm run swagger:export`  
+4. `npm run gen` / `generate_api.bat`  
+5. Repository uses generated `*Api` + OpenAPI models  
+6. Remove any temporary Dio/map parsing for that feature  
+7. `flutter analyze` + manual check  
