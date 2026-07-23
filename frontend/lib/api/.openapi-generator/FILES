@@ -287,13 +287,3 @@ lib/src/model/verify_product_response.dart
 lib/src/model/verify_product_unit.dart
 lib/src/serializers.dart
 pubspec.yaml
-test/login_data_test.dart
-test/login_response_test.dart
-test/login_user_test.dart
-test/register_data_test.dart
-test/register_response_test.dart
-test/return_list_item_test.dart
-test/return_list_product_model_test.dart
-test/return_list_product_name_test.dart
-test/return_list_product_test.dart
-test/returns_list_response_test.dart
