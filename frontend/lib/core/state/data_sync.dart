@@ -58,21 +58,10 @@ class DataSync {
     afterInventoryMutation(ref);
   }
 
-  /// Sale recorded by seller.
+  /// Sale or return — inventory + sales history lists.
   static void afterSaleMutation(WidgetRef ref) {
     afterInventoryMutation(ref);
     // Avoid creating sales notifiers (and their network calls) if screens never opened.
-    if (ref.exists(sellerSalesProvider)) {
-      ref.read(sellerSalesProvider.notifier).fetchSales(isRefresh: true);
-    }
-    if (ref.exists(adminSalesHistoryProvider)) {
-      ref.read(adminSalesHistoryProvider.notifier).fetchSales(isRefresh: true);
-    }
-  }
-
-  /// Return submitted by seller.
-  static void afterReturnMutation(WidgetRef ref) {
-    afterInventoryMutation(ref);
     if (ref.exists(sellerSalesProvider)) {
       ref.read(sellerSalesProvider.notifier).fetchSales(isRefresh: true);
     }

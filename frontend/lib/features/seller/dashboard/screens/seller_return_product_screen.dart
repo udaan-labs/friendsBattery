@@ -185,7 +185,7 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
 
       if (mounted) {
         context.showSuccessSnackBar('Return request submitted successfully');
-        DataSync.afterReturnMutation(ref);
+        DataSync.afterSaleMutation(ref);
         await refreshSellerDashboard(ref);
 
         // Reset form inputs

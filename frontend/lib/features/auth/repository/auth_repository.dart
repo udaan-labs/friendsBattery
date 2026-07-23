@@ -6,7 +6,7 @@ class AuthResponse {
   final String authKey;
   final String role; // 'admin' or 'seller'
   final Map<String, dynamic> user; // Full user details
-  
+
   AuthResponse({required this.authId, required this.authKey, required this.role, required this.user});
 }
 
@@ -15,19 +15,18 @@ class AuthRepository {
 
   AuthRepository({required this.api});
 
+  // ponytail: Map parse until login/register OpenAPI responses are typed + client regen.
   Future<AuthResponse> login(String username, String password) async {
-    final builder = ApiAuthLoginPostRequestBuilder()
-      ..userId = username
-      ..password = password;
-    final request = builder.build();
-      
+    final request = (ApiAuthLoginPostRequestBuilder()
+          ..userId = username
+          ..password = password)
+        .build();
+
     try {
       final response = await api.apiAuthLoginPost(apiAuthLoginPostRequest: request);
-      
-      // Since it's generated as Response<void>, we can access the underlying data using dynamic cast
       final dynamic responseData = (response as dynamic).data;
-      
-      if (responseData != null && responseData is Map<String, dynamic> && responseData['success'] == true) {
+
+      if (responseData is Map<String, dynamic> && responseData['success'] == true) {
         final data = responseData['data'] as Map<String, dynamic>? ?? {};
         final user = data['user'] as Map<String, dynamic>? ?? {};
         final authId = data['auth_id']?.toString();
@@ -41,22 +40,14 @@ class AuthRepository {
           role: user['role']?.toString().toLowerCase() ?? 'seller',
           user: user,
         );
-      } else if (responseData != null && responseData is Map<String, dynamic>) {
-         throw Exception(responseData['message'] ?? 'Login failed');
       }
-      throw Exception('Login failed');
+      throw Exception(
+        responseData is Map<String, dynamic>
+            ? (responseData['message'] ?? 'Login failed')
+            : 'Login failed',
+      );
     } catch (e) {
-      String errorMessage = 'Login failed';
-      if (e is DioException) {
-        if (e.response?.data != null && e.response?.data is Map) {
-          errorMessage = e.response?.data['message'] ?? errorMessage;
-        } else {
-          errorMessage = e.message ?? errorMessage;
-        }
-      } else {
-        errorMessage = e.toString();
-      }
-      throw Exception(errorMessage);
+      throw Exception(_authError(e, 'Login failed'));
     }
   }
 
@@ -67,32 +58,33 @@ class AuthRepository {
     required String shopName,
     required String password,
   }) async {
-    final builder = ApiAuthRegisterPostRequestBuilder()
-      ..userId = userId
-      ..username = username
-      ..userNumber = userNumber
-      ..shopName = shopName
-      ..password = password;
-    final request = builder.build();
+    final request = (ApiAuthRegisterPostRequestBuilder()
+          ..userId = userId
+          ..username = username
+          ..userNumber = userNumber
+          ..shopName = shopName
+          ..password = password)
+        .build();
 
     try {
       final response = await api.apiAuthRegisterPost(apiAuthRegisterPostRequest: request);
       final dynamic responseData = (response as dynamic).data;
-      if (responseData != null && responseData is Map<String, dynamic> && responseData['success'] == false) {
+      if (responseData is Map<String, dynamic> && responseData['success'] == false) {
         throw Exception(responseData['message'] ?? 'Registration failed');
       }
     } catch (e) {
-      String errorMessage = 'Registration failed';
-      if (e is DioException) {
-        if (e.response?.data != null && e.response?.data is Map) {
-          errorMessage = e.response?.data['message'] ?? errorMessage;
-        } else {
-          errorMessage = e.message ?? errorMessage;
-        }
-      } else {
-        errorMessage = e.toString();
-      }
-      throw Exception(errorMessage);
+      throw Exception(_authError(e, 'Registration failed'));
     }
+  }
+
+  static String _authError(Object e, String fallback) {
+    if (e is DioException) {
+      final data = e.response?.data;
+      if (data is Map && data['message'] != null) return data['message'].toString();
+      return e.message ?? fallback;
+    }
+    final s = e.toString();
+    // Avoid "Exception: Exception: …" when rethrowing our own messages.
+    return s.startsWith('Exception: ') ? s.substring(11) : s;
   }
 }
