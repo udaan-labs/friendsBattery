@@ -44,7 +44,6 @@ class SellerKpiStats {
   final int currentStock;
   final double todaySalesAmount;
   final int todaySalesCount;
-  final double salesGrowthPercentage;
   final int pendingShipments;
   final List<SellerSale> recentSales;
 
@@ -52,7 +51,6 @@ class SellerKpiStats {
     required this.currentStock,
     required this.todaySalesAmount,
     required this.todaySalesCount,
-    required this.salesGrowthPercentage,
     required this.pendingShipments,
     required this.recentSales,
   });
@@ -85,7 +83,6 @@ final sellerKpiProvider = FutureProvider<SellerKpiStats>((ref) async {
     currentStock: d.totalStock ?? 0,
     todaySalesAmount: (d.todaySalesAmount ?? 0).toDouble(),
     todaySalesCount: d.todaySales ?? 0,
-    salesGrowthPercentage: 12.0,
     pendingShipments: d.pendingShipments ?? 0,
     recentSales: recentSales,
   );

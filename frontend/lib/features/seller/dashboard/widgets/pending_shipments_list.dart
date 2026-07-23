@@ -6,6 +6,7 @@ import '../providers/seller_dashboard_providers.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../core/network/api_client_provider.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
+import '../../../admin/dashboard/widgets/activity_item_tile.dart';
 
 class PendingShipmentsList extends ConsumerStatefulWidget {
   const PendingShipmentsList({super.key});
@@ -16,28 +17,6 @@ class PendingShipmentsList extends ConsumerStatefulWidget {
 
 class _PendingShipmentsListState extends ConsumerState<PendingShipmentsList> {
   bool _isAccepting = false;
-
-  String _getTimeAgo(String? dateStr) {
-    if (dateStr == null) return '';
-    try {
-      final dateTime = DateTime.parse(dateStr);
-      final diff = DateTime.now().difference(dateTime);
-      if (diff.isNegative) {
-        return 'just now';
-      }
-      if (diff.inMinutes < 1) {
-        return 'just now';
-      } else if (diff.inMinutes < 60) {
-        return '${diff.inMinutes}m ago';
-      } else if (diff.inHours < 24) {
-        return '${diff.inHours}h ago';
-      } else {
-        return '${diff.inDays}d ago';
-      }
-    } catch (e) {
-      return dateStr;
-    }
-  }
 
   Future<void> _handleAccept(int shipmentId, String shipmentNumber) async {
     final confirmed = await showDialog<bool>(
@@ -176,7 +155,7 @@ class _PendingShipmentsListState extends ConsumerState<PendingShipmentsList> {
                         final shipmentNum = shipment.shipmentNumber ?? '';
                         final totalProducts = shipment.items?.length ?? 0;
                         final totalQuantity = shipment.items?.fold<int>(0, (sum, item) => sum + (item.quantity ?? 0)) ?? 0;
-                        final timeAgo = _getTimeAgo(shipment.createdAt);
+                        final timeAgo = relativeTimeLabelFromString(shipment.createdAt);
 
                         return LayoutBuilder(
                           builder: (context, constraints) {

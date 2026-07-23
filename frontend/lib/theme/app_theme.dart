@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 class AppTheme {
   static const Color primary = Color(0xFF006B2C);
   static const Color onPrimary = Color(0xFFFFFFFF);
-  static const Color secondary = Color(0xFF1E293B); 
-  static const Color background = Color(0xFFFFFFFF); 
-  static const Color surface = Color(0xFFF8FAFC); 
+  static const Color secondary = Color(0xFF1E293B);
+  static const Color background = Color(0xFFFFFFFF);
+  static const Color surface = Color(0xFFF8FAFC);
   static const Color error = Color(0xFFDC2626);
+  static const Color success = Color(0xFF16A34A);
+  static const Color textPrimary = secondary;
+  static const Color textSecondary = Color(0xFF64748B);
 
   static ThemeData get themeData {
     return ThemeData(

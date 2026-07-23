@@ -18,16 +18,6 @@ final recentActivityProvider = FutureProvider<List<ActivityItem>>((ref) async {
   return ref.watch(dashboardApiServiceProvider).getRecentActivity();
 });
 
-/// Relative label for activity timestamps (UI only).
-String activityTimeLabel(DateTime? time) {
-  if (time == null) return '';
-  final diff = DateTime.now().difference(time);
-  if (diff.inMinutes < 1) return 'Just now';
-  if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-  if (diff.inHours < 24) return '${diff.inHours}h ago';
-  return '${diff.inDays}d ago';
-}
-
 /// Pull-to-refresh for admin dashboard cards.
 Future<void> refreshAdminDashboard(WidgetRef ref) async {
   await Future.wait([

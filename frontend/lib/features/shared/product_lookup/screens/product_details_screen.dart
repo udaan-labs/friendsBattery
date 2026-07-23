@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import 'package:intl/intl.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../theme/app_theme.dart';
 
 class ProductDetailsScreen extends StatelessWidget {
   final VerifyProductPayload productData;
@@ -27,7 +27,7 @@ class ProductDetailsScreen extends StatelessWidget {
         foregroundColor: Colors.black,
         elevation: 0,
       ),
-      backgroundColor: AppColors.background,
+      backgroundColor: AppTheme.background,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -72,14 +72,14 @@ class ProductDetailsScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(icon, color: AppColors.primary, size: 24),
+                Icon(icon, color: AppTheme.primary, size: 24),
                 const SizedBox(width: 8),
                 Text(
                   title,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                    color: AppTheme.textPrimary,
                   ),
                 ),
               ],
@@ -100,14 +100,14 @@ class ProductDetailsScreen extends StatelessWidget {
     bool isExpired = false,
   }) {
     String displayValue = value?.toString() ?? 'N/A';
-    Color? valueColor = AppColors.textSecondary;
+    Color? valueColor = AppTheme.textSecondary;
     FontWeight valueWeight = FontWeight.normal;
 
     if (isStatus) {
-      valueColor = displayValue == 'SOLD' ? AppColors.success : AppColors.primary;
+      valueColor = displayValue == 'SOLD' ? AppTheme.success : AppTheme.primary;
       valueWeight = FontWeight.bold;
     } else if (highlight) {
-      valueColor = isExpired ? AppColors.error : AppColors.success;
+      valueColor = isExpired ? AppTheme.error : AppTheme.success;
       valueWeight = FontWeight.bold;
       if (isExpired) displayValue += ' (Expired)';
     }
@@ -119,7 +119,7 @@ class ProductDetailsScreen extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w500),
+            style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w500),
           ),
           Flexible(
             child: Text(
