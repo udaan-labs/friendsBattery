@@ -32,8 +32,27 @@ class AdminStockQuery {
   int get hashCode => Object.hash(page, limit, search);
 }
 
+/// Flattened row for admin "View Stock" table (API is nested categories).
+class AdminStockRow {
+  final String category;
+  final String subcategory;
+  final String productName;
+  final int total;
+  final int sold;
+  final int remaining;
+
+  const AdminStockRow({
+    required this.category,
+    required this.subcategory,
+    required this.productName,
+    required this.total,
+    required this.sold,
+    required this.remaining,
+  });
+}
+
 class AdminStockPage {
-  final List<Map<String, dynamic>> items;
+  final List<AdminStockRow> items;
   final int totalPages;
   final int page;
 
@@ -61,7 +80,7 @@ final adminStockDetailsProvider = FutureProvider<AdminStockPage>((ref) async {
   final pagination = details?.pagination;
   final totalPages = pagination?.totalPages ?? 1;
 
-  final List<Map<String, dynamic>> items = [];
+  final List<AdminStockRow> items = [];
   final categories = details?.categories;
   if (categories != null) {
     for (final cat in categories) {
@@ -71,14 +90,16 @@ final adminStockDetailsProvider = FutureProvider<AdminStockPage>((ref) async {
         final prods = sub.products;
         if (prods == null) continue;
         for (final prod in prods) {
-          items.add({
-            'category': cat.categoryName ?? '',
-            'subcategory': sub.subcategoryName ?? '',
-            'productName': prod.productName ?? '',
-            'total': prod.totalQuantity ?? 0,
-            'sold': prod.soldQuantity ?? 0,
-            'remaining': prod.remainingQuantity ?? 0,
-          });
+          items.add(
+            AdminStockRow(
+              category: cat.categoryName ?? '',
+              subcategory: sub.subcategoryName ?? '',
+              productName: prod.productName ?? '',
+              total: prod.totalQuantity ?? 0,
+              sold: prod.soldQuantity ?? 0,
+              remaining: prod.remainingQuantity ?? 0,
+            ),
+          );
         }
       }
     }

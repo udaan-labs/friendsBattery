@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import '../../../../core/network/api_client_provider.dart';
@@ -22,9 +24,9 @@ class SellerProfile {
 final sellerProfileProvider = Provider<SellerProfile>((ref) {
   final dynamic user = LocalStorage.get('user');
   if (user is Map) {
-    final userNameStr = (user['username'] ?? user['userName'] ?? 'Rahul Sharma').toString();
-    final shopNameStr = (user['shop_name'] ?? user['shopName'] ?? 'EcoPower Solutions Hub').toString();
-    final roleStr = (user['role'] ?? 'Premium Dealer').toString();
+    final userNameStr = (user['username'] ?? user['userName'] ?? 'Seller').toString();
+    final shopNameStr = (user['shop_name'] ?? user['shopName'] ?? '').toString();
+    final roleStr = (user['role'] ?? 'seller').toString();
     return SellerProfile(
       userName: userNameStr,
       shopName: shopNameStr,
@@ -32,29 +34,10 @@ final sellerProfileProvider = Provider<SellerProfile>((ref) {
     );
   }
   return SellerProfile(
-    userName: 'Rahul Sharma',
-    shopName: 'EcoPower Solutions Hub',
-    role: 'Premium Dealer',
+    userName: 'Seller',
+    shopName: '',
+    role: 'seller',
   );
-});
-
-/// Full inventory list — used only where a complete list is needed.
-/// Prefer [sellerRecentInventoryProvider] on the dashboard (limited page).
-final sellerInventoryProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final result = await ref.watch(sharedInventoryRepositoryProvider).getInventory(
-        page: 1,
-        limit: 50,
-      );
-  return result.items
-      .map(
-        (item) => {
-          'product_id': item.productId,
-          'brand': item.productName,
-          'model': item.productModel,
-          'quantity': item.quantity,
-        },
-      )
-      .toList();
 });
 
 class SellerKpiStats {
@@ -167,3 +150,21 @@ final sellerShipmentDetailProvider =
     FutureProvider.family<ShipmentDetailModel, int>((ref, shipmentId) async {
   return ref.watch(shipmentRepositoryProvider).getShipmentById(shipmentId);
 });
+
+/// Pull-to-refresh for seller dashboard.
+Future<void> refreshSellerDashboard(WidgetRef ref) async {
+  await Future.wait([
+    _safeRefresh(ref, sellerKpiProvider, 'KPIs'),
+    _safeRefresh(ref, sellerRecentInventoryProvider, 'Recent Inventory'),
+    _safeRefresh(ref, sellerAllShipmentsProvider, 'Shipments'),
+  ]);
+  ref.invalidate(sellerPendingShipmentsProvider);
+}
+
+Future<void> _safeRefresh(WidgetRef ref, FutureProvider provider, String name) async {
+  try {
+    final _ = await ref.refresh(provider.future);
+  } catch (e) {
+    developer.log('Failed to refresh seller $name', error: e);
+  }
+}

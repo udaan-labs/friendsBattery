@@ -101,10 +101,10 @@ class KpiGrid extends ConsumerWidget {
 
     return kpiData.when(
       data: (stats) => buildGrid(
-        stats.totalStock.toString(),
-        stats.todaySales.toString(),
-        stats.totalSellers.toString(),
-        stats.pendingShipments.toString(),
+        (stats.totalStock ?? 0).toString(),
+        (stats.todaySales ?? 0).toString(),
+        (stats.totalSellers ?? 0).toString(),
+        (stats.pendingShipments ?? 0).toString(),
       ),
       loading: () => buildGrid('--', '--', '--', '--'),
       error: (e, st) => const SizedBox.shrink(),

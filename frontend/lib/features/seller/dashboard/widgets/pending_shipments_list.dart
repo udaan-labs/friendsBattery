@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 import '../providers/seller_dashboard_providers.dart';
-import '../providers/seller_dashboard_controller.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../core/network/api_client_provider.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
@@ -82,7 +81,7 @@ class _PendingShipmentsListState extends ConsumerState<PendingShipmentsList> {
       if (mounted) {
         context.showSuccessSnackBar('Shipment accepted successfully');
         // Refresh stats, pending shipments list, and main inventory
-        await ref.read(sellerDashboardControllerProvider).refreshAllData();
+        await refreshSellerDashboard(ref);
       }
     } catch (e) {
       // Handled automatically by ApiInterceptor
@@ -351,7 +350,7 @@ class _PendingShipmentsListState extends ConsumerState<PendingShipmentsList> {
                   ),
                   const SizedBox(height: 12),
                   ElevatedButton(
-                    onPressed: () => ref.read(sellerDashboardControllerProvider).refreshAllData(),
+                    onPressed: () => refreshSellerDashboard(ref),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primary,
                       minimumSize: const Size(120, 36),

@@ -8,7 +8,7 @@ import '../../../../shared/widgets/responsive_helper.dart';
 import '../../../../core/storage/local_storage.dart';
 import '../../../../shared/widgets/logout_dialog_helper.dart';
 import '../providers/admin_stock_provider.dart';
-import '../providers/dashboard_controller.dart';
+import '../providers/dashboard_providers.dart';
 import '../widgets/kpi_grid.dart';
 import '../widgets/quick_actions.dart';
 import '../widgets/recent_activity_timeline.dart';
@@ -365,7 +365,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   // --- Sub-View: Bento Grid Dashboard ---
   Widget _buildDashboardTabView(bool isDesktop, bool isTablet) {
     return CommonPullToRefresh(
-      onRefresh: () => ref.read(dashboardControllerProvider).refreshAllData(),
+      onRefresh: () => refreshAdminDashboard(ref),
       child: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
@@ -513,12 +513,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     ],
                     rows: pageData.items.map((item) {
                       return DataRow(cells: [
-                        DataCell(Text(item['category'])),
-                        DataCell(Text(item['subcategory'])),
-                        DataCell(Text(item['productName'], style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF006B2C)))),
-                        DataCell(Text(item['total'].toString())),
-                        DataCell(Text(item['sold'].toString())),
-                        DataCell(Text(item['remaining'].toString(), style: const TextStyle(fontWeight: FontWeight.bold))),
+                        DataCell(Text(item.category)),
+                        DataCell(Text(item.subcategory)),
+                        DataCell(Text(item.productName, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF006B2C)))),
+                        DataCell(Text(item.total.toString())),
+                        DataCell(Text(item.sold.toString())),
+                        DataCell(Text(item.remaining.toString(), style: const TextStyle(fontWeight: FontWeight.bold))),
                       ]);
                     }).toList(),
                   ),

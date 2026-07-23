@@ -3,14 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/widgets/common_pull_to_refresh.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
-import '../providers/seller_dashboard_controller.dart';
 import '../providers/seller_dashboard_providers.dart';
 import '../widgets/seller_kpi_grid.dart';
 import '../widgets/seller_quick_actions.dart';
 import '../widgets/recent_sales_list.dart';
 import '../widgets/pending_shipments_list.dart';
 import '../widgets/recent_inventory_list.dart';
-import '../../../../shared/widgets/snackbar_helper.dart';
 import 'seller_shell_screen.dart';
 
 class SellerDashboardScreen extends ConsumerWidget {
@@ -68,7 +66,7 @@ class SellerDashboardScreen extends ConsumerWidget {
       ),
       body: SafeArea(
         child: CommonPullToRefresh(
-          onRefresh: () => ref.read(sellerDashboardControllerProvider).refreshAllData(),
+          onRefresh: () => refreshSellerDashboard(ref),
           child: CustomScrollView(
           slivers: [
             SliverPadding(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/admin_activity_history_provider.dart';
+import '../providers/dashboard_providers.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 
 class AdminActivityHistoryScreen extends ConsumerWidget {
@@ -96,10 +97,10 @@ class AdminActivityHistoryScreen extends ConsumerWidget {
 
                           final item = state.items[index];
                           return _ActivityItem(
-                            title: item['title'] ?? '',
-                            subtitle: item['subtitle'] ?? '',
-                            time: item['time'] ?? '',
-                            icon: getIconData(item['icon'] ?? ''),
+                            title: item.title ?? '',
+                            subtitle: item.subtitle ?? '',
+                            time: activityTimeLabel(item.time),
+                            icon: getIconData(item.icon ?? ''),
                           );
                         },
                       ),

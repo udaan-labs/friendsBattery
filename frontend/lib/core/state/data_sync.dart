@@ -29,7 +29,6 @@ class DataSync {
   static void afterInventoryMutation(WidgetRef ref, {int? productId}) {
     ref.invalidate(sharedInventoryProvider);
     ref.invalidate(adminStockDetailsProvider);
-    ref.invalidate(sellerInventoryProvider);
     ref.invalidate(sellerRecentInventoryProvider);
     ref.invalidate(sellerKpiProvider);
     ref.invalidate(kpiProvider);

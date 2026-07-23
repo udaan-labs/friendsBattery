@@ -83,10 +83,10 @@ class RecentActivityTimeline extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   final item = activities[index];
                   return _ActivityItem(
-                    title: item['title'] ?? '',
-                    subtitle: item['subtitle'] ?? '',
-                    time: item['time'] ?? '',
-                    icon: getIconData(item['icon'] ?? ''),
+                    title: item.title ?? '',
+                    subtitle: item.subtitle ?? '',
+                    time: activityTimeLabel(item.time),
+                    icon: getIconData(item.icon ?? ''),
                   );
                 },
               );

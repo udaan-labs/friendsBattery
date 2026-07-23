@@ -4,12 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
+import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_client_provider.dart';
 import '../../../../core/state/data_sync.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
 import '../../../../shared/widgets/scanner_screen.dart';
 import 'package:intl/intl.dart';
-import '../providers/seller_dashboard_controller.dart';
+import '../providers/seller_dashboard_providers.dart';
 
 class SellerReturnProductScreen extends ConsumerStatefulWidget {
   const SellerReturnProductScreen({super.key});
@@ -67,8 +68,8 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
     });
 
     try {
-      final dio = ApiClient().dio;
-      final response = await dio.get('/api/returns');
+      // ponytail: GET /api/returns not in OpenAPI yet — raw Dio until swagger + gen.
+      final response = await ApiClient().dio.get('/api/returns');
       final data = response.data;
       if (mounted) {
         if (data is Map<String, dynamic> && data['data'] != null) {
@@ -185,7 +186,7 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
       if (mounted) {
         context.showSuccessSnackBar('Return request submitted successfully');
         DataSync.afterReturnMutation(ref);
-        await ref.read(sellerDashboardControllerProvider).refreshAllData();
+        await refreshSellerDashboard(ref);
 
         // Reset form inputs
         _serialController.clear();

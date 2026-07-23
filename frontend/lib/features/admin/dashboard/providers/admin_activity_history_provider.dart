@@ -1,9 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:friends_battery_api/friends_battery_api.dart';
 import '../services/dashboard_api_service.dart';
 import 'dashboard_providers.dart';
 
 class ActivityHistoryState {
-  final List<dynamic> items;
+  final List<ActivityItem> items;
   final int page;
   final bool hasNextPage;
   final bool isLoading;
@@ -18,7 +19,7 @@ class ActivityHistoryState {
   });
 
   ActivityHistoryState copyWith({
-    List<dynamic>? items,
+    List<ActivityItem>? items,
     int? page,
     bool? hasNextPage,
     bool? isLoading,
