@@ -4,6 +4,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'product_details_screen.dart';
 import '../providers/product_lookup_provider.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/widgets/snackbar_helper.dart';
 import 'package:go_router/go_router.dart';
 
 class VerifyProductScreen extends ConsumerStatefulWidget {
@@ -49,13 +50,7 @@ class _VerifyProductScreenState extends ConsumerState<VerifyProductScreen> {
           }
         },
         error: (err, stack) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(err.toString()),
-              backgroundColor: AppColors.error,
-              behavior: SnackBarBehavior.fixed,
-            ),
-          );
+          context.showErrorSnackBar(err.toString());
         },
         loading: () {},
       );

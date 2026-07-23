@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/admin/dashboard/providers/admin_stock_provider.dart';
 import '../../features/admin/dashboard/providers/dashboard_providers.dart';
-import '../../features/admin/inventory/providers/inventory_provider.dart';
 import '../../features/admin/sales/providers/admin_sales_history_provider.dart';
 import '../../features/admin/sellers/providers/seller_details_provider.dart';
 import '../../features/admin/sellers/providers/sellers_provider.dart';
@@ -29,7 +28,6 @@ class DataSync {
   /// Inventory quantities, prices, thresholds, or units changed.
   static void afterInventoryMutation(WidgetRef ref, {int? productId}) {
     ref.invalidate(sharedInventoryProvider);
-    ref.invalidate(inventoryListProvider);
     ref.invalidate(adminStockDetailsProvider);
     ref.invalidate(sellerInventoryProvider);
     ref.invalidate(sellerRecentInventoryProvider);

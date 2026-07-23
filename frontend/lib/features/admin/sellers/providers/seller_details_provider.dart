@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_client_provider.dart';
+import '../../../shared/inventory/repository/shared_inventory_repository.dart';
 
 class SellerDetailsData {
   final String shopName;
@@ -11,7 +12,7 @@ class SellerDetailsData {
   final int products;
   final int sales;
   final int returns;
-  final List<Map<String, dynamic>> inventory;
+  final List<SharedInventoryItemModel> inventory;
 
   SellerDetailsData({
     required this.shopName,
@@ -43,17 +44,19 @@ final sellerDetailsProvider =
     final stats = d.statistics;
     final inventory = (d.inventory?.toList() ?? [])
         .map(
-          (item) => <String, dynamic>{
-            'product_id': item.productId,
-            'brand': item.brand,
-            'model': item.model,
-            'quantity': item.quantity,
-            'min_price': item.minPrice,
-            'min_unit_count_admin': item.minUnitCountAdmin,
-            'min_unit_count_seller': item.minUnitCountSeller,
-            'on_sale': item.onSale,
-            'is_low_stock': item.isLowStock,
-          },
+          (item) => SharedInventoryItemModel(
+            productId: item.productId ?? 0,
+            productNameId: 0,
+            productModelId: 0,
+            productModel: item.model ?? 'N/A',
+            productName: item.brand ?? 'N/A',
+            quantity: item.quantity ?? 0,
+            minPrice: (item.minPrice ?? 0).toDouble(),
+            minUnitCountAdmin: item.minUnitCountAdmin ?? 0,
+            minUnitCountSeller: item.minUnitCountSeller ?? 0,
+            onSale: item.onSale ?? false,
+            isLowStock: item.isLowStock ?? false,
+          ),
         )
         .toList();
 

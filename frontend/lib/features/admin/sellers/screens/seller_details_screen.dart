@@ -5,7 +5,7 @@ import '../../../../shared/widgets/responsive_helper.dart';
 import '../providers/seller_details_provider.dart';
 import '../widgets/seller_info_card.dart';
 import '../widgets/statistic_card.dart';
-import '../widgets/inventory_product_card.dart';
+import '../../../shared/inventory/widgets/inventory_product_card.dart';
 
 class SellerDetailsScreen extends ConsumerStatefulWidget {
   final int sellerId;
@@ -165,8 +165,8 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
               itemCount: data.inventory.length,
               itemBuilder: (context, index) {
                 return InventoryProductCard(
-                  inventoryItem: data.inventory[index],
-                  onTap: () {},
+                  item: data.inventory[index],
+                  index: index + 1,
                 );
               },
             ),
