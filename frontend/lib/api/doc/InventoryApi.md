@@ -10,7 +10,7 @@ All URIs are relative to *http://localhost:3000*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**apiInventoryAdjustPatch**](InventoryApi.md#apiinventoryadjustpatch) | **PATCH** /api/inventory/adjust | Adjust inventory stock levels
-[**apiInventoryAvailableSerialsGet**](InventoryApi.md#apiinventoryavailableserialsget) | **GET** /api/inventory/available-serials | Fetch available serial numbers for a product owned by the logged-in seller
+[**apiInventoryAvailableSerialsGet**](InventoryApi.md#apiinventoryavailableserialsget) | **GET** /api/inventory/available-serials | Fetch available serial numbers for a product owned by the authenticated user
 [**apiInventoryDetailsGet**](InventoryApi.md#apiinventorydetailsget) | **GET** /api/inventory/details | Return a complete inventory summary grouped by Product Name and Product Model
 [**apiInventoryGet**](InventoryApi.md#apiinventoryget) | **GET** /api/inventory | Return logged-in user&#39;s inventory
 [**apiInventoryHistoryGet**](InventoryApi.md#apiinventoryhistoryget) | **GET** /api/inventory/history | Return inventory movement history
@@ -22,7 +22,7 @@ Method | HTTP request | Description
 
 
 # **apiInventoryAdjustPatch**
-> apiInventoryAdjustPatch(apiInventoryAdjustPatchRequest)
+> AdjustInventoryResponse apiInventoryAdjustPatch(adjustInventoryRequest)
 
 Adjust inventory stock levels
 
@@ -31,10 +31,11 @@ Adjust inventory stock levels
 import 'package:friends_battery_api/api.dart';
 
 final api = FriendsBatteryApi().getInventoryApi();
-final ApiInventoryAdjustPatchRequest apiInventoryAdjustPatchRequest = ; // ApiInventoryAdjustPatchRequest | 
+final AdjustInventoryRequest adjustInventoryRequest = ; // AdjustInventoryRequest | 
 
 try {
-    api.apiInventoryAdjustPatch(apiInventoryAdjustPatchRequest);
+    final response = api.apiInventoryAdjustPatch(adjustInventoryRequest);
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling InventoryApi->apiInventoryAdjustPatch: $e\n');
 }
@@ -44,11 +45,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **apiInventoryAdjustPatchRequest** | [**ApiInventoryAdjustPatchRequest**](ApiInventoryAdjustPatchRequest.md)|  | 
+ **adjustInventoryRequest** | [**AdjustInventoryRequest**](AdjustInventoryRequest.md)|  | 
 
 ### Return type
 
-void (empty response body)
+[**AdjustInventoryResponse**](AdjustInventoryResponse.md)
 
 ### Authorization
 
@@ -57,25 +58,26 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiInventoryAvailableSerialsGet**
-> apiInventoryAvailableSerialsGet(productNameId, productModelId)
+> AvailableSerialsResponse apiInventoryAvailableSerialsGet(productNameId, productModelId)
 
-Fetch available serial numbers for a product owned by the logged-in seller
+Fetch available serial numbers for a product owned by the authenticated user
 
 ### Example
 ```dart
 import 'package:friends_battery_api/api.dart';
 
 final api = FriendsBatteryApi().getInventoryApi();
-final String productNameId = productNameId_example; // String | 
-final String productModelId = productModelId_example; // String | 
+final int productNameId = 56; // int | 
+final int productModelId = 56; // int | 
 
 try {
-    api.apiInventoryAvailableSerialsGet(productNameId, productModelId);
+    final response = api.apiInventoryAvailableSerialsGet(productNameId, productModelId);
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling InventoryApi->apiInventoryAvailableSerialsGet: $e\n');
 }
@@ -85,12 +87,12 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **productNameId** | **String**|  | 
- **productModelId** | **String**|  | 
+ **productNameId** | **int**|  | 
+ **productModelId** | **int**|  | 
 
 ### Return type
 
-void (empty response body)
+[**AvailableSerialsResponse**](AvailableSerialsResponse.md)
 
 ### Authorization
 
@@ -99,7 +101,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -151,7 +153,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiInventoryGet**
-> apiInventoryGet(search, page, limit)
+> InventoryListResponse apiInventoryGet(search, page, limit, includeOutOfStock)
 
 Return logged-in user's inventory
 
@@ -163,9 +165,11 @@ final api = FriendsBatteryApi().getInventoryApi();
 final String search = search_example; // String | 
 final int page = 56; // int | 
 final int limit = 56; // int | 
+final bool includeOutOfStock = true; // bool | 
 
 try {
-    api.apiInventoryGet(search, page, limit);
+    final response = api.apiInventoryGet(search, page, limit, includeOutOfStock);
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling InventoryApi->apiInventoryGet: $e\n');
 }
@@ -178,10 +182,11 @@ Name | Type | Description  | Notes
  **search** | **String**|  | [optional] 
  **page** | **int**|  | [optional] 
  **limit** | **int**|  | [optional] 
+ **includeOutOfStock** | **bool**|  | [optional] 
 
 ### Return type
 
-void (empty response body)
+[**InventoryListResponse**](InventoryListResponse.md)
 
 ### Authorization
 
@@ -190,7 +195,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -245,7 +250,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiInventoryProductDetailsGet**
-> apiInventoryProductDetailsGet(productNameId, productModelId)
+> ProductStockDetailsResponse apiInventoryProductDetailsGet(productNameId, productModelId)
 
 Fetch details of a product (stock count & min sell price) by product name and model IDs
 
@@ -254,11 +259,12 @@ Fetch details of a product (stock count & min sell price) by product name and mo
 import 'package:friends_battery_api/api.dart';
 
 final api = FriendsBatteryApi().getInventoryApi();
-final String productNameId = productNameId_example; // String | 
-final String productModelId = productModelId_example; // String | 
+final int productNameId = 56; // int | 
+final int productModelId = 56; // int | 
 
 try {
-    api.apiInventoryProductDetailsGet(productNameId, productModelId);
+    final response = api.apiInventoryProductDetailsGet(productNameId, productModelId);
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling InventoryApi->apiInventoryProductDetailsGet: $e\n');
 }
@@ -268,12 +274,12 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **productNameId** | **String**|  | 
- **productModelId** | **String**|  | 
+ **productNameId** | **int**|  | 
+ **productModelId** | **int**|  | 
 
 ### Return type
 
-void (empty response body)
+[**ProductStockDetailsResponse**](ProductStockDetailsResponse.md)
 
 ### Authorization
 
@@ -282,12 +288,12 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiInventoryProductIdGet**
-> ApiInventoryProductIdGet200Response apiInventoryProductIdGet(productId)
+> InventoryItemDetailResponse apiInventoryProductIdGet(productId)
 
 Return one inventory item
 
@@ -314,7 +320,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**ApiInventoryProductIdGet200Response**](ApiInventoryProductIdGet200Response.md)
+[**InventoryItemDetailResponse**](InventoryItemDetailResponse.md)
 
 ### Authorization
 
@@ -328,7 +334,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiInventoryScanForSaleGet**
-> apiInventoryScanForSaleGet(serialNumber)
+> ScanForSaleResponse apiInventoryScanForSaleGet(serialNumber)
 
 Scan a serial number to fetch product details for a sale
 
@@ -340,7 +346,8 @@ final api = FriendsBatteryApi().getInventoryApi();
 final String serialNumber = serialNumber_example; // String | 
 
 try {
-    api.apiInventoryScanForSaleGet(serialNumber);
+    final response = api.apiInventoryScanForSaleGet(serialNumber);
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling InventoryApi->apiInventoryScanForSaleGet: $e\n');
 }
@@ -354,7 +361,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-void (empty response body)
+[**ScanForSaleResponse**](ScanForSaleResponse.md)
 
 ### Authorization
 
@@ -363,7 +370,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -408,7 +415,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiInventoryUpdateStockPost**
-> apiInventoryUpdateStockPost(apiInventoryUpdateStockPostRequest)
+> UpdateStockResponse apiInventoryUpdateStockPost(updateStockRequest)
 
 Update admin's own inventory stock (Admin only)
 
@@ -417,10 +424,11 @@ Update admin's own inventory stock (Admin only)
 import 'package:friends_battery_api/api.dart';
 
 final api = FriendsBatteryApi().getInventoryApi();
-final ApiInventoryUpdateStockPostRequest apiInventoryUpdateStockPostRequest = ; // ApiInventoryUpdateStockPostRequest | 
+final UpdateStockRequest updateStockRequest = ; // UpdateStockRequest | 
 
 try {
-    api.apiInventoryUpdateStockPost(apiInventoryUpdateStockPostRequest);
+    final response = api.apiInventoryUpdateStockPost(updateStockRequest);
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling InventoryApi->apiInventoryUpdateStockPost: $e\n');
 }
@@ -430,11 +438,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **apiInventoryUpdateStockPostRequest** | [**ApiInventoryUpdateStockPostRequest**](ApiInventoryUpdateStockPostRequest.md)|  | 
+ **updateStockRequest** | [**UpdateStockRequest**](UpdateStockRequest.md)|  | 
 
 ### Return type
 
-void (empty response body)
+[**UpdateStockResponse**](UpdateStockResponse.md)
 
 ### Authorization
 
@@ -443,7 +451,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

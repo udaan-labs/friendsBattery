@@ -6,7 +6,7 @@ import '../repository/shipment_repository.dart';
 
 final shipmentRepositoryProvider = Provider<ShipmentRepository>((ref) {
   final api = ref.watch(apiClientProvider);
-  return ShipmentRepository(dio: api.dio);
+  return ShipmentRepository(api: api);
 });
 
 // ─── Admin: list all shipments ────────────────────────────────────────────────
@@ -26,8 +26,9 @@ final shipmentDetailByIdProvider =
 });
 
 // ─── Sellers list (for create shipment screen) ────────────────────────────────
+// Named distinctly from admin/sellers `sellersProvider` (SellerData list).
 
-final sellersProvider = FutureProvider<List<SellerModel>>((ref) async {
+final shipmentSellersProvider = FutureProvider<List<SellerModel>>((ref) async {
   final repo = ref.watch(shipmentRepositoryProvider);
   return repo.getSellers();
 });

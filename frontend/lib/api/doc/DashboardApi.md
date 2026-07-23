@@ -16,7 +16,7 @@ Method | HTTP request | Description
 
 
 # **apiDashboardActivityHistoryGet**
-> apiDashboardActivityHistoryGet()
+> ActivityHistoryResponse apiDashboardActivityHistoryGet(page, limit)
 
 Get paginated activity history (Admin only)
 
@@ -25,20 +25,27 @@ Get paginated activity history (Admin only)
 import 'package:friends_battery_api/api.dart';
 
 final api = FriendsBatteryApi().getDashboardApi();
+final int page = 56; // int | 
+final int limit = 56; // int | 
 
 try {
-    api.apiDashboardActivityHistoryGet();
+    final response = api.apiDashboardActivityHistoryGet(page, limit);
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling DashboardApi->apiDashboardActivityHistoryGet: $e\n');
 }
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **page** | **int**|  | [optional] 
+ **limit** | **int**|  | [optional] 
 
 ### Return type
 
-void (empty response body)
+[**ActivityHistoryResponse**](ActivityHistoryResponse.md)
 
 ### Authorization
 
@@ -47,12 +54,12 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiDashboardRecentActivityGet**
-> apiDashboardRecentActivityGet()
+> RecentActivityResponse apiDashboardRecentActivityGet()
 
 Get recent activity feed (Admin only)
 
@@ -63,7 +70,8 @@ import 'package:friends_battery_api/api.dart';
 final api = FriendsBatteryApi().getDashboardApi();
 
 try {
-    api.apiDashboardRecentActivityGet();
+    final response = api.apiDashboardRecentActivityGet();
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling DashboardApi->apiDashboardRecentActivityGet: $e\n');
 }
@@ -74,7 +82,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-void (empty response body)
+[**RecentActivityResponse**](RecentActivityResponse.md)
 
 ### Authorization
 
@@ -83,7 +91,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

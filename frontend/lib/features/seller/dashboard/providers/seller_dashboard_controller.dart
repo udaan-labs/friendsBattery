@@ -7,14 +7,16 @@ class SellerDashboardController {
 
   SellerDashboardController(this.ref);
 
+  /// Pull-to-refresh: one parallel batch.
+  /// Pending shipments derive from [sellerAllShipmentsProvider] — do not refresh twice.
   Future<void> refreshAllData() async {
     await Future.wait([
-      _safeRefresh(sellerInventoryProvider, 'Inventory'),
       _safeRefresh(sellerKpiProvider, 'KPIs'),
       _safeRefresh(sellerRecentInventoryProvider, 'Recent Inventory'),
-      _safeRefresh(sellerPendingShipmentsProvider, 'Pending Shipments'),
-      _safeRefresh(sellerAllShipmentsProvider, 'All Shipments'),
+      _safeRefresh(sellerAllShipmentsProvider, 'Shipments'),
     ]);
+    // Derived pending list recomputes when all-shipments updates.
+    ref.invalidate(sellerPendingShipmentsProvider);
   }
 
   Future<void> _safeRefresh(FutureProvider provider, String name) async {

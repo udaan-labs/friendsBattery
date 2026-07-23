@@ -13,7 +13,7 @@ class _$ApiSellerDashboardStatsGet200Response
   @override
   final String? message;
   @override
-  final ApiSellerDashboardStatsGet200ResponseData? data;
+  final SellerDashboardStats? data;
 
   factory _$ApiSellerDashboardStatsGet200Response([
     void Function(ApiSellerDashboardStatsGet200ResponseBuilder)? updates,
@@ -81,11 +81,10 @@ class ApiSellerDashboardStatsGet200ResponseBuilder
   String? get message => _$this._message;
   set message(String? message) => _$this._message = message;
 
-  ApiSellerDashboardStatsGet200ResponseDataBuilder? _data;
-  ApiSellerDashboardStatsGet200ResponseDataBuilder get data =>
-      _$this._data ??= ApiSellerDashboardStatsGet200ResponseDataBuilder();
-  set data(ApiSellerDashboardStatsGet200ResponseDataBuilder? data) =>
-      _$this._data = data;
+  SellerDashboardStatsBuilder? _data;
+  SellerDashboardStatsBuilder get data =>
+      _$this._data ??= SellerDashboardStatsBuilder();
+  set data(SellerDashboardStatsBuilder? data) => _$this._data = data;
 
   ApiSellerDashboardStatsGet200ResponseBuilder() {
     ApiSellerDashboardStatsGet200Response._defaults(this);

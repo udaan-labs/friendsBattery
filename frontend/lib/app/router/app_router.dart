@@ -30,16 +30,24 @@ import '../../shared/providers/auth_provider.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 
+/// Stable [GoRouter] — auth changes notify via [refreshListenable] instead of
+/// recreating the entire router (which rebuilds MaterialApp and all routes).
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
+  final refresh = ValueNotifier<int>(0);
+  ref.onDispose(refresh.dispose);
+  ref.listen<AuthState>(authProvider, (_, __) {
+    refresh.value++;
+  });
 
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/splash',
+    refreshListenable: refresh,
     redirect: (context, state) {
+      final authState = ref.read(authProvider);
       final isLoggingIn = state.uri.toString() == '/login';
       final isSplash = state.uri.toString() == '/splash';
-      
+
       if (!authState.isAuthenticated) {
         if (isSplash || isLoggingIn || state.uri.toString() == '/register') return null;
         return '/login';

@@ -1,24 +1,16 @@
-import 'package:dio/dio.dart';
-import '../../../core/network/api_client.dart';
+import 'package:friends_battery_api/friends_battery_api.dart';
 import '../../../core/network/api_exceptions.dart';
 
 class HealthRepository {
-  final Dio _dio;
+  final FriendsBatteryApi _api;
 
-  HealthRepository({Dio? dio}) : _dio = dio ?? ApiClient().dio;
+  HealthRepository({required FriendsBatteryApi api}) : _api = api;
 
   Future<bool> checkHealth() async {
     try {
-      final response = await _dio.get('/api/health');
-      if (response.statusCode == 200) {
-        return true;
-      }
-      return false;
+      final response = await _api.getHealthApi().apiHealthGet();
+      return response.statusCode == 200;
     } catch (e) {
-      if (e is DioException && e.error is ApiException) {
-        throw e.error as ApiException; // Rethrow custom API exceptions
-      }
-      // Provide a generic fallback
       throw ServerErrorException(message: e.toString());
     }
   }

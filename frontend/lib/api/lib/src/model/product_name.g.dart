@@ -8,7 +8,7 @@ part of 'product_name.dart';
 
 class _$ProductName extends ProductName {
   @override
-  final String? id;
+  final int? id;
   @override
   final String? name;
 
@@ -50,9 +50,9 @@ class _$ProductName extends ProductName {
 class ProductNameBuilder implements Builder<ProductName, ProductNameBuilder> {
   _$ProductName? _$v;
 
-  String? _id;
-  String? get id => _$this._id;
-  set id(String? id) => _$this._id = id;
+  int? _id;
+  int? get id => _$this._id;
+  set id(int? id) => _$this._id = id;
 
   String? _name;
   String? get name => _$this._name;

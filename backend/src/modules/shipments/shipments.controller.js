@@ -6,7 +6,12 @@ class ShipmentsController {
     try {
       const adminId = Number(req.user.id);
       const result = await shipmentsService.createShipment(req.body, adminId);
-      return successResponse(res, 201, 'Shipment created successfully', result);
+      return successResponse(
+        res,
+        201,
+        `Transferred ${result.transferredUnits} unit(s) to seller successfully`,
+        result
+      );
     } catch (error) {
       if (error.statusCode) {
         return errorResponse(res, error.statusCode, error.message);

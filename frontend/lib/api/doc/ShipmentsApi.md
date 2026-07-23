@@ -13,7 +13,7 @@ Method | HTTP request | Description
 [**apiSellerShipmentsGet**](ShipmentsApi.md#apisellershipmentsget) | **GET** /api/seller/shipments | List shipments for seller (Seller only)
 [**apiShipmentsGet**](ShipmentsApi.md#apishipmentsget) | **GET** /api/shipments | List all shipments (Admin only)
 [**apiShipmentsIdGet**](ShipmentsApi.md#apishipmentsidget) | **GET** /api/shipments/{id} | Get shipment details by ID (Admin or Seller)
-[**apiShipmentsPost**](ShipmentsApi.md#apishipmentspost) | **POST** /api/shipments | Create a new shipment (Admin only)
+[**apiShipmentsPost**](ShipmentsApi.md#apishipmentspost) | **POST** /api/shipments | Transfer stock serials from admin to seller (Admin only)
 [**apiShipmentsShipmentIdAcceptPost**](ShipmentsApi.md#apishipmentsshipmentidacceptpost) | **POST** /api/shipments/{shipmentId}/accept | Accept a pending shipment (Seller only)
 
 
@@ -170,19 +170,22 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiShipmentsPost**
-> apiShipmentsPost(apiShipmentsPostRequest)
+> CreateShipmentResponse apiShipmentsPost(createShipmentRequest)
 
-Create a new shipment (Admin only)
+Transfer stock serials from admin to seller (Admin only)
+
+Moves existing AVAILABLE admin-owned product units to the seller immediately. Creates shipment record (status ACCEPTED), inventory_transactions (TRANSFERRED), and returns updated inventory counts. 
 
 ### Example
 ```dart
 import 'package:friends_battery_api/api.dart';
 
 final api = FriendsBatteryApi().getShipmentsApi();
-final ApiShipmentsPostRequest apiShipmentsPostRequest = ; // ApiShipmentsPostRequest | 
+final CreateShipmentRequest createShipmentRequest = ; // CreateShipmentRequest | 
 
 try {
-    api.apiShipmentsPost(apiShipmentsPostRequest);
+    final response = api.apiShipmentsPost(createShipmentRequest);
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling ShipmentsApi->apiShipmentsPost: $e\n');
 }
@@ -192,11 +195,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **apiShipmentsPostRequest** | [**ApiShipmentsPostRequest**](ApiShipmentsPostRequest.md)|  | 
+ **createShipmentRequest** | [**CreateShipmentRequest**](CreateShipmentRequest.md)|  | 
 
 ### Return type
 
-void (empty response body)
+[**CreateShipmentResponse**](CreateShipmentResponse.md)
 
 ### Authorization
 
@@ -205,7 +208,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

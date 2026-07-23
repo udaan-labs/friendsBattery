@@ -4,8 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../providers/seller_dashboard_providers.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
-import '../../../../core/network/api_client_provider.dart';
+import '../../../../core/state/data_sync.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
+import '../../../admin/shipments/providers/shipment_provider.dart';
+import '../../../admin/shipments/repository/shipment_repository.dart';
 
 // ─── Screen ────────────────────────────────────────────────────────────────
 
@@ -54,16 +56,12 @@ class _ShipmentDetailsScreenState extends ConsumerState<ShipmentDetailsScreen> {
 
     setState(() => _isAccepting = true);
     try {
-      final dio = ref.read(apiClientProvider).dio;
-      await dio.post('/api/shipments/${widget.shipmentId}/accept');
+      await ref.read(shipmentRepositoryProvider).acceptShipment(widget.shipmentId);
       if (mounted) {
         context.showSuccessSnackBar(
           'Shipment accepted! Products added to inventory.',
         );
-        // Refresh providers
-        ref.invalidate(sellerShipmentDetailProvider(widget.shipmentId));
-        ref.invalidate(sellerAllShipmentsProvider);
-        ref.invalidate(sellerPendingShipmentsProvider);
+        DataSync.afterShipmentMutation(ref, shipmentId: widget.shipmentId);
       }
     } catch (e) {
       if (mounted) {
@@ -120,24 +118,18 @@ class _ShipmentDetailsScreenState extends ConsumerState<ShipmentDetailsScreen> {
     );
   }
 
-  Widget _buildBody(Map<String, dynamic> data) {
+  Widget _buildBody(ShipmentDetailModel data) {
     final dateFmt = DateFormat('dd MMM yyyy, hh:mm a');
-    final status = data['status'] as String? ?? '';
-    final shipmentNumber = data['shipmentNumber'] as String? ?? '';
-    final createdAt =
-        DateTime.tryParse(data['createdAt'] as String? ?? '') ?? DateTime.now();
-    final acceptedAt = data['acceptedAt'] != null
-        ? DateTime.tryParse(data['acceptedAt'] as String)
-        : null;
-    final seller = data['seller'] as Map<String, dynamic>? ?? {};
-    final sellerName = seller['userName'] as String? ?? '';
-    final shopName = seller['shopName'] as String? ?? '';
-    final phone = seller['userNumber'] as String?;
-    final totalProducts = _parseInt(data['totalProducts']);
-    final totalQuantity = _parseInt(data['totalQuantity']);
-    final items = (data['items'] as List<dynamic>? ?? [])
-        .whereType<Map<String, dynamic>>()
-        .toList();
+    final status = data.status;
+    final shipmentNumber = data.shipmentNumber;
+    final createdAt = data.createdAt;
+    final acceptedAt = data.acceptedAt;
+    final sellerName = data.sellerUserName;
+    final shopName = data.sellerShopName;
+    final phone = data.sellerPhone;
+    final totalProducts = data.totalProducts;
+    final totalQuantity = data.totalQuantity;
+    final items = data.items;
 
     return ListView(
       padding: EdgeInsets.all(ResponsiveHelper.responsivePadding(context)),
@@ -297,13 +289,6 @@ class _ShipmentDetailsScreenState extends ConsumerState<ShipmentDetailsScreen> {
         const SizedBox(height: 32),
       ],
     );
-  }
-
-  static int _parseInt(dynamic v) {
-    if (v is int) return v;
-    if (v is String) return int.tryParse(v) ?? 0;
-    if (v is double) return v.toInt();
-    return 0;
   }
 }
 
@@ -553,23 +538,16 @@ class _StatBox extends StatelessWidget {
 // ─── Product Card ──────────────────────────────────────────────────────────
 
 class _ProductCard extends StatelessWidget {
-  final Map<String, dynamic> item;
+  final ShipmentItemDetailModel item;
   final int index;
   const _ProductCard({required this.item, required this.index});
 
-  static int _parseInt(dynamic v) {
-    if (v is int) return v;
-    if (v is String) return int.tryParse(v) ?? 0;
-    if (v is double) return v.toInt();
-    return 0;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final productName = item['productName'] as String? ?? '';
-    final productModel = item['productModel'] as String? ?? '';
-    final quantity = _parseInt(item['quantity']);
-    final serialNumber = item['serialNumber'] as String?;
+    final productName = item.productName;
+    final productModel = item.productModel;
+    final quantity = item.quantity;
+    final serialNumber = item.serialNumber;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),

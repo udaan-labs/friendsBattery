@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../theme/app_theme.dart';
 import '../../../shared/widgets/responsive_helper.dart';
 import '../providers/auth_controller.dart';
+import '../../../core/state/data_sync.dart';
 import '../../../shared/widgets/snackbar_helper.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -61,6 +62,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         context.showSuccessSnackBar(widget.isAdminFlow 
             ? 'Seller created successfully' 
             : 'Registration successful! Please login.');
+        if (widget.isAdminFlow) {
+          DataSync.afterSellerMutation(ref);
+        }
         context.pop(); // Go back to login or seller list
       }
     } catch (_) {

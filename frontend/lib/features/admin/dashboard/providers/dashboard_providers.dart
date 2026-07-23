@@ -4,24 +4,29 @@ import '../services/dashboard_api_service.dart';
 import '../models/dashboard_stats.dart';
 
 final dashboardApiServiceProvider = Provider<DashboardApiService>((ref) {
-  final dio = ref.watch(apiClientProvider).dio;
-  return DashboardApiService(dio: dio);
+  return DashboardApiService(api: ref.watch(apiClientProvider));
 });
 
 final kpiProvider = FutureProvider<DashboardStats>((ref) async {
-  return ref.watch(dashboardApiServiceProvider).getDashboardStats();
+  final sw = Stopwatch()..start();
+  final stats = await ref.watch(dashboardApiServiceProvider).getDashboardStats();
+  sw.stop();
+  assert(() {
+    // ignore: avoid_print
+    print('[PERF-PROVIDER] kpiProvider total=${sw.elapsedMilliseconds}ms');
+    return true;
+  }());
+  return stats;
 });
 
 /// Fetches real recent activity from GET /api/dashboard/recent-activity.
 final recentActivityProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final dio = ref.watch(apiClientProvider).dio;
-  final response = await dio.get('/api/dashboard/recent-activity');
-  final body = response.data;
-  final List<dynamic> rawList =
-      (body is Map && body['data'] is List) ? body['data'] : (body is List ? body : []);
+  final sw = Stopwatch()..start();
+  final rawList = await ref.watch(dashboardApiServiceProvider).getRecentActivity();
+  final networkMs = sw.elapsedMilliseconds;
 
-  return rawList.whereType<Map<String, dynamic>>().map((item) {
-    // Convert ISO time to a human-readable relative string
+  final parseSw = Stopwatch()..start();
+  final mapped = rawList.map((item) {
     final isoTime = item['time'] as String? ?? '';
     String timeLabel = '';
     if (isoTime.isNotEmpty) {
@@ -46,4 +51,16 @@ final recentActivityProvider = FutureProvider<List<Map<String, dynamic>>>((ref) 
       'icon': item['icon'] ?? 'notifications',
     };
   }).toList();
+  parseSw.stop();
+  sw.stop();
+  assert(() {
+    // ignore: avoid_print
+    print(
+      '[PERF-PROVIDER] recentActivityProvider '
+      'network+dio=${networkMs}ms parse=${parseSw.elapsedMilliseconds}ms '
+      'total=${sw.elapsedMilliseconds}ms items=${mapped.length}',
+    );
+    return true;
+  }());
+  return mapped;
 });

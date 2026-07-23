@@ -9,7 +9,11 @@ import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
 import 'package:friends_battery_api/src/api_util.dart';
-import 'package:friends_battery_api/src/model/api_sales_post_request.dart';
+import 'package:friends_battery_api/src/model/admin_sale_history_response.dart';
+import 'package:friends_battery_api/src/model/create_sale_request.dart';
+import 'package:friends_battery_api/src/model/create_sale_response.dart';
+import 'package:friends_battery_api/src/model/sale_detail_response.dart';
+import 'package:friends_battery_api/src/model/sale_history_response.dart';
 
 class SalesApi {
 
@@ -37,9 +41,9 @@ class SalesApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future]
+  /// Returns a [Future] containing a [Response] with a [AdminSaleHistoryResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<void>> apiSalesAdminHistoryGet({ 
+  Future<Response<AdminSaleHistoryResponse>> apiSalesAdminHistoryGet({ 
     int? page = 1,
     int? limit = 10,
     String? search,
@@ -92,7 +96,35 @@ class SalesApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    return _response;
+    AdminSaleHistoryResponse? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(AdminSaleHistoryResponse),
+      ) as AdminSaleHistoryResponse;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminSaleHistoryResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
   }
 
   /// Return all sales based on role (Admin sees all, Seller sees own)
@@ -156,6 +188,8 @@ class SalesApi {
   /// * [searchSerial] 
   /// * [fromDate] 
   /// * [toDate] 
+  /// * [filter] 
+  /// * [date] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -163,15 +197,17 @@ class SalesApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future]
+  /// Returns a [Future] containing a [Response] with a [SaleHistoryResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<void>> apiSalesHistoryGet({ 
+  Future<Response<SaleHistoryResponse>> apiSalesHistoryGet({ 
     int? page = 1,
     int? limit = 10,
     String? searchCustomer,
     String? searchSerial,
     DateTime? fromDate,
     DateTime? toDate,
+    String? filter,
+    String? date,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -205,6 +241,8 @@ class SalesApi {
       if (searchSerial != null) r'searchSerial': encodeQueryParameter(_serializers, searchSerial, const FullType(String)),
       if (fromDate != null) r'fromDate': encodeQueryParameter(_serializers, fromDate, const FullType(DateTime)),
       if (toDate != null) r'toDate': encodeQueryParameter(_serializers, toDate, const FullType(DateTime)),
+      if (filter != null) r'filter': encodeQueryParameter(_serializers, filter, const FullType(String)),
+      if (date != null) r'date': encodeQueryParameter(_serializers, date, const FullType(String)),
     };
 
     final _response = await _dio.request<Object>(
@@ -216,14 +254,42 @@ class SalesApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    return _response;
+    SaleHistoryResponse? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(SaleHistoryResponse),
+      ) as SaleHistoryResponse;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<SaleHistoryResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
   }
 
   /// Create a new sale transaction
   /// 
   ///
   /// Parameters:
-  /// * [apiSalesPostRequest] 
+  /// * [createSaleRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -231,10 +297,10 @@ class SalesApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future]
+  /// Returns a [Future] containing a [Response] with a [CreateSaleResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<void>> apiSalesPost({ 
-    required ApiSalesPostRequest apiSalesPostRequest,
+  Future<Response<CreateSaleResponse>> apiSalesPost({ 
+    required CreateSaleRequest createSaleRequest,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -265,8 +331,8 @@ class SalesApi {
     dynamic _bodyData;
 
     try {
-      const _type = FullType(ApiSalesPostRequest);
-      _bodyData = _serializers.serialize(apiSalesPostRequest, specifiedType: _type);
+      const _type = FullType(CreateSaleRequest);
+      _bodyData = _serializers.serialize(createSaleRequest, specifiedType: _type);
 
     } catch(error, stackTrace) {
       throw DioException(
@@ -289,7 +355,35 @@ class SalesApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    return _response;
+    CreateSaleResponse? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(CreateSaleResponse),
+      ) as CreateSaleResponse;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<CreateSaleResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
   }
 
   /// Return a single sale&#39;s details by ID
@@ -304,10 +398,10 @@ class SalesApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future]
+  /// Returns a [Future] containing a [Response] with a [SaleDetailResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<void>> apiSalesTransactionIdGet({ 
-    required String transactionId,
+  Future<Response<SaleDetailResponse>> apiSalesTransactionIdGet({ 
+    required int transactionId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -315,7 +409,7 @@ class SalesApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/api/sales/{transactionId}'.replaceAll('{' r'transactionId' '}', encodeQueryParameter(_serializers, transactionId, const FullType(String)).toString());
+    final _path = r'/api/sales/{transactionId}'.replaceAll('{' r'transactionId' '}', encodeQueryParameter(_serializers, transactionId, const FullType(int)).toString());
     final _options = Options(
       method: r'GET',
       headers: <String, dynamic>{
@@ -342,7 +436,35 @@ class SalesApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    return _response;
+    SaleDetailResponse? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(SaleDetailResponse),
+      ) as SaleDetailResponse;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<SaleDetailResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
   }
 
 }

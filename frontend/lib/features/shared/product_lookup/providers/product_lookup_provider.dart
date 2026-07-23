@@ -1,16 +1,17 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:friends_battery_api/friends_battery_api.dart';
 import '../../../../core/network/api_client_provider.dart';
 
-final productLookupProvider = StateNotifierProvider<ProductLookupNotifier, AsyncValue<Map<String, dynamic>?>>((ref) {
-  final dio = ref.watch(apiClientProvider).dio;
-  return ProductLookupNotifier(dio);
+final productLookupProvider =
+    StateNotifierProvider<ProductLookupNotifier, AsyncValue<Map<String, dynamic>?>>((ref) {
+  return ProductLookupNotifier(ref.watch(apiClientProvider));
 });
 
 class ProductLookupNotifier extends StateNotifier<AsyncValue<Map<String, dynamic>?>> {
-  final Dio _dio;
+  final FriendsBatteryApi _api;
 
-  ProductLookupNotifier(this._dio) : super(const AsyncValue.data(null));
+  ProductLookupNotifier(this._api) : super(const AsyncValue.data(null));
 
   void clearResult() {
     state = const AsyncValue.data(null);
@@ -19,16 +20,31 @@ class ProductLookupNotifier extends StateNotifier<AsyncValue<Map<String, dynamic
   Future<void> lookupProduct(String identifier) async {
     state = const AsyncValue.loading();
     try {
-      final response = await _dio.post(
-        '/api/product-units/verify',
-        data: {'identifier': identifier},
-      );
-      
-      if (response.statusCode == 200 && response.data['success'] == true) {
-        state = AsyncValue.data(response.data['data']);
+      final body = VerifyProductRequest((b) => b.identifier = identifier);
+      final response = await _api.getProductUnitsApi().apiProductUnitsVerifyPost(
+            verifyProductRequest: body,
+          );
+
+      final data = response.data?.data;
+      if (response.statusCode == 200 && data != null) {
+        state = AsyncValue.data({
+          'productUnit': {
+            'serialNumber': data.productUnit?.serialNumber,
+            'status': data.productUnit?.status,
+            'qrCode': data.productUnit?.qrCode,
+            'manufactureDate': data.productUnit?.manufactureDate?.toIso8601String(),
+            'warrantyExpiry': data.productUnit?.warrantyExpiry?.toIso8601String(),
+          },
+          'product': {
+            'name': data.product?.name,
+            'group': data.product?.group,
+            'subgroup': data.product?.subgroup,
+            'model': data.product?.model,
+          },
+        });
       } else {
         state = AsyncValue.error(
-          response.data['message'] ?? 'Failed to verify product',
+          response.data?.message ?? 'Failed to verify product',
           StackTrace.current,
         );
       }

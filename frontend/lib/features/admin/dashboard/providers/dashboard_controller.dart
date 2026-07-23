@@ -7,6 +7,8 @@ class DashboardController {
 
   DashboardController(this.ref);
 
+  /// Pull-to-refresh for the main dashboard cards only.
+  /// Does not force-load View Stock (that is lazy via [adminStockDetailsProvider]).
   Future<void> refreshAllData() async {
     await Future.wait([
       _safeRefresh(kpiProvider, 'KPIs'),

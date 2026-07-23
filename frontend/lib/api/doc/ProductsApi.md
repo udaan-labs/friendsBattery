@@ -19,7 +19,7 @@ Method | HTTP request | Description
 
 
 # **apiProductsInventoryProductsGet**
-> apiProductsInventoryProductsGet()
+> InventoryProductsResponse apiProductsInventoryProductsGet()
 
 Get products in the authenticated user's inventory
 
@@ -30,7 +30,8 @@ import 'package:friends_battery_api/api.dart';
 final api = FriendsBatteryApi().getProductsApi();
 
 try {
-    api.apiProductsInventoryProductsGet();
+    final response = api.apiProductsInventoryProductsGet();
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling ProductsApi->apiProductsInventoryProductsGet: $e\n');
 }
@@ -41,7 +42,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-void (empty response body)
+[**InventoryProductsResponse**](InventoryProductsResponse.md)
 
 ### Authorization
 
@@ -50,7 +51,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -95,7 +96,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiProductsPost**
-> apiProductsPost(apiProductsPostRequest)
+> CreateProductResponse apiProductsPost(createProductRequest)
 
 Create a new product
 
@@ -104,10 +105,11 @@ Create a new product
 import 'package:friends_battery_api/api.dart';
 
 final api = FriendsBatteryApi().getProductsApi();
-final ApiProductsPostRequest apiProductsPostRequest = ; // ApiProductsPostRequest | 
+final CreateProductRequest createProductRequest = ; // CreateProductRequest | 
 
 try {
-    api.apiProductsPost(apiProductsPostRequest);
+    final response = api.apiProductsPost(createProductRequest);
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling ProductsApi->apiProductsPost: $e\n');
 }
@@ -117,11 +119,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **apiProductsPostRequest** | [**ApiProductsPostRequest**](ApiProductsPostRequest.md)|  | 
+ **createProductRequest** | [**CreateProductRequest**](CreateProductRequest.md)|  | 
 
 ### Return type
 
-void (empty response body)
+[**CreateProductResponse**](CreateProductResponse.md)
 
 ### Authorization
 
@@ -130,12 +132,12 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiProductsProductModelsListPost**
-> apiProductsProductModelsListPost(apiProductsProductModelsListPostRequest)
+> ProductModelsResponse apiProductsProductModelsListPost(listProductModelsRequest)
 
 Return all models belonging to a product name
 
@@ -144,10 +146,11 @@ Return all models belonging to a product name
 import 'package:friends_battery_api/api.dart';
 
 final api = FriendsBatteryApi().getProductsApi();
-final ApiProductsProductModelsListPostRequest apiProductsProductModelsListPostRequest = ; // ApiProductsProductModelsListPostRequest | 
+final ListProductModelsRequest listProductModelsRequest = ; // ListProductModelsRequest | 
 
 try {
-    api.apiProductsProductModelsListPost(apiProductsProductModelsListPostRequest);
+    final response = api.apiProductsProductModelsListPost(listProductModelsRequest);
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling ProductsApi->apiProductsProductModelsListPost: $e\n');
 }
@@ -157,11 +160,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **apiProductsProductModelsListPostRequest** | [**ApiProductsProductModelsListPostRequest**](ApiProductsProductModelsListPostRequest.md)|  | 
+ **listProductModelsRequest** | [**ListProductModelsRequest**](ListProductModelsRequest.md)|  | 
 
 ### Return type
 
-void (empty response body)
+[**ProductModelsResponse**](ProductModelsResponse.md)
 
 ### Authorization
 
@@ -170,12 +173,12 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiProductsProductModelsPost**
-> apiProductsProductModelsPost(apiProductsProductModelsPostRequest)
+> ProductModelResponse apiProductsProductModelsPost(createProductModelRequest)
 
 Create a product model
 
@@ -184,10 +187,11 @@ Create a product model
 import 'package:friends_battery_api/api.dart';
 
 final api = FriendsBatteryApi().getProductsApi();
-final ApiProductsProductModelsPostRequest apiProductsProductModelsPostRequest = ; // ApiProductsProductModelsPostRequest | 
+final CreateProductModelRequest createProductModelRequest = ; // CreateProductModelRequest | 
 
 try {
-    api.apiProductsProductModelsPost(apiProductsProductModelsPostRequest);
+    final response = api.apiProductsProductModelsPost(createProductModelRequest);
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling ProductsApi->apiProductsProductModelsPost: $e\n');
 }
@@ -197,11 +201,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **apiProductsProductModelsPostRequest** | [**ApiProductsProductModelsPostRequest**](ApiProductsProductModelsPostRequest.md)|  | 
+ **createProductModelRequest** | [**CreateProductModelRequest**](CreateProductModelRequest.md)|  | 
 
 ### Return type
 
-void (empty response body)
+[**ProductModelResponse**](ProductModelResponse.md)
 
 ### Authorization
 
@@ -210,12 +214,12 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiProductsProductNamesGet**
-> apiProductsProductNamesGet()
+> ProductNamesResponse apiProductsProductNamesGet()
 
 Return all product names
 
@@ -226,7 +230,8 @@ import 'package:friends_battery_api/api.dart';
 final api = FriendsBatteryApi().getProductsApi();
 
 try {
-    api.apiProductsProductNamesGet();
+    final response = api.apiProductsProductNamesGet();
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling ProductsApi->apiProductsProductNamesGet: $e\n');
 }
@@ -237,7 +242,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-void (empty response body)
+[**ProductNamesResponse**](ProductNamesResponse.md)
 
 ### Authorization
 
@@ -246,12 +251,12 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiProductsProductNamesPost**
-> apiProductsProductNamesPost(apiProductsProductNamesPostRequest)
+> ProductNameResponse apiProductsProductNamesPost(createProductNameRequest)
 
 Create a product name
 
@@ -260,10 +265,11 @@ Create a product name
 import 'package:friends_battery_api/api.dart';
 
 final api = FriendsBatteryApi().getProductsApi();
-final ApiProductsProductNamesPostRequest apiProductsProductNamesPostRequest = ; // ApiProductsProductNamesPostRequest | 
+final CreateProductNameRequest createProductNameRequest = ; // CreateProductNameRequest | 
 
 try {
-    api.apiProductsProductNamesPost(apiProductsProductNamesPostRequest);
+    final response = api.apiProductsProductNamesPost(createProductNameRequest);
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling ProductsApi->apiProductsProductNamesPost: $e\n');
 }
@@ -273,11 +279,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **apiProductsProductNamesPostRequest** | [**ApiProductsProductNamesPostRequest**](ApiProductsProductNamesPostRequest.md)|  | 
+ **createProductNameRequest** | [**CreateProductNameRequest**](CreateProductNameRequest.md)|  | 
 
 ### Return type
 
-void (empty response body)
+[**ProductNameResponse**](ProductNameResponse.md)
 
 ### Authorization
 
@@ -286,7 +292,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

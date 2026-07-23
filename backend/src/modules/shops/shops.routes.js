@@ -19,9 +19,27 @@ const { validateRequest } = require('../../shared/middleware/validation.middlewa
  *   get:
  *     summary: Return all sellers
  *     tags: [Shops]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Sellers fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SellersListResponse'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Admin only
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get(
   '/sellers',
@@ -36,17 +54,31 @@ router.get(
  *   get:
  *     summary: Return one seller
  *     tags: [Shops]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: sellerId
  *         required: true
  *         schema:
  *           type: integer
+ *       - in: query
+ *         name: includeOutOfStock
+ *         schema:
+ *           type: boolean
  *     responses:
  *       200:
  *         description: Seller fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SellerDetailResponse'
  *       404:
  *         description: Seller not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get(
   '/sellers/:sellerId',

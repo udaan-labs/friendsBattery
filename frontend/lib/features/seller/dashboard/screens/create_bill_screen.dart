@@ -1,15 +1,14 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dio/dio.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
-import '../../../../core/network/api_client.dart';
-import '../providers/seller_dashboard_controller.dart';
+import '../../../../core/state/data_sync.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
 import '../../../../shared/widgets/scanner_screen.dart';
-import 'seller_shell_screen.dart';
+import '../../sales/providers/seller_sales_provider.dart';
 
 class CreateBillScreen extends ConsumerStatefulWidget {
   const CreateBillScreen({super.key});
@@ -87,37 +86,28 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
     });
 
     try {
-      final dio = ApiClient().dio;
-      final response = await dio.get(
-        '/api/inventory/scan-for-sale',
-        queryParameters: {'serial_number': serial.trim()},
-      );
-
-      final body = response.data;
-      if (body is Map<String, dynamic> && body['success'] == true) {
-        final data = body['data'] as Map<String, dynamic>;
-        setState(() {
-          _productId = data['productId'] as int?;
-          _selectedProductNameId = data['productNameId']?.toString();
-          _selectedProductModelId = data['productModelId']?.toString();
-          _selectedProductName = data['productName'] as String?;
-          _selectedProductModel = data['productModel'] as String?;
-          _fetchedSerialNumber = serial.trim();
-          _minPrice = data['minSellPrice'] as num?;
-        });
-        if (mounted) {
-          context.showSuccessSnackBar('Product details fetched successfully!');
-        }
-      } else {
-        if (mounted) {
-          context.showErrorSnackBar(body['message'] ?? 'Failed to fetch details');
-        }
+      final data = await ref
+          .read(sellerSalesRepositoryProvider)
+          .scanForSale(serial.trim());
+      setState(() {
+        _productId = data.productId;
+        _selectedProductNameId = data.productNameId?.toString();
+        _selectedProductModelId = data.productModelId?.toString();
+        _selectedProductName = data.productName;
+        _selectedProductModel = data.productModel;
+        _fetchedSerialNumber = serial.trim();
+        _minPrice = data.minSellPrice;
+      });
+      if (mounted) {
+        context.showSuccessSnackBar('Product details fetched successfully!');
       }
     } catch (e) {
       if (mounted) {
         if (e is DioException && e.response != null) {
           final errorData = e.response!.data;
-          context.showErrorSnackBar(errorData['message'] ?? 'Product not found in your available inventory');
+          context.showErrorSnackBar(
+            errorData['message'] ?? 'Product not found in your available inventory',
+          );
         } else {
           context.showErrorSnackBar('Error: $e');
         }
@@ -149,38 +139,37 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
     });
 
     try {
-      final dio = ApiClient().dio;
       final sellPrice = double.parse(_sellPriceController.text);
       final serialValue = _serialNumberController.text.trim();
 
-      await dio.post('/api/sales', data: {
-        'product_name_id': int.parse(_selectedProductNameId!),
-        'product_model_id': int.parse(_selectedProductModelId!),
-        'serial_number': serialValue,
-        'customer_name': _customerNameController.text,
-        'customer_number': _customerMobileController.text,
-        if (_vehicleNumberController.text.isNotEmpty) 'vehicle_number': _vehicleNumberController.text,
-        'sell_price': sellPrice,
-      });
+      await ref.read(sellerSalesRepositoryProvider).createSale(
+            productNameId: int.parse(_selectedProductNameId!),
+            productModelId: int.parse(_selectedProductModelId!),
+            serialNumber: serialValue,
+            customerName: _customerNameController.text,
+            customerNumber: _customerMobileController.text,
+            vehicleNumber: _vehicleNumberController.text.isNotEmpty
+                ? _vehicleNumberController.text
+                : null,
+            sellPrice: sellPrice,
+          );
 
       if (mounted) {
         context.showSuccessSnackBar('Sale recorded successfully');
-        // Refresh dashboard statistics, recent inventories & current stock
-        await ref.read(sellerDashboardControllerProvider).refreshAllData();
-        if (mounted) {
-          final saleData = {
-            'customer_name': _customerNameController.text,
-            'customer_number': _customerMobileController.text,
-            'product_name': '$_selectedProductName $_selectedProductModel',
-            'serial_number': serialValue,
-            'sell_price': sellPrice,
-            'invoice_number': 'INV-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}',
-            'sale_date': DateTime.now(),
-            'seller_name': 'Friends Battery Seller',
-          };
-          
-          context.go('/seller/sale-success', extra: saleData);
-        }
+        DataSync.afterSaleMutation(ref);
+        final saleData = {
+          'customer_name': _customerNameController.text,
+          'customer_number': _customerMobileController.text,
+          'product_name': '$_selectedProductName $_selectedProductModel',
+          'serial_number': serialValue,
+          'sell_price': sellPrice,
+          'invoice_number':
+              'INV-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}',
+          'sale_date': DateTime.now(),
+          'seller_name': 'Friends Battery Seller',
+        };
+
+        context.go('/seller/sale-success', extra: saleData);
       }
     } catch (e) {
       if (mounted && e is! DioException) {

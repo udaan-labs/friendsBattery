@@ -25,28 +25,21 @@ const { validateRequest } = require('../../shared/middleware/validation.middlewa
  *   post:
  *     summary: Create a new sale transaction
  *     tags: [Sales]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               product_id:
- *                 type: integer
- *               serial_number:
- *                 type: string
- *               customer_name:
- *                 type: string
- *               customer_number:
- *                 type: string
- *               vehicle_number:
- *                 type: string
- *               sell_price:
- *                 type: number
+ *             $ref: '#/components/schemas/CreateSaleRequest'
  *     responses:
  *       201:
  *         description: Sale transaction created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CreateSaleResponse'
  */
 router.post(
   '/',
@@ -77,6 +70,8 @@ router.get(
  *   get:
  *     summary: Return seller's own sales history with pagination, search, and date filtering
  *     tags: [Sales]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: page
@@ -106,9 +101,22 @@ router.get(
  *         schema:
  *           type: string
  *           format: date-time
+ *       - in: query
+ *         name: filter
+ *         schema:
+ *           type: string
+ *           enum: [today, date, all]
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Seller sales history fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SaleHistoryResponse'
  */
 router.get(
   '/history',
@@ -162,6 +170,10 @@ router.get(
  *     responses:
  *       200:
  *         description: Admin sales history fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AdminSaleHistoryResponse'
  *       403:
  *         description: Forbidden — Admin access required
  */
@@ -179,15 +191,21 @@ router.get(
  *   get:
  *     summary: Return a single sale's details by ID
  *     tags: [Sales]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: transactionId
  *         required: true
  *         schema:
- *           type: string
+ *           type: integer
  *     responses:
  *       200:
  *         description: Sale details fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SaleDetailResponse'
  *       404:
  *         description: Transaction not found
  */

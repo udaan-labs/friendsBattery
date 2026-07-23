@@ -13,13 +13,17 @@ part 'product_model.g.dart';
 /// Properties:
 /// * [id] 
 /// * [name] 
+/// * [productNameId] 
 @BuiltValue()
 abstract class ProductModel implements Built<ProductModel, ProductModelBuilder> {
   @BuiltValueField(wireName: r'id')
-  String? get id;
+  int? get id;
 
   @BuiltValueField(wireName: r'name')
   String? get name;
+
+  @BuiltValueField(wireName: r'product_name_id')
+  int? get productNameId;
 
   ProductModel._();
 
@@ -48,7 +52,7 @@ class _$ProductModelSerializer implements PrimitiveSerializer<ProductModel> {
       yield r'id';
       yield serializers.serialize(
         object.id,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType(int),
       );
     }
     if (object.name != null) {
@@ -56,6 +60,13 @@ class _$ProductModelSerializer implements PrimitiveSerializer<ProductModel> {
       yield serializers.serialize(
         object.name,
         specifiedType: const FullType(String),
+      );
+    }
+    if (object.productNameId != null) {
+      yield r'product_name_id';
+      yield serializers.serialize(
+        object.productNameId,
+        specifiedType: const FullType(int),
       );
     }
   }
@@ -84,8 +95,8 @@ class _$ProductModelSerializer implements PrimitiveSerializer<ProductModel> {
         case r'id':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(String),
-          ) as String;
+            specifiedType: const FullType(int),
+          ) as int;
           result.id = valueDes;
           break;
         case r'name':
@@ -94,6 +105,13 @@ class _$ProductModelSerializer implements PrimitiveSerializer<ProductModel> {
             specifiedType: const FullType(String),
           ) as String;
           result.name = valueDes;
+          break;
+        case r'product_name_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.productNameId = valueDes;
           break;
         default:
           unhandled.add(key);

@@ -19,7 +19,11 @@ const sellerRouter = express.Router();
  * @swagger
  * /api/shipments:
  *   post:
- *     summary: Create a new shipment (Admin only)
+ *     summary: Transfer stock serials from admin to seller (Admin only)
+ *     description: |
+ *       Moves existing AVAILABLE admin-owned product units to the seller immediately.
+ *       Creates shipment record (status ACCEPTED), inventory_transactions (TRANSFERRED),
+ *       and returns updated inventory counts.
  *     tags: [Shipments]
  *     security:
  *       - bearerAuth: []
@@ -28,44 +32,38 @@ const sellerRouter = express.Router();
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - sellerId
- *               - items
- *             properties:
- *               sellerId:
- *                 type: integer
- *               items:
- *                 type: array
- *                 items:
- *                   type: object
- *                   required:
- *                     - productCategoryId
- *                     - productNameId
- *                     - productModelId
- *                     - productId
- *                     - productItemId
- *                     - quantity
- *                   properties:
- *                     productCategoryId:
- *                       type: integer
- *                     productNameId:
- *                       type: integer
- *                     productModelId:
- *                       type: integer
- *                     productId:
- *                       type: integer
- *                     productItemId:
- *                       type: integer
- *                     quantity:
- *                       type: integer
+ *             $ref: '#/components/schemas/CreateShipmentRequest'
  *     responses:
  *       201:
- *         description: Shipment created successfully
+ *         description: Units transferred successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CreateShipmentResponse'
  *       400:
- *         description: Invalid input or product combo not found
+ *         description: Invalid serials, product, or payload
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       403:
  *         description: Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Seller not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       409:
+ *         description: Serial no longer available (race)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 shipmentsRouter.post(
   '/',

@@ -8,12 +8,22 @@ part of 'serializers.dart';
 
 Serializers _$serializers =
     (Serializers().toBuilder()
+          ..add(ActivityHistoryPagination.serializer)
+          ..add(ActivityHistoryResponse.serializer)
+          ..add(ActivityItem.serializer)
+          ..add(AdjustInventoryRequest.serializer)
+          ..add(AdjustInventoryResponse.serializer)
+          ..add(AdjustInventoryResult.serializer)
+          ..add(AdminDashboardStats.serializer)
+          ..add(AdminDashboardStatsResponse.serializer)
+          ..add(AdminSaleHistoryPage.serializer)
+          ..add(AdminSaleHistoryResponse.serializer)
+          ..add(AdminSaleRecord.serializer)
+          ..add(AdminSaleShipment.serializer)
           ..add(ApiAuthActivatePutRequest.serializer)
           ..add(ApiAuthLoginPostRequest.serializer)
           ..add(ApiAuthRegisterPostRequest.serializer)
           ..add(ApiDashboardStatsGet200Response.serializer)
-          ..add(ApiDashboardStatsGet200ResponseData.serializer)
-          ..add(ApiInventoryAdjustPatchRequest.serializer)
           ..add(ApiInventoryDetailsGet200Response.serializer)
           ..add(ApiInventoryDetailsGet200ResponseData.serializer)
           ..add(ApiInventoryDetailsGet200ResponseDataCategoriesInner.serializer)
@@ -26,21 +36,12 @@ Serializers _$serializers =
                 .serializer,
           )
           ..add(ApiInventoryDetailsGet200ResponseDataPagination.serializer)
-          ..add(ApiInventoryProductIdGet200Response.serializer)
-          ..add(ApiInventoryProductIdGet200ResponseData.serializer)
           ..add(ApiInventoryTransferPostRequest.serializer)
           ..add(ApiInventoryTransferPostRequestProductsInner.serializer)
-          ..add(ApiInventoryUpdateStockPostRequest.serializer)
           ..add(ApiProductsListPostRequest.serializer)
-          ..add(ApiProductsPostRequest.serializer)
-          ..add(ApiProductsProductModelsListPostRequest.serializer)
-          ..add(ApiProductsProductModelsPostRequest.serializer)
-          ..add(ApiProductsProductNamesPostRequest.serializer)
-          ..add(ApiSalesPostRequest.serializer)
           ..add(ApiSellerDashboardPendingShipmentsGet200Response.serializer)
           ..add(ApiSellerDashboardPendingShipmentsGet200ResponseData.serializer)
           ..add(ApiSellerDashboardStatsGet200Response.serializer)
-          ..add(ApiSellerDashboardStatsGet200ResponseData.serializer)
           ..add(ApiSellerShipmentsGet200Response.serializer)
           ..add(ApiSellerShipmentsGet200ResponseDataInner.serializer)
           ..add(ApiSellerShipmentsGet200ResponseDataInnerItemsInner.serializer)
@@ -51,30 +52,101 @@ Serializers _$serializers =
           ..add(ApiShipmentsIdGet200ResponseData.serializer)
           ..add(ApiShipmentsIdGet200ResponseDataItemsInner.serializer)
           ..add(ApiShipmentsIdGet200ResponseDataSeller.serializer)
-          ..add(ApiShipmentsPostRequest.serializer)
-          ..add(ApiShipmentsPostRequestItemsInner.serializer)
           ..add(ApiTransfersPostRequest.serializer)
           ..add(ApiTransfersPostRequestItemsInner.serializer)
+          ..add(AvailableSerialsResponse.serializer)
           ..add(Category.serializer)
+          ..add(CreateProductModelRequest.serializer)
+          ..add(CreateProductNameRequest.serializer)
+          ..add(CreateProductRequest.serializer)
+          ..add(CreateProductResponse.serializer)
+          ..add(CreateReturnRequest.serializer)
+          ..add(CreateReturnResponse.serializer)
+          ..add(CreateReturnResult.serializer)
+          ..add(CreateSaleRequest.serializer)
+          ..add(CreateSaleResponse.serializer)
+          ..add(CreateSaleResult.serializer)
+          ..add(CreateShipmentItem.serializer)
+          ..add(CreateShipmentRequest.serializer)
+          ..add(CreateShipmentResponse.serializer)
+          ..add(CreateShipmentResult.serializer)
+          ..add(CreateShipmentResultStatusEnum.serializer)
           ..add(Customer.serializer)
           ..add(Error.serializer)
+          ..add(HealthStatus.serializer)
+          ..add(InventoryItemDetail.serializer)
+          ..add(InventoryItemDetailResponse.serializer)
+          ..add(InventoryListItem.serializer)
+          ..add(InventoryListPayload.serializer)
+          ..add(InventoryListResponse.serializer)
+          ..add(InventoryPagination.serializer)
+          ..add(InventoryProductModelOption.serializer)
+          ..add(InventoryProductNameGroup.serializer)
+          ..add(InventoryProductsResponse.serializer)
           ..add(InventoryTransaction.serializer)
           ..add(InventoryTransactionActionEnum.serializer)
+          ..add(ListProductModelsRequest.serializer)
           ..add(Product.serializer)
+          ..add(ProductCreated.serializer)
           ..add(ProductModel.serializer)
+          ..add(ProductModelResponse.serializer)
+          ..add(ProductModelsResponse.serializer)
           ..add(ProductName.serializer)
+          ..add(ProductNameResponse.serializer)
+          ..add(ProductNamesResponse.serializer)
+          ..add(ProductStockDetails.serializer)
+          ..add(ProductStockDetailsResponse.serializer)
           ..add(ProductUnit.serializer)
           ..add(ProductUnitStatusEnum.serializer)
+          ..add(RecentActivityResponse.serializer)
           ..add(ReturnProduct.serializer)
+          ..add(SaleCustomer.serializer)
+          ..add(SaleDetailResponse.serializer)
+          ..add(SaleHistoryPage.serializer)
+          ..add(SaleHistoryResponse.serializer)
+          ..add(SaleProduct.serializer)
+          ..add(SaleRecord.serializer)
+          ..add(SaleSeller.serializer)
           ..add(SalesTransaction.serializer)
+          ..add(ScanForSaleResponse.serializer)
+          ..add(ScanForSaleResult.serializer)
+          ..add(SellerDashboardStats.serializer)
+          ..add(SellerDashboardStatsResponse.serializer)
+          ..add(SellerDetail.serializer)
+          ..add(SellerDetailResponse.serializer)
+          ..add(SellerRecentSale.serializer)
+          ..add(SellerShopSummary.serializer)
+          ..add(SellerStatistics.serializer)
+          ..add(SellersListResponse.serializer)
           ..add(Shipment.serializer)
           ..add(ShipmentItem.serializer)
           ..add(ShipmentStatusEnum.serializer)
           ..add(StockRequest.serializer)
           ..add(StockRequestItem.serializer)
           ..add(StockRequestStatusEnum.serializer)
+          ..add(TransferInventoryCount.serializer)
+          ..add(UpdateStockRequest.serializer)
+          ..add(UpdateStockResponse.serializer)
+          ..add(UpdateStockResult.serializer)
           ..add(User.serializer)
           ..add(UserRoleEnum.serializer)
+          ..add(VerifyProductInfo.serializer)
+          ..add(VerifyProductPayload.serializer)
+          ..add(VerifyProductRequest.serializer)
+          ..add(VerifyProductResponse.serializer)
+          ..add(VerifyProductUnit.serializer)
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(ActivityItem)]),
+            () => ListBuilder<ActivityItem>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(ActivityItem)]),
+            () => ListBuilder<ActivityItem>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(AdminSaleRecord)]),
+            () => ListBuilder<AdminSaleRecord>(),
+          )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(
@@ -145,19 +217,65 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
-              const FullType(ApiShipmentsPostRequestItemsInner),
-            ]),
-            () => ListBuilder<ApiShipmentsPostRequestItemsInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
               const FullType(ApiTransfersPostRequestItemsInner),
             ]),
             () => ListBuilder<ApiTransfersPostRequestItemsInner>(),
           )
           ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CreateShipmentItem),
+            ]),
+            () => ListBuilder<CreateShipmentItem>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(InventoryListItem),
+            ]),
+            () => ListBuilder<InventoryListItem>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(InventoryListItem),
+            ]),
+            () => ListBuilder<InventoryListItem>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(InventoryProductModelOption),
+            ]),
+            () => ListBuilder<InventoryProductModelOption>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(InventoryProductNameGroup),
+            ]),
+            () => ListBuilder<InventoryProductNameGroup>(),
+          )
+          ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(JsonObject)]),
             () => ListBuilder<JsonObject>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(ProductModel)]),
+            () => ListBuilder<ProductModel>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(ProductName)]),
+            () => ListBuilder<ProductName>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(SaleRecord)]),
+            () => ListBuilder<SaleRecord>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(SellerRecentSale)]),
+            () => ListBuilder<SellerRecentSale>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(SellerShopSummary),
+            ]),
+            () => ListBuilder<SellerShopSummary>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(ShipmentItem)]),
@@ -166,6 +284,24 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(StockRequestItem)]),
             () => ListBuilder<StockRequestItem>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(TransferInventoryCount),
+            ]),
+            () => ListBuilder<TransferInventoryCount>(),
           ))
         .build();
 

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/network/api_client.dart';
 import '../../../seller/dashboard/screens/seller_shell_screen.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 import '../providers/inventory_provider.dart';

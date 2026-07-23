@@ -21,13 +21,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   Future<void> _initAuth() async {
     final authNotifier = ref.read(authProvider.notifier);
-    
-    // Check session
+    final started = DateTime.now();
+
+    // Restore session + warm in-memory auth tokens before first API call.
     await authNotifier.initSession();
-    
-    // Optional delay to show splash logo nicely
-    await Future.delayed(const Duration(seconds: 2));
-    
+
+    // Keep splash visible only briefly for branding (was a hard-coded 2s delay).
+    const minSplash = Duration(milliseconds: 400);
+    final elapsed = DateTime.now().difference(started);
+    if (elapsed < minSplash) {
+      await Future.delayed(minSplash - elapsed);
+    }
+
     if (mounted) {
       final authState = ref.read(authProvider);
       if (!authState.isAuthenticated) {

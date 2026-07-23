@@ -25,24 +25,39 @@ const { validateRequest } = require('../../shared/middleware/validation.middlewa
  *   post:
  *     summary: Create a product name
  *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
+ *             $ref: '#/components/schemas/CreateProductNameRequest'
  *     responses:
  *       201:
  *         description: Product name created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProductNameResponse'
+ *       409:
+ *         description: Product name already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *   get:
  *     summary: Return all product names
  *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Product names fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProductNamesResponse'
  */
 productRouter.post(
   '/product-names',
@@ -69,10 +84,22 @@ productRouter.get(
  *     responses:
  *       200:
  *         description: Inventory products fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InventoryProductsResponse'
  *       401:
  *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       500:
  *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 productRouter.get(
   '/inventory-products',
@@ -86,20 +113,27 @@ productRouter.get(
  *   post:
  *     summary: Create a product model
  *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               product_name_id:
- *                 type: integer
- *               name:
- *                 type: string
+ *             $ref: '#/components/schemas/CreateProductModelRequest'
  *     responses:
  *       201:
  *         description: Product model created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProductModelResponse'
+ *       409:
+ *         description: Product model already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 productRouter.post(
   '/product-models',
@@ -115,18 +149,27 @@ productRouter.post(
  *   post:
  *     summary: Return all models belonging to a product name
  *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               product_name_id:
- *                 type: integer
+ *             $ref: '#/components/schemas/ListProductModelsRequest'
  *     responses:
  *       200:
  *         description: Product models fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProductModelsResponse'
+ *       404:
+ *         description: Product name not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 productRouter.post(
   '/product-models/list',
@@ -141,30 +184,21 @@ productRouter.post(
  *   post:
  *     summary: Create a new product
  *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               product_name_id:
- *                 type: integer
- *               product_model_id:
- *                 type: integer
- *               min_price:
- *                 type: number
- *               on_sale:
- *                 type: boolean
- *               offer_price:
- *                 type: number
- *               min_unit_count_admin:
- *                 type: integer
- *               min_unit_count_seller:
- *                 type: integer
+ *             $ref: '#/components/schemas/CreateProductRequest'
  *     responses:
  *       201:
  *         description: Product created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CreateProductResponse'
  */
 productRouter.post(
   '/',

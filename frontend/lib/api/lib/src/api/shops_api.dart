@@ -9,6 +9,9 @@ import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
 import 'package:friends_battery_api/src/api_util.dart';
+import 'package:friends_battery_api/src/model/error.dart';
+import 'package:friends_battery_api/src/model/seller_detail_response.dart';
+import 'package:friends_battery_api/src/model/sellers_list_response.dart';
 
 class ShopsApi {
 
@@ -29,9 +32,9 @@ class ShopsApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future]
+  /// Returns a [Future] containing a [Response] with a [SellersListResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<void>> apiShopsSellersGet({ 
+  Future<Response<SellersListResponse>> apiShopsSellersGet({ 
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -66,7 +69,35 @@ class ShopsApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    return _response;
+    SellersListResponse? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(SellersListResponse),
+      ) as SellersListResponse;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<SellersListResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
   }
 
   /// Return one seller
@@ -74,6 +105,7 @@ class ShopsApi {
   ///
   /// Parameters:
   /// * [sellerId] 
+  /// * [includeOutOfStock] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -81,10 +113,11 @@ class ShopsApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future]
+  /// Returns a [Future] containing a [Response] with a [SellerDetailResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<void>> apiShopsSellersSellerIdGet({ 
+  Future<Response<SellerDetailResponse>> apiShopsSellersSellerIdGet({ 
     required int sellerId,
+    bool? includeOutOfStock,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -111,15 +144,48 @@ class ShopsApi {
       validateStatus: validateStatus,
     );
 
+    final _queryParameters = <String, dynamic>{
+      if (includeOutOfStock != null) r'includeOutOfStock': encodeQueryParameter(_serializers, includeOutOfStock, const FullType(bool)),
+    };
+
     final _response = await _dio.request<Object>(
       _path,
       options: _options,
+      queryParameters: _queryParameters,
       cancelToken: cancelToken,
       onSendProgress: onSendProgress,
       onReceiveProgress: onReceiveProgress,
     );
 
-    return _response;
+    SellerDetailResponse? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(SellerDetailResponse),
+      ) as SellerDetailResponse;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<SellerDetailResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
   }
 
 }

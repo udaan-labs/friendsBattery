@@ -1,10 +1,11 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dio/dio.dart';
 import '../../../../../shared/widgets/responsive_helper.dart';
-import '../../../../../core/network/api_client.dart';
+import '../../../../../core/state/data_sync.dart';
 import '../../../../../shared/widgets/snackbar_helper.dart';
+import '../../../../shared/products/providers/product_catalog_providers.dart';
 
 class AddProductModelForm extends ConsumerStatefulWidget {
   const AddProductModelForm({super.key});
@@ -17,46 +18,13 @@ class _AddProductModelFormState extends ConsumerState<AddProductModelForm> {
   final _formKey = GlobalKey<FormState>();
   final _productModelController = TextEditingController();
 
-  bool _isLoadingNames = false;
   bool _isSubmitting = false;
-
-  List<Map<String, String>> _productNames = [];
   String? _selectedProductNameId;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _loadProductNames();
-    });
-  }
 
   @override
   void dispose() {
     _productModelController.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadProductNames() async {
-    setState(() => _isLoadingNames = true);
-    try {
-      final dio = ApiClient().dio;
-      final response = await dio.get('/api/products/product-names');
-      final data = response.data;
-      if (data is Map<String, dynamic> && data['data'] is List) {
-        final list = data['data'] as List;
-        setState(() {
-          _productNames = list.map((item) => {
-            'id': item['id'].toString(),
-            'name': item['name'].toString(),
-          }).toList();
-        });
-      }
-    } catch (e) {
-      // Error handled by interceptor
-    } finally {
-      if (mounted) setState(() => _isLoadingNames = false);
-    }
   }
 
   Future<void> _submit() async {
@@ -69,14 +37,14 @@ class _AddProductModelFormState extends ConsumerState<AddProductModelForm> {
     setState(() => _isSubmitting = true);
 
     try {
-      final dio = ApiClient().dio;
-      await dio.post('/api/products/product-models', data: {
-        'product_name_id': int.parse(_selectedProductNameId!),
-        'name': _productModelController.text.trim(),
-      });
+      await ref.read(productCatalogRepositoryProvider).createProductModel(
+            productNameId: int.parse(_selectedProductNameId!),
+            name: _productModelController.text.trim(),
+          );
 
       if (mounted) {
         context.showSuccessSnackBar('Product Model created successfully');
+        DataSync.afterProductMutation(ref);
         context.pop();
       }
     } on DioException catch (e) {
@@ -91,6 +59,8 @@ class _AddProductModelFormState extends ConsumerState<AddProductModelForm> {
 
   @override
   Widget build(BuildContext context) {
+    final namesAsync = ref.watch(productNamesProvider);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FB),
       appBar: AppBar(
@@ -120,45 +90,51 @@ class _AddProductModelFormState extends ConsumerState<AddProductModelForm> {
                     children: [
                       const Text('Product Name', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E))),
                       const SizedBox(height: 8),
-                      _isLoadingNames
-                          ? const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 16.0),
-                              child: Center(
-                                child: SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                      namesAsync.when(
+                        loading: () => const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16.0),
+                          child: Center(
+                            child: SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                        ),
+                        error: (_, __) => TextButton(
+                          onPressed: () => ref.invalidate(productNamesProvider),
+                          child: const Text('Failed to load product names. Retry'),
+                        ),
+                        data: (productNames) => productNames.isEmpty
+                            ? TextFormField(
+                                enabled: false,
+                                decoration: InputDecoration(
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  hintText: 'No products available. Please create one first.',
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  filled: true,
+                                  fillColor: Colors.grey.shade100,
                                 ),
+                              )
+                            : DropdownButtonFormField<String>(
+                                isExpanded: true,
+                                value: _selectedProductNameId,
+                                decoration: InputDecoration(
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                ),
+                                hint: const Text('Select Existing Product Name'),
+                                items: productNames.map((n) {
+                                  return DropdownMenuItem<String>(
+                                    value: n.id,
+                                    child: Text(n.name),
+                                  );
+                                }).toList(),
+                                onChanged: (id) => setState(() => _selectedProductNameId = id),
                               ),
-                            )
-                          : (_productNames.isEmpty
-                              ? TextFormField(
-                                  enabled: false,
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                    hintText: 'No products available. Please create one first.',
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                    filled: true,
-                                    fillColor: Colors.grey.shade100,
-                                  ),
-                                )
-                              : DropdownButtonFormField<String>(
-                                  isExpanded: true,
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                    filled: true,
-                                    fillColor: Colors.white,
-                                  ),
-                                  hint: const Text('Select Existing Product Name'),
-                                  items: _productNames.map((n) {
-                                    return DropdownMenuItem<String>(
-                                      value: n['id']!,
-                                      child: Text(n['name']!),
-                                    );
-                                  }).toList(),
-                                  onChanged: (id) => setState(() => _selectedProductNameId = id),
-                                )),
+                      ),
                       const SizedBox(height: 16),
 
                       _buildTextField('Product Model Name', _productModelController),

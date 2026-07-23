@@ -1,45 +1,69 @@
-import 'package:dio/dio.dart';
+import 'package:friends_battery_api/friends_battery_api.dart';
 import '../models/dashboard_stats.dart';
 
+/// Admin dashboard HTTP via generated OpenAPI client only (no raw Dio).
 class DashboardApiService {
-  final Dio dio;
+  final FriendsBatteryApi _api;
 
-  DashboardApiService({required this.dio});
+  DashboardApiService({required FriendsBatteryApi api}) : _api = api;
+
+  DashboardApi get _dashboard => _api.getDashboardApi();
 
   Future<DashboardStats> getDashboardStats() async {
     try {
-      final response = await dio.get('/api/dashboard/stats');
-      final body = response.data;
-
-      if (body is Map && body['success'] == true && body['data'] is Map) {
-        final d = body['data'] as Map<String, dynamic>;
-        return DashboardStats(
-          totalStock: (d['totalStock'] ?? 0) as int,
-          todaySales: (d['todaySales'] ?? 0) as int,
-          pendingRequests: (d['pendingRequests'] ?? 0) as int,
-          totalSellers: (d['totalSellers'] ?? 0) as int,
-          pendingShipments: (d['pendingShipments'] ?? 0) as int,
-        );
+      final response = await _dashboard.apiDashboardStatsGet();
+      final d = response.data?.data;
+      if (d == null) {
+        throw Exception(response.data?.message ?? 'Failed to load dashboard stats');
       }
-
-      throw Exception(body['message'] ?? 'Failed to load dashboard stats');
+      return DashboardStats(
+        totalStock: d.totalStock ?? 0,
+        todaySales: d.todaySales ?? 0,
+        pendingRequests: d.pendingRequests ?? 0,
+        totalSellers: d.totalSellers ?? 0,
+        pendingShipments: d.pendingShipments ?? 0,
+      );
     } catch (e) {
       throw Exception('Failed to load dashboard stats: $e');
     }
   }
-  Future<Map<String, dynamic>> getActivityHistory(int page, int limit) async {
-    try {
-      final response = await dio.get('/api/dashboard/activity-history', queryParameters: {
-        'page': page,
-        'limit': limit,
-      });
-      final body = response.data;
-      if (body is Map && body['success'] == true) {
-        return body as Map<String, dynamic>;
-      }
-      throw Exception(body['message'] ?? 'Failed to load activity history');
-    } catch (e) {
-      throw Exception('Failed to load activity history: $e');
-    }
+
+  Future<List<Map<String, dynamic>>> getRecentActivity() async {
+    final response = await _dashboard.apiDashboardRecentActivityGet();
+    final rows = response.data?.data?.toList() ?? [];
+    return rows
+        .map(
+          (item) => {
+            'title': item.title ?? '',
+            'subtitle': item.subtitle ?? '',
+            'time': item.time ?? '',
+            'icon': item.icon ?? 'notifications',
+          },
+        )
+        .toList();
+  }
+
+  Future<({List<Map<String, dynamic>> items, bool hasNextPage})> getActivityHistory(
+    int page,
+    int limit,
+  ) async {
+    final response = await _dashboard.apiDashboardActivityHistoryGet(
+      page: page,
+      limit: limit,
+    );
+    final body = response.data;
+    final rows = body?.data?.toList() ?? [];
+    final items = rows
+        .map(
+          (item) => {
+            'title': item.title ?? '',
+            'subtitle': item.subtitle ?? '',
+            'time': item.time ?? '',
+            'icon': item.icon ?? 'notifications',
+          },
+        )
+        .toList();
+    final hasNextPage = body?.pagination?.hasNextPage ?? false;
+    return (items: items, hasNextPage: hasNextPage);
   }
 }

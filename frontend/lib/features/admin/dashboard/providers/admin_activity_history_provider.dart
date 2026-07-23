@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/network/api_client_provider.dart';
 import '../services/dashboard_api_service.dart';
+import 'dashboard_providers.dart';
 
 class ActivityHistoryState {
   final List<dynamic> items;
@@ -47,16 +47,12 @@ class AdminActivityHistoryNotifier extends StateNotifier<ActivityHistoryState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final response = await _apiService.getActivityHistory(state.page, 20);
-      final newItems = response['data'] as List<dynamic>? ?? [];
-      final pagination = response['pagination'] as Map<String, dynamic>?;
-
-      final hasNextPage = pagination?['hasNextPage'] ?? false;
+      final result = await _apiService.getActivityHistory(state.page, 20);
 
       state = state.copyWith(
-        items: [...state.items, ...newItems],
+        items: [...state.items, ...result.items],
         page: state.page + 1,
-        hasNextPage: hasNextPage,
+        hasNextPage: result.hasNextPage,
         isLoading: false,
       );
     } catch (e) {
@@ -70,8 +66,7 @@ class AdminActivityHistoryNotifier extends StateNotifier<ActivityHistoryState> {
   }
 }
 
-final adminActivityHistoryProvider = StateNotifierProvider.autoDispose<AdminActivityHistoryNotifier, ActivityHistoryState>((ref) {
-  final dio = ref.watch(dioProvider);
-  final apiService = DashboardApiService(dio: dio);
-  return AdminActivityHistoryNotifier(apiService);
+final adminActivityHistoryProvider =
+    StateNotifierProvider.autoDispose<AdminActivityHistoryNotifier, ActivityHistoryState>((ref) {
+  return AdminActivityHistoryNotifier(ref.watch(dashboardApiServiceProvider));
 });

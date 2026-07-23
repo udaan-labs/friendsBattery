@@ -16,7 +16,7 @@ part 'product_name.g.dart';
 @BuiltValue()
 abstract class ProductName implements Built<ProductName, ProductNameBuilder> {
   @BuiltValueField(wireName: r'id')
-  String? get id;
+  int? get id;
 
   @BuiltValueField(wireName: r'name')
   String? get name;
@@ -48,7 +48,7 @@ class _$ProductNameSerializer implements PrimitiveSerializer<ProductName> {
       yield r'id';
       yield serializers.serialize(
         object.id,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType(int),
       );
     }
     if (object.name != null) {
@@ -84,8 +84,8 @@ class _$ProductNameSerializer implements PrimitiveSerializer<ProductName> {
         case r'id':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(String),
-          ) as String;
+            specifiedType: const FullType(int),
+          ) as int;
           result.id = valueDes;
           break;
         case r'name':

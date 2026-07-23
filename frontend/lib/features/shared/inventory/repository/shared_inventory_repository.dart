@@ -1,4 +1,4 @@
-import 'package:dio/dio.dart';
+import 'package:friends_battery_api/friends_battery_api.dart';
 
 class SharedInventoryItemModel {
   final int productId;
@@ -26,23 +26,6 @@ class SharedInventoryItemModel {
     this.onSale = false,
     this.isLowStock = false,
   });
-
-  factory SharedInventoryItemModel.fromJson(Map<String, dynamic> json) {
-    final brandName = json['brand']?.toString() ?? 'N/A';
-    return SharedInventoryItemModel(
-      productId: (json['product_id'] as num?)?.toInt() ?? 0,
-      productNameId: (json['product_name_id'] as num?)?.toInt() ?? 0,
-      productModelId: (json['product_model_id'] as num?)?.toInt() ?? 0,
-      productModel: json['model']?.toString() ?? 'N/A',
-      productName: brandName,
-      quantity: (json['quantity'] as num?)?.toInt() ?? 0,
-      minPrice: (json['min_price'] as num?)?.toDouble() ?? 0.0,
-      minUnitCountAdmin: (json['min_unit_count_admin'] as num?)?.toInt() ?? 0,
-      minUnitCountSeller: (json['min_unit_count_seller'] as num?)?.toInt() ?? 0,
-      onSale: json['on_sale'] == true || json['on_sale'] == 1,
-      isLowStock: json['is_low_stock'] == true,
-    );
-  }
 }
 
 class InventoryProductDetailModel {
@@ -63,21 +46,6 @@ class InventoryProductDetailModel {
     required this.isLowStock,
     required this.serialNumbers,
   });
-
-  factory InventoryProductDetailModel.fromJson(Map<String, dynamic> json) {
-    final brandName = json['brand']?.toString() ?? 'N/A';
-    final serials = json['serial_numbers'] as List<dynamic>?;
-    
-    return InventoryProductDetailModel(
-      productId: (json['product_id'] as num?)?.toInt() ?? 0,
-      productModel: json['model']?.toString() ?? 'N/A',
-      productName: brandName,
-      quantity: (json['quantity'] as num?)?.toInt() ?? 0,
-      minPrice: (json['min_price'] as num?)?.toDouble() ?? 0.0,
-      isLowStock: json['is_low_stock'] == true,
-      serialNumbers: serials?.map((e) => e.toString()).toList() ?? [],
-    );
-  }
 }
 
 class PaginatedInventoryResponse {
@@ -87,10 +55,13 @@ class PaginatedInventoryResponse {
   PaginatedInventoryResponse({required this.items, required this.total});
 }
 
+/// Shared inventory list + detail via generated OpenAPI client only (no raw Dio).
 class SharedInventoryRepository {
-  final Dio dio;
+  final FriendsBatteryApi _api;
 
-  SharedInventoryRepository({required this.dio});
+  SharedInventoryRepository({required FriendsBatteryApi api}) : _api = api;
+
+  InventoryApi get _inventory => _api.getInventoryApi();
 
   Future<PaginatedInventoryResponse> getInventory({
     String? search,
@@ -98,40 +69,38 @@ class SharedInventoryRepository {
     int limit = 10,
   }) async {
     try {
-      // Using Dio directly because the generated API returns Response<void> and we need raw data
-      final response = await dio.get(
-        '/api/inventory',
-        queryParameters: {
-          if (search != null && search.isNotEmpty) 'search': search,
-          'page': page,
-          'limit': limit,
-        },
+      final response = await _inventory.apiInventoryGet(
+        search: (search != null && search.isNotEmpty) ? search : null,
+        page: page,
+        limit: limit,
       );
 
-      final data = response.data;
-      
-      if (data is Map<String, dynamic>) {
-        final innerData = data['data'];
-        
-        if (innerData is Map<String, dynamic>) {
-          final itemsData = innerData['data'] as List<dynamic>? ?? [];
-          final pagination = innerData['pagination'];
-          final total = (pagination is Map<String, dynamic> ? pagination['total'] as int? : null) ?? itemsData.length;
-          
-          final items = itemsData.map((e) => SharedInventoryItemModel.fromJson(e as Map<String, dynamic>)).toList();
-          return PaginatedInventoryResponse(items: items, total: total);
-        } else if (innerData is List<dynamic>) {
-          final itemsData = innerData;
-          final total = itemsData.length;
-          final items = itemsData.map((e) => SharedInventoryItemModel.fromJson(e as Map<String, dynamic>)).toList();
-          return PaginatedInventoryResponse(items: items, total: total);
-        }
-      } else if (data is List) {
-        final items = data.map((e) => SharedInventoryItemModel.fromJson(e as Map<String, dynamic>)).toList();
-        return PaginatedInventoryResponse(items: items, total: items.length);
+      final payload = response.data?.data;
+      if (payload == null) {
+        return PaginatedInventoryResponse(items: [], total: 0);
       }
 
-      return PaginatedInventoryResponse(items: [], total: 0);
+      final rows = payload.data?.toList() ?? [];
+      final items = rows
+          .map(
+            (row) => SharedInventoryItemModel(
+              productId: row.productId ?? 0,
+              productNameId: row.productNameId ?? 0,
+              productModelId: row.productModelId ?? 0,
+              productModel: row.model ?? 'N/A',
+              productName: row.brand ?? 'N/A',
+              quantity: row.quantity ?? 0,
+              minPrice: (row.minPrice ?? 0).toDouble(),
+              minUnitCountAdmin: row.minUnitCountAdmin ?? 0,
+              minUnitCountSeller: row.minUnitCountSeller ?? 0,
+              onSale: row.onSale ?? false,
+              isLowStock: row.isLowStock ?? false,
+            ),
+          )
+          .toList();
+
+      final total = payload.pagination?.total ?? items.length;
+      return PaginatedInventoryResponse(items: items, total: total);
     } catch (e) {
       throw Exception('Failed to fetch inventory: $e');
     }
@@ -139,14 +108,63 @@ class SharedInventoryRepository {
 
   Future<InventoryProductDetailModel> getProductDetail(int productId) async {
     try {
-      final response = await dio.get('/api/inventory/$productId');
-      final data = response.data;
-      if (data is Map<String, dynamic> && data['data'] != null) {
-        return InventoryProductDetailModel.fromJson(data['data']);
+      final response = await _inventory.apiInventoryProductIdGet(
+        productId: productId,
+      );
+      final d = response.data?.data;
+      if (d == null) {
+        throw Exception('Invalid response format');
       }
-      throw Exception('Invalid response format');
+
+      return InventoryProductDetailModel(
+        productId: d.productId ?? 0,
+        productModel: d.model ?? 'N/A',
+        productName: d.brand ?? 'N/A',
+        quantity: d.quantity ?? 0,
+        minPrice: (d.minPrice ?? 0).toDouble(),
+        isLowStock: d.isLowStock ?? false,
+        serialNumbers: d.serialNumbers?.toList() ?? const [],
+      );
     } catch (e) {
       throw Exception('Failed to fetch product detail: $e');
     }
+  }
+
+  /// Admin add stock / update price & sale flags.
+  Future<void> updateStock({
+    required int productNameId,
+    required int productModelId,
+    int? quantity,
+    num? minSellPrice,
+    int? minUnitCountAdmin,
+    int? minUnitCountSeller,
+    bool? onSale,
+  }) async {
+    final body = UpdateStockRequest((b) {
+      b.productNameId = productNameId;
+      b.productModelId = productModelId;
+      if (quantity != null) b.quantity = quantity;
+      if (minSellPrice != null) b.minSellPrice = minSellPrice;
+      if (minUnitCountAdmin != null) b.minUnitCountAdmin = minUnitCountAdmin;
+      if (minUnitCountSeller != null) b.minUnitCountSeller = minUnitCountSeller;
+      if (onSale != null) b.onSale = onSale;
+    });
+
+    await _inventory.apiInventoryUpdateStockPost(updateStockRequest: body);
+  }
+
+  /// Admin adjust stock (negative removes units for [userId] owner).
+  Future<void> adjustInventory({
+    required int productId,
+    required int userId,
+    required int adjustmentQuantity,
+  }) async {
+    final body = AdjustInventoryRequest((b) {
+      b.productId = productId;
+      b.userId = userId;
+      b.adjustmentQuantity = adjustmentQuantity;
+    });
+
+    await _inventory.apiInventoryAdjustPatch(adjustInventoryRequest: body);
   }
 }

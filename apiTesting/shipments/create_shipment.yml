@@ -7,10 +7,12 @@ http:
   method: POST
   url: "{{baseurl}}/shipments"
   headers:
+    - name: Authorization
+      value: "Bearer {{authKey}}"
     - name: auth-id
       value: "{{authId}}"
-    - name: auth-key
-      value: "{{authKey}}"
+    - name: Content-Type
+      value: application/json
   body:
     type: json
     data: |-
@@ -18,16 +20,10 @@ http:
         "sellerId": 5,
         "items": [
           {
-            "productCategoryId": 1,
-            "productNameId": 10,
-            "productModelId": 25,
-            "quantity": 20
-          },
-          {
-            "productCategoryId": 1,
-            "productNameId": 11,
-            "productModelId": 30,
-            "quantity": 15
+            "product_name_id": 1,
+            "product_model_id": 1,
+            "serial_numbers": ["REPLACE-WITH-AVAILABLE-ADMIN-SERIAL"],
+            "price_per_piece": 100
           }
         ]
       }

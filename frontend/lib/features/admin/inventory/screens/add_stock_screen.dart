@@ -1,14 +1,13 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dio/dio.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
-import '../../../../core/network/api_client.dart';
-import '../../../../shared/widgets/scanner_screen.dart';
-import '../providers/inventory_provider.dart';
-import '../../dashboard/providers/dashboard_controller.dart';
+import '../../../../core/state/data_sync.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
+import '../../../shared/inventory/providers/inventory_provider.dart';
+import '../../../shared/products/providers/product_catalog_providers.dart';
 
 class AddStockScreen extends ConsumerStatefulWidget {
   const AddStockScreen({super.key});
@@ -22,115 +21,16 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
   final _quantityController = TextEditingController();
   final _minPriceController = TextEditingController();
 
-  bool _isLoadingNames = false;
-  bool _isLoadingModels = false;
-  bool _isLoadingDetails = false;
   bool _isSubmitting = false;
-
-  List<Map<String, String>> _productNames = [];
-  List<Map<String, String>> _productModels = [];
 
   String? _selectedProductNameId;
   String? _selectedProductModelId;
-
-  int? _currentStock;
-  num? _currentMinPrice;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _loadProductNames();
-    });
-  }
 
   @override
   void dispose() {
     _quantityController.dispose();
     _minPriceController.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadProductNames() async {
-    setState(() => _isLoadingNames = true);
-    try {
-      final dio = ApiClient().dio;
-      final response = await dio.get('/api/products/product-names');
-      final data = response.data;
-      if (data is Map<String, dynamic> && data['data'] is List) {
-        final list = data['data'] as List;
-        setState(() {
-          _productNames = list.map((item) => {
-            'id': item['id'].toString(),
-            'name': item['name'].toString(),
-          }).toList();
-        });
-      }
-    } catch (e) {
-      // Handled automatically by ApiInterceptor
-    } finally {
-      if (mounted) setState(() => _isLoadingNames = false);
-    }
-  }
-
-  Future<void> _loadProductModels(String productNameId) async {
-    setState(() {
-      _isLoadingModels = true;
-      _productModels = [];
-      _selectedProductModelId = null;
-      _currentStock = null;
-      _currentMinPrice = null;
-    });
-
-    try {
-      final dio = ApiClient().dio;
-      final response = await dio.post('/api/products/product-models/list', data: {
-        'product_name_id': int.parse(productNameId),
-      });
-      final data = response.data;
-      if (data is Map<String, dynamic> && data['data'] is List) {
-        final list = data['data'] as List;
-        setState(() {
-          _productModels = list.map((item) => {
-            'id': item['id'].toString(),
-            'name': item['name'].toString(),
-          }).toList();
-        });
-      }
-    } catch (e) {
-      // Handled automatically by ApiInterceptor
-    } finally {
-      if (mounted) setState(() => _isLoadingModels = false);
-    }
-  }
-
-  Future<void> _loadProductDetails(String productModelId) async {
-    setState(() {
-      _isLoadingDetails = true;
-      _currentStock = null;
-      _currentMinPrice = null;
-    });
-
-    try {
-      final dio = ApiClient().dio;
-      final response = await dio.get('/api/inventory/product-details', queryParameters: {
-        'product_name_id': _selectedProductNameId!,
-        'product_model_id': productModelId,
-      });
-
-      final data = response.data;
-      if (data is Map<String, dynamic> && data['data'] != null) {
-        final details = data['data'];
-        setState(() {
-          _currentStock = details['currentStock'] ?? 0;
-          _currentMinPrice = details['minSellPrice'] ?? 0;
-        });
-      }
-    } catch (e) {
-      // Handled automatically by ApiInterceptor
-    } finally {
-      if (mounted) setState(() => _isLoadingDetails = false);
-    }
   }
 
   Future<void> _submit() async {
@@ -148,30 +48,30 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
       context.showErrorSnackBar('Quantity must be a positive number');
       return;
     }
-    if (_selectedProductNameId == null || _selectedProductModelId == null) {
-      context.showErrorSnackBar('Please select Product Name and Product Model');
-      return;
-    }
 
     setState(() => _isSubmitting = true);
 
     try {
-      final dio = ApiClient().dio;
-      final minPrice = _minPriceController.text.isNotEmpty ? num.parse(_minPriceController.text) : null;
+      final repo = ref.read(sharedInventoryRepositoryProvider);
+      final minPrice = _minPriceController.text.isNotEmpty
+          ? num.parse(_minPriceController.text)
+          : null;
 
-      await dio.post('/api/inventory/update-stock', data: {
-        'productNameId': int.parse(_selectedProductNameId!),
-        'productModelId': int.parse(_selectedProductModelId!),
-        'quantity': quantity,
-        if (minPrice != null) 'minSellPrice': minPrice,
-      });
+      await repo.updateStock(
+        productNameId: int.parse(_selectedProductNameId!),
+        productModelId: int.parse(_selectedProductModelId!),
+        quantity: quantity,
+        minSellPrice: minPrice,
+      );
 
       if (mounted) {
         context.showSuccessSnackBar('Stock updated successfully');
-        // Refresh dashboard statistics
-        ref.read(dashboardControllerProvider).refreshAllData();
-        // Refresh inventory list
-        ref.invalidate(inventoryListProvider);
+        DataSync.afterStockMutation(ref);
+        final nameId = int.tryParse(_selectedProductNameId ?? '');
+        final modelId = int.tryParse(_selectedProductModelId ?? '');
+        if (nameId != null && modelId != null) {
+          ref.invalidate(productStockDetailsProvider((nameId: nameId, modelId: modelId)));
+        }
         context.pop();
       }
     } on DioException catch (e) {
@@ -186,6 +86,17 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final namesAsync = ref.watch(productNamesProvider);
+    final selectedNameId = int.tryParse(_selectedProductNameId ?? '');
+    final modelsAsync = selectedNameId == null
+        ? null
+        : ref.watch(productModelsProvider(selectedNameId));
+
+    final selectedModelId = int.tryParse(_selectedProductModelId ?? '');
+    final detailsAsync = (selectedNameId != null && selectedModelId != null)
+        ? ref.watch(productStockDetailsProvider((nameId: selectedNameId, modelId: selectedModelId)))
+        : null;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FB),
       appBar: AppBar(
@@ -230,123 +141,125 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // Product Name
                           const Text(
                             'Product Name',
                             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
                           ),
                           const SizedBox(height: 8),
-                          _isLoadingNames
-                              ? const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 16.0),
-                                  child: Center(
-                                    child: SizedBox(
-                                      height: 24,
-                                      width: 24,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
+                          namesAsync.when(
+                            loading: () => const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 16.0),
+                              child: Center(
+                                child: SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ),
+                            ),
+                            error: (_, __) => TextButton(
+                              onPressed: () => ref.invalidate(productNamesProvider),
+                              child: const Text('Failed to load product names. Retry'),
+                            ),
+                            data: (productNames) => productNames.isEmpty
+                                ? TextFormField(
+                                    enabled: false,
+                                    decoration: InputDecoration(
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                      hintText: 'No products available. Please create one first.',
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                      filled: true,
+                                      fillColor: Colors.grey.shade100,
                                     ),
+                                  )
+                                : DropdownButtonFormField<String>(
+                                    isExpanded: true,
+                                    value: _selectedProductNameId,
+                                    decoration: InputDecoration(
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                    ),
+                                    hint: const Text('Select Product Name'),
+                                    items: productNames
+                                        .map((n) => DropdownMenuItem(value: n.id, child: Text(n.name)))
+                                        .toList(),
+                                    onChanged: (id) {
+                                      setState(() {
+                                        _selectedProductNameId = id;
+                                        _selectedProductModelId = null;
+                                      });
+                                    },
                                   ),
-                                )
-                              : (_productNames.isEmpty
+                          ),
+                          const SizedBox(height: 20),
+
+                          const Text(
+                            'Product Model',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
+                          ),
+                          const SizedBox(height: 8),
+                          if (_selectedProductNameId == null)
+                            TextFormField(
+                              enabled: false,
+                              decoration: InputDecoration(
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                hintText: 'Select Product Name first',
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                filled: true,
+                                fillColor: Colors.grey.shade100,
+                              ),
+                            )
+                          else if (modelsAsync != null)
+                            modelsAsync.when(
+                              loading: () => const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 16.0),
+                                child: Center(
+                                  child: SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  ),
+                                ),
+                              ),
+                              error: (_, __) => TextButton(
+                                onPressed: () {
+                                  final id = int.tryParse(_selectedProductNameId ?? '');
+                                  if (id != null) ref.invalidate(productModelsProvider(id));
+                                },
+                                child: const Text('Failed to load models. Retry'),
+                              ),
+                              data: (productModels) => productModels.isEmpty
                                   ? TextFormField(
                                       enabled: false,
                                       decoration: InputDecoration(
                                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                        hintText: 'No products available. Please create one first.',
+                                        hintText: 'No models available for this product.',
                                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                                         filled: true,
                                         fillColor: Colors.grey.shade100,
                                       ),
                                     )
                                   : DropdownButtonFormField<String>(
+                                      key: ValueKey('model_$_selectedProductNameId'),
                                       isExpanded: true,
+                                      value: _selectedProductModelId,
                                       decoration: InputDecoration(
                                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                                         filled: true,
                                         fillColor: Colors.white,
                                       ),
-                                      hint: const Text('Select Product Name'),
-                                      items: _productNames.map((name) {
-                                        return DropdownMenuItem<String>(
-                                          value: name['id']!,
-                                          child: Text(name['name']!),
-                                        );
-                                      }).toList(),
-                                      onChanged: (id) {
-                                        if (id != null) {
-                                          setState(() => _selectedProductNameId = id);
-                                          _loadProductModels(id);
-                                        }
-                                      },
-                                    )),
-                          const SizedBox(height: 20),
-
-                          // Product Model
-                          const Text(
-                            'Product Model',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                          ),
-                          const SizedBox(height: 8),
-                          _isLoadingModels
-                              ? const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 16.0),
-                                  child: Center(
-                                    child: SizedBox(
-                                      height: 24,
-                                      width: 24,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                      hint: const Text('Select Product Model'),
+                                      items: productModels
+                                          .map((m) => DropdownMenuItem(value: m.id, child: Text(m.name)))
+                                          .toList(),
+                                      onChanged: (id) => setState(() => _selectedProductModelId = id),
                                     ),
-                                  ),
-                                )
-                              : (_selectedProductNameId == null
-                                  ? TextFormField(
-                                      enabled: false,
-                                      decoration: InputDecoration(
-                                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                        hintText: 'Select Product Name first',
-                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                        filled: true,
-                                        fillColor: Colors.grey.shade100,
-                                      ),
-                                    )
-                                  : (_productModels.isEmpty
-                                      ? TextFormField(
-                                          enabled: false,
-                                          decoration: InputDecoration(
-                                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                            hintText: 'No models available for this product.',
-                                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                            filled: true,
-                                            fillColor: Colors.grey.shade100,
-                                          ),
-                                        )
-                                      : DropdownButtonFormField<String>(
-                                          key: ValueKey('model_$_selectedProductNameId'),
-                                          isExpanded: true,
-                                          decoration: InputDecoration(
-                                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                            filled: true,
-                                            fillColor: Colors.white,
-                                          ),
-                                          hint: const Text('Select Product Model'),
-                                          items: _productModels.map((model) {
-                                            return DropdownMenuItem<String>(
-                                              value: model['id']!,
-                                              child: Text(model['name']!),
-                                            );
-                                          }).toList(),
-                                          onChanged: (id) {
-                                            if (id != null) {
-                                              setState(() => _selectedProductModelId = id);
-                                              _loadProductDetails(id);
-                                            }
-                                          },
-                                        ))),
+                            ),
                           const SizedBox(height: 20),
 
-                          // Product Information Section
                           if (_selectedProductModelId != null) ...[
                             Container(
                               padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
@@ -362,33 +275,40 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
                                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF191C1E)),
                                   ),
                                   const SizedBox(height: 8),
-                                  _isLoadingDetails
-                                      ? const SizedBox(
-                                          height: 20,
-                                          width: 20,
-                                          child: CircularProgressIndicator(strokeWidth: 2),
-                                        )
-                                      : Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Current Stock: ${_currentStock ?? 0}',
-                                              style: const TextStyle(fontSize: 13, color: Color(0xFF3E4A3D)),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              'Current Min Price: ₹${_currentMinPrice ?? 0}',
-                                              style: const TextStyle(fontSize: 13, color: Color(0xFF3E4A3D)),
-                                            ),
-                                          ],
-                                        ),
+                                  if (detailsAsync == null)
+                                    const SizedBox.shrink()
+                                  else
+                                    detailsAsync.when(
+                                      loading: () => const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(strokeWidth: 2),
+                                      ),
+                                      error: (_, __) => const Text(
+                                        'Could not load current stock details',
+                                        style: TextStyle(fontSize: 13, color: Color(0xFF3E4A3D)),
+                                      ),
+                                      data: (details) => Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Current Stock: ${details.stock}',
+                                            style: const TextStyle(fontSize: 13, color: Color(0xFF3E4A3D)),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            'Current Min Price: ₹${details.minPrice}',
+                                            style: const TextStyle(fontSize: 13, color: Color(0xFF3E4A3D)),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                 ],
                               ),
                             ),
                             const SizedBox(height: 20),
                           ],
 
-                          // Quantity
                           const Text(
                             'Quantity',
                             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
@@ -413,7 +333,6 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
                           ),
                           const SizedBox(height: 20),
 
-                          // Minimum Selling Price
                           const Text(
                             'Minimum Selling Price (Optional)',
                             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
@@ -438,7 +357,6 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
                           ),
                           const SizedBox(height: 32),
 
-                          // Submit Button
                           ElevatedButton(
                             onPressed: _isSubmitting ? null : _submit,
                             child: _isSubmitting

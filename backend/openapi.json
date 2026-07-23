@@ -113,7 +113,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": "integer"
           },
           "name": {
             "type": "string"
@@ -124,10 +124,920 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": "integer"
           },
           "name": {
             "type": "string"
+          },
+          "product_name_id": {
+            "type": "integer"
+          }
+        }
+      },
+      "ProductNamesResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductName"
+            }
+          }
+        }
+      },
+      "ProductNameResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ProductName"
+          }
+        }
+      },
+      "ProductModelsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductModel"
+            }
+          }
+        }
+      },
+      "ProductModelResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ProductModel"
+          }
+        }
+      },
+      "CreateProductNameRequest": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateProductModelRequest": {
+        "type": "object",
+        "required": [
+          "product_name_id",
+          "name"
+        ],
+        "properties": {
+          "product_name_id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "ListProductModelsRequest": {
+        "type": "object",
+        "required": [
+          "product_name_id"
+        ],
+        "properties": {
+          "product_name_id": {
+            "type": "integer"
+          }
+        }
+      },
+      "CreateProductRequest": {
+        "type": "object",
+        "required": [
+          "product_name_id",
+          "product_model_id"
+        ],
+        "properties": {
+          "product_name_id": {
+            "type": "integer"
+          },
+          "product_model_id": {
+            "type": "integer"
+          },
+          "min_price": {
+            "type": "number"
+          },
+          "on_sale": {
+            "type": "boolean"
+          },
+          "offer_price": {
+            "type": "number",
+            "nullable": true
+          },
+          "min_unit_count_admin": {
+            "type": "integer"
+          },
+          "min_unit_count_seller": {
+            "type": "integer"
+          }
+        }
+      },
+      "ProductCreated": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "product_name_id": {
+            "type": "integer"
+          },
+          "product_model_id": {
+            "type": "integer"
+          },
+          "min_price": {
+            "type": "number"
+          },
+          "on_sale": {
+            "type": "boolean"
+          },
+          "offer_price": {
+            "type": "number",
+            "nullable": true
+          },
+          "min_unit_count_admin": {
+            "type": "integer"
+          },
+          "min_unit_count_seller": {
+            "type": "integer"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateProductResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ProductCreated"
+          }
+        }
+      },
+      "ProductStockDetails": {
+        "type": "object",
+        "properties": {
+          "currentStock": {
+            "type": "integer"
+          },
+          "minSellPrice": {
+            "type": "number"
+          }
+        }
+      },
+      "ProductStockDetailsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ProductStockDetails"
+          }
+        }
+      },
+      "AdminDashboardStats": {
+        "type": "object",
+        "properties": {
+          "totalStock": {
+            "type": "integer"
+          },
+          "todaySales": {
+            "type": "integer"
+          },
+          "todaySalesAmount": {
+            "type": "number"
+          },
+          "pendingRequests": {
+            "type": "integer"
+          },
+          "totalSellers": {
+            "type": "integer"
+          },
+          "pendingShipments": {
+            "type": "integer"
+          }
+        }
+      },
+      "AdminDashboardStatsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AdminDashboardStats"
+          }
+        }
+      },
+      "SellerRecentSale": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "customerName": {
+            "type": "string"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "productModel": {
+            "type": "string"
+          },
+          "serialNumber": {
+            "type": "string"
+          },
+          "sellPrice": {
+            "type": "number"
+          },
+          "soldAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SellerDashboardStats": {
+        "type": "object",
+        "properties": {
+          "totalStock": {
+            "type": "integer"
+          },
+          "todaySales": {
+            "type": "integer"
+          },
+          "todaySalesAmount": {
+            "type": "number"
+          },
+          "pendingShipments": {
+            "type": "integer"
+          },
+          "recentSales": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SellerRecentSale"
+            }
+          }
+        }
+      },
+      "SellerDashboardStatsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SellerDashboardStats"
+          }
+        }
+      },
+      "ActivityItem": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "subtitle": {
+            "type": "string"
+          },
+          "time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "icon": {
+            "type": "string"
+          }
+        }
+      },
+      "RecentActivityResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActivityItem"
+            }
+          }
+        }
+      },
+      "ActivityHistoryPagination": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "totalItems": {
+            "type": "integer"
+          },
+          "totalPages": {
+            "type": "integer"
+          },
+          "hasNextPage": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ActivityHistoryResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActivityItem"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/ActivityHistoryPagination"
+          }
+        }
+      },
+      "CreateSaleRequest": {
+        "type": "object",
+        "required": [
+          "product_name_id",
+          "product_model_id",
+          "serial_number",
+          "customer_name",
+          "customer_number",
+          "sell_price"
+        ],
+        "properties": {
+          "product_name_id": {
+            "type": "integer"
+          },
+          "product_model_id": {
+            "type": "integer"
+          },
+          "serial_number": {
+            "type": "string"
+          },
+          "customer_name": {
+            "type": "string"
+          },
+          "customer_number": {
+            "type": "string"
+          },
+          "vehicle_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "sell_price": {
+            "type": "number"
+          }
+        }
+      },
+      "CreateSaleResult": {
+        "type": "object",
+        "properties": {
+          "transaction_id": {
+            "type": "integer"
+          }
+        }
+      },
+      "CreateSaleResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/CreateSaleResult"
+          }
+        }
+      },
+      "SaleCustomer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          }
+        }
+      },
+      "SaleSeller": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "user_name": {
+            "type": "string"
+          },
+          "shop_name": {
+            "type": "string"
+          }
+        }
+      },
+      "SaleProduct": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "product_name": {
+            "type": "string"
+          },
+          "product_model": {
+            "type": "string"
+          }
+        }
+      },
+      "SaleRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "product_id": {
+            "type": "integer"
+          },
+          "product_unit_id": {
+            "type": "integer"
+          },
+          "sell_price": {
+            "type": "number"
+          },
+          "serial_number": {
+            "type": "string"
+          },
+          "vehicle_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "sold_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/SaleCustomer"
+          },
+          "seller": {
+            "$ref": "#/components/schemas/SaleSeller"
+          },
+          "product": {
+            "$ref": "#/components/schemas/SaleProduct"
+          }
+        }
+      },
+      "SaleHistoryPage": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SaleRecord"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          }
+        }
+      },
+      "SaleHistoryResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SaleHistoryPage"
+          }
+        }
+      },
+      "SaleDetailResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SaleRecord"
+          }
+        }
+      },
+      "AdminSaleShipment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "shipment_number": {
+            "type": "string"
+          },
+          "shipment_date": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "arrival_date": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "AdminSaleRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "sold_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "sell_price": {
+            "type": "number"
+          },
+          "serial_number": {
+            "type": "string"
+          },
+          "vehicle_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "seller": {
+            "$ref": "#/components/schemas/SaleSeller"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/SaleCustomer"
+          },
+          "product": {
+            "$ref": "#/components/schemas/SaleProduct"
+          },
+          "shipment": {
+            "$ref": "#/components/schemas/AdminSaleShipment",
+            "nullable": true
+          }
+        }
+      },
+      "AdminSaleHistoryPage": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminSaleRecord"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          }
+        }
+      },
+      "AdminSaleHistoryResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AdminSaleHistoryPage"
+          }
+        }
+      },
+      "ScanForSaleResult": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer"
+          },
+          "productNameId": {
+            "type": "integer"
+          },
+          "productModelId": {
+            "type": "integer"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "productModel": {
+            "type": "string"
+          },
+          "minSellPrice": {
+            "type": "number"
+          }
+        }
+      },
+      "ScanForSaleResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ScanForSaleResult"
+          }
+        }
+      },
+      "SellerStatistics": {
+        "type": "object",
+        "properties": {
+          "stock": {
+            "type": "integer"
+          },
+          "products": {
+            "type": "integer"
+          },
+          "sales": {
+            "type": "integer"
+          },
+          "returns": {
+            "type": "integer"
+          }
+        }
+      },
+      "SellerDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "user_name": {
+            "type": "string"
+          },
+          "shop_name": {
+            "type": "string"
+          },
+          "user_number": {
+            "type": "string"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "is_verified": {
+            "type": "boolean"
+          },
+          "statistics": {
+            "$ref": "#/components/schemas/SellerStatistics"
+          },
+          "inventory": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryListItem"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SellerDetailResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SellerDetail"
+          }
+        }
+      },
+      "HealthStatus": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "VerifyProductRequest": {
+        "type": "object",
+        "required": [
+          "identifier"
+        ],
+        "properties": {
+          "identifier": {
+            "type": "string"
+          }
+        }
+      },
+      "VerifyProductUnit": {
+        "type": "object",
+        "properties": {
+          "serialNumber": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "qrCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "manufactureDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "warrantyExpiry": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "VerifyProductInfo": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "subgroup": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          }
+        }
+      },
+      "VerifyProductPayload": {
+        "type": "object",
+        "properties": {
+          "productUnit": {
+            "$ref": "#/components/schemas/VerifyProductUnit"
+          },
+          "product": {
+            "$ref": "#/components/schemas/VerifyProductInfo"
+          }
+        }
+      },
+      "VerifyProductResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/VerifyProductPayload"
+          }
+        }
+      },
+      "CreateReturnRequest": {
+        "type": "object",
+        "required": [
+          "serial_number",
+          "reason"
+        ],
+        "properties": {
+          "serial_number": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateReturnResult": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "returnRecordId": {
+            "type": "string"
+          },
+          "productUnitId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateReturnResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/CreateReturnResult"
           }
         }
       },
@@ -458,6 +1368,520 @@
             "format": "date-time"
           }
         }
+      },
+      "CreateShipmentItem": {
+        "type": "object",
+        "required": [
+          "product_name_id",
+          "product_model_id",
+          "serial_numbers"
+        ],
+        "properties": {
+          "product_name_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "product_model_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "serial_numbers": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "price_per_piece": {
+            "type": "number",
+            "minimum": 0
+          }
+        }
+      },
+      "CreateShipmentRequest": {
+        "type": "object",
+        "required": [
+          "sellerId",
+          "items"
+        ],
+        "properties": {
+          "sellerId": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/CreateShipmentItem"
+            }
+          }
+        }
+      },
+      "TransferInventoryCount": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "productModel": {
+            "type": "string"
+          },
+          "transferred": {
+            "type": "integer"
+          },
+          "adminAvailable": {
+            "type": "integer"
+          },
+          "sellerAvailable": {
+            "type": "integer"
+          }
+        }
+      },
+      "CreateShipmentResult": {
+        "type": "object",
+        "properties": {
+          "shipmentId": {
+            "type": "integer"
+          },
+          "shipmentNumber": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "ACCEPTED",
+              "REJECTED"
+            ]
+          },
+          "transferredUnits": {
+            "type": "integer"
+          },
+          "sellerId": {
+            "type": "integer"
+          },
+          "inventory": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransferInventoryCount"
+            }
+          }
+        }
+      },
+      "CreateShipmentResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/CreateShipmentResult"
+          }
+        }
+      },
+      "AvailableSerialsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Serial numbers AVAILABLE for the authenticated user"
+          }
+        }
+      },
+      "SellerShopSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "user_name": {
+            "type": "string"
+          },
+          "shop_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "user_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "is_verified": {
+            "type": "boolean"
+          },
+          "totalStock": {
+            "type": "integer"
+          },
+          "todaySales": {
+            "type": "integer"
+          },
+          "pendingShipments": {
+            "type": "integer"
+          },
+          "hasLowStock": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SellersListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SellerShopSummary"
+            }
+          }
+        }
+      },
+      "InventoryProductModelOption": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Product id"
+          },
+          "productModelId": {
+            "type": "integer"
+          },
+          "productModel": {
+            "type": "string"
+          },
+          "availableQuantity": {
+            "type": "integer"
+          },
+          "minSellPrice": {
+            "type": "number"
+          }
+        }
+      },
+      "InventoryProductNameGroup": {
+        "type": "object",
+        "properties": {
+          "productName": {
+            "type": "string"
+          },
+          "productNameId": {
+            "type": "integer"
+          },
+          "models": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryProductModelOption"
+            }
+          }
+        }
+      },
+      "InventoryProductsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryProductNameGroup"
+            }
+          }
+        }
+      },
+      "InventoryListItem": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "integer"
+          },
+          "product_name_id": {
+            "type": "integer"
+          },
+          "product_model_id": {
+            "type": "integer"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "min_price": {
+            "type": "number"
+          },
+          "offer_price": {
+            "type": "number",
+            "nullable": true
+          },
+          "min_unit_count_seller": {
+            "type": "integer"
+          },
+          "min_unit_count_admin": {
+            "type": "integer"
+          },
+          "on_sale": {
+            "type": "boolean"
+          },
+          "is_low_stock": {
+            "type": "boolean"
+          }
+        }
+      },
+      "InventoryPagination": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          }
+        }
+      },
+      "InventoryListPayload": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryListItem"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/InventoryPagination"
+          }
+        }
+      },
+      "InventoryListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/InventoryListPayload"
+          }
+        }
+      },
+      "InventoryItemDetail": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "integer"
+          },
+          "product_name_id": {
+            "type": "integer"
+          },
+          "product_model_id": {
+            "type": "integer"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "min_price": {
+            "type": "number"
+          },
+          "offer_price": {
+            "type": "number",
+            "nullable": true
+          },
+          "min_unit_count_seller": {
+            "type": "integer"
+          },
+          "min_unit_count_admin": {
+            "type": "integer"
+          },
+          "on_sale": {
+            "type": "boolean"
+          },
+          "is_low_stock": {
+            "type": "boolean"
+          },
+          "serial_numbers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "InventoryItemDetailResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/InventoryItemDetail"
+          }
+        }
+      },
+      "UpdateStockRequest": {
+        "type": "object",
+        "required": [
+          "productNameId",
+          "productModelId"
+        ],
+        "properties": {
+          "productNameId": {
+            "type": "integer"
+          },
+          "productModelId": {
+            "type": "integer"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Units to add; optional when only updating price/flags"
+          },
+          "minSellPrice": {
+            "type": "number"
+          },
+          "minUnitCountAdmin": {
+            "type": "integer"
+          },
+          "minUnitCountSeller": {
+            "type": "integer"
+          },
+          "onSale": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UpdateStockResult": {
+        "type": "object",
+        "properties": {
+          "productNameId": {
+            "type": "integer"
+          },
+          "productModelId": {
+            "type": "integer"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "minSellPrice": {
+            "type": "number"
+          },
+          "minUnitCountAdmin": {
+            "type": "integer"
+          },
+          "minUnitCountSeller": {
+            "type": "integer"
+          },
+          "onSale": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UpdateStockResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/UpdateStockResult"
+          }
+        }
+      },
+      "AdjustInventoryRequest": {
+        "type": "object",
+        "required": [
+          "product_id",
+          "user_id",
+          "adjustment_quantity"
+        ],
+        "properties": {
+          "product_id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "integer"
+          },
+          "adjustment_quantity": {
+            "type": "integer",
+            "description": "Positive to add, negative to remove"
+          }
+        }
+      },
+      "AdjustInventoryResult": {
+        "type": "object",
+        "properties": {
+          "adjusted": {
+            "type": "boolean"
+          },
+          "adjustment_quantity": {
+            "type": "integer"
+          }
+        }
+      },
+      "AdjustInventoryResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AdjustInventoryResult"
+          }
+        }
       }
     },
     "securitySchemes": {
@@ -633,9 +2057,41 @@
         "tags": [
           "Shops"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Sellers fetched successfully"
+            "description": "Sellers fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SellersListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Admin only",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -646,6 +2102,11 @@
         "tags": [
           "Shops"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "path",
@@ -654,21 +2115,43 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "in": "query",
+            "name": "includeOutOfStock",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Seller fetched successfully"
+            "description": "Seller fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SellerDetailResponse"
+                }
+              }
+            }
           },
           "404": {
-            "description": "Seller not found"
+            "description": "Seller not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
     },
     "/api/shipments": {
       "post": {
-        "summary": "Create a new shipment (Admin only)",
+        "summary": "Transfer stock serials from admin to seller (Admin only)",
+        "description": "Moves existing AVAILABLE admin-owned product units to the seller immediately.\nCreates shipment record (status ACCEPTED), inventory_transactions (TRANSFERRED),\nand returns updated inventory counts.\n",
         "tags": [
           "Shipments"
         ],
@@ -682,63 +2165,61 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": [
-                  "sellerId",
-                  "items"
-                ],
-                "properties": {
-                  "sellerId": {
-                    "type": "integer"
-                  },
-                  "items": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "required": [
-                        "productCategoryId",
-                        "productNameId",
-                        "productModelId",
-                        "productId",
-                        "productItemId",
-                        "quantity"
-                      ],
-                      "properties": {
-                        "productCategoryId": {
-                          "type": "integer"
-                        },
-                        "productNameId": {
-                          "type": "integer"
-                        },
-                        "productModelId": {
-                          "type": "integer"
-                        },
-                        "productId": {
-                          "type": "integer"
-                        },
-                        "productItemId": {
-                          "type": "integer"
-                        },
-                        "quantity": {
-                          "type": "integer"
-                        }
-                      }
-                    }
-                  }
-                }
+                "$ref": "#/components/schemas/CreateShipmentRequest"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Shipment created successfully"
+            "description": "Units transferred successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateShipmentResponse"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Invalid input or product combo not found"
+            "description": "Invalid serials, product, or payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "403": {
-            "description": "Admin access required"
+            "description": "Admin access required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Seller not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Serial no longer available (race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       },
@@ -1104,39 +2585,31 @@
         "tags": [
           "Sales"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "product_id": {
-                    "type": "integer"
-                  },
-                  "serial_number": {
-                    "type": "string"
-                  },
-                  "customer_name": {
-                    "type": "string"
-                  },
-                  "customer_number": {
-                    "type": "string"
-                  },
-                  "vehicle_number": {
-                    "type": "string"
-                  },
-                  "sell_price": {
-                    "type": "number"
-                  }
-                }
+                "$ref": "#/components/schemas/CreateSaleRequest"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Sale transaction created successfully"
+            "description": "Sale transaction created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSaleResponse"
+                }
+              }
+            }
           }
         }
       },
@@ -1157,6 +2630,11 @@
         "summary": "Return seller's own sales history with pagination, search, and date filtering",
         "tags": [
           "Sales"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
         ],
         "parameters": [
           {
@@ -1204,11 +2682,37 @@
               "type": "string",
               "format": "date-time"
             }
+          },
+          {
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "today",
+                "date",
+                "all"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "date",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Seller sales history fetched successfully"
+            "description": "Seller sales history fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleHistoryResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -1283,7 +2787,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Admin sales history fetched successfully"
+            "description": "Admin sales history fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSaleHistoryResponse"
+                }
+              }
+            }
           },
           "403": {
             "description": "Forbidden — Admin access required"
@@ -1297,22 +2808,79 @@
         "tags": [
           "Sales"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "path",
             "name": "transactionId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Sale details fetched successfully"
+            "description": "Sale details fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleDetailResponse"
+                }
+              }
+            }
           },
           "404": {
             "description": "Transaction not found"
+          }
+        }
+      }
+    },
+    "/api/returns": {
+      "post": {
+        "summary": "Process a product return (seller)",
+        "tags": [
+          "Returns"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReturnRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Return processed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateReturnResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid return",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -1323,24 +2891,41 @@
         "tags": [
           "Products"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  }
-                }
+                "$ref": "#/components/schemas/CreateProductNameRequest"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Product name created successfully"
+            "description": "Product name created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductNameResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Product name already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       },
@@ -1349,9 +2934,21 @@
         "tags": [
           "Products"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Product names fetched successfully"
+            "description": "Product names fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductNamesResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -1369,13 +2966,34 @@
         ],
         "responses": {
           "200": {
-            "description": "Inventory products fetched successfully"
+            "description": "Inventory products fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryProductsResponse"
+                }
+              }
+            }
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "500": {
-            "description": "Internal server error"
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -1386,27 +3004,41 @@
         "tags": [
           "Products"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "product_name_id": {
-                    "type": "integer"
-                  },
-                  "name": {
-                    "type": "string"
-                  }
-                }
+                "$ref": "#/components/schemas/CreateProductModelRequest"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Product model created successfully"
+            "description": "Product model created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductModelResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Product model already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -1417,24 +3049,41 @@
         "tags": [
           "Products"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "product_name_id": {
-                    "type": "integer"
-                  }
-                }
+                "$ref": "#/components/schemas/ListProductModelsRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Product models fetched successfully"
+            "description": "Product models fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductModelsResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product name not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -1445,42 +3094,31 @@
         "tags": [
           "Products"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "product_name_id": {
-                    "type": "integer"
-                  },
-                  "product_model_id": {
-                    "type": "integer"
-                  },
-                  "min_price": {
-                    "type": "number"
-                  },
-                  "on_sale": {
-                    "type": "boolean"
-                  },
-                  "offer_price": {
-                    "type": "number"
-                  },
-                  "min_unit_count_admin": {
-                    "type": "integer"
-                  },
-                  "min_unit_count_seller": {
-                    "type": "integer"
-                  }
-                }
+                "$ref": "#/components/schemas/CreateProductRequest"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Product created successfully"
+            "description": "Product created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateProductResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -1516,11 +3154,61 @@
         }
       }
     },
+    "/api/product-units/verify": {
+      "post": {
+        "summary": "Verify a product unit by serial or QR",
+        "tags": [
+          "ProductUnits"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyProductRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyProductResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/inventory": {
       "get": {
         "summary": "Return logged-in user's inventory",
         "tags": [
           "Inventory"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
         ],
         "parameters": [
           {
@@ -1543,11 +3231,35 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "in": "query",
+            "name": "includeOutOfStock",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Inventory fetched successfully"
+            "description": "Inventory fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -1759,13 +3471,18 @@
         "tags": [
           "Inventory"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "query",
             "name": "product_name_id",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           },
           {
@@ -1773,22 +3490,34 @@
             "name": "product_model_id",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Product details fetched successfully"
+            "description": "Product details fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductStockDetailsResponse"
+                }
+              }
+            }
           }
         }
       }
     },
     "/api/inventory/available-serials": {
       "get": {
-        "summary": "Fetch available serial numbers for a product owned by the logged-in seller",
+        "summary": "Fetch available serial numbers for a product owned by the authenticated user",
         "tags": [
           "Inventory"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
         ],
         "parameters": [
           {
@@ -1796,7 +3525,7 @@
             "name": "product_name_id",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           },
           {
@@ -1804,13 +3533,30 @@
             "name": "product_model_id",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Available serials fetched successfully"
+            "description": "Available serials fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvailableSerialsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -1820,6 +3566,11 @@
         "summary": "Scan a serial number to fetch product details for a sale",
         "tags": [
           "Inventory"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
         ],
         "parameters": [
           {
@@ -1833,7 +3584,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Product found successfully"
+            "description": "Product found successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScanForSaleResponse"
+                }
+              }
+            }
           },
           "404": {
             "description": "Product not found in available inventory"
@@ -1846,6 +3604,11 @@
         "summary": "Return one inventory item",
         "tags": [
           "Inventory"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
         ],
         "parameters": [
           {
@@ -1863,47 +3626,30 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "product_id": {
-                          "type": "integer"
-                        },
-                        "category": {
-                          "type": "string"
-                        },
-                        "brand": {
-                          "type": "string"
-                        },
-                        "model": {
-                          "type": "string"
-                        },
-                        "quantity": {
-                          "type": "integer"
-                        },
-                        "min_price": {
-                          "type": "number"
-                        },
-                        "offer_price": {
-                          "type": "number"
-                        }
-                      }
-                    }
-                  }
+                  "$ref": "#/components/schemas/InventoryItemDetailResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
           },
           "404": {
-            "description": "Inventory item not found"
+            "description": "Inventory item not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -1914,38 +3660,51 @@
         "tags": [
           "Inventory"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": [
-                  "product_id",
-                  "user_id",
-                  "adjustment_quantity"
-                ],
-                "properties": {
-                  "product_id": {
-                    "type": "integer"
-                  },
-                  "user_id": {
-                    "type": "integer"
-                  },
-                  "adjustment_quantity": {
-                    "type": "integer"
-                  }
-                }
+                "$ref": "#/components/schemas/AdjustInventoryRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Inventory adjusted successfully"
+            "description": "Inventory adjusted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdjustInventoryResponse"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Not enough stock to decrease"
+            "description": "Not enough stock to decrease",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -2005,56 +3764,72 @@
         "tags": [
           "Inventory"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": [
-                  "productNameId",
-                  "productModelId",
-                  "quantity"
-                ],
-                "properties": {
-                  "productNameId": {
-                    "type": "integer",
-                    "example": 10
-                  },
-                  "productModelId": {
-                    "type": "integer",
-                    "example": 25
-                  },
-                  "quantity": {
-                    "type": "integer",
-                    "example": 50
-                  },
-                  "minSellPrice": {
-                    "type": "number",
-                    "example": 1200
-                  },
-                  "minUnitCountAdmin": {
-                    "type": "integer",
-                    "example": 0
-                  },
-                  "minUnitCountSeller": {
-                    "type": "integer",
-                    "example": 0
-                  }
-                }
+                "$ref": "#/components/schemas/UpdateStockRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Stock updated successfully"
+            "description": "Stock updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateStockResponse"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Invalid request payload"
+            "description": "Invalid request payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "404": {
-            "description": "Product name or product model not found"
+            "description": "Product name or product model not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "summary": "Health check",
+        "tags": [
+          "Health"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "API is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthStatus"
+                }
+              }
+            }
           }
         }
       }
@@ -2088,21 +3863,7 @@
                       "example": "Seller dashboard stats retrieved successfully"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "totalStock": {
-                          "type": "integer",
-                          "example": 1284
-                        },
-                        "todaySales": {
-                          "type": "integer",
-                          "example": 14
-                        },
-                        "pendingShipments": {
-                          "type": "integer",
-                          "example": 4
-                        }
-                      }
+                      "$ref": "#/components/schemas/SellerDashboardStats"
                     }
                   }
                 }
@@ -2150,25 +3911,7 @@
                       "example": "Dashboard stats retrieved successfully"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "totalStock": {
-                          "type": "integer",
-                          "example": 120
-                        },
-                        "todaySales": {
-                          "type": "integer",
-                          "example": 35
-                        },
-                        "pendingRequests": {
-                          "type": "integer",
-                          "example": 8
-                        },
-                        "totalSellers": {
-                          "type": "integer",
-                          "example": 12
-                        }
-                      }
+                      "$ref": "#/components/schemas/AdminDashboardStats"
                     }
                   }
                 }
@@ -2200,7 +3943,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Recent activity retrieved successfully"
+            "description": "Recent activity retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecentActivityResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -2216,9 +3966,32 @@
             "bearerAuth": []
           }
         ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Activity history retrieved successfully"
+            "description": "Activity history retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityHistoryResponse"
+                }
+              }
+            }
           }
         }
       }

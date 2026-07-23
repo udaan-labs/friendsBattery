@@ -14,7 +14,7 @@ Method | HTTP request | Description
 
 
 # **apiShopsSellersGet**
-> apiShopsSellersGet()
+> SellersListResponse apiShopsSellersGet()
 
 Return all sellers
 
@@ -25,7 +25,8 @@ import 'package:friends_battery_api/api.dart';
 final api = FriendsBatteryApi().getShopsApi();
 
 try {
-    api.apiShopsSellersGet();
+    final response = api.apiShopsSellersGet();
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling ShopsApi->apiShopsSellersGet: $e\n');
 }
@@ -36,7 +37,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-void (empty response body)
+[**SellersListResponse**](SellersListResponse.md)
 
 ### Authorization
 
@@ -45,12 +46,12 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiShopsSellersSellerIdGet**
-> apiShopsSellersSellerIdGet(sellerId)
+> SellerDetailResponse apiShopsSellersSellerIdGet(sellerId, includeOutOfStock)
 
 Return one seller
 
@@ -60,9 +61,11 @@ import 'package:friends_battery_api/api.dart';
 
 final api = FriendsBatteryApi().getShopsApi();
 final int sellerId = 56; // int | 
+final bool includeOutOfStock = true; // bool | 
 
 try {
-    api.apiShopsSellersSellerIdGet(sellerId);
+    final response = api.apiShopsSellersSellerIdGet(sellerId, includeOutOfStock);
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling ShopsApi->apiShopsSellersSellerIdGet: $e\n');
 }
@@ -73,10 +76,11 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **sellerId** | **int**|  | 
+ **includeOutOfStock** | **bool**|  | [optional] 
 
 ### Return type
 
-void (empty response body)
+[**SellerDetailResponse**](SellerDetailResponse.md)
 
 ### Authorization
 
@@ -85,7 +89,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

@@ -1,10 +1,11 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dio/dio.dart';
 import '../../../../../shared/widgets/responsive_helper.dart';
-import '../../../../../core/network/api_client.dart';
+import '../../../../../core/state/data_sync.dart';
 import '../../../../../shared/widgets/snackbar_helper.dart';
+import '../../../../shared/products/providers/product_catalog_providers.dart';
 
 class AddProductNameForm extends ConsumerStatefulWidget {
   const AddProductNameForm({super.key});
@@ -33,23 +34,18 @@ class _AddProductNameFormState extends ConsumerState<AddProductNameForm> {
     setState(() => _isSubmitting = true);
 
     try {
-      final dio = ApiClient().dio;
-
-      // 1. Create Product Name
-      final nameResponse = await dio.post('/api/products/product-names', data: {
-        'name': _productNameController.text.trim(),
-      });
-      final nameData = nameResponse.data['data'];
-      final productNameId = nameData['id'] as int;
-
-      // 2. Create Product Model under it
-      await dio.post('/api/products/product-models', data: {
-        'product_name_id': productNameId,
-        'name': _productModelController.text.trim(),
-      });
+      final repo = ref.read(productCatalogRepositoryProvider);
+      final productNameId = await repo.createProductName(
+        _productNameController.text.trim(),
+      );
+      await repo.createProductModel(
+        productNameId: productNameId,
+        name: _productModelController.text.trim(),
+      );
 
       if (mounted) {
         context.showSuccessSnackBar('Product Name and Model created successfully');
+        DataSync.afterProductMutation(ref);
         context.pop();
       }
     } on DioException catch (e) {

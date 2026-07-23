@@ -29,6 +29,8 @@ const { validateRequest } = require('../../shared/middleware/validation.middlewa
  *   get:
  *     summary: Return logged-in user's inventory
  *     tags: [Inventory]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: search
@@ -42,9 +44,23 @@ const { validateRequest } = require('../../shared/middleware/validation.middlewa
  *         name: limit
  *         schema:
  *           type: integer
+ *       - in: query
+ *         name: includeOutOfStock
+ *         schema:
+ *           type: boolean
  *     responses:
  *       200:
  *         description: Inventory fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InventoryListResponse'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get(
   '/', 
@@ -191,20 +207,26 @@ router.get(
  *   get:
  *     summary: Fetch details of a product (stock count & min sell price) by product name and model IDs
  *     tags: [Inventory]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: product_name_id
  *         required: true
  *         schema:
- *           type: string
+ *           type: integer
  *       - in: query
  *         name: product_model_id
  *         required: true
  *         schema:
- *           type: string
+ *           type: integer
  *     responses:
  *       200:
  *         description: Product details fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProductStockDetailsResponse'
  */
 router.get(
   '/product-details',
@@ -217,22 +239,34 @@ router.get(
  * @swagger
  * /api/inventory/available-serials:
  *   get:
- *     summary: Fetch available serial numbers for a product owned by the logged-in seller
+ *     summary: Fetch available serial numbers for a product owned by the authenticated user
  *     tags: [Inventory]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: product_name_id
  *         required: true
  *         schema:
- *           type: string
+ *           type: integer
  *       - in: query
  *         name: product_model_id
  *         required: true
  *         schema:
- *           type: string
+ *           type: integer
  *     responses:
  *       200:
  *         description: Available serials fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AvailableSerialsResponse'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get(
   '/available-serials',
@@ -247,6 +281,8 @@ router.get(
  *   get:
  *     summary: Scan a serial number to fetch product details for a sale
  *     tags: [Inventory]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: serial_number
@@ -256,6 +292,10 @@ router.get(
  *     responses:
  *       200:
  *         description: Product found successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ScanForSaleResponse'
  *       404:
  *         description: Product not found in available inventory
  */
@@ -271,6 +311,8 @@ router.get(
  *   get:
  *     summary: Return one inventory item
  *     tags: [Inventory]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: productId
@@ -283,31 +325,19 @@ router.get(
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   type: object
- *                   properties:
- *                     product_id:
- *                       type: integer
- *                     category:
- *                       type: string
- *                     brand:
- *                       type: string
- *                     model:
- *                       type: string
- *                     quantity:
- *                       type: integer
- *                     min_price:
- *                       type: number
- *                     offer_price:
- *                       type: number
+ *               $ref: '#/components/schemas/InventoryItemDetailResponse'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       404:
  *         description: Inventory item not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get(
   '/:productId', 
@@ -322,28 +352,33 @@ router.get(
  *   patch:
  *     summary: Adjust inventory stock levels
  *     tags: [Inventory]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - product_id
- *               - user_id
- *               - adjustment_quantity
- *             properties:
- *               product_id:
- *                 type: integer
- *               user_id:
- *                 type: integer
- *               adjustment_quantity:
- *                 type: integer
+ *             $ref: '#/components/schemas/AdjustInventoryRequest'
  *     responses:
  *       200:
  *         description: Inventory adjusted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AdjustInventoryResponse'
  *       400:
  *         description: Not enough stock to decrease
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.patch(
   '/adjust', 
@@ -400,42 +435,33 @@ router.post(
  *   post:
  *     summary: Update admin's own inventory stock (Admin only)
  *     tags: [Inventory]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - productNameId
- *               - productModelId
- *               - quantity
- *             properties:
- *               productNameId:
- *                 type: integer
- *                 example: 10
- *               productModelId:
- *                 type: integer
- *                 example: 25
- *               quantity:
- *                 type: integer
- *                 example: 50
- *               minSellPrice:
- *                 type: number
- *                 example: 1200
- *               minUnitCountAdmin:
- *                 type: integer
- *                 example: 0
- *               minUnitCountSeller:
- *                 type: integer
- *                 example: 0
+ *             $ref: '#/components/schemas/UpdateStockRequest'
  *     responses:
  *       200:
  *         description: Stock updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UpdateStockResponse'
  *       400:
  *         description: Invalid request payload
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       404:
  *         description: Product name or product model not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.post(
   '/update-stock',

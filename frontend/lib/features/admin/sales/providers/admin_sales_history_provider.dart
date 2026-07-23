@@ -6,8 +6,7 @@ import '../repositories/admin_sales_repository.dart';
 // ─── Repository provider ───────────────────────────────────────────────────
 
 final adminSalesRepositoryProvider = Provider<AdminSalesRepository>((ref) {
-  final dio = ref.watch(apiClientProvider).dio;
-  return AdminSalesRepository(dio);
+  return AdminSalesRepository(api: ref.watch(apiClientProvider));
 });
 
 // ─── State ─────────────────────────────────────────────────────────────────

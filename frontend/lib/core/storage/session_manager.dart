@@ -1,4 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'auth_token_cache.dart';
 import 'local_storage.dart';
 
 class SessionManager {
@@ -10,21 +11,24 @@ class SessionManager {
     required String role,
     required dynamic user,
   }) async {
-    // Save secure tokens
-    await _storage.write(key: 'auth_id', value: authId);
-    await _storage.write(key: 'auth_key', value: authKey);
-    await _storage.write(key: 'role', value: role);
-    await _storage.write(key: 'is_logged_in', value: 'true');
+    AuthTokenCache.set(authId: authId, authKey: authKey, role: role);
 
-    // Save general user data
+    await Future.wait([
+      _storage.write(key: 'auth_id', value: authId),
+      _storage.write(key: 'auth_key', value: authKey),
+      _storage.write(key: 'role', value: role),
+      _storage.write(key: 'is_logged_in', value: 'true'),
+    ]);
+
     await LocalStorage.put('user', user);
   }
 
   static Future<Map<String, String?>> getSessionData() async {
+    await AuthTokenCache.ensureLoaded();
     return {
-      'auth_id': await _storage.read(key: 'auth_id'),
-      'auth_key': await _storage.read(key: 'auth_key'),
-      'role': await _storage.read(key: 'role'),
+      'auth_id': AuthTokenCache.authId,
+      'auth_key': AuthTokenCache.authKey,
+      'role': AuthTokenCache.role,
     };
   }
 
@@ -34,6 +38,7 @@ class SessionManager {
   }
 
   static Future<void> clearSession() async {
+    AuthTokenCache.clear();
     await _storage.deleteAll();
     await LocalStorage.delete('user');
   }

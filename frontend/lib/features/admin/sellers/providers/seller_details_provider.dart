@@ -2,39 +2,72 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_client_provider.dart';
 
 class SellerDetailsData {
-  final Map<String, dynamic> rawData;
+  final String shopName;
+  final String userName;
+  final String userNumber;
+  final bool isActive;
+  final bool isVerified;
+  final int stock;
+  final int products;
+  final int sales;
+  final int returns;
+  final List<Map<String, dynamic>> inventory;
 
-  SellerDetailsData(this.rawData);
-
-  String get shopName => rawData['shop_name']?.toString() ?? 'Unknown Shop';
-  String get userName => rawData['user_name']?.toString() ?? 'Unknown User';
-  String get userNumber => rawData['user_number']?.toString() ?? 'N/A';
-  bool get isActive => rawData['is_active'] == true || rawData['is_active'] == 1;
-  bool get isVerified => rawData['is_verified'] == true || rawData['is_verified'] == 1;
-
-  Map<String, dynamic> get statistics => rawData['statistics'] ?? {};
-  int get stock => statistics['stock'] ?? 0;
-  int get products => statistics['products'] ?? 0;
-  int get sales => statistics['sales'] ?? 0;
-  int get returns => statistics['returns'] ?? 0;
-
-  List<dynamic> get inventory => rawData['inventory'] ?? [];
+  SellerDetailsData({
+    required this.shopName,
+    required this.userName,
+    required this.userNumber,
+    required this.isActive,
+    required this.isVerified,
+    required this.stock,
+    required this.products,
+    required this.sales,
+    required this.returns,
+    required this.inventory,
+  });
 }
 
-final sellerDetailsProvider = FutureProvider.family<SellerDetailsData, ({int sellerId, bool includeOutOfStock})>((ref, params) async {
-  final dio = ref.watch(apiClientProvider).dio;
-  final response = await dio.get(
-    '/api/shops/sellers/${params.sellerId}',
-    queryParameters: {'includeOutOfStock': params.includeOutOfStock},
-  );
-  
-  final dynamic data = response.data;
-  
-  if (data is Map<String, dynamic> && data.containsKey('data')) {
-    return SellerDetailsData(data['data']);
-  } else if (data is Map<String, dynamic>) {
-    return SellerDetailsData(data);
-  }
-  
-  throw Exception('Invalid data format received from API');
-});
+final sellerDetailsProvider =
+    FutureProvider.family<SellerDetailsData, ({int sellerId, bool includeOutOfStock})>(
+  (ref, params) async {
+    final response = await ref.watch(apiClientProvider).getShopsApi().apiShopsSellersSellerIdGet(
+          sellerId: params.sellerId,
+          includeOutOfStock: params.includeOutOfStock,
+        );
+
+    final d = response.data?.data;
+    if (d == null) {
+      throw Exception(response.data?.message ?? 'Invalid data format received from API');
+    }
+
+    final stats = d.statistics;
+    final inventory = (d.inventory?.toList() ?? [])
+        .map(
+          (item) => <String, dynamic>{
+            'product_id': item.productId,
+            'brand': item.brand,
+            'model': item.model,
+            'quantity': item.quantity,
+            'min_price': item.minPrice,
+            'min_unit_count_admin': item.minUnitCountAdmin,
+            'min_unit_count_seller': item.minUnitCountSeller,
+            'on_sale': item.onSale,
+            'is_low_stock': item.isLowStock,
+          },
+        )
+        .toList();
+
+    return SellerDetailsData(
+      shopName: d.shopName ?? 'Unknown Shop',
+      userName: d.userName ?? 'Unknown User',
+      userNumber: d.userNumber ?? 'N/A',
+      isActive: d.isActive ?? false,
+      isVerified: d.isVerified ?? false,
+      stock: stats?.stock ?? 0,
+      products: stats?.products ?? 0,
+      sales: stats?.sales ?? 0,
+      returns: stats?.returns ?? 0,
+      inventory: inventory,
+    );
+  },
+);

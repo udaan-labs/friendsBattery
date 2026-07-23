@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/storage/auth_token_cache.dart';
 import '../../core/storage/session_manager.dart';
 
 enum UserRole { admin, seller, guest }
@@ -29,14 +30,19 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> initSession() async {
     try {
       final isLoggedIn = await SessionManager.isLoggedIn();
-      if (!isLoggedIn) return;
+      if (!isLoggedIn) {
+        AuthTokenCache.clear();
+        return;
+      }
 
+      // Parallel secure reads + populate memory cache for Dio.
       final sessionData = await SessionManager.getSessionData();
       final authId = sessionData['auth_id'];
       final authKey = sessionData['auth_key'];
       final roleStr = sessionData['role'];
-      
+
       if (authId != null && authKey != null && roleStr != null) {
+        AuthTokenCache.set(authId: authId, authKey: authKey, role: roleStr);
         final role = roleStr.toLowerCase() == 'admin' ? UserRole.admin : UserRole.seller;
         setAuthenticated(role);
       }
@@ -53,6 +59,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       await SessionManager.clearSession();
     } catch (_) {}
+    AuthTokenCache.clear();
     state = AuthState(); // Reset to guest
   }
 }

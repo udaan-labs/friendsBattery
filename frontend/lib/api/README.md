@@ -72,8 +72,9 @@ Class | Method | HTTP request | Description
 [*DashboardApi*](doc/DashboardApi.md) | [**apiDashboardRecentActivityGet**](doc/DashboardApi.md#apidashboardrecentactivityget) | **GET** /api/dashboard/recent-activity | Get recent activity feed (Admin only)
 [*DashboardApi*](doc/DashboardApi.md) | [**apiDashboardStatsGet**](doc/DashboardApi.md#apidashboardstatsget) | **GET** /api/dashboard/stats | Get dashboard statistics
 [*DashboardApi*](doc/DashboardApi.md) | [**apiSellerDashboardStatsGet**](doc/DashboardApi.md#apisellerdashboardstatsget) | **GET** /api/seller/dashboard/stats | Get seller dashboard statistics
+[*HealthApi*](doc/HealthApi.md) | [**apiHealthGet**](doc/HealthApi.md#apihealthget) | **GET** /api/health | Health check
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryAdjustPatch**](doc/InventoryApi.md#apiinventoryadjustpatch) | **PATCH** /api/inventory/adjust | Adjust inventory stock levels
-[*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryAvailableSerialsGet**](doc/InventoryApi.md#apiinventoryavailableserialsget) | **GET** /api/inventory/available-serials | Fetch available serial numbers for a product owned by the logged-in seller
+[*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryAvailableSerialsGet**](doc/InventoryApi.md#apiinventoryavailableserialsget) | **GET** /api/inventory/available-serials | Fetch available serial numbers for a product owned by the authenticated user
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryDetailsGet**](doc/InventoryApi.md#apiinventorydetailsget) | **GET** /api/inventory/details | Return a complete inventory summary grouped by Product Name and Product Model
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryGet**](doc/InventoryApi.md#apiinventoryget) | **GET** /api/inventory | Return logged-in user&#39;s inventory
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryHistoryGet**](doc/InventoryApi.md#apiinventoryhistoryget) | **GET** /api/inventory/history | Return inventory movement history
@@ -82,6 +83,7 @@ Class | Method | HTTP request | Description
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryScanForSaleGet**](doc/InventoryApi.md#apiinventoryscanforsaleget) | **GET** /api/inventory/scan-for-sale | Scan a serial number to fetch product details for a sale
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryTransferPost**](doc/InventoryApi.md#apiinventorytransferpost) | **POST** /api/inventory/transfer | Transfer inventory from admin to seller
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryUpdateStockPost**](doc/InventoryApi.md#apiinventoryupdatestockpost) | **POST** /api/inventory/update-stock | Update admin&#39;s own inventory stock (Admin only)
+[*ProductUnitsApi*](doc/ProductUnitsApi.md) | [**apiProductUnitsVerifyPost**](doc/ProductUnitsApi.md#apiproductunitsverifypost) | **POST** /api/product-units/verify | Verify a product unit by serial or QR
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsInventoryProductsGet**](doc/ProductsApi.md#apiproductsinventoryproductsget) | **GET** /api/products/inventory-products | Get products in the authenticated user&#39;s inventory
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsListPost**](doc/ProductsApi.md#apiproductslistpost) | **POST** /api/products/list | Return all products matching filters
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsPost**](doc/ProductsApi.md#apiproductspost) | **POST** /api/products | Create a new product
@@ -89,6 +91,7 @@ Class | Method | HTTP request | Description
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsProductModelsPost**](doc/ProductsApi.md#apiproductsproductmodelspost) | **POST** /api/products/product-models | Create a product model
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsProductNamesGet**](doc/ProductsApi.md#apiproductsproductnamesget) | **GET** /api/products/product-names | Return all product names
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsProductNamesPost**](doc/ProductsApi.md#apiproductsproductnamespost) | **POST** /api/products/product-names | Create a product name
+[*ReturnsApi*](doc/ReturnsApi.md) | [**apiReturnsPost**](doc/ReturnsApi.md#apireturnspost) | **POST** /api/returns | Process a product return (seller)
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesAdminHistoryGet**](doc/SalesApi.md#apisalesadminhistoryget) | **GET** /api/sales/admin/history | Return all sales across all sellers with pagination, search, filters, and shipment tracing (Admin only)
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesGet**](doc/SalesApi.md#apisalesget) | **GET** /api/sales | Return all sales based on role (Admin sees all, Seller sees own)
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesHistoryGet**](doc/SalesApi.md#apisaleshistoryget) | **GET** /api/sales/history | Return seller&#39;s own sales history with pagination, search, and date filtering
@@ -98,7 +101,7 @@ Class | Method | HTTP request | Description
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiSellerShipmentsGet**](doc/ShipmentsApi.md#apisellershipmentsget) | **GET** /api/seller/shipments | List shipments for seller (Seller only)
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiShipmentsGet**](doc/ShipmentsApi.md#apishipmentsget) | **GET** /api/shipments | List all shipments (Admin only)
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiShipmentsIdGet**](doc/ShipmentsApi.md#apishipmentsidget) | **GET** /api/shipments/{id} | Get shipment details by ID (Admin or Seller)
-[*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiShipmentsPost**](doc/ShipmentsApi.md#apishipmentspost) | **POST** /api/shipments | Create a new shipment (Admin only)
+[*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiShipmentsPost**](doc/ShipmentsApi.md#apishipmentspost) | **POST** /api/shipments | Transfer stock serials from admin to seller (Admin only)
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiShipmentsShipmentIdAcceptPost**](doc/ShipmentsApi.md#apishipmentsshipmentidacceptpost) | **POST** /api/shipments/{shipmentId}/accept | Accept a pending shipment (Seller only)
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsSellersGet**](doc/ShopsApi.md#apishopssellersget) | **GET** /api/shops/sellers | Return all sellers
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsSellersSellerIdGet**](doc/ShopsApi.md#apishopssellersselleridget) | **GET** /api/shops/sellers/{sellerId} | Return one seller
@@ -111,33 +114,34 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
+ - [ActivityHistoryPagination](doc/ActivityHistoryPagination.md)
+ - [ActivityHistoryResponse](doc/ActivityHistoryResponse.md)
+ - [ActivityItem](doc/ActivityItem.md)
+ - [AdjustInventoryRequest](doc/AdjustInventoryRequest.md)
+ - [AdjustInventoryResponse](doc/AdjustInventoryResponse.md)
+ - [AdjustInventoryResult](doc/AdjustInventoryResult.md)
+ - [AdminDashboardStats](doc/AdminDashboardStats.md)
+ - [AdminDashboardStatsResponse](doc/AdminDashboardStatsResponse.md)
+ - [AdminSaleHistoryPage](doc/AdminSaleHistoryPage.md)
+ - [AdminSaleHistoryResponse](doc/AdminSaleHistoryResponse.md)
+ - [AdminSaleRecord](doc/AdminSaleRecord.md)
+ - [AdminSaleShipment](doc/AdminSaleShipment.md)
  - [ApiAuthActivatePutRequest](doc/ApiAuthActivatePutRequest.md)
  - [ApiAuthLoginPostRequest](doc/ApiAuthLoginPostRequest.md)
  - [ApiAuthRegisterPostRequest](doc/ApiAuthRegisterPostRequest.md)
  - [ApiDashboardStatsGet200Response](doc/ApiDashboardStatsGet200Response.md)
- - [ApiDashboardStatsGet200ResponseData](doc/ApiDashboardStatsGet200ResponseData.md)
- - [ApiInventoryAdjustPatchRequest](doc/ApiInventoryAdjustPatchRequest.md)
  - [ApiInventoryDetailsGet200Response](doc/ApiInventoryDetailsGet200Response.md)
  - [ApiInventoryDetailsGet200ResponseData](doc/ApiInventoryDetailsGet200ResponseData.md)
  - [ApiInventoryDetailsGet200ResponseDataCategoriesInner](doc/ApiInventoryDetailsGet200ResponseDataCategoriesInner.md)
  - [ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner](doc/ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner.md)
  - [ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner](doc/ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner.md)
  - [ApiInventoryDetailsGet200ResponseDataPagination](doc/ApiInventoryDetailsGet200ResponseDataPagination.md)
- - [ApiInventoryProductIdGet200Response](doc/ApiInventoryProductIdGet200Response.md)
- - [ApiInventoryProductIdGet200ResponseData](doc/ApiInventoryProductIdGet200ResponseData.md)
  - [ApiInventoryTransferPostRequest](doc/ApiInventoryTransferPostRequest.md)
  - [ApiInventoryTransferPostRequestProductsInner](doc/ApiInventoryTransferPostRequestProductsInner.md)
- - [ApiInventoryUpdateStockPostRequest](doc/ApiInventoryUpdateStockPostRequest.md)
  - [ApiProductsListPostRequest](doc/ApiProductsListPostRequest.md)
- - [ApiProductsPostRequest](doc/ApiProductsPostRequest.md)
- - [ApiProductsProductModelsListPostRequest](doc/ApiProductsProductModelsListPostRequest.md)
- - [ApiProductsProductModelsPostRequest](doc/ApiProductsProductModelsPostRequest.md)
- - [ApiProductsProductNamesPostRequest](doc/ApiProductsProductNamesPostRequest.md)
- - [ApiSalesPostRequest](doc/ApiSalesPostRequest.md)
  - [ApiSellerDashboardPendingShipmentsGet200Response](doc/ApiSellerDashboardPendingShipmentsGet200Response.md)
  - [ApiSellerDashboardPendingShipmentsGet200ResponseData](doc/ApiSellerDashboardPendingShipmentsGet200ResponseData.md)
  - [ApiSellerDashboardStatsGet200Response](doc/ApiSellerDashboardStatsGet200Response.md)
- - [ApiSellerDashboardStatsGet200ResponseData](doc/ApiSellerDashboardStatsGet200ResponseData.md)
  - [ApiSellerShipmentsGet200Response](doc/ApiSellerShipmentsGet200Response.md)
  - [ApiSellerShipmentsGet200ResponseDataInner](doc/ApiSellerShipmentsGet200ResponseDataInner.md)
  - [ApiSellerShipmentsGet200ResponseDataInnerItemsInner](doc/ApiSellerShipmentsGet200ResponseDataInnerItemsInner.md)
@@ -148,25 +152,83 @@ Class | Method | HTTP request | Description
  - [ApiShipmentsIdGet200ResponseData](doc/ApiShipmentsIdGet200ResponseData.md)
  - [ApiShipmentsIdGet200ResponseDataItemsInner](doc/ApiShipmentsIdGet200ResponseDataItemsInner.md)
  - [ApiShipmentsIdGet200ResponseDataSeller](doc/ApiShipmentsIdGet200ResponseDataSeller.md)
- - [ApiShipmentsPostRequest](doc/ApiShipmentsPostRequest.md)
- - [ApiShipmentsPostRequestItemsInner](doc/ApiShipmentsPostRequestItemsInner.md)
  - [ApiTransfersPostRequest](doc/ApiTransfersPostRequest.md)
  - [ApiTransfersPostRequestItemsInner](doc/ApiTransfersPostRequestItemsInner.md)
+ - [AvailableSerialsResponse](doc/AvailableSerialsResponse.md)
  - [Category](doc/Category.md)
+ - [CreateProductModelRequest](doc/CreateProductModelRequest.md)
+ - [CreateProductNameRequest](doc/CreateProductNameRequest.md)
+ - [CreateProductRequest](doc/CreateProductRequest.md)
+ - [CreateProductResponse](doc/CreateProductResponse.md)
+ - [CreateReturnRequest](doc/CreateReturnRequest.md)
+ - [CreateReturnResponse](doc/CreateReturnResponse.md)
+ - [CreateReturnResult](doc/CreateReturnResult.md)
+ - [CreateSaleRequest](doc/CreateSaleRequest.md)
+ - [CreateSaleResponse](doc/CreateSaleResponse.md)
+ - [CreateSaleResult](doc/CreateSaleResult.md)
+ - [CreateShipmentItem](doc/CreateShipmentItem.md)
+ - [CreateShipmentRequest](doc/CreateShipmentRequest.md)
+ - [CreateShipmentResponse](doc/CreateShipmentResponse.md)
+ - [CreateShipmentResult](doc/CreateShipmentResult.md)
  - [Customer](doc/Customer.md)
  - [Error](doc/Error.md)
+ - [HealthStatus](doc/HealthStatus.md)
+ - [InventoryItemDetail](doc/InventoryItemDetail.md)
+ - [InventoryItemDetailResponse](doc/InventoryItemDetailResponse.md)
+ - [InventoryListItem](doc/InventoryListItem.md)
+ - [InventoryListPayload](doc/InventoryListPayload.md)
+ - [InventoryListResponse](doc/InventoryListResponse.md)
+ - [InventoryPagination](doc/InventoryPagination.md)
+ - [InventoryProductModelOption](doc/InventoryProductModelOption.md)
+ - [InventoryProductNameGroup](doc/InventoryProductNameGroup.md)
+ - [InventoryProductsResponse](doc/InventoryProductsResponse.md)
  - [InventoryTransaction](doc/InventoryTransaction.md)
+ - [ListProductModelsRequest](doc/ListProductModelsRequest.md)
  - [Product](doc/Product.md)
+ - [ProductCreated](doc/ProductCreated.md)
  - [ProductModel](doc/ProductModel.md)
+ - [ProductModelResponse](doc/ProductModelResponse.md)
+ - [ProductModelsResponse](doc/ProductModelsResponse.md)
  - [ProductName](doc/ProductName.md)
+ - [ProductNameResponse](doc/ProductNameResponse.md)
+ - [ProductNamesResponse](doc/ProductNamesResponse.md)
+ - [ProductStockDetails](doc/ProductStockDetails.md)
+ - [ProductStockDetailsResponse](doc/ProductStockDetailsResponse.md)
  - [ProductUnit](doc/ProductUnit.md)
+ - [RecentActivityResponse](doc/RecentActivityResponse.md)
  - [ReturnProduct](doc/ReturnProduct.md)
+ - [SaleCustomer](doc/SaleCustomer.md)
+ - [SaleDetailResponse](doc/SaleDetailResponse.md)
+ - [SaleHistoryPage](doc/SaleHistoryPage.md)
+ - [SaleHistoryResponse](doc/SaleHistoryResponse.md)
+ - [SaleProduct](doc/SaleProduct.md)
+ - [SaleRecord](doc/SaleRecord.md)
+ - [SaleSeller](doc/SaleSeller.md)
  - [SalesTransaction](doc/SalesTransaction.md)
+ - [ScanForSaleResponse](doc/ScanForSaleResponse.md)
+ - [ScanForSaleResult](doc/ScanForSaleResult.md)
+ - [SellerDashboardStats](doc/SellerDashboardStats.md)
+ - [SellerDashboardStatsResponse](doc/SellerDashboardStatsResponse.md)
+ - [SellerDetail](doc/SellerDetail.md)
+ - [SellerDetailResponse](doc/SellerDetailResponse.md)
+ - [SellerRecentSale](doc/SellerRecentSale.md)
+ - [SellerShopSummary](doc/SellerShopSummary.md)
+ - [SellerStatistics](doc/SellerStatistics.md)
+ - [SellersListResponse](doc/SellersListResponse.md)
  - [Shipment](doc/Shipment.md)
  - [ShipmentItem](doc/ShipmentItem.md)
  - [StockRequest](doc/StockRequest.md)
  - [StockRequestItem](doc/StockRequestItem.md)
+ - [TransferInventoryCount](doc/TransferInventoryCount.md)
+ - [UpdateStockRequest](doc/UpdateStockRequest.md)
+ - [UpdateStockResponse](doc/UpdateStockResponse.md)
+ - [UpdateStockResult](doc/UpdateStockResult.md)
  - [User](doc/User.md)
+ - [VerifyProductInfo](doc/VerifyProductInfo.md)
+ - [VerifyProductPayload](doc/VerifyProductPayload.md)
+ - [VerifyProductRequest](doc/VerifyProductRequest.md)
+ - [VerifyProductResponse](doc/VerifyProductResponse.md)
+ - [VerifyProductUnit](doc/VerifyProductUnit.md)
 
 
 ## Documentation For Authorization

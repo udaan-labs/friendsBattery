@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'api_exceptions.dart';
-import '../storage/secure_storage.dart';
+import '../storage/auth_token_cache.dart';
+import 'perf_interceptor.dart';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
 import '../../app/router/app_router.dart';
@@ -8,15 +9,21 @@ import '../../app/router/app_router.dart';
 class ApiInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
-    final authData = await SecureStorage.getAuthData();
-    final token = authData['auth_key'];
-    final authId = authData['auth_id'];
-    if (token != null) {
+    // Prefer in-memory tokens (sync). Cold path loads secure storage once.
+    if (!AuthTokenCache.hasTokens) {
+      await AuthTokenCache.ensureLoaded();
+    }
+
+    final token = AuthTokenCache.authKey;
+    final authId = AuthTokenCache.authId;
+    if (token != null && token.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $token';
     }
-    if (authId != null) {
+    if (authId != null && authId.isNotEmpty) {
       options.headers['auth-id'] = authId;
     }
+
+    PerfInterceptor.markAuthDone(options);
     handler.next(options);
   }
 
@@ -39,7 +46,7 @@ class ApiInterceptor extends Interceptor {
       case DioExceptionType.badResponse:
         final statusCode = err.response?.statusCode;
         final responseData = err.response?.data;
-        
+
         if (responseData is Map && responseData['data'] is Map && responseData['data']['message'] != null) {
           errorMessage = responseData['data']['message'].toString();
         } else if (responseData is Map && responseData['message'] != null) {

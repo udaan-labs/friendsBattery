@@ -3,7 +3,7 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:friends_battery_api/src/model/api_seller_dashboard_stats_get200_response_data.dart';
+import 'package:friends_battery_api/src/model/seller_dashboard_stats.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -24,7 +24,7 @@ abstract class ApiSellerDashboardStatsGet200Response implements Built<ApiSellerD
   String? get message;
 
   @BuiltValueField(wireName: r'data')
-  ApiSellerDashboardStatsGet200ResponseData? get data;
+  SellerDashboardStats? get data;
 
   ApiSellerDashboardStatsGet200Response._();
 
@@ -67,7 +67,7 @@ class _$ApiSellerDashboardStatsGet200ResponseSerializer implements PrimitiveSeri
       yield r'data';
       yield serializers.serialize(
         object.data,
-        specifiedType: const FullType(ApiSellerDashboardStatsGet200ResponseData),
+        specifiedType: const FullType(SellerDashboardStats),
       );
     }
   }
@@ -110,8 +110,8 @@ class _$ApiSellerDashboardStatsGet200ResponseSerializer implements PrimitiveSeri
         case r'data':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(ApiSellerDashboardStatsGet200ResponseData),
-          ) as ApiSellerDashboardStatsGet200ResponseData;
+            specifiedType: const FullType(SellerDashboardStats),
+          ) as SellerDashboardStats;
           result.data.replace(valueDes);
           break;
         default:

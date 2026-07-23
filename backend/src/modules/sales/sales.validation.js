@@ -41,6 +41,8 @@ const salesHistorySchema = z.object({
     searchSerial: z.string().optional(),
     fromDate: z.string().datetime().optional(),
     toDate: z.string().datetime().optional(),
+    filter: z.enum(['today', 'date', 'all']).optional(),
+    date: z.string().optional(),
   }),
 });
 

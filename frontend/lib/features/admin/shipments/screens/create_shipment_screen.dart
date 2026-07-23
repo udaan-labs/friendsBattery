@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:dio/dio.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
-import '../../../../core/network/api_client.dart';
 import '../providers/shipment_provider.dart';
 import '../repository/shipment_repository.dart';
-import '../../dashboard/providers/dashboard_controller.dart';
+import '../../../../core/state/data_sync.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
 import '../../../../shared/widgets/scanner_screen.dart';
 
@@ -21,6 +19,9 @@ class TransferRowState {
   final priceController = TextEditingController();
   final manualSerialController = TextEditingController();
   List<String> scannedSerials = [];
+  /// Serials currently AVAILABLE under admin for this product/model.
+  List<String> availableSerials = [];
+  bool isLoadingSerials = false;
 
   List<Map<String, String>> productModels = [];
 
@@ -111,29 +112,15 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
     }
 
     try {
-      final dio = ApiClient().dio;
-      final response = await dio.get('/api/products/inventory-products');
-      final body = response.data;
+      final repo = ref.read(shipmentRepositoryProvider);
+      final inventoryList = await repo.getInventoryProducts();
 
-      List<dynamic> rawList = [];
-      if (body is Map && body['data'] is List) {
-        rawList = body['data'];
-      }
-
-      List<Map<String, String>> namesList = [];
-      List<Map<String, dynamic>> inventoryList = [];
-      
-      for (var item in rawList) {
-        if (item is Map<String, dynamic>) {
-          inventoryList.add(item);
-          final productName = item['productName']?.toString() ?? '';
-          final productNameId = item['productNameId']?.toString() ?? '';
-          if (productName.isNotEmpty && productNameId.isNotEmpty) {
-            namesList.add({
-              'id': productNameId,
-              'name': productName,
-            });
-          }
+      final namesList = <Map<String, String>>[];
+      for (final item in inventoryList) {
+        final productName = item['productName']?.toString() ?? '';
+        final productNameId = item['productNameId']?.toString() ?? '';
+        if (productName.isNotEmpty && productNameId.isNotEmpty) {
+          namesList.add({'id': productNameId, 'name': productName});
         }
       }
 
@@ -200,7 +187,55 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
       row.productModelId = modelId;
       row.productId = resolvedProdId;
       row.availableStock = stockCount ?? 0;
+      row.scannedSerials = [];
+      row.availableSerials = [];
     });
+    _loadAvailableSerials(rowIndex);
+  }
+
+  Future<void> _loadAvailableSerials(int rowIndex) async {
+    final row = _rows[rowIndex];
+    final nameId = int.tryParse(row.productNameId ?? '');
+    final modelId = int.tryParse(row.productModelId ?? '');
+    if (nameId == null || modelId == null) return;
+
+    setState(() => row.isLoadingSerials = true);
+    try {
+      final repo = ref.read(shipmentRepositoryProvider);
+      final serials = await repo.getAvailableSerials(
+        productNameId: nameId,
+        productModelId: modelId,
+      );
+      if (!mounted) return;
+      setState(() {
+        row.availableSerials = serials;
+        row.availableStock = serials.length;
+        row.isLoadingSerials = false;
+      });
+    } catch (e) {
+      debugPrint('Error loading available serials: $e');
+      if (mounted) setState(() => row.isLoadingSerials = false);
+    }
+  }
+
+  bool _tryAddSerial(TransferRowState row, String raw) {
+    final serial = raw.trim();
+    if (serial.isEmpty) return false;
+    if (row.scannedSerials.contains(serial)) {
+      context.showErrorSnackBar('Serial number already added');
+      return false;
+    }
+    if (row.availableSerials.isNotEmpty && !row.availableSerials.contains(serial)) {
+      context.showErrorSnackBar(
+        'Serial unavailable or not in admin inventory for this product',
+      );
+      return false;
+    }
+    setState(() {
+      row.scannedSerials.add(serial);
+      row.manualSerialController.clear();
+    });
+    return true;
   }
 
   Future<void> _selectDispatchDate(BuildContext context) async {
@@ -307,27 +342,33 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
 
     try {
       final repo = ref.read(shipmentRepositoryProvider);
-      await repo.createShipment(
+      final result = await repo.createShipment(
         sellerId: _selectedSellerId!,
         items: itemsPayload,
       );
 
       if (mounted) {
-        context.showSuccessSnackBar('Shipment created successfully');
-
-        // Refresh list provider and dashboard data
-        ref.invalidate(shipmentsListProvider);
-        ref.read(dashboardControllerProvider).refreshAllData();
-
-        // Navigate back to shipment list
+        final count = result.transferredUnits > 0
+            ? result.transferredUnits
+            : itemsPayload.fold<int>(
+                0,
+                (sum, item) => sum + ((item['serial_numbers'] as List?)?.length ?? 0),
+              );
+        context.showSuccessSnackBar(
+          'Transferred $count unit(s) to seller successfully',
+        );
+        // Refresh admin/seller inventory + shipment lists (SSOT).
+        DataSync.afterShipmentMutation(ref);
         context.pop();
       }
     } catch (e) {
-      // Handled automatically by ApiInterceptor
+      // Handled automatically by ApiInterceptor (error snackbar)
     } finally {
-      setState(() {
-        _isSubmitting = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
     }
   }
 
@@ -695,21 +736,21 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                                           borderRadius: BorderRadius.circular(10),
                                         ),
                                       ),
-                                      onPressed: () async {
-                                        final scanned = await Navigator.of(context).push<String>(
-                                          MaterialPageRoute(builder: (_) => const ScannerScreen()),
-                                        );
-                                        if (scanned != null && scanned.trim().isNotEmpty) {
-                                          if (!row.scannedSerials.contains(scanned.trim())) {
-                                            setState(() {
-                                              row.scannedSerials.add(scanned.trim());
-                                            });
-                                          } else {
-                                            if (mounted) context.showErrorSnackBar('Serial number already scanned');
-                                          }
-                                        }
-                                      },
+                                      onPressed: row.productModelId == null
+                                          ? null
+                                          : () async {
+                                              final scanned = await Navigator.of(context).push<String>(
+                                                MaterialPageRoute(builder: (_) => const ScannerScreen()),
+                                              );
+                                              if (scanned != null && scanned.trim().isNotEmpty && mounted) {
+                                                _tryAddSerial(row, scanned);
+                                              }
+                                            },
                                     ),
+                                    if (row.isLoadingSerials) ...[
+                                      const SizedBox(height: 8),
+                                      const LinearProgressIndicator(minHeight: 2),
+                                    ],
                                     const SizedBox(height: 12),
                                     Row(
                                       children: [
@@ -722,27 +763,32 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                                               contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                                             ),
+                                            onFieldSubmitted: (val) => _tryAddSerial(row, val),
                                           ),
                                         ),
                                         const SizedBox(width: 8),
                                         IconButton(
                                           icon: const Icon(Icons.add_circle, color: Color(0xFF006B2C), size: 32),
-                                          onPressed: () {
-                                            final val = row.manualSerialController.text.trim();
-                                            if (val.isNotEmpty) {
-                                              if (!row.scannedSerials.contains(val)) {
-                                                setState(() {
-                                                  row.scannedSerials.add(val);
-                                                  row.manualSerialController.clear();
-                                                });
-                                              } else {
-                                                context.showErrorSnackBar('Serial number already added');
-                                              }
-                                            }
-                                          },
+                                          onPressed: () => _tryAddSerial(row, row.manualSerialController.text),
                                         ),
                                       ],
                                     ),
+                                    if (row.scannedSerials.isNotEmpty) ...[
+                                      const SizedBox(height: 8),
+                                      Wrap(
+                                        spacing: 6,
+                                        runSpacing: 6,
+                                        children: row.scannedSerials.map((s) {
+                                          return Chip(
+                                            label: Text(s, style: const TextStyle(fontSize: 12)),
+                                            onDeleted: () {
+                                              setState(() => row.scannedSerials.remove(s));
+                                            },
+                                            deleteIconColor: const Color(0xFFBA1A1A),
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ],
                                   ],
                                 ),
                                 const SizedBox(height: 16),

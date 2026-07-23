@@ -31,17 +31,7 @@ const { requireSeller } = require('../../shared/middleware/role.middleware');
  *                   type: string
  *                   example: Seller dashboard stats retrieved successfully
  *                 data:
- *                   type: object
- *                   properties:
- *                     totalStock:
- *                       type: integer
- *                       example: 1284
- *                     todaySales:
- *                       type: integer
- *                       example: 14
- *                     pendingShipments:
- *                       type: integer
- *                       example: 4
+ *                   $ref: '#/components/schemas/SellerDashboardStats'
  *       401:
  *         description: Unauthorized
  *       403:

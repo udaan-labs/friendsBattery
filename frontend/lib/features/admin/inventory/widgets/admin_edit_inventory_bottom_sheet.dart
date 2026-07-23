@@ -1,12 +1,12 @@
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
-import '../../../../core/network/api_client_provider.dart';
+import '../../../../core/state/data_sync.dart';
 import '../../../../core/storage/session_manager.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
-import '../../../shared/inventory/repository/shared_inventory_repository.dart';
 import '../../../shared/inventory/providers/inventory_provider.dart';
+import '../../../shared/inventory/repository/shared_inventory_repository.dart';
 
 class AdminEditInventoryBottomSheet extends ConsumerStatefulWidget {
   final SharedInventoryItemModel item;
@@ -56,23 +56,27 @@ class _AdminEditInventoryBottomSheetState extends ConsumerState<AdminEditInvento
     setState(() => _isSubmitting = true);
 
     try {
-      final dio = ref.read(dioProvider);
+      final repo = ref.read(sharedInventoryRepositoryProvider);
       final quantityToAdd = int.tryParse(_quantityController.text) ?? 0;
       final quantityToRemove = int.tryParse(_removeQuantityController.text) ?? 0;
       final minPrice = num.tryParse(_minPriceController.text);
       final minAdminQty = int.tryParse(_minAdminQuantityController.text);
       final minSellerQty = int.tryParse(_minSellerQuantityController.text);
 
-      if (quantityToAdd > 0 || minPrice != null || minAdminQty != null || minSellerQty != null || _onSale != widget.item.onSale) {
-        await dio.post('/api/inventory/update-stock', data: {
-          'productNameId': widget.item.productNameId,
-          'productModelId': widget.item.productModelId,
-          if (quantityToAdd > 0) 'quantity': quantityToAdd,
-          if (minPrice != null) 'minSellPrice': minPrice,
-          if (minAdminQty != null) 'minUnitCountAdmin': minAdminQty,
-          if (minSellerQty != null) 'minUnitCountSeller': minSellerQty,
-          'onSale': _onSale,
-        });
+      if (quantityToAdd > 0 ||
+          minPrice != null ||
+          minAdminQty != null ||
+          minSellerQty != null ||
+          _onSale != widget.item.onSale) {
+        await repo.updateStock(
+          productNameId: widget.item.productNameId,
+          productModelId: widget.item.productModelId,
+          quantity: quantityToAdd > 0 ? quantityToAdd : null,
+          minSellPrice: minPrice,
+          minUnitCountAdmin: minAdminQty,
+          minUnitCountSeller: minSellerQty,
+          onSale: _onSale,
+        );
       }
 
       if (quantityToRemove > 0) {
@@ -83,17 +87,17 @@ class _AdminEditInventoryBottomSheetState extends ConsumerState<AdminEditInvento
           final decoded = utf8.decode(base64Decode(authIdStr));
           userId = int.parse(decoded.split(':')[0]);
         } catch (_) {}
-        
-        await dio.patch('/api/inventory/adjust', data: {
-          'product_id': widget.item.productId,
-          'user_id': userId,
-          'adjustment_quantity': -quantityToRemove,
-        });
+
+        await repo.adjustInventory(
+          productId: widget.item.productId,
+          userId: userId,
+          adjustmentQuantity: -quantityToRemove,
+        );
       }
 
       if (mounted) {
         context.showSuccessSnackBar('Stock updated successfully!');
-        ref.invalidate(sharedInventoryProvider);
+        DataSync.afterStockMutation(ref, productId: widget.item.productId);
         Navigator.of(context).pop();
       }
     } on DioException catch (e) {

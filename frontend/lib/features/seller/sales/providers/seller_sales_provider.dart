@@ -4,8 +4,7 @@ import '../models/seller_sale.dart';
 import '../repositories/seller_sales_repository.dart';
 
 final sellerSalesRepositoryProvider = Provider<SellerSalesRepository>((ref) {
-  final dio = ref.watch(apiClientProvider).dio;
-  return SellerSalesRepository(dio);
+  return SellerSalesRepository(api: ref.watch(apiClientProvider));
 });
 
 class SellerSalesState {

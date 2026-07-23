@@ -31,20 +31,7 @@ const { requireAdmin } = require('../../shared/middleware/role.middleware');
  *                   type: string
  *                   example: Dashboard stats retrieved successfully
  *                 data:
- *                   type: object
- *                   properties:
- *                     totalStock:
- *                       type: integer
- *                       example: 120
- *                     todaySales:
- *                       type: integer
- *                       example: 35
- *                     pendingRequests:
- *                       type: integer
- *                       example: 8
- *                     totalSellers:
- *                       type: integer
- *                       example: 12
+ *                   $ref: '#/components/schemas/AdminDashboardStats'
  *       401:
  *         description: Unauthorized
  *       403:
@@ -70,6 +57,10 @@ router.get(
  *     responses:
  *       200:
  *         description: Recent activity retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RecentActivityResponse'
  */
 router.get(
   '/recent-activity',
@@ -86,9 +77,22 @@ router.get(
  *     tags: [Dashboard]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
  *         description: Activity history retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ActivityHistoryResponse'
  */
 router.get(
   '/activity-history',
