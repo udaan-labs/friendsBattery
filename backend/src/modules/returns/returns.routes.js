@@ -34,6 +34,28 @@ const { authenticate } = require('../../shared/middleware/auth.middleware');
 // Route to submit/process a product return
 router.post('/', authenticate, returnsController.processReturn);
 
+/**
+ * @swagger
+ * /api/returns:
+ *   get:
+ *     summary: List product returns (seller own, admin all)
+ *     tags: [Returns]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Returns fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ReturnsListResponse'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 // Route to list product returns
 router.get('/', authenticate, returnsController.getReturns);
 

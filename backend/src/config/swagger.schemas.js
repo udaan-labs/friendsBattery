@@ -25,6 +25,53 @@ module.exports = {
       updatedAt: { type: 'string', format: 'date-time' }
     }
   },
+  // Login payload user (snake_case — matches auth.service loginUser)
+  LoginUser: {
+    type: 'object',
+    properties: {
+      username: { type: 'string' },
+      user_number: { type: 'string', nullable: true },
+      shop_name: { type: 'string', nullable: true },
+      role: { type: 'string', enum: ['ADMIN', 'SELLER'] }
+    }
+  },
+  LoginData: {
+    type: 'object',
+    properties: {
+      auth_id: { type: 'string' },
+      auth_key: { type: 'string' },
+      user: { $ref: '#/components/schemas/LoginUser' }
+    }
+  },
+  LoginResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean' },
+      message: { type: 'string' },
+      data: { $ref: '#/components/schemas/LoginData' }
+    }
+  },
+  RegisterData: {
+    type: 'object',
+    properties: {
+      user_id: { type: 'string' },
+      username: { type: 'string' },
+      user_number: { type: 'string', nullable: true },
+      shop_name: { type: 'string', nullable: true },
+      role: { type: 'string' },
+      is_active: { type: 'boolean' },
+      is_verified: { type: 'boolean' },
+      created_at: { type: 'string', format: 'date-time' }
+    }
+  },
+  RegisterResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean' },
+      message: { type: 'string' },
+      data: { $ref: '#/components/schemas/RegisterData' }
+    }
+  },
   Customer: {
     type: 'object',
     properties: {
@@ -656,6 +703,57 @@ module.exports = {
       returnById: { type: 'string', nullable: true },
       returnToId: { type: 'string', nullable: true },
       createdAt: { type: 'string', format: 'date-time' }
+    }
+  },
+  ReturnListProductName: {
+    type: 'object',
+    properties: {
+      id: { type: 'string' },
+      name: { type: 'string' }
+    }
+  },
+  ReturnListProductModel: {
+    type: 'object',
+    properties: {
+      id: { type: 'string' },
+      name: { type: 'string' },
+      productNameId: { type: 'string' }
+    }
+  },
+  ReturnListProduct: {
+    type: 'object',
+    properties: {
+      id: { type: 'string' },
+      productNameId: { type: 'string' },
+      productModelId: { type: 'string' },
+      productName: { $ref: '#/components/schemas/ReturnListProductName' },
+      productModel: { $ref: '#/components/schemas/ReturnListProductModel' }
+    }
+  },
+  ReturnListItem: {
+    type: 'object',
+    properties: {
+      id: { type: 'string' },
+      transactionId: { type: 'string', nullable: true },
+      productId: { type: 'string', nullable: true },
+      serialNumber: { type: 'string', nullable: true },
+      reason: { type: 'string', nullable: true },
+      returnType: { type: 'string', nullable: true },
+      returnById: { type: 'string', nullable: true },
+      returnToId: { type: 'string', nullable: true },
+      createdAt: { type: 'string', format: 'date-time' },
+      product: { $ref: '#/components/schemas/ReturnListProduct' }
+    }
+  },
+  ReturnsListResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean' },
+      message: { type: 'string' },
+      data: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/ReturnListItem' }
+      }
     }
   },
 

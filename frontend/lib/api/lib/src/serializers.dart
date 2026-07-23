@@ -84,6 +84,9 @@ import 'package:friends_battery_api/src/model/inventory_product_name_group.dart'
 import 'package:friends_battery_api/src/model/inventory_products_response.dart';
 import 'package:friends_battery_api/src/model/inventory_transaction.dart';
 import 'package:friends_battery_api/src/model/list_product_models_request.dart';
+import 'package:friends_battery_api/src/model/login_data.dart';
+import 'package:friends_battery_api/src/model/login_response.dart';
+import 'package:friends_battery_api/src/model/login_user.dart';
 import 'package:friends_battery_api/src/model/product.dart';
 import 'package:friends_battery_api/src/model/product_created.dart';
 import 'package:friends_battery_api/src/model/product_model.dart';
@@ -96,7 +99,14 @@ import 'package:friends_battery_api/src/model/product_stock_details.dart';
 import 'package:friends_battery_api/src/model/product_stock_details_response.dart';
 import 'package:friends_battery_api/src/model/product_unit.dart';
 import 'package:friends_battery_api/src/model/recent_activity_response.dart';
+import 'package:friends_battery_api/src/model/register_data.dart';
+import 'package:friends_battery_api/src/model/register_response.dart';
+import 'package:friends_battery_api/src/model/return_list_item.dart';
+import 'package:friends_battery_api/src/model/return_list_product.dart';
+import 'package:friends_battery_api/src/model/return_list_product_model.dart';
+import 'package:friends_battery_api/src/model/return_list_product_name.dart';
 import 'package:friends_battery_api/src/model/return_product.dart';
+import 'package:friends_battery_api/src/model/returns_list_response.dart';
 import 'package:friends_battery_api/src/model/sale_customer.dart';
 import 'package:friends_battery_api/src/model/sale_detail_response.dart';
 import 'package:friends_battery_api/src/model/sale_history_page.dart';
@@ -203,6 +213,9 @@ part 'serializers.g.dart';
   InventoryProductsResponse,
   InventoryTransaction,
   ListProductModelsRequest,
+  LoginData,
+  LoginResponse,
+  LoginUser,
   Product,
   ProductCreated,
   ProductModel,
@@ -215,7 +228,14 @@ part 'serializers.g.dart';
   ProductStockDetailsResponse,
   ProductUnit,
   RecentActivityResponse,
+  RegisterData,
+  RegisterResponse,
+  ReturnListItem,
+  ReturnListProduct,
+  ReturnListProductModel,
+  ReturnListProductName,
   ReturnProduct,
+  ReturnsListResponse,
   SaleCustomer,
   SaleDetailResponse,
   SaleHistoryPage,

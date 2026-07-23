@@ -103,21 +103,21 @@ Must not:
 | 3 | Shipments read + seller accept | Done |
 | 4 | Inventory mutations | Done |
 | 5 | Product catalog | Done |
-| 6 | Auth | Mostly — calls generated `AuthApi`; login response still loosely typed (`Response<void>` + map parse) |
-| 7 | Admin dashboard | Done (some activity rows still as maps after mapping from gen client) |
+| 6 | Auth | Done — `LoginResponse` / `RegisterResponse` typed; session stores Hive-safe map from `LoginUser` |
+| 7 | Admin dashboard | Done |
 | 8 | Seller dashboard | Done |
 | 9 | Sales | Done — repos map `SaleRecord` / `AdminSaleRecord` → UI models |
 | 10 | Sellers / shops | Done |
-| 11 | Returns create + product-units verify | Done for POST/verify; **GET `/api/returns` not in OpenAPI** (screen still uses raw Dio for history) |
+| 11 | Returns | Done — POST + GET via `ReturnsApi` (`ReturnListItem`) |
 | 12 | Health | Done |
 
 ---
 
 ## Residual debt (OpenAPI models first)
 
-1. **GET `/api/returns`** — backend route exists; add Swagger schema → export → regen → replace raw `dio.get` in `seller_return_product_screen.dart`.  
-2. **Auth login/register responses** — typed OpenAPI schemas instead of `Response<void>` + dynamic maps.  
-3. **Remaining UI `Map<String, dynamic>`** — dashboard activity, some inventory/shipment helpers; prefer generated types or explicit presentation models mapped once in repos.  
+1. **Local session user** — Hive still stores a plain map projected from `LoginUser` (storage, not API I/O).  
+2. **UI presentation models** — e.g. `SaleSuccessData`, shipment list cards; OK when mapped from OpenAPI or pure local nav state.  
+3. **Activate auth** — still `Response<void>` until needed typed.
 4. **UI importing `friends_battery_api`** — allowed for pure DTO display; keep network calls out of widgets (use providers/repos).  
 
 ---

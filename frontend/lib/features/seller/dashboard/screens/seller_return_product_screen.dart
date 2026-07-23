@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
-import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_client_provider.dart';
 import '../../../../core/state/data_sync.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
@@ -35,7 +34,7 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
   bool _isVerifiedValid = false;
 
   // Return history state variables
-  List<dynamic> _returnsHistory = [];
+  List<ReturnListItem> _returnsHistory = [];
   bool _isLoadingHistory = false;
   String? _historyError;
 
@@ -68,15 +67,11 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
     });
 
     try {
-      // ponytail: GET /api/returns not in OpenAPI yet — raw Dio until swagger + gen.
-      final response = await ApiClient().dio.get('/api/returns');
-      final data = response.data;
+      final response = await ref.read(apiClientProvider).getReturnsApi().apiReturnsGet();
       if (mounted) {
-        if (data is Map<String, dynamic> && data['data'] != null) {
-          setState(() {
-            _returnsHistory = data['data'];
-          });
-        }
+        setState(() {
+          _returnsHistory = response.data?.data?.toList() ?? [];
+        });
       }
     } catch (e) {
       if (mounted) {
@@ -663,18 +658,13 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
         itemCount: _returnsHistory.length,
         itemBuilder: (context, index) {
           final record = _returnsHistory[index];
-          final product = record['product'] ?? {};
-          final productName = product['productName']?['name'] ?? 'Unknown Product';
-          final productModel = product['productModel']?['name'] ?? 'N/A';
-          final serialNumber = record['serialNumber'] ?? 'No Serial';
-          final reason = record['reason'] ?? 'No reason provided';
-          
-          DateTime? dateParsed;
-          if (record['createdAt'] != null) {
-            dateParsed = DateTime.tryParse(record['createdAt']);
-          }
+          final productName = record.product?.productName?.name ?? 'Unknown Product';
+          final productModel = record.product?.productModel?.name ?? 'N/A';
+          final serialNumber = record.serialNumber ?? 'No Serial';
+          final reason = record.reason ?? 'No reason provided';
+          final dateParsed = record.createdAt;
           final formattedDate = dateParsed != null
-              ? DateFormat('dd MMM yyyy, hh:mm a').format(dateParsed)
+              ? DateFormat('dd MMM yyyy, hh:mm a').format(dateParsed.toLocal())
               : 'Unknown Date';
 
           return Card(

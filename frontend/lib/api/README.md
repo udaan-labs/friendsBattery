@@ -91,6 +91,7 @@ Class | Method | HTTP request | Description
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsProductModelsPost**](doc/ProductsApi.md#apiproductsproductmodelspost) | **POST** /api/products/product-models | Create a product model
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsProductNamesGet**](doc/ProductsApi.md#apiproductsproductnamesget) | **GET** /api/products/product-names | Return all product names
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsProductNamesPost**](doc/ProductsApi.md#apiproductsproductnamespost) | **POST** /api/products/product-names | Create a product name
+[*ReturnsApi*](doc/ReturnsApi.md) | [**apiReturnsGet**](doc/ReturnsApi.md#apireturnsget) | **GET** /api/returns | List product returns (seller own, admin all)
 [*ReturnsApi*](doc/ReturnsApi.md) | [**apiReturnsPost**](doc/ReturnsApi.md#apireturnspost) | **POST** /api/returns | Process a product return (seller)
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesAdminHistoryGet**](doc/SalesApi.md#apisalesadminhistoryget) | **GET** /api/sales/admin/history | Return all sales across all sellers with pagination, search, filters, and shipment tracing (Admin only)
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesGet**](doc/SalesApi.md#apisalesget) | **GET** /api/sales | Return all sales based on role (Admin sees all, Seller sees own)
@@ -184,6 +185,9 @@ Class | Method | HTTP request | Description
  - [InventoryProductsResponse](doc/InventoryProductsResponse.md)
  - [InventoryTransaction](doc/InventoryTransaction.md)
  - [ListProductModelsRequest](doc/ListProductModelsRequest.md)
+ - [LoginData](doc/LoginData.md)
+ - [LoginResponse](doc/LoginResponse.md)
+ - [LoginUser](doc/LoginUser.md)
  - [Product](doc/Product.md)
  - [ProductCreated](doc/ProductCreated.md)
  - [ProductModel](doc/ProductModel.md)
@@ -196,7 +200,14 @@ Class | Method | HTTP request | Description
  - [ProductStockDetailsResponse](doc/ProductStockDetailsResponse.md)
  - [ProductUnit](doc/ProductUnit.md)
  - [RecentActivityResponse](doc/RecentActivityResponse.md)
+ - [RegisterData](doc/RegisterData.md)
+ - [RegisterResponse](doc/RegisterResponse.md)
+ - [ReturnListItem](doc/ReturnListItem.md)
+ - [ReturnListProduct](doc/ReturnListProduct.md)
+ - [ReturnListProductModel](doc/ReturnListProductModel.md)
+ - [ReturnListProductName](doc/ReturnListProductName.md)
  - [ReturnProduct](doc/ReturnProduct.md)
+ - [ReturnsListResponse](doc/ReturnsListResponse.md)
  - [SaleCustomer](doc/SaleCustomer.md)
  - [SaleDetailResponse](doc/SaleDetailResponse.md)
  - [SaleHistoryPage](doc/SaleHistoryPage.md)

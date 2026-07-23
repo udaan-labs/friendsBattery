@@ -9,6 +9,7 @@ import '../../../../core/state/data_sync.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
 import '../../../../shared/widgets/scanner_screen.dart';
 import '../../sales/providers/seller_sales_provider.dart';
+import '../models/sale_success_data.dart';
 
 class CreateBillScreen extends ConsumerStatefulWidget {
   const CreateBillScreen({super.key});
@@ -158,19 +159,20 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
       if (mounted) {
         context.showSuccessSnackBar('Sale recorded successfully');
         DataSync.afterSaleMutation(ref);
-        final saleData = {
-          'customer_name': _customerNameController.text,
-          'customer_number': _customerMobileController.text,
-          'product_name': '$_selectedProductName $_selectedProductModel',
-          'serial_number': serialValue,
-          'sell_price': sellPrice,
-          'invoice_number':
-              'INV-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}',
-          'sale_date': DateTime.now(),
-          'seller_name': 'Friends Battery Seller',
-        };
-
-        context.go('/seller/sale-success', extra: saleData);
+        context.go(
+          '/seller/sale-success',
+          extra: SaleSuccessData(
+            customerName: _customerNameController.text,
+            customerNumber: _customerMobileController.text,
+            productName: '$_selectedProductName $_selectedProductModel',
+            serialNumber: serialValue,
+            sellPrice: sellPrice,
+            invoiceNumber:
+                'INV-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}',
+            saleDate: DateTime.now(),
+            sellerName: 'Friends Battery Seller',
+          ),
+        );
       }
     } catch (e) {
       if (mounted && e is! DioException) {

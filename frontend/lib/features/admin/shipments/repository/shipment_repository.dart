@@ -90,13 +90,13 @@ class ShipmentDetailModel {
   });
 }
 
-/// Result of admin → seller serial transfer (domain, not OpenAPI type).
+/// Result of admin → seller serial transfer (OpenAPI inventory rows).
 class TransferResult {
   final int shipmentId;
   final String shipmentNumber;
   final int transferredUnits;
   final int sellerId;
-  final List<Map<String, dynamic>> inventory;
+  final List<TransferInventoryCount> inventory;
 
   TransferResult({
     required this.shipmentId,
@@ -195,24 +195,11 @@ class ShipmentRepository {
   /// Admin → seller serial transfer via generated client.
   Future<TransferResult> createShipment({
     required int sellerId,
-    required List<Map<String, dynamic>> items,
+    required List<CreateShipmentItem> items,
   }) async {
-    final builtItems = items.map((item) {
-      final serials = (item['serial_numbers'] as List)
-          .map((e) => e.toString())
-          .toList();
-      return CreateShipmentItem((b) {
-        b.productNameId = item['product_name_id'] as int;
-        b.productModelId = item['product_model_id'] as int;
-        b.serialNumbers.replace(serials);
-        final price = item['price_per_piece'];
-        if (price is num) b.pricePerPiece = price;
-      });
-    }).toList();
-
     final request = CreateShipmentRequest((b) {
       b.sellerId = sellerId;
-      b.items.replace(builtItems);
+      b.items.replace(items);
     });
 
     final response = await _shipments.apiShipmentsPost(
@@ -234,18 +221,7 @@ class ShipmentRepository {
       shipmentNumber: data.shipmentNumber ?? '',
       transferredUnits: data.transferredUnits ?? 0,
       sellerId: data.sellerId ?? sellerId,
-      inventory: (data.inventory?.toList() ?? [])
-          .map(
-            (row) => <String, dynamic>{
-              'productId': row.productId,
-              'productName': row.productName,
-              'productModel': row.productModel,
-              'transferred': row.transferred,
-              'adminAvailable': row.adminAvailable,
-              'sellerAvailable': row.sellerAvailable,
-            },
-          )
-          .toList(),
+      inventory: data.inventory?.toList() ?? [],
     );
   }
 
@@ -268,27 +244,8 @@ class ShipmentRepository {
   }
 
   /// Products grouped by name for transfer form dropdowns.
-  Future<List<Map<String, dynamic>>> getInventoryProducts() async {
+  Future<List<InventoryProductNameGroup>> getInventoryProducts() async {
     final response = await _products.apiProductsInventoryProductsGet();
-    final groups = response.data?.data;
-    if (groups == null) return [];
-
-    return groups.map((g) {
-      return <String, dynamic>{
-        'productName': g.productName ?? '',
-        'productNameId': g.productNameId,
-        'models': (g.models?.toList() ?? [])
-            .map(
-              (m) => <String, dynamic>{
-                'id': m.id,
-                'productModelId': m.productModelId,
-                'productModel': m.productModel ?? '',
-                'availableQuantity': m.availableQuantity ?? 0,
-                'minSellPrice': m.minSellPrice,
-              },
-            )
-            .toList(),
-      };
-    }).toList();
+    return response.data?.data?.toList() ?? [];
   }
 }

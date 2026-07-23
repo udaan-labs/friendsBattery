@@ -11,6 +11,9 @@ import 'package:dio/dio.dart';
 import 'package:friends_battery_api/src/model/api_auth_activate_put_request.dart';
 import 'package:friends_battery_api/src/model/api_auth_login_post_request.dart';
 import 'package:friends_battery_api/src/model/api_auth_register_post_request.dart';
+import 'package:friends_battery_api/src/model/error.dart';
+import 'package:friends_battery_api/src/model/login_response.dart';
+import 'package:friends_battery_api/src/model/register_response.dart';
 
 class AuthApi {
 
@@ -105,9 +108,9 @@ class AuthApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future]
+  /// Returns a [Future] containing a [Response] with a [LoginResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<void>> apiAuthLoginPost({ 
+  Future<Response<LoginResponse>> apiAuthLoginPost({ 
     required ApiAuthLoginPostRequest apiAuthLoginPostRequest,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -163,7 +166,35 @@ class AuthApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    return _response;
+    LoginResponse? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(LoginResponse),
+      ) as LoginResponse;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<LoginResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
   }
 
   /// Register a new user
@@ -178,9 +209,9 @@ class AuthApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future]
+  /// Returns a [Future] containing a [Response] with a [RegisterResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<void>> apiAuthRegisterPost({ 
+  Future<Response<RegisterResponse>> apiAuthRegisterPost({ 
     required ApiAuthRegisterPostRequest apiAuthRegisterPostRequest,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -236,7 +267,35 @@ class AuthApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    return _response;
+    RegisterResponse? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(RegisterResponse),
+      ) as RegisterResponse;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<RegisterResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
   }
 
 }

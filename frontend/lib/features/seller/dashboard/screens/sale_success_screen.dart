@@ -6,10 +6,11 @@ import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
+import '../models/sale_success_data.dart';
 import '../widgets/invoice_widget.dart';
 
 class SaleSuccessScreen extends StatefulWidget {
-  final Map<String, dynamic> saleData;
+  final SaleSuccessData saleData;
 
   const SaleSuccessScreen({super.key, required this.saleData});
 
@@ -21,27 +22,20 @@ class _SaleSuccessScreenState extends State<SaleSuccessScreen> {
   final ScreenshotController _screenshotController = ScreenshotController();
   bool _isSharing = false;
 
-  String _getWhatsAppMessage(Map<String, dynamic> data) {
-    final customerName = data['customer_name'] ?? 'Customer';
-    final invoiceNumber = data['invoice_number'] ?? 'INV-N/A';
-    final saleDate = data['sale_date'] as DateTime? ?? DateTime.now();
-    final productName = data['product_name'] ?? 'Product';
-    final serialNumber = data['serial_number'] ?? 'N/A';
-    final sellingPrice = data['sell_price']?.toString() ?? '0.00';
+  String _getWhatsAppMessage(SaleSuccessData data) {
+    final dateStr = DateFormat('dd MMM yyyy').format(data.saleDate);
 
-    final dateStr = DateFormat('dd MMM yyyy').format(saleDate);
-
-    return '''Hello $customerName,
+    return '''Hello ${data.customerName},
 
 Thank you for purchasing from *Friends Battery*.
 
-🧾 Invoice No: $invoiceNumber
+🧾 Invoice No: ${data.invoiceNumber}
 📅 Date: $dateStr
 
 Battery Details
-• Product: $productName
-• Serial No: $serialNumber
-• Amount Paid: ₹$sellingPrice
+• Product: ${data.productName}
+• Serial No: ${data.serialNumber}
+• Amount Paid: ₹${data.sellPrice}
 
 Your invoice is attached as an image.
 Please keep this invoice for future warranty claims.
@@ -55,21 +49,18 @@ Thank you for choosing Friends Battery.''';
     });
 
     try {
-      // 1. Capture widget as image
       final imageBytes = await _screenshotController.capture(delay: const Duration(milliseconds: 10));
       if (imageBytes == null) {
         throw Exception('Failed to generate invoice image');
       }
 
-      // 2. Save image to temp directory
       final tempDir = await getTemporaryDirectory();
-      final invoiceNumber = widget.saleData['invoice_number'] ?? 'invoice';
+      final invoiceNumber = widget.saleData.invoiceNumber;
       final file = await File('${tempDir.path}/invoice_$invoiceNumber.png').create();
       await file.writeAsBytes(imageBytes);
 
-      // 3. Share via WhatsApp using share_plus
       final message = _getWhatsAppMessage(widget.saleData);
-      
+
       final result = await Share.shareXFiles(
         [XFile(file.path, mimeType: 'image/png')],
         text: message,
@@ -77,12 +68,10 @@ Thank you for choosing Friends Battery.''';
 
       if (result.status == ShareResultStatus.success) {
         if (mounted) context.showSuccessSnackBar('Invoice shared successfully');
-      } else if (result.status == ShareResultStatus.dismissed) {
-        // User cancelled sharing, do nothing
       }
     } catch (e) {
       if (mounted) {
-        context.showErrorSnackBar('Could not share invoice: \$e');
+        context.showErrorSnackBar('Could not share invoice: $e');
       }
     } finally {
       if (mounted) {
@@ -96,17 +85,16 @@ Thank you for choosing Friends Battery.''';
   @override
   Widget build(BuildContext context) {
     final data = widget.saleData;
-    
-    // We render the InvoiceWidget inside a RepaintBoundary via Screenshot
+
     final invoiceWidget = InvoiceWidget(
-      invoiceNumber: data['invoice_number'] ?? 'INV-N/A',
-      saleDate: data['sale_date'] as DateTime? ?? DateTime.now(),
-      customerName: data['customer_name'] ?? 'Customer',
-      customerMobile: data['customer_number'] ?? '',
-      productName: data['product_name'] ?? 'Product',
-      serialNumber: data['serial_number'] ?? 'N/A',
-      sellingPrice: (data['sell_price'] as num?)?.toDouble() ?? 0.0,
-      sellerName: data['seller_name'] ?? 'Friends Battery Seller',
+      invoiceNumber: data.invoiceNumber,
+      saleDate: data.saleDate,
+      customerName: data.customerName,
+      customerMobile: data.customerNumber,
+      productName: data.productName,
+      serialNumber: data.serialNumber,
+      sellingPrice: data.sellPrice,
+      sellerName: data.sellerName,
     );
 
     return Scaffold(
@@ -131,7 +119,6 @@ Thank you for choosing Friends Battery.''';
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Success Message
                   Container(
                     padding: const EdgeInsets.all(24.0),
                     decoration: BoxDecoration(
@@ -174,12 +161,16 @@ Thank you for choosing Friends Battery.''';
                         const SizedBox(height: 24),
                         ElevatedButton.icon(
                           onPressed: _isSharing ? null : _shareOnWhatsApp,
-                          icon: _isSharing 
-                            ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                            : const Icon(Icons.share),
+                          icon: _isSharing
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                )
+                              : const Icon(Icons.share),
                           label: Text(_isSharing ? 'Preparing...' : 'Share on WhatsApp'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF25D366), // WhatsApp Green
+                            backgroundColor: const Color(0xFF25D366),
                             foregroundColor: Colors.white,
                             minimumSize: const Size(double.infinity, 50),
                             shape: RoundedRectangleBorder(
@@ -207,10 +198,9 @@ Thank you for choosing Friends Battery.''';
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
-                  // Invoice Preview with Screenshot Wrapper
                   Container(
-                    decoration: BoxDecoration(
-                      boxShadow: const [
+                    decoration: const BoxDecoration(
+                      boxShadow: [
                         BoxShadow(
                           color: Color(0x1A000000),
                           blurRadius: 8,

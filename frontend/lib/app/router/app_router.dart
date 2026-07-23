@@ -19,6 +19,7 @@ import '../../features/seller/dashboard/screens/create_bill_screen.dart';
 import '../../features/seller/dashboard/screens/shipment_details_screen.dart';
 import '../../features/seller/dashboard/screens/seller_received_shipments_screen.dart';
 import '../../features/seller/dashboard/screens/sale_success_screen.dart';
+import '../../features/seller/dashboard/models/sale_success_data.dart';
 import '../../features/seller/dashboard/screens/seller_return_product_screen.dart';
 import '../../features/seller/sales/screens/seller_sales_history_screen.dart';
 import '../../features/seller/sales/screens/seller_sale_details_screen.dart';
@@ -172,7 +173,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/seller/sale-success',
             builder: (context, state) {
-              final saleData = state.extra as Map<String, dynamic>? ?? {};
+              final saleData = state.extra as SaleSuccessData?;
+              if (saleData == null) {
+                return const Scaffold(
+                  body: Center(child: Text('Missing sale data')),
+                );
+              }
               return SaleSuccessScreen(saleData: saleData);
             },
           ),

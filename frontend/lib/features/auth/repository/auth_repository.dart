@@ -1,13 +1,19 @@
 import 'package:dio/dio.dart';
-import 'package:friends_battery_api/friends_battery_api.dart'; // From generated OpenAPI package
+import 'package:friends_battery_api/friends_battery_api.dart';
 
 class AuthResponse {
   final String authId;
   final String authKey;
   final String role; // 'admin' or 'seller'
-  final Map<String, dynamic> user; // Full user details
+  /// Hive-safe snapshot of [LoginUser] (local storage only, not an API DTO).
+  final Map<String, dynamic> user;
 
-  AuthResponse({required this.authId, required this.authKey, required this.role, required this.user});
+  AuthResponse({
+    required this.authId,
+    required this.authKey,
+    required this.role,
+    required this.user,
+  });
 }
 
 class AuthRepository {
@@ -15,7 +21,6 @@ class AuthRepository {
 
   AuthRepository({required this.api});
 
-  // ponytail: Map parse until login/register OpenAPI responses are typed + client regen.
   Future<AuthResponse> login(String username, String password) async {
     final request = (ApiAuthLoginPostRequestBuilder()
           ..userId = username
@@ -24,27 +29,26 @@ class AuthRepository {
 
     try {
       final response = await api.apiAuthLoginPost(apiAuthLoginPostRequest: request);
-      final dynamic responseData = (response as dynamic).data;
+      final data = response.data?.data;
+      final authId = data?.authId;
+      final authKey = data?.authKey;
+      final loginUser = data?.user;
 
-      if (responseData is Map<String, dynamic> && responseData['success'] == true) {
-        final data = responseData['data'] as Map<String, dynamic>? ?? {};
-        final user = data['user'] as Map<String, dynamic>? ?? {};
-        final authId = data['auth_id']?.toString();
-        final authKey = data['auth_key']?.toString();
-        if (authId == null || authId.isEmpty || authKey == null || authKey.isEmpty) {
-          throw Exception('Login response missing credentials');
-        }
-        return AuthResponse(
-          authId: authId,
-          authKey: authKey,
-          role: user['role']?.toString().toLowerCase() ?? 'seller',
-          user: user,
-        );
+      if (authId == null || authId.isEmpty || authKey == null || authKey.isEmpty) {
+        throw Exception(response.data?.message ?? 'Login response missing credentials');
       }
-      throw Exception(
-        responseData is Map<String, dynamic>
-            ? (responseData['message'] ?? 'Login failed')
-            : 'Login failed',
+
+      final roleRaw = loginUser?.role?.name ?? 'SELLER';
+      return AuthResponse(
+        authId: authId,
+        authKey: authKey,
+        role: roleRaw.toLowerCase(),
+        user: {
+          'username': loginUser?.username,
+          'user_number': loginUser?.userNumber,
+          'shop_name': loginUser?.shopName,
+          'role': roleRaw,
+        },
       );
     } catch (e) {
       throw Exception(_authError(e, 'Login failed'));
@@ -68,9 +72,8 @@ class AuthRepository {
 
     try {
       final response = await api.apiAuthRegisterPost(apiAuthRegisterPostRequest: request);
-      final dynamic responseData = (response as dynamic).data;
-      if (responseData is Map<String, dynamic> && responseData['success'] == false) {
-        throw Exception(responseData['message'] ?? 'Registration failed');
+      if (response.data?.success == false) {
+        throw Exception(response.data?.message ?? 'Registration failed');
       }
     } catch (e) {
       throw Exception(_authError(e, 'Registration failed'));
@@ -81,10 +84,10 @@ class AuthRepository {
     if (e is DioException) {
       final data = e.response?.data;
       if (data is Map && data['message'] != null) return data['message'].toString();
+      // Typed Error body when deserializable fails still lands as Map from Dio
       return e.message ?? fallback;
     }
     final s = e.toString();
-    // Avoid "Exception: Exception: …" when rethrowing our own messages.
     return s.startsWith('Exception: ') ? s.substring(11) : s;
   }
 }

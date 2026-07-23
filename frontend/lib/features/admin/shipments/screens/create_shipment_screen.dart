@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:friends_battery_api/friends_battery_api.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../theme/app_theme.dart';
@@ -50,7 +51,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
   bool _isSubmitting = false;
 
   List<SellerModel> _sellers = [];
-  List<Map<String, dynamic>> _inventoryProducts = [];
+  List<InventoryProductNameGroup> _inventoryProducts = [];
   List<Map<String, String>> _productNames = [];
 
   int? _selectedSellerId;
@@ -117,8 +118,8 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
 
       final namesList = <Map<String, String>>[];
       for (final item in inventoryList) {
-        final productName = item['productName']?.toString() ?? '';
-        final productNameId = item['productNameId']?.toString() ?? '';
+        final productName = item.productName ?? '';
+        final productNameId = item.productNameId?.toString() ?? '';
         if (productName.isNotEmpty && productNameId.isNotEmpty) {
           namesList.add({'id': productNameId, 'name': productName});
         }
@@ -140,19 +141,20 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
   void _onProductNameSelected(int rowIndex, String productNameId) {
     final row = _rows[rowIndex];
 
-    final group = _inventoryProducts.firstWhere(
-      (g) => g['productNameId'].toString() == productNameId,
-      orElse: () => <String, dynamic>{},
-    );
+    InventoryProductNameGroup? group;
+    for (final g in _inventoryProducts) {
+      if (g.productNameId?.toString() == productNameId) {
+        group = g;
+        break;
+      }
+    }
 
     final List<Map<String, String>> models = [];
-    if (group.isNotEmpty && group['models'] is List) {
-      for (final m in group['models'] as List) {
-        models.add({
-          'id': m['productModelId'].toString(),
-          'name': m['productModel'].toString(),
-        });
-      }
+    for (final m in group?.models?.toList() ?? const <InventoryProductModelOption>[]) {
+      models.add({
+        'id': m.productModelId?.toString() ?? '',
+        'name': m.productModel ?? '',
+      });
     }
 
     setState(() {
@@ -166,20 +168,21 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
 
   void _onProductModelSelected(int rowIndex, String modelId) {
     final row = _rows[rowIndex];
-    final group = _inventoryProducts.firstWhere(
-      (g) => g['productNameId'].toString() == row.productNameId,
-      orElse: () => <String, dynamic>{},
-    );
+    InventoryProductNameGroup? group;
+    for (final g in _inventoryProducts) {
+      if (g.productNameId?.toString() == row.productNameId) {
+        group = g;
+        break;
+      }
+    }
 
     int? resolvedProdId;
     int? stockCount;
-    if (group.isNotEmpty && group['models'] is List) {
-      for (final m in group['models'] as List) {
-        if (m['productModelId'].toString() == modelId) {
-          resolvedProdId = m['id'];
-          stockCount = m['availableQuantity'] as int?;
-          break;
-        }
+    for (final m in group?.models?.toList() ?? const <InventoryProductModelOption>[]) {
+      if (m.productModelId?.toString() == modelId) {
+        resolvedProdId = m.id;
+        stockCount = m.availableQuantity;
+        break;
       }
     }
 
@@ -297,7 +300,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
 
     // Product duplicate check
     final productIds = <int>{};
-    final List<Map<String, dynamic>> itemsPayload = [];
+    final List<CreateShipmentItem> itemsPayload = [];
 
     for (int i = 0; i < _rows.length; i++) {
       final row = _rows[i];
@@ -329,12 +332,12 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
         return;
       }
 
-      itemsPayload.add({
-        'product_name_id': int.parse(row.productNameId!),
-        'product_model_id': int.parse(row.productModelId!),
-        'serial_numbers': row.scannedSerials,
-        'price_per_piece': price,
-      });
+      itemsPayload.add(CreateShipmentItem((b) {
+        b.productNameId = int.parse(row.productNameId!);
+        b.productModelId = int.parse(row.productModelId!);
+        b.serialNumbers.replace(row.scannedSerials);
+        b.pricePerPiece = price;
+      }));
     }
 
     setState(() {
@@ -353,7 +356,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
             ? result.transferredUnits
             : itemsPayload.fold<int>(
                 0,
-                (sum, item) => sum + ((item['serial_numbers'] as List?)?.length ?? 0),
+                (sum, item) => sum + item.serialNumbers.length,
               );
         context.showSuccessSnackBar(
           'Transferred $count unit(s) to seller successfully',

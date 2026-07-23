@@ -86,6 +86,10 @@ Serializers _$serializers =
           ..add(InventoryTransaction.serializer)
           ..add(InventoryTransactionActionEnum.serializer)
           ..add(ListProductModelsRequest.serializer)
+          ..add(LoginData.serializer)
+          ..add(LoginResponse.serializer)
+          ..add(LoginUser.serializer)
+          ..add(LoginUserRoleEnum.serializer)
           ..add(Product.serializer)
           ..add(ProductCreated.serializer)
           ..add(ProductModel.serializer)
@@ -99,7 +103,14 @@ Serializers _$serializers =
           ..add(ProductUnit.serializer)
           ..add(ProductUnitStatusEnum.serializer)
           ..add(RecentActivityResponse.serializer)
+          ..add(RegisterData.serializer)
+          ..add(RegisterResponse.serializer)
+          ..add(ReturnListItem.serializer)
+          ..add(ReturnListProduct.serializer)
+          ..add(ReturnListProductModel.serializer)
+          ..add(ReturnListProductName.serializer)
           ..add(ReturnProduct.serializer)
+          ..add(ReturnsListResponse.serializer)
           ..add(SaleCustomer.serializer)
           ..add(SaleDetailResponse.serializer)
           ..add(SaleHistoryPage.serializer)
@@ -262,6 +273,10 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(ProductName)]),
             () => ListBuilder<ProductName>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(ReturnListItem)]),
+            () => ListBuilder<ReturnListItem>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(SaleRecord)]),

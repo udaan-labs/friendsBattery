@@ -55,7 +55,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiAuthLoginPost**
-> apiAuthLoginPost(apiAuthLoginPostRequest)
+> LoginResponse apiAuthLoginPost(apiAuthLoginPostRequest)
 
 Authenticate user and return token
 
@@ -67,7 +67,8 @@ final api = FriendsBatteryApi().getAuthApi();
 final ApiAuthLoginPostRequest apiAuthLoginPostRequest = ; // ApiAuthLoginPostRequest | 
 
 try {
-    api.apiAuthLoginPost(apiAuthLoginPostRequest);
+    final response = api.apiAuthLoginPost(apiAuthLoginPostRequest);
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling AuthApi->apiAuthLoginPost: $e\n');
 }
@@ -81,7 +82,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-void (empty response body)
+[**LoginResponse**](LoginResponse.md)
 
 ### Authorization
 
@@ -90,12 +91,12 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiAuthRegisterPost**
-> apiAuthRegisterPost(apiAuthRegisterPostRequest)
+> RegisterResponse apiAuthRegisterPost(apiAuthRegisterPostRequest)
 
 Register a new user
 
@@ -107,7 +108,8 @@ final api = FriendsBatteryApi().getAuthApi();
 final ApiAuthRegisterPostRequest apiAuthRegisterPostRequest = ; // ApiAuthRegisterPostRequest | 
 
 try {
-    api.apiAuthRegisterPost(apiAuthRegisterPostRequest);
+    final response = api.apiAuthRegisterPost(apiAuthRegisterPostRequest);
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling AuthApi->apiAuthRegisterPost: $e\n');
 }
@@ -121,7 +123,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-void (empty response body)
+[**RegisterResponse**](RegisterResponse.md)
 
 ### Authorization
 
@@ -130,7 +132,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
