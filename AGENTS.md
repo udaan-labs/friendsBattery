@@ -2,6 +2,35 @@
 
 Inventory and stock management for batteries: admin (wholesaler) and seller roles. Serial-number unit tracking with an immutable inventory ledger.
 
+## Required docs (read before coding)
+
+**Do not invent architecture or API patterns.** Open and follow the matching file under `docs/` for the task. This file (`AGENTS.md`) is the short rulebook; `docs/*` is the detail.
+
+| When the task involves… | You **must** open / follow |
+|-------------------------|----------------------------|
+| Backend routes, modules, layers, Prisma access, auth/RBAC, responses | `docs/architecture.md` |
+| Flutter API calls, models, Dio, `npm run gen`, repositories | `docs/OPENAPI.md` |
+| Flutter UI, Riverpod, features folders, theme / AppTheme | `docs/frontend-guidelines.md` |
+| Performance / jank / query cost | `docs/PERFORMANCE_AUDIT.md` (if relevant) |
+
+**Hard rules for agents:**
+
+1. Before implementing backend work → read `docs/architecture.md` (at least the request path + domain rules).
+2. Before wiring or changing any frontend API usage → read `docs/OPENAPI.md`.
+3. Before new screens / providers / widgets → read `docs/frontend-guidelines.md`.
+4. If code and a doc disagree on **layers or OpenAPI/Dio**, fix code to match the doc (or update the doc only when introducing a real new pattern).
+5. Prefer linking/citing these paths in plans; do not restate full copies of them in every reply.
+
+Repo layout for docs:
+
+```text
+docs/
+├── architecture.md          # backend source of truth
+├── OPENAPI.md               # Flutter networking / models
+├── frontend-guidelines.md   # Flutter UI + short API steps
+└── PERFORMANCE_AUDIT.md
+```
+
 ## Development philosophy (YAGNI + Ponytail)
 
 **Lead rule:** simplest production-ready change that ships the current MVP need. If a proposal violates YAGNI or Ponytail, reject it and offer a simpler path.
@@ -88,8 +117,7 @@ Flutter UI → Riverpod → Feature Repository → Generated OpenAPI Client (fri
 - **Do not add** new feature-level raw Dio call sites for app APIs.
 - **Do not restructure** folders for networking — migration is **done**; follow the same path for new endpoints.
 
-**Standard:** `frontend/docs/OPENAPI.md`  
-**Steps:** `frontend/instructions/frontend_guidelines.md` (Part 2)
+Detail docs (mandatory when relevant — see **Required docs** at top): `docs/OPENAPI.md`, `docs/frontend-guidelines.md`, `docs/architecture.md`.
 
 ## Stack
 
@@ -114,16 +142,16 @@ FriendsBattery/
 │   │   ├── app.js
 │   │   └── server.js
 │   ├── prisma/        # schema + migrations + seed
-│   └── docs/architecture.md
 ├── frontend/          # Flutter app
-│   ├── lib/
-│   │   ├── api/       # GENERATED — do not edit by hand
-│   │   ├── features/  # admin/, seller/, auth/, shared/
-│   │   ├── core/      # network, storage, theme
-│   │   └── app/       # app shell + router
-│   └── instructions/frontend_guidelines.md
+│   └── lib/
+│       ├── api/       # GENERATED — do not edit by hand
+│       ├── features/  # admin/, seller/, auth/, shared/
+│       ├── core/      # network, storage, theme
+│       └── app/       # app shell + router
+├── docs/              # architecture, OpenAPI, frontend guidelines
 ├── apiTesting/        # OpenCollection API tests
 ├── generate_api.bat   # OpenAPI → Flutter client
+├── AGENTS.md
 └── package.json       # workspace scripts (gen, build-*, tunnel)
 ```
 
@@ -161,7 +189,7 @@ FriendsBattery/
 - Env (required): `PORT`, `DATABASE_URL`, `JWT_SECRET`, `JWT_EXPIRES_IN`. Prisma may also need `DIRECT_URL`.
 - Swagger: annotated in routes; serve at `/api-docs` and `/swagger.json`.
 - Prefer reusing existing services over duplicating inventory/sales logic.
-- Source of truth for architecture detail: `backend/docs/architecture.md`.
+- Source of truth for architecture detail: `docs/architecture.md`.
 
 ### Common backend commands
 
@@ -205,7 +233,7 @@ npm run build-local
 npm run build-prod
 ```
 
-Env files via `--dart-define=ENV_FILE=.env.local` (or `.env.production`). Design notes: `frontend/instructions/frontend_guidelines.md`.
+Env files via `--dart-define=ENV_FILE=.env.local` (or `.env.production`). Frontend notes: `docs/frontend-guidelines.md`.
 
 ## Workspace scripts (repo root)
 
@@ -227,8 +255,9 @@ Env files via `--dart-define=ENV_FILE=.env.local` (or `.env.production`). Design
 
 ## When implementing features
 
-1. Read the relevant module(s) and Prisma models first.  
-2. Match existing naming and file patterns in that module.  
-3. Keep inventory and sales paths unit + ledger correct.  
-4. If the API contract changes, regenerate the Flutter client and update repositories/providers.  
-5. Prefer small, focused diffs; update architecture docs only when introducing a new pattern.
+1. Open the matching **`docs/*` file** (see **Required docs**).  
+2. Read the relevant module(s) and Prisma models.  
+3. Match existing naming and file patterns in that module.  
+4. Keep inventory and sales paths unit + ledger correct.  
+5. If the API contract changes: swagger → `npm run gen` → repositories/providers (`docs/OPENAPI.md`).  
+6. Prefer small, focused diffs; update `docs/*` only when introducing a real new pattern.

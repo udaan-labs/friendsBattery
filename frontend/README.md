@@ -14,7 +14,7 @@ UI → Riverpod → Feature Repository → friends_battery_api → Dio (core/net
 | Shared Dio only under `lib/core/network` | Feature/UI raw `dio.get/post` for app APIs |
 | `npm run gen` after backend swagger changes | Hand-edit anything under `lib/api/` |
 
-**OpenAPI:** [docs/OPENAPI.md](./docs/OPENAPI.md) · **Steps:** [instructions/frontend_guidelines.md](./instructions/frontend_guidelines.md) Part 2 · **Agents:** [../AGENTS.md](../AGENTS.md)
+**Docs (repo root):** [OPENAPI](../docs/OPENAPI.md) · [frontend guidelines](../docs/frontend-guidelines.md) · [AGENTS](../AGENTS.md)
 
 ## Setup
 

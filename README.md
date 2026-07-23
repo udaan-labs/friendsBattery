@@ -17,7 +17,7 @@ Inventory and stock management application (admin + seller, unit/serial inventor
 UI → Riverpod → Feature Repository → friends_battery_api → Dio → Backend
 ```
 
-Agent rules: `AGENTS.md`. OpenAPI standard: `frontend/docs/OPENAPI.md`.
+Agent rules: `AGENTS.md`. Docs: `docs/architecture.md`, `docs/OPENAPI.md`, `docs/frontend-guidelines.md`.
 
 ---
 
@@ -40,9 +40,11 @@ FriendsBattery/
 ├── frontend/
 │   ├── lib/api/             # GENERATED OpenAPI client — do not edit
 │   ├── lib/core/network/    # Dio transport only
-│   ├── lib/features/        # screens, providers, repositories
-│   ├── docs/OPENAPI.md
-│   └── instructions/frontend_guidelines.md
+│   └── lib/features/        # screens, providers, repositories
+├── docs/
+│   ├── architecture.md      # backend
+│   ├── OPENAPI.md           # Flutter networking standard
+│   └── frontend-guidelines.md
 ├── generate_api.bat
 ├── package.json             # npm run gen, build-*, tunnel
 ├── AGENTS.md

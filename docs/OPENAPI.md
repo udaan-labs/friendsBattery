@@ -47,4 +47,4 @@ backend @swagger → swagger:export → openapi.json
   → openapi-generator dart-dio → frontend/lib/api → build_runner
 ```
 
-Also: `AGENTS.md`, `frontend/instructions/frontend_guidelines.md` Part 2 (short steps).
+Also: `AGENTS.md`, `docs/frontend-guidelines.md` (API section).
