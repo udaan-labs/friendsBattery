@@ -187,74 +187,21 @@ The shape language is defined by **Soft Roundedness**. A standard corner radius 
 
 ## Part 2: API Integration Workflow
 
-This section serves as an instruction manual for AI agents and developers on how to properly integrate new backend APIs into the Flutter frontend architecture.
+**Full rules:** [`frontend/docs/OPENAPI.md`](../docs/OPENAPI.md) (single source — do not re-document elsewhere).
 
-**Models come from OpenAPI. Dio is only the HTTP transport.**
-
-Whenever a backend API is created or modified, follow these **5 exact steps**:
-
-### 1. Regenerate OpenAPI models & client
-1. Update backend Swagger (`@swagger` on routes + schemas) so the contract matches the real handler.
-2. Run from repo root: `generate_api.bat` (or `npm run gen`).
-
-This exports `backend/openapi.json` and regenerates `frontend/lib/api/` (`friends_battery_api`) with **typed** request/response models and `*Api` classes.
-
-You do **not** hand-write Dio `Map`/`fromJson` models for those API shapes.
-
-### 2. Create or Update a Repository Method
-Navigate to the appropriate feature module (e.g. `lib/features/.../repository/`).
-Call the generated `*Api` method. Prefer returning OpenAPI types, or map once to a thin UI presentation model.
-
-```dart
-// Example — use generated OpenAPI models, not Map/fromJson
-Future<List<SaleRecord>> getSalesHistory() async {
-  final response = await _api.getSalesApi().apiSalesHistoryGet(page: 1, limit: 50);
-  return response.data?.data?.data?.toList() ?? [];
-}
+```text
+UI → Riverpod → Feature Repository → friends_battery_api → Dio (core/network) → Backend
 ```
 
-Wrong:
+**New/changed API (always):**
 
-```dart
-// Do NOT invent parallel Dio-style API models
-final res = await dio.get('/api/sales/history');
-return (res.data['data'] as List).map((e) => Sale.fromJson(e)).toList();
-```
+1. Backend + Swagger match real handler  
+2. Repo root: `npm run gen`  
+3. Repository: generated `*Api` + OpenAPI models only  
+4. Riverpod provider → UI  
 
-### 3. Create a Riverpod Provider
-Link the repository so the UI can react. Use `FutureProvider` for reads; `StateNotifierProvider` / `NotifierProvider` for mutations.
-
-```dart
-final productProvider = FutureProvider((ref) {
-  return ref.watch(productRepositoryProvider).getProducts();
-});
-```
-
-### 4. Connect to the UI
-Use `ConsumerWidget` / `ConsumerStatefulWidget` and `ref.watch`. Display OpenAPI model fields or presentation models mapped from them.
-
-```dart
-@override
-Widget build(BuildContext context, WidgetRef ref) {
-  final productsState = ref.watch(productProvider);
-
-  return productsState.when(
-    data: (products) => ListView.builder(...),
-    loading: () => const CircularProgressIndicator(),
-    error: (err, stack) => Text('Error: $err'),
-  );
-}
-```
-
-### 5. Architectural Rule Reminders
-- **DO** use generated OpenAPI models (`friends_battery_api`) for API data.
-- **DO NOT** modify `frontend/lib/api/` by hand — regenerate only.
-- **DO NOT** make raw Dio/HTTP requests in UI or providers when a generated `*Api` method exists.
-- **DO NOT** duplicate API DTOs with hand-written `fromJson` that shadow OpenAPI schemas.
-- **Dio** is OK only as shared transport under `core/network` (and catching `DioException` for messages).
-- **DO NOT** use `flutter_hooks`. Use `flutter_riverpod` only.
-- Full migration notes: `frontend/docs/OPENAPI_MIGRATION.md`.
-
+**Never:** hand-edit `lib/api/`, feature raw Dio for app APIs, twin `fromJson` API DTOs.  
+**OK:** UI presentation models mapped from OpenAPI; Hive session maps; catch `DioException`.
 
 ---
 
@@ -345,13 +292,10 @@ Answer:
 ### 20. Code Requirements
 Confirm:
 * Use generated **OpenAPI** models for API data (`friends_battery_api`) — not Dio maps / hand-rolled `fromJson` API twins
-* Dio is HTTP transport only (`core/network`)
-* Never duplicate API models
-* Prefer shared widgets
-* Prefer reusable components
-* Small widgets only
-* Riverpod only
-* GoRouter only
-* No Clean Architecture
-* No AI-generated giant widgets
+* Dio is HTTP transport only (`core/network`); no feature-level raw Dio for app APIs
+* After backend API changes: swagger → `npm run gen` → repository → provider → UI
+* Never hand-edit `lib/api/`; never duplicate API models
+* Prefer shared widgets / reusable components / small widgets
+* Riverpod only; GoRouter only
+* No Clean Architecture theater; no AI-generated giant widgets
 Answer: YES / NO

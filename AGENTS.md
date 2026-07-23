@@ -85,10 +85,11 @@ Flutter UI → Riverpod → Feature Repository → Generated OpenAPI Client (fri
 - Repositories call generated `*Api` classes only — no raw `dio.get/post` for documented endpoints.
 - Keep network I/O out of pure widgets; use providers/repositories.
 - No parallel raw-Dio implementation after a feature’s generated API is wired.
-- Prefer not adding new raw Dio call sites for endpoints that already have a generated method.
+- **Do not add** new feature-level raw Dio call sites for app APIs.
+- **Do not restructure** folders for networking — migration is **done**; follow the same path for new endpoints.
 
-Full roadmap and residual debt: `frontend/docs/OPENAPI_MIGRATION.md`.  
-Frontend API workflow: `frontend/instructions/frontend_guidelines.md` (Part 2).
+**Standard:** `frontend/docs/OPENAPI.md`  
+**Steps:** `frontend/instructions/frontend_guidelines.md` (Part 2)
 
 ## Stack
 
@@ -187,12 +188,11 @@ npm run swagger:export   # writes openapi.json
 ### After backend API changes (required order)
 
 1. Update backend **Swagger** (request/response schemas, errors, auth) so OpenAPI matches the real handler.
-2. Export + regenerate OpenAPI client from repo root:
-   - `cd backend && npm run swagger:export`
-   - `generate_api.bat` or `npm run gen`
-3. Update feature **repository** to call **generated** APIs only and use **OpenAPI models** (no raw Dio / map parse for that endpoint).
-4. Add/update **Riverpod** providers if needed (prefer stable provider APIs).
+2. Export + regenerate OpenAPI client from **repo root**: `npm run gen` (or `generate_api.bat`).
+3. Update feature **repository** — generated `*Api` + **OpenAPI models** only (no raw Dio / map parse).
+4. Add/update **Riverpod** providers if needed (stable provider APIs).
 5. Wire **UI** through providers/repos; display OpenAPI fields or presentation models mapped from them.
+6. Do **not** hand-edit `frontend/lib/api/` if types look wrong — fix swagger and regenerate.
 
 ### Common frontend commands
 

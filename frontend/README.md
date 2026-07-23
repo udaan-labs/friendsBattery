@@ -1,16 +1,33 @@
-# frontend
+# FriendsBattery — Flutter frontend
 
-A new Flutter project.
+Admin + seller inventory app. State: **Riverpod**. Routing: **go_router**.
 
-## Getting Started
+## Networking (hard rule)
 
-This project is a starting point for a Flutter application.
+```text
+UI → Riverpod → Feature Repository → friends_battery_api → Dio (core/network) → Backend
+```
 
-A few resources to get you started if this is your first Flutter project:
+| Use | Do not |
+|-----|--------|
+| Generated OpenAPI models in `lib/api/` (`friends_battery_api`) | Hand-written API `fromJson` twins |
+| Shared Dio only under `lib/core/network` | Feature/UI raw `dio.get/post` for app APIs |
+| `npm run gen` after backend swagger changes | Hand-edit anything under `lib/api/` |
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+**OpenAPI:** [docs/OPENAPI.md](./docs/OPENAPI.md) · **Steps:** [instructions/frontend_guidelines.md](./instructions/frontend_guidelines.md) Part 2 · **Agents:** [../AGENTS.md](../AGENTS.md)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Setup
+
+```bash
+flutter pub get
+flutter run
+# env: --dart-define=ENV_FILE=.env.local
+```
+
+From **repo root** after API/swagger changes:
+
+```bash
+npm run gen
+```
+
+APKs (repo root): `npm run build-local` / `npm run build-prod`.

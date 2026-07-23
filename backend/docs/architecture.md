@@ -591,6 +591,23 @@ Never skip them.
 
 ---
 
+### OpenAPI / Swagger (contract for Flutter)
+
+Swagger is the **API contract source of truth** for the Flutter client (`friends_battery_api`).
+
+When you add or change an endpoint:
+
+1. Document it with `@swagger` on the route (and shared schemas in `src/config/swagger.schemas.js` when needed).
+2. Schemas must match the real handler response: `{ success, message, data }` (and real error shapes).
+3. Export: `npm run swagger:export` (or from repo root: `npm run gen`, which also regenerates Flutter).
+4. Serve docs at `/api-docs` and `/swagger.json`.
+
+**Do not** ship a new frontend-facing route without accurate OpenAPI. Incomplete swagger produces wrong or missing Dart models.
+
+Frontend rules (models from OpenAPI, Dio transport only): `AGENTS.md`, `frontend/docs/OPENAPI.md`.
+
+---
+
 ### AI Agent Instructions
 
 Before generating code:
@@ -605,3 +622,4 @@ Before generating code:
 8. Do not skip authorization.
 9. Do not duplicate logic.
 10. Maintain consistency across modules.
+11. Document new/changed routes in Swagger so OpenAPI matches the real handler before frontend gen.
