@@ -1,0 +1,200 @@
+{
+  "nodes": [
+    {
+      "id": "title",
+      "type": "text",
+      "text": "# Product & Shipment Lifecycle (Hinglish Grid View)",
+      "x": -600,
+      "y": -400,
+      "width": 1200,
+      "height": 80
+    },
+    {
+      "id": "h_step",
+      "type": "text",
+      "text": "### Phase / Step",
+      "x": -600,
+      "y": -280,
+      "width": 250,
+      "height": 60
+    },
+    {
+      "id": "h_product",
+      "type": "text",
+      "text": "### [A] Product Add Karne Ka Process",
+      "x": -300,
+      "y": -280,
+      "width": 400,
+      "height": 60
+    },
+    {
+      "id": "h_shipment",
+      "type": "text",
+      "text": "### [B] Shipment & Transfer Process",
+      "x": 150,
+      "y": -280,
+      "width": 450,
+      "height": 60
+    },
+    {
+      "id": "r1_step",
+      "type": "text",
+      "text": "### Step 1: Definition\nSystem me nayi entry ya transfer ka basic setup.",
+      "x": -600,
+      "y": -180,
+      "width": 250,
+      "height": 220
+    },
+    {
+      "id": "r1_product",
+      "type": "text",
+      "text": "**Product Model Create Karna**\n\nAdmin naya product model banayega (brand, capacity, warranty set karega).\n- Database: Sirf catalog metadata banega, physical units abhi assign nahi hue.",
+      "x": -300,
+      "y": -180,
+      "width": 400,
+      "height": 220
+    },
+    {
+      "id": "r1_shipment",
+      "type": "text",
+      "text": "**Shipment Draft Banana**\n\nAdmin kisi specific seller ke liye transfer request start karega.\n- Database: `NewShipment` entry banegi `PENDING` status me.\n- Units lock ho jayenge taaki aur kahin use na ho.",
+      "x": 150,
+      "y": -180,
+      "width": 450,
+      "height": 220
+    },
+    {
+      "id": "r2_step",
+      "type": "text",
+      "text": "### Step 2: Allocation\nPhysical items ko database se link karna.",
+      "x": -600,
+      "y": 100,
+      "width": 250,
+      "height": 220
+    },
+    {
+      "id": "r2_product",
+      "type": "text",
+      "text": "**Serial Numbers Register Karna**\n\nAdmin physically batteries ke unique serial numbers scan/enter karega.\n- Database: Naye `product_units` records ban jayenge.",
+      "x": -300,
+      "y": 100,
+      "width": 400,
+      "height": 220
+    },
+    {
+      "id": "r2_shipment",
+      "type": "text",
+      "text": "**Shipment Dispatch Karna**\n\nAdmin items ko seller ke address pe physically ship karega.\n- Database: `product_units` ka status badalkar `IN_SHIPMENT` ya `IN_TRANSIT` ho jayega.",
+      "x": 150,
+      "y": 100,
+      "width": 450,
+      "height": 220
+    },
+    {
+      "id": "r3_step",
+      "type": "text",
+      "text": "### Step 3: Ledger Entry\nLedger (transactions history) me event record karna.",
+      "x": -600,
+      "y": 380,
+      "width": 250,
+      "height": 220
+    },
+    {
+      "id": "r3_product",
+      "type": "text",
+      "text": "**Initial Receipt Log Karna**\n\nLedger me record hota hai ki Admin (Wholesaler) ke paas stock aa gaya.\n- Database: `inventory_transactions` me status `RECEIVED_BY_ADMIN` save ho jayega.",
+      "x": -300,
+      "y": 380,
+      "width": 400,
+      "height": 220
+    },
+    {
+      "id": "r3_shipment",
+      "type": "text",
+      "text": "**Acknowledge Aur Accept Karna**\n\nSeller package receive karega, serials verify karke app me 'Accept' click karega.\n- Database: `NewShipment` ka status `RECEIVED` ho jayega.",
+      "x": 150,
+      "y": 380,
+      "width": 450,
+      "height": 220
+    },
+    {
+      "id": "r4_step",
+      "type": "text",
+      "text": "### Step 4: Ownership Update\nFinal status jahan malik (owner) update hota hai.",
+      "x": -600,
+      "y": 660,
+      "width": 250,
+      "height": 220
+    },
+    {
+      "id": "r4_product",
+      "type": "text",
+      "text": "**Admin Stock Me Available**\n\nAb yeh units Admin ke inventory me sell ya ship karne ke liye ready hain.\n- Database: Units ka `owner_id` Admin hoga.",
+      "x": -300,
+      "y": 660,
+      "width": 400,
+      "height": 220
+    },
+    {
+      "id": "r4_shipment",
+      "type": "text",
+      "text": "**Ledger Aur Owner Update**\n\nLedger me ownership Admin se Seller ko transfer ho jati hai.\n- Database: `inventory_transactions` me status `RECEIVED_BY_SELLER` ho jayega.\n- Units ka `owner_id` update hoke Seller ka ho jayega.",
+      "x": 150,
+      "y": 660,
+      "width": 450,
+      "height": 220
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_p1",
+      "fromNode": "r1_product",
+      "fromSide": "bottom",
+      "toNode": "r2_product",
+      "toSide": "top"
+    },
+    {
+      "id": "e_p2",
+      "fromNode": "r2_product",
+      "fromSide": "bottom",
+      "toNode": "r3_product",
+      "toSide": "top"
+    },
+    {
+      "id": "e_p3",
+      "fromNode": "r3_product",
+      "fromSide": "bottom",
+      "toNode": "r4_product",
+      "toSide": "top"
+    },
+    {
+      "id": "e_s1",
+      "fromNode": "r1_shipment",
+      "fromSide": "bottom",
+      "toNode": "r2_shipment",
+      "toSide": "top"
+    },
+    {
+      "id": "e_s2",
+      "fromNode": "r2_shipment",
+      "fromSide": "bottom",
+      "toNode": "r3_shipment",
+      "toSide": "top"
+    },
+    {
+      "id": "e_s3",
+      "fromNode": "r3_shipment",
+      "fromSide": "bottom",
+      "toNode": "r4_shipment",
+      "toSide": "top"
+    },
+    {
+      "id": "e_bridge",
+      "fromNode": "r4_product",
+      "fromSide": "right",
+      "toNode": "r1_shipment",
+      "toSide": "left",
+      "label": "Stock transfer ke liye ready"
+    }
+  ]
+}
