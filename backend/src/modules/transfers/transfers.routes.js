@@ -8,7 +8,11 @@ const {
   cancelTransferSchema
 } = require('./transfers.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
-const { requireAdmin, requireSeller } = require('../../shared/middleware/role.middleware');
+const {
+  requireAdmin,
+  requireSeller,
+  requireAdminOrSeller,
+} = require('../../shared/middleware/role.middleware');
 const { validateRequest } = require('../../shared/middleware/validation.middleware');
 
 /**
@@ -71,6 +75,7 @@ router.post(
 router.get(
   '/',
   authenticate,
+  requireAdminOrSeller,
   transfersController.getTransfers
 );
 
@@ -97,6 +102,7 @@ router.get(
 router.get(
   '/:shipmentId',
   authenticate,
+  requireAdminOrSeller,
   validateRequest(viewTransferSchema),
   transfersController.getTransferById
 );

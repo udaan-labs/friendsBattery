@@ -31,8 +31,12 @@ async function resolveUnitScope(userId, role, locationId = undefined) {
     return { currentLocationId: BigInt(loc) };
   }
 
-  // SELLER (default non-admin ownership scope)
-  return { ownerId: BigInt(userId) };
+  // Only real sellers get owner scope — never fall through unknown roles → ownerId
+  if (role === ROLES.SELLER) {
+    return { ownerId: BigInt(userId) };
+  }
+
+  return null;
 }
 
 module.exports = { resolveUnitScope };

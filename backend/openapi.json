@@ -83,6 +83,9 @@
       "LoginUser": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "integer"
+          },
           "username": {
             "type": "string"
           },
@@ -101,6 +104,52 @@
               "SELLER",
               "EMPLOYEE"
             ]
+          },
+          "location_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "employee_role_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "location": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "code": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "WAREHOUSE",
+                  "SHOP"
+                ]
+              }
+            }
+          },
+          "employee_role": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string",
+                "nullable": true
+              }
+            }
           }
         }
       },
@@ -112,6 +161,11 @@
           },
           "auth_key": {
             "type": "string"
+          },
+          "session_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Present for EMPLOYEE logins (employee_sessions)"
           },
           "user": {
             "$ref": "#/components/schemas/LoginUser"
@@ -175,6 +229,161 @@
           },
           "data": {
             "$ref": "#/components/schemas/RegisterData"
+          }
+        }
+      },
+      "AttendanceGeoBody": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number",
+            "nullable": true
+          },
+          "lng": {
+            "type": "number",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "AttendanceRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "employee_id": {
+            "type": "integer"
+          },
+          "assigned_location_id": {
+            "type": "integer"
+          },
+          "check_in_time": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "check_out_time": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "CHECKED_IN",
+              "CHECKED_OUT"
+            ]
+          },
+          "location": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "code": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "AttendanceStatusData": {
+        "type": "object",
+        "properties": {
+          "is_checked_in": {
+            "type": "boolean"
+          },
+          "attendance": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AttendanceRecord"
+              }
+            ],
+            "nullable": true
+          },
+          "location": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "code": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "SellerShipmentListItem": {
+        "type": "object",
+        "properties": {
+          "shipmentId": {
+            "type": "integer"
+          },
+          "shipmentNumber": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "acceptedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "productName": {
+                  "type": "string"
+                },
+                "productModel": {
+                  "type": "string"
+                },
+                "quantity": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      },
+      "SellerShipmentsListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SellerShipmentListItem"
+            }
           }
         }
       },
@@ -973,6 +1182,31 @@
           "is_verified": {
             "type": "boolean"
           },
+          "location_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "location": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "code": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "is_active": {
+                "type": "boolean"
+              }
+            }
+          },
           "statistics": {
             "$ref": "#/components/schemas/SellerStatistics"
           },
@@ -985,6 +1219,227 @@
           "created_at": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "ShopStaffMember": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "user_name": {
+            "type": "string"
+          },
+          "user_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "shop_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "SELLER",
+              "EMPLOYEE"
+            ]
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "is_verified": {
+            "type": "boolean"
+          },
+          "employee_role": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          }
+        }
+      },
+      "ShopStaffData": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "code": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "is_active": {
+                "type": "boolean"
+              }
+            }
+          },
+          "sellers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShopStaffMember"
+            }
+          },
+          "employees": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShopStaffMember"
+            }
+          }
+        }
+      },
+      "ShopStaffResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ShopStaffData"
+          }
+        }
+      },
+      "EmployeeAction": {
+        "type": "object",
+        "description": "Employee-only action (CHECK_IN or CHECK_OUT)",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "CHECK_IN",
+              "CHECK_OUT"
+            ]
+          },
+          "attendance_id": {
+            "type": "integer"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lat": {
+            "type": "number",
+            "nullable": true
+          },
+          "lng": {
+            "type": "number",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "location": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "code": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "AdminEmployeeDetailData": {
+        "type": "object",
+        "properties": {
+          "employee": {
+            "$ref": "#/components/schemas/ShopStaffMember"
+          },
+          "is_checked_in": {
+            "type": "boolean"
+          },
+          "current_attendance": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "check_in_time": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              },
+              "status": {
+                "type": "string"
+              },
+              "location": {
+                "type": "object",
+                "nullable": true,
+                "properties": {
+                  "id": {
+                    "type": "integer"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "actions": {
+            "type": "array",
+            "description": "Only CHECK_IN and CHECK_OUT events, newest first",
+            "items": {
+              "$ref": "#/components/schemas/EmployeeAction"
+            }
+          }
+        }
+      },
+      "AdminEmployeeDetailResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AdminEmployeeDetailData"
           }
         }
       },
@@ -2352,6 +2807,106 @@
         }
       }
     },
+    "/api/shops/sellers/{sellerId}/staff": {
+      "get": {
+        "summary": "Sellers and employees at the same shop location as this seller",
+        "description": "Admin only. Uses the seller's users.location_id.\nReturns only SELLER and EMPLOYEE users assigned to that location.\nEmpty lists if seller has no location.\n",
+        "tags": [
+          "Shops"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sellerId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shop staff fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopStaffResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Admin only"
+          },
+          "404": {
+            "description": "Seller not found"
+          }
+        }
+      }
+    },
+    "/api/shops/employees/{employeeId}": {
+      "get": {
+        "summary": "Admin view one employee (profile + check-in/check-out only)",
+        "description": "Admin only. Returns EMPLOYEE user profile and an `actions` timeline\nlimited to CHECK_IN and CHECK_OUT (from employee_attendance).\nDoes not include sales, inventory, or seller data.\n",
+        "tags": [
+          "Shops"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employeeId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "maximum": 100
+            },
+            "description": "Max attendance rows to expand into actions"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Employee profile + attendance actions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminEmployeeDetailResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Admin only"
+          },
+          "404": {
+            "description": "Employee not found (or user is not EMPLOYEE)"
+          }
+        }
+      }
+    },
     "/api/shipments": {
       "post": {
         "summary": "Transfer stock serials from admin to seller (Admin only)",
@@ -2779,6 +3334,38 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/employee/shipments": {
+      "get": {
+        "summary": "List shipments for sellers at the employee's shop location (read-only)",
+        "description": "EMPLOYEE only. Returns NewShipment rows where the seller shares\nusers.location_id with the employee. Does not allow accept/transfer.\n",
+        "tags": [
+          "Shipments"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shop shipments list (same shape as seller list)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SellerShipmentsListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Employee only"
           }
         }
       }
@@ -3439,6 +4026,7 @@
     "/api/inventory": {
       "get": {
         "summary": "Return logged-in user's inventory",
+        "description": "Scope by role (unit inventory):\n- ADMIN: units owned by admin users\n- SELLER: units where owner_id = seller\n- EMPLOYEE: units where current_location_id = employee.location_id\nEmployee with no location_id gets an empty list.\n",
         "tags": [
           "Inventory"
         ],
@@ -4340,6 +4928,7 @@
     "/api/auth/login": {
       "post": {
         "summary": "Authenticate user and return token",
+        "description": "Works for ADMIN, SELLER, and EMPLOYEE.\nEMPLOYEE login may include location / employee_role on user and session_id (employee_sessions).\n",
         "tags": [
           "Auth"
         ],
@@ -4356,12 +4945,25 @@
                 "properties": {
                   "user_id": {
                     "type": "string",
-                    "example": "SELLER001"
+                    "example": "EMP001"
                   },
                   "password": {
                     "type": "string",
                     "format": "password",
                     "example": "password123"
+                  },
+                  "device_id": {
+                    "type": "string",
+                    "description": "Optional — stored on employee_sessions for EMPLOYEE"
+                  },
+                  "ip_address": {
+                    "type": "string"
+                  },
+                  "app_version": {
+                    "type": "string"
+                  },
+                  "firebase_token": {
+                    "type": "string"
                   }
                 }
               }
@@ -4408,6 +5010,27 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "summary": "End session (closes employee_sessions for EMPLOYEE)",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logout successful"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -4465,6 +5088,155 @@
           }
         }
       }
+    },
+    "/api/employee/attendance/status": {
+      "get": {
+        "summary": "Current check-in status for employee",
+        "tags": [
+          "Attendance"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Status retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AttendanceStatusData"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Employee only"
+          }
+        }
+      }
+    },
+    "/api/employee/attendance/check-in": {
+      "post": {
+        "summary": "Check in at assigned shop location",
+        "tags": [
+          "Attendance"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttendanceGeoBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Checked in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AttendanceRecord"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No location assigned"
+          },
+          "403": {
+            "description": "Employee only"
+          },
+          "409": {
+            "description": "Already checked in"
+          }
+        }
+      }
+    },
+    "/api/employee/attendance/check-out": {
+      "post": {
+        "summary": "Check out (close open attendance)",
+        "tags": [
+          "Attendance"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttendanceGeoBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Checked out",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AttendanceRecord"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not checked in"
+          },
+          "403": {
+            "description": "Employee only"
+          }
+        }
+      }
     }
   },
   "tags": [
@@ -4491,6 +5263,10 @@
     {
       "name": "Inventory",
       "description": "Inventory management"
+    },
+    {
+      "name": "Attendance",
+      "description": "Employee physical check-in / check-out (employee_attendance)"
     }
   ]
 }

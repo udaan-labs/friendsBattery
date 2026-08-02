@@ -1,0 +1,30 @@
+info:
+  name: attendance_check_in
+  type: http
+  seq: 6
+  description: Check in at assigned location. Run login_employee first.
+
+http:
+  method: POST
+  url: "{{baseurl}}/employee/attendance/check-in"
+  headers:
+    - name: auth-id
+      value: "{{authId}}"
+    - name: auth-key
+      value: "{{authKey}}"
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "lat": 28.6139,
+        "lng": 77.2090,
+        "address": "Shop floor"
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -157,6 +157,8 @@ Name | Type | Description  | Notes
 
 Return logged-in user's inventory
 
+Scope by role (unit inventory): - ADMIN: units owned by admin users - SELLER: units where owner_id = seller - EMPLOYEE: units where current_location_id = employee.location_id Employee with no location_id gets an empty list. 
+
 ### Example
 ```dart
 import 'package:friends_battery_api/api.dart';

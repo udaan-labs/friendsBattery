@@ -108,16 +108,25 @@ class SalesService {
   }
 
   /**
-   * Get sale details by transaction ID
+   * Get sale details by transaction ID.
+   * Admin: any. Seller: own only. Employee/others: forbidden.
    */
-  async getSaleById(transactionId) {
+  async getSaleById(transactionId, user) {
     const sale = await salesRepository.findSaleById(transactionId);
     if (!sale) {
       const error = new Error('Transaction not found');
       error.statusCode = 404;
       throw error;
     }
-    return this._formatSale(sale);
+    if (user?.role === 'ADMIN') {
+      return this._formatSale(sale);
+    }
+    if (user?.role === 'SELLER' && Number(sale.sellerId) === Number(user.id)) {
+      return this._formatSale(sale);
+    }
+    const error = new Error('Forbidden: You cannot view this sale');
+    error.statusCode = 403;
+    throw error;
   }
 
   /**

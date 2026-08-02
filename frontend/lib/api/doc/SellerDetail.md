@@ -14,6 +14,8 @@ Name | Type | Description | Notes
 **userNumber** | **String** |  | [optional] 
 **isActive** | **bool** |  | [optional] 
 **isVerified** | **bool** |  | [optional] 
+**locationId** | **int** |  | [optional] 
+**location** | [**SellerDetailLocation**](SellerDetailLocation.md) |  | [optional] 
 **statistics** | [**SellerStatistics**](SellerStatistics.md) |  | [optional] 
 **inventory** | [**BuiltList&lt;InventoryListItem&gt;**](InventoryListItem.md) |  | [optional] 
 **createdAt** | [**DateTime**](DateTime.md) |  | [optional] 

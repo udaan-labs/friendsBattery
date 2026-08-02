@@ -31,7 +31,66 @@ class ShopsRepository {
       where: {
         id: BigInt(sellerId),
         role: 'SELLER'
-      }
+      },
+      include: {
+        location: {
+          select: { id: true, code: true, name: true, type: true, isActive: true },
+        },
+      },
+    });
+  }
+
+  /**
+   * Sellers + employees assigned to a location (shop).
+   * @param {number|bigint} locationId
+   */
+  async findUsersByLocationId(locationId) {
+    return prisma.user.findMany({
+      where: {
+        locationId: BigInt(locationId),
+        role: { in: ['SELLER', 'EMPLOYEE'] },
+      },
+      select: {
+        id: true,
+        userId: true,
+        userName: true,
+        userNumber: true,
+        shopName: true,
+        role: true,
+        isActive: true,
+        isVerified: true,
+        employeeRole: {
+          select: { id: true, name: true, description: true },
+        },
+      },
+      orderBy: [{ role: 'asc' }, { userName: 'asc' }],
+    });
+  }
+
+  async findLocationById(locationId) {
+    return prisma.location.findUnique({
+      where: { id: BigInt(locationId) },
+      select: { id: true, code: true, name: true, type: true, isActive: true },
+    });
+  }
+
+  /**
+   * Single EMPLOYEE user by id (admin view). Never returns ADMIN/SELLER.
+   */
+  async findEmployeeById(employeeId) {
+    return prisma.user.findFirst({
+      where: {
+        id: BigInt(employeeId),
+        role: 'EMPLOYEE',
+      },
+      include: {
+        location: {
+          select: { id: true, code: true, name: true, type: true, isActive: true },
+        },
+        employeeRole: {
+          select: { id: true, name: true, description: true },
+        },
+      },
     });
   }
 

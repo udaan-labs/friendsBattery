@@ -24,6 +24,8 @@ Serializers _$serializers =
           ..add(ApiAuthLoginPostRequest.serializer)
           ..add(ApiAuthRegisterPostRequest.serializer)
           ..add(ApiDashboardStatsGet200Response.serializer)
+          ..add(ApiEmployeeAttendanceCheckInPost201Response.serializer)
+          ..add(ApiEmployeeAttendanceStatusGet200Response.serializer)
           ..add(ApiInventoryDetailsGet200Response.serializer)
           ..add(ApiInventoryDetailsGet200ResponseData.serializer)
           ..add(ApiInventoryDetailsGet200ResponseDataCategoriesInner.serializer)
@@ -54,6 +56,11 @@ Serializers _$serializers =
           ..add(ApiShipmentsIdGet200ResponseDataSeller.serializer)
           ..add(ApiTransfersPostRequest.serializer)
           ..add(ApiTransfersPostRequestItemsInner.serializer)
+          ..add(AttendanceGeoBody.serializer)
+          ..add(AttendanceRecord.serializer)
+          ..add(AttendanceRecordLocation.serializer)
+          ..add(AttendanceRecordStatusEnum.serializer)
+          ..add(AttendanceStatusData.serializer)
           ..add(AvailableSerialsResponse.serializer)
           ..add(Category.serializer)
           ..add(CreateProductModelRequest.serializer)
@@ -89,6 +96,9 @@ Serializers _$serializers =
           ..add(LoginData.serializer)
           ..add(LoginResponse.serializer)
           ..add(LoginUser.serializer)
+          ..add(LoginUserEmployeeRole.serializer)
+          ..add(LoginUserLocation.serializer)
+          ..add(LoginUserLocationTypeEnum.serializer)
           ..add(LoginUserRoleEnum.serializer)
           ..add(Product.serializer)
           ..add(ProductCreated.serializer)
@@ -124,14 +134,22 @@ Serializers _$serializers =
           ..add(SellerDashboardStats.serializer)
           ..add(SellerDashboardStatsResponse.serializer)
           ..add(SellerDetail.serializer)
+          ..add(SellerDetailLocation.serializer)
           ..add(SellerDetailResponse.serializer)
           ..add(SellerRecentSale.serializer)
+          ..add(SellerShipmentListItem.serializer)
+          ..add(SellerShipmentListItemItemsInner.serializer)
+          ..add(SellerShipmentsListResponse.serializer)
           ..add(SellerShopSummary.serializer)
           ..add(SellerStatistics.serializer)
           ..add(SellersListResponse.serializer)
           ..add(Shipment.serializer)
           ..add(ShipmentItem.serializer)
           ..add(ShipmentStatusEnum.serializer)
+          ..add(ShopStaffData.serializer)
+          ..add(ShopStaffMember.serializer)
+          ..add(ShopStaffMemberRoleEnum.serializer)
+          ..add(ShopStaffResponse.serializer)
           ..add(StockRequest.serializer)
           ..add(StockRequestItem.serializer)
           ..add(StockRequestStatusEnum.serializer)
@@ -288,6 +306,18 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(SellerShipmentListItem),
+            ]),
+            () => ListBuilder<SellerShipmentListItem>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(SellerShipmentListItemItemsInner),
+            ]),
+            () => ListBuilder<SellerShipmentListItemItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(SellerShopSummary),
             ]),
             () => ListBuilder<SellerShopSummary>(),
@@ -295,6 +325,14 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(ShipmentItem)]),
             () => ListBuilder<ShipmentItem>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(ShopStaffMember)]),
+            () => ListBuilder<ShopStaffMember>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(ShopStaffMember)]),
+            () => ListBuilder<ShopStaffMember>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(StockRequestItem)]),

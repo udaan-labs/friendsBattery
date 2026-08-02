@@ -48,7 +48,7 @@ class SalesController {
   async getSaleById(req, res) {
     try {
       const { transactionId } = req.params;
-      const sale = await salesService.getSaleById(Number(transactionId));
+      const sale = await salesService.getSaleById(Number(transactionId), req.user);
       return successResponse(res, 200, 'Sale details fetched successfully', sale);
     } catch (error) {
       if (error.statusCode) {

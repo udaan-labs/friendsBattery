@@ -30,6 +30,8 @@ import 'package:friends_battery_api/src/model/api_auth_activate_put_request.dart
 import 'package:friends_battery_api/src/model/api_auth_login_post_request.dart';
 import 'package:friends_battery_api/src/model/api_auth_register_post_request.dart';
 import 'package:friends_battery_api/src/model/api_dashboard_stats_get200_response.dart';
+import 'package:friends_battery_api/src/model/api_employee_attendance_check_in_post201_response.dart';
+import 'package:friends_battery_api/src/model/api_employee_attendance_status_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_inventory_details_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_inventory_details_get200_response_data.dart';
 import 'package:friends_battery_api/src/model/api_inventory_details_get200_response_data_categories_inner.dart';
@@ -54,6 +56,10 @@ import 'package:friends_battery_api/src/model/api_shipments_id_get200_response_d
 import 'package:friends_battery_api/src/model/api_shipments_id_get200_response_data_seller.dart';
 import 'package:friends_battery_api/src/model/api_transfers_post_request.dart';
 import 'package:friends_battery_api/src/model/api_transfers_post_request_items_inner.dart';
+import 'package:friends_battery_api/src/model/attendance_geo_body.dart';
+import 'package:friends_battery_api/src/model/attendance_record.dart';
+import 'package:friends_battery_api/src/model/attendance_record_location.dart';
+import 'package:friends_battery_api/src/model/attendance_status_data.dart';
 import 'package:friends_battery_api/src/model/available_serials_response.dart';
 import 'package:friends_battery_api/src/model/category.dart';
 import 'package:friends_battery_api/src/model/create_product_model_request.dart';
@@ -87,6 +93,8 @@ import 'package:friends_battery_api/src/model/list_product_models_request.dart';
 import 'package:friends_battery_api/src/model/login_data.dart';
 import 'package:friends_battery_api/src/model/login_response.dart';
 import 'package:friends_battery_api/src/model/login_user.dart';
+import 'package:friends_battery_api/src/model/login_user_employee_role.dart';
+import 'package:friends_battery_api/src/model/login_user_location.dart';
 import 'package:friends_battery_api/src/model/product.dart';
 import 'package:friends_battery_api/src/model/product_created.dart';
 import 'package:friends_battery_api/src/model/product_model.dart';
@@ -120,13 +128,20 @@ import 'package:friends_battery_api/src/model/scan_for_sale_result.dart';
 import 'package:friends_battery_api/src/model/seller_dashboard_stats.dart';
 import 'package:friends_battery_api/src/model/seller_dashboard_stats_response.dart';
 import 'package:friends_battery_api/src/model/seller_detail.dart';
+import 'package:friends_battery_api/src/model/seller_detail_location.dart';
 import 'package:friends_battery_api/src/model/seller_detail_response.dart';
 import 'package:friends_battery_api/src/model/seller_recent_sale.dart';
+import 'package:friends_battery_api/src/model/seller_shipment_list_item.dart';
+import 'package:friends_battery_api/src/model/seller_shipment_list_item_items_inner.dart';
+import 'package:friends_battery_api/src/model/seller_shipments_list_response.dart';
 import 'package:friends_battery_api/src/model/seller_shop_summary.dart';
 import 'package:friends_battery_api/src/model/seller_statistics.dart';
 import 'package:friends_battery_api/src/model/sellers_list_response.dart';
 import 'package:friends_battery_api/src/model/shipment.dart';
 import 'package:friends_battery_api/src/model/shipment_item.dart';
+import 'package:friends_battery_api/src/model/shop_staff_data.dart';
+import 'package:friends_battery_api/src/model/shop_staff_member.dart';
+import 'package:friends_battery_api/src/model/shop_staff_response.dart';
 import 'package:friends_battery_api/src/model/stock_request.dart';
 import 'package:friends_battery_api/src/model/stock_request_item.dart';
 import 'package:friends_battery_api/src/model/transfer_inventory_count.dart';
@@ -159,6 +174,8 @@ part 'serializers.g.dart';
   ApiAuthLoginPostRequest,
   ApiAuthRegisterPostRequest,
   ApiDashboardStatsGet200Response,
+  ApiEmployeeAttendanceCheckInPost201Response,
+  ApiEmployeeAttendanceStatusGet200Response,
   ApiInventoryDetailsGet200Response,
   ApiInventoryDetailsGet200ResponseData,
   ApiInventoryDetailsGet200ResponseDataCategoriesInner,
@@ -183,6 +200,10 @@ part 'serializers.g.dart';
   ApiShipmentsIdGet200ResponseDataSeller,
   ApiTransfersPostRequest,
   ApiTransfersPostRequestItemsInner,
+  AttendanceGeoBody,
+  AttendanceRecord,
+  AttendanceRecordLocation,
+  AttendanceStatusData,
   AvailableSerialsResponse,
   Category,
   CreateProductModelRequest,
@@ -216,6 +237,8 @@ part 'serializers.g.dart';
   LoginData,
   LoginResponse,
   LoginUser,
+  LoginUserEmployeeRole,
+  LoginUserLocation,
   Product,
   ProductCreated,
   ProductModel,
@@ -249,13 +272,20 @@ part 'serializers.g.dart';
   SellerDashboardStats,
   SellerDashboardStatsResponse,
   SellerDetail,
+  SellerDetailLocation,
   SellerDetailResponse,
   SellerRecentSale,
+  SellerShipmentListItem,
+  SellerShipmentListItemItemsInner,
+  SellerShipmentsListResponse,
   SellerShopSummary,
   SellerStatistics,
   SellersListResponse,
   Shipment,
   ShipmentItem,
+  ShopStaffData,
+  ShopStaffMember,
+  ShopStaffResponse,
   StockRequest,
   StockRequestItem,
   TransferInventoryCount,

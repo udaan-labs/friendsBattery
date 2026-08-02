@@ -9,7 +9,11 @@ const {
   adminSalesHistorySchema
 } = require('./sales.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
-const { requireAdmin } = require('../../shared/middleware/role.middleware');
+const {
+  requireAdmin,
+  requireSeller,
+  requireAdminOrSeller,
+} = require('../../shared/middleware/role.middleware');
 const { validateRequest } = require('../../shared/middleware/validation.middleware');
 
 /**
@@ -44,6 +48,7 @@ const { validateRequest } = require('../../shared/middleware/validation.middlewa
 router.post(
   '/',
   authenticate,
+  requireSeller,
   validateRequest(createSaleSchema),
   salesController.createSale
 );
@@ -61,6 +66,7 @@ router.post(
 router.get(
   '/',
   authenticate,
+  requireAdminOrSeller,
   salesController.getSales
 );
 
@@ -121,6 +127,7 @@ router.get(
 router.get(
   '/history',
   authenticate,
+  requireSeller,
   validateRequest(salesHistorySchema),
   salesController.getSalesHistory
 );
@@ -212,6 +219,7 @@ router.get(
 router.get(
   '/:transactionId',
   authenticate,
+  requireAdminOrSeller,
   validateRequest(viewSaleSchema),
   salesController.getSaleById
 );

@@ -14,7 +14,8 @@ UserRole parseUserRole(String? roleStr) {
     case 'seller':
       return UserRole.seller;
     default:
-      return UserRole.seller;
+      // Never invent seller rights for unknown/missing role
+      return UserRole.guest;
   }
 }
 

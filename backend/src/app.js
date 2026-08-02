@@ -16,7 +16,8 @@ app.use(helmet());
 const corsOptions = {
   origin: '*', // For development with Cloudflare Tunnel, allow all origins
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  // Mobile/Bruno use auth-id + auth-key (not only Bearer Authorization)
+  allowedHeaders: ['Content-Type', 'Authorization', 'auth-id', 'auth-key', 'auth_id', 'auth_key', 'authid']
 };
 app.use(cors(corsOptions));
 app.use(morgan('dev'));
@@ -51,6 +52,8 @@ safeMount('/api/inventory', require('./modules/inventory/inventory.routes'));
 const shipmentsRoutes = require('./modules/shipments/shipments.routes');
 safeMount('/api/shipments', shipmentsRoutes.shipments);
 safeMount('/api/seller', shipmentsRoutes.seller);
+if (shipmentsRoutes.employee) safeMount('/api/employee', shipmentsRoutes.employee);
+safeMount('/api/employee/attendance', require('./modules/attendance/attendance.routes'));
 safeMount('/api/notifications', require('./modules/notifications/notifications.routes'));
 safeMount('/api/product-units', require('./modules/product-units/product-units.routes'));
 

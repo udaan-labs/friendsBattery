@@ -43,25 +43,24 @@ const verifyProduct = async (req, res, next) => {
       return errorResponse(res, 404, 'Product not found');
     }
 
-    const isSeller = req.user.role === 'SELLER';
-    let isAuthorized = true;
-
-    if (isSeller) {
-      isAuthorized = false;
-      // seller must own it OR have sold it
+    // Default deny. EMPLOYEE must not see customer/sale/ledger via verify.
+    const role = req.user.role;
+    let isAuthorized = false;
+    if (role === 'ADMIN') {
+      isAuthorized = true;
+    } else if (role === 'SELLER') {
       if (String(productUnit.ownerId) === String(req.user.id)) {
         isAuthorized = true;
       } else {
-        // check if they sold it
-        const saleByThisSeller = productUnit.sales.find(s => String(s.sellerId) === String(req.user.id));
-        if (saleByThisSeller) {
-          isAuthorized = true;
-        }
+        const saleByThisSeller = productUnit.sales.find(
+          (s) => String(s.sellerId) === String(req.user.id)
+        );
+        if (saleByThisSeller) isAuthorized = true;
       }
     }
 
     if (!isAuthorized) {
-      return errorResponse(res, 404, 'Product not found'); 
+      return errorResponse(res, 404, 'Product not found');
     }
 
     const sale = productUnit.sales && productUnit.sales.length > 0 ? productUnit.sales[productUnit.sales.length - 1] : null;

@@ -30,6 +30,9 @@ import '../../features/admin/sellers/screens/seller_details_screen.dart';
 import '../../features/shared/product_lookup/screens/verify_product_screen.dart';
 import '../../features/employee/dashboard/screens/employee_shell_screen.dart';
 import '../../features/employee/dashboard/screens/employee_home_screen.dart';
+import '../../features/employee/attendance/screens/employee_attendance_screen.dart';
+import '../../features/employee/shipments/screens/employee_shipments_screen.dart';
+import '../../features/employee/shipments/screens/employee_shipment_detail_screen.dart';
 import '../../shared/providers/auth_provider.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -236,6 +239,21 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/employee/inventory',
             builder: (context, state) => const CurrentInventoryScreen(),
+          ),
+          GoRoute(
+            path: '/employee/attendance',
+            builder: (context, state) => const EmployeeAttendanceScreen(),
+          ),
+          GoRoute(
+            path: '/employee/shipments',
+            builder: (context, state) => const EmployeeShipmentsScreen(),
+          ),
+          GoRoute(
+            path: '/employee/shipments/:shipmentId',
+            builder: (context, state) {
+              final idStr = state.pathParameters['shipmentId']!;
+              return EmployeeShipmentDetailScreen(shipmentId: int.parse(idStr));
+            },
           ),
         ],
       ),

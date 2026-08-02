@@ -47,13 +47,14 @@ Please follow the [installation procedure](#installation--usage) and then run th
 import 'package:friends_battery_api/friends_battery_api.dart';
 
 
-final api = FriendsBatteryApi().getAuthApi();
-final ApiAuthActivatePutRequest apiAuthActivatePutRequest = ; // ApiAuthActivatePutRequest | 
+final api = FriendsBatteryApi().getAttendanceApi();
+final AttendanceGeoBody attendanceGeoBody = ; // AttendanceGeoBody | 
 
 try {
-    api.apiAuthActivatePut(apiAuthActivatePutRequest);
+    final response = await api.apiEmployeeAttendanceCheckInPost(attendanceGeoBody);
+    print(response);
 } on DioException catch (e) {
-    print("Exception when calling AuthApi->apiAuthActivatePut: $e\n");
+    print("Exception when calling AttendanceApi->apiEmployeeAttendanceCheckInPost: $e\n");
 }
 
 ```
@@ -64,8 +65,12 @@ All URIs are relative to *http://localhost:3000*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+[*AttendanceApi*](doc/AttendanceApi.md) | [**apiEmployeeAttendanceCheckInPost**](doc/AttendanceApi.md#apiemployeeattendancecheckinpost) | **POST** /api/employee/attendance/check-in | Check in at assigned shop location
+[*AttendanceApi*](doc/AttendanceApi.md) | [**apiEmployeeAttendanceCheckOutPost**](doc/AttendanceApi.md#apiemployeeattendancecheckoutpost) | **POST** /api/employee/attendance/check-out | Check out (close open attendance)
+[*AttendanceApi*](doc/AttendanceApi.md) | [**apiEmployeeAttendanceStatusGet**](doc/AttendanceApi.md#apiemployeeattendancestatusget) | **GET** /api/employee/attendance/status | Current check-in status for employee
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthActivatePut**](doc/AuthApi.md#apiauthactivateput) | **PUT** /api/auth/activate | Activate and verify a user account
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthLoginPost**](doc/AuthApi.md#apiauthloginpost) | **POST** /api/auth/login | Authenticate user and return token
+[*AuthApi*](doc/AuthApi.md) | [**apiAuthLogoutPost**](doc/AuthApi.md#apiauthlogoutpost) | **POST** /api/auth/logout | End session (closes employee_sessions for EMPLOYEE)
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthRegisterPost**](doc/AuthApi.md#apiauthregisterpost) | **POST** /api/auth/register | Register a new user
 [*CustomersApi*](doc/CustomersApi.md) | [**apiCustomersGet**](doc/CustomersApi.md#apicustomersget) | **GET** /api/customers | Retrieve a list of customers
 [*DashboardApi*](doc/DashboardApi.md) | [**apiDashboardActivityHistoryGet**](doc/DashboardApi.md#apidashboardactivityhistoryget) | **GET** /api/dashboard/activity-history | Get paginated activity history (Admin only)
@@ -98,6 +103,7 @@ Class | Method | HTTP request | Description
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesHistoryGet**](doc/SalesApi.md#apisaleshistoryget) | **GET** /api/sales/history | Return seller&#39;s own sales history with pagination, search, and date filtering
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesPost**](doc/SalesApi.md#apisalespost) | **POST** /api/sales | Create a new sale transaction
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesTransactionIdGet**](doc/SalesApi.md#apisalestransactionidget) | **GET** /api/sales/{transactionId} | Return a single sale&#39;s details by ID
+[*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiEmployeeShipmentsGet**](doc/ShipmentsApi.md#apiemployeeshipmentsget) | **GET** /api/employee/shipments | List shipments for sellers at the employee&#39;s shop location (read-only)
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiSellerDashboardPendingShipmentsGet**](doc/ShipmentsApi.md#apisellerdashboardpendingshipmentsget) | **GET** /api/seller/dashboard/pending-shipments | Get pending shipments count (Seller only)
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiSellerShipmentsGet**](doc/ShipmentsApi.md#apisellershipmentsget) | **GET** /api/seller/shipments | List shipments for seller (Seller only)
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiShipmentsGet**](doc/ShipmentsApi.md#apishipmentsget) | **GET** /api/shipments | List all shipments (Admin only)
@@ -106,6 +112,7 @@ Class | Method | HTTP request | Description
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiShipmentsShipmentIdAcceptPost**](doc/ShipmentsApi.md#apishipmentsshipmentidacceptpost) | **POST** /api/shipments/{shipmentId}/accept | Accept a pending shipment (Seller only)
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsSellersGet**](doc/ShopsApi.md#apishopssellersget) | **GET** /api/shops/sellers | Return all sellers
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsSellersSellerIdGet**](doc/ShopsApi.md#apishopssellersselleridget) | **GET** /api/shops/sellers/{sellerId} | Return one seller
+[*ShopsApi*](doc/ShopsApi.md) | [**apiShopsSellersSellerIdStaffGet**](doc/ShopsApi.md#apishopssellersselleridstaffget) | **GET** /api/shops/sellers/{sellerId}/staff | Sellers and employees at the same shop location as this seller
 [*TransfersApi*](doc/TransfersApi.md) | [**apiTransfersGet**](doc/TransfersApi.md#apitransfersget) | **GET** /api/transfers | Return all shipments (Admin gets all, Seller gets own)
 [*TransfersApi*](doc/TransfersApi.md) | [**apiTransfersPost**](doc/TransfersApi.md#apitransferspost) | **POST** /api/transfers | Create a new shipment from Admin to Seller
 [*TransfersApi*](doc/TransfersApi.md) | [**apiTransfersShipmentIdCancelPatch**](doc/TransfersApi.md#apitransfersshipmentidcancelpatch) | **PATCH** /api/transfers/{shipmentId}/cancel | Admin cancels a pending shipment
@@ -131,6 +138,8 @@ Class | Method | HTTP request | Description
  - [ApiAuthLoginPostRequest](doc/ApiAuthLoginPostRequest.md)
  - [ApiAuthRegisterPostRequest](doc/ApiAuthRegisterPostRequest.md)
  - [ApiDashboardStatsGet200Response](doc/ApiDashboardStatsGet200Response.md)
+ - [ApiEmployeeAttendanceCheckInPost201Response](doc/ApiEmployeeAttendanceCheckInPost201Response.md)
+ - [ApiEmployeeAttendanceStatusGet200Response](doc/ApiEmployeeAttendanceStatusGet200Response.md)
  - [ApiInventoryDetailsGet200Response](doc/ApiInventoryDetailsGet200Response.md)
  - [ApiInventoryDetailsGet200ResponseData](doc/ApiInventoryDetailsGet200ResponseData.md)
  - [ApiInventoryDetailsGet200ResponseDataCategoriesInner](doc/ApiInventoryDetailsGet200ResponseDataCategoriesInner.md)
@@ -155,6 +164,10 @@ Class | Method | HTTP request | Description
  - [ApiShipmentsIdGet200ResponseDataSeller](doc/ApiShipmentsIdGet200ResponseDataSeller.md)
  - [ApiTransfersPostRequest](doc/ApiTransfersPostRequest.md)
  - [ApiTransfersPostRequestItemsInner](doc/ApiTransfersPostRequestItemsInner.md)
+ - [AttendanceGeoBody](doc/AttendanceGeoBody.md)
+ - [AttendanceRecord](doc/AttendanceRecord.md)
+ - [AttendanceRecordLocation](doc/AttendanceRecordLocation.md)
+ - [AttendanceStatusData](doc/AttendanceStatusData.md)
  - [AvailableSerialsResponse](doc/AvailableSerialsResponse.md)
  - [Category](doc/Category.md)
  - [CreateProductModelRequest](doc/CreateProductModelRequest.md)
@@ -188,6 +201,8 @@ Class | Method | HTTP request | Description
  - [LoginData](doc/LoginData.md)
  - [LoginResponse](doc/LoginResponse.md)
  - [LoginUser](doc/LoginUser.md)
+ - [LoginUserEmployeeRole](doc/LoginUserEmployeeRole.md)
+ - [LoginUserLocation](doc/LoginUserLocation.md)
  - [Product](doc/Product.md)
  - [ProductCreated](doc/ProductCreated.md)
  - [ProductModel](doc/ProductModel.md)
@@ -221,13 +236,20 @@ Class | Method | HTTP request | Description
  - [SellerDashboardStats](doc/SellerDashboardStats.md)
  - [SellerDashboardStatsResponse](doc/SellerDashboardStatsResponse.md)
  - [SellerDetail](doc/SellerDetail.md)
+ - [SellerDetailLocation](doc/SellerDetailLocation.md)
  - [SellerDetailResponse](doc/SellerDetailResponse.md)
  - [SellerRecentSale](doc/SellerRecentSale.md)
+ - [SellerShipmentListItem](doc/SellerShipmentListItem.md)
+ - [SellerShipmentListItemItemsInner](doc/SellerShipmentListItemItemsInner.md)
+ - [SellerShipmentsListResponse](doc/SellerShipmentsListResponse.md)
  - [SellerShopSummary](doc/SellerShopSummary.md)
  - [SellerStatistics](doc/SellerStatistics.md)
  - [SellersListResponse](doc/SellersListResponse.md)
  - [Shipment](doc/Shipment.md)
  - [ShipmentItem](doc/ShipmentItem.md)
+ - [ShopStaffData](doc/ShopStaffData.md)
+ - [ShopStaffMember](doc/ShopStaffMember.md)
+ - [ShopStaffResponse](doc/ShopStaffResponse.md)
  - [StockRequest](doc/StockRequest.md)
  - [StockRequestItem](doc/StockRequestItem.md)
  - [TransferInventoryCount](doc/TransferInventoryCount.md)

@@ -317,7 +317,7 @@ class InventoryApi {
   }
 
   /// Return logged-in user&#39;s inventory
-  /// 
+  /// Scope by role (unit inventory): - ADMIN: units owned by admin users - SELLER: units where owner_id &#x3D; seller - EMPLOYEE: units where current_location_id &#x3D; employee.location_id Employee with no location_id gets an empty list. 
   ///
   /// Parameters:
   /// * [search] 

@@ -101,8 +101,11 @@ class TransfersService {
 
     if (user.role === 'ADMIN') {
       shipments = await transfersRepository.getAllShipments();
-    } else {
+    } else if (user.role === 'SELLER') {
       shipments = await transfersRepository.getShipmentsBySeller(user.id);
+    } else {
+      // EMPLOYEE / unknown — no legacy transfer list (use /api/employee/shipments)
+      return [];
     }
 
     return shipments.map(s => ({
@@ -122,6 +125,7 @@ class TransfersService {
    * Authorization:
    * - Admin can view any shipment
    * - Seller can only view shipments assigned to them
+   * - Employee/others: forbidden (legacy module; new path is /api/shipments)
    *
    * Input: shipmentId, user object from req.user
    * Output: Full shipment details including items with product info
@@ -135,8 +139,11 @@ class TransfersService {
       throw error;
     }
 
-    // Authorization: Seller can only view their own shipments
-    if (user.role === 'SELLER' && Number(shipment.toUserId) !== Number(user.id)) {
+    if (user.role === 'ADMIN') {
+      // ok
+    } else if (user.role === 'SELLER' && Number(shipment.toUserId) === Number(user.id)) {
+      // ok
+    } else {
       const error = new Error('Forbidden: You do not have access to this shipment');
       error.statusCode = 403;
       throw error;

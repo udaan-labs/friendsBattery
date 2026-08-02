@@ -44,6 +44,20 @@ class ShipmentsController {
   }
 
   /**
+   * GET /api/employee/shipments — shop location shipments (read-only).
+   */
+  async getEmployeeShipments(req, res) {
+    try {
+      const locationId = req.user.locationId ?? null;
+      const result = await shipmentsService.getShipmentsForEmployeeLocation(locationId);
+      return successResponse(res, 200, 'Shop shipments retrieved successfully', result);
+    } catch (error) {
+      console.error('Get Employee Shipments Error:', error);
+      return errorResponse(res, 500, 'Internal server error');
+    }
+  }
+
+  /**
    * GET /api/shipments — Admin: list all shipments.
    */
   async getAllShipments(req, res) {
@@ -62,10 +76,16 @@ class ShipmentsController {
   async getShipmentById(req, res) {
     try {
       const userId = Number(req.user.id);
-      const userRole = req.user.role; // 'ADMIN' or 'SELLER'
+      const userRole = req.user.role; // ADMIN | SELLER | EMPLOYEE
       const shipmentId = Number(req.params.id);
+      const locationId = req.user.locationId ?? null;
 
-      const result = await shipmentsService.getShipmentById(shipmentId, userId, userRole);
+      const result = await shipmentsService.getShipmentById(
+        shipmentId,
+        userId,
+        userRole,
+        locationId
+      );
       return successResponse(res, 200, 'Shipment retrieved successfully', result);
     } catch (error) {
       if (error.statusCode) {

@@ -6,6 +6,7 @@
 import 'package:built_collection/built_collection.dart';
 import 'package:friends_battery_api/src/model/seller_statistics.dart';
 import 'package:friends_battery_api/src/model/inventory_list_item.dart';
+import 'package:friends_battery_api/src/model/seller_detail_location.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -20,6 +21,8 @@ part 'seller_detail.g.dart';
 /// * [userNumber] 
 /// * [isActive] 
 /// * [isVerified] 
+/// * [locationId] 
+/// * [location] 
 /// * [statistics] 
 /// * [inventory] 
 /// * [createdAt] 
@@ -42,6 +45,12 @@ abstract class SellerDetail implements Built<SellerDetail, SellerDetailBuilder> 
 
   @BuiltValueField(wireName: r'is_verified')
   bool? get isVerified;
+
+  @BuiltValueField(wireName: r'location_id')
+  int? get locationId;
+
+  @BuiltValueField(wireName: r'location')
+  SellerDetailLocation? get location;
 
   @BuiltValueField(wireName: r'statistics')
   SellerStatistics? get statistics;
@@ -115,6 +124,20 @@ class _$SellerDetailSerializer implements PrimitiveSerializer<SellerDetail> {
       yield serializers.serialize(
         object.isVerified,
         specifiedType: const FullType(bool),
+      );
+    }
+    if (object.locationId != null) {
+      yield r'location_id';
+      yield serializers.serialize(
+        object.locationId,
+        specifiedType: const FullType.nullable(int),
+      );
+    }
+    if (object.location != null) {
+      yield r'location';
+      yield serializers.serialize(
+        object.location,
+        specifiedType: const FullType.nullable(SellerDetailLocation),
       );
     }
     if (object.statistics != null) {
@@ -202,6 +225,22 @@ class _$SellerDetailSerializer implements PrimitiveSerializer<SellerDetail> {
             specifiedType: const FullType(bool),
           ) as bool;
           result.isVerified = valueDes;
+          break;
+        case r'location_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
+          if (valueDes == null) continue;
+          result.locationId = valueDes;
+          break;
+        case r'location':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(SellerDetailLocation),
+          ) as SellerDetailLocation?;
+          if (valueDes == null) continue;
+          result.location.replace(valueDes);
           break;
         case r'statistics':
           final valueDes = serializers.deserialize(

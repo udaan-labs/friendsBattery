@@ -274,17 +274,22 @@ class InventoryService {
   async getHistory(userId, role, { from_date, to_date, product_id, seller_id, page = 1, limit = 10 }) {
     const filters = {};
 
-    // Apply role-based filtering
+    // Apply role-based filtering (EMPLOYEE / unknown → no full-ledger dump)
     if (role === 'SELLER') {
       filters.OR = [
         { fromUserId: userId },
         { toUserId: userId }
       ];
-    } else if (role === 'ADMIN' && seller_id) {
-      filters.OR = [
-        { fromUserId: seller_id },
-        { toUserId: seller_id }
-      ];
+    } else if (role === 'ADMIN') {
+      if (seller_id) {
+        filters.OR = [
+          { fromUserId: seller_id },
+          { toUserId: seller_id }
+        ];
+      }
+    } else {
+      // EMPLOYEE must not see admin/seller ledger via this endpoint
+      return [];
     }
 
     // Apply product filter

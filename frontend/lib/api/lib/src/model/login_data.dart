@@ -14,6 +14,7 @@ part 'login_data.g.dart';
 /// Properties:
 /// * [authId] 
 /// * [authKey] 
+/// * [sessionId] - Present for EMPLOYEE logins (employee_sessions)
 /// * [user] 
 @BuiltValue()
 abstract class LoginData implements Built<LoginData, LoginDataBuilder> {
@@ -22,6 +23,10 @@ abstract class LoginData implements Built<LoginData, LoginDataBuilder> {
 
   @BuiltValueField(wireName: r'auth_key')
   String? get authKey;
+
+  /// Present for EMPLOYEE logins (employee_sessions)
+  @BuiltValueField(wireName: r'session_id')
+  int? get sessionId;
 
   @BuiltValueField(wireName: r'user')
   LoginUser? get user;
@@ -61,6 +66,13 @@ class _$LoginDataSerializer implements PrimitiveSerializer<LoginData> {
       yield serializers.serialize(
         object.authKey,
         specifiedType: const FullType(String),
+      );
+    }
+    if (object.sessionId != null) {
+      yield r'session_id';
+      yield serializers.serialize(
+        object.sessionId,
+        specifiedType: const FullType.nullable(int),
       );
     }
     if (object.user != null) {
@@ -106,6 +118,14 @@ class _$LoginDataSerializer implements PrimitiveSerializer<LoginData> {
             specifiedType: const FullType(String),
           ) as String;
           result.authKey = valueDes;
+          break;
+        case r'session_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
+          if (valueDes == null) continue;
+          result.sessionId = valueDes;
           break;
         case r'user':
           final valueDes = serializers.deserialize(

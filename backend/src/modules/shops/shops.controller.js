@@ -58,6 +58,43 @@ class ShopsController {
       return errorResponse(res, 500, 'Internal server error');
     }
   }
+
+  /**
+   * GET /api/shops/sellers/:sellerId/staff
+   * Sellers + employees at the same location as this seller.
+   */
+  async getShopStaff(req, res) {
+    try {
+      const { sellerId } = req.params;
+      const data = await shopsService.getShopStaffBySellerId(Number(sellerId));
+      return successResponse(res, 200, 'Shop staff fetched successfully', data);
+    } catch (error) {
+      if (error.statusCode) {
+        return errorResponse(res, error.statusCode, error.message);
+      }
+      console.error('Get Shop Staff Error:', error);
+      return errorResponse(res, 500, 'Internal server error');
+    }
+  }
+
+  /**
+   * GET /api/shops/employees/:employeeId
+   * Admin: employee profile + check-in / check-out actions only.
+   */
+  async viewEmployee(req, res) {
+    try {
+      const { employeeId } = req.params;
+      const limit = req.query.limit != null ? Number(req.query.limit) : 50;
+      const data = await shopsService.viewEmployee(Number(employeeId), { limit });
+      return successResponse(res, 200, 'Employee fetched successfully', data);
+    } catch (error) {
+      if (error.statusCode) {
+        return errorResponse(res, error.statusCode, error.message);
+      }
+      console.error('View Employee Error:', error);
+      return errorResponse(res, 500, 'Internal server error');
+    }
+  }
 }
 
 module.exports = new ShopsController();

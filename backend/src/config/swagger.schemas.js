@@ -95,6 +95,84 @@ module.exports = {
       data: { $ref: '#/components/schemas/RegisterData' }
     }
   },
+  AttendanceGeoBody: {
+    type: 'object',
+    properties: {
+      lat: { type: 'number', nullable: true },
+      lng: { type: 'number', nullable: true },
+      address: { type: 'string', nullable: true },
+    },
+  },
+  AttendanceRecord: {
+    type: 'object',
+    properties: {
+      id: { type: 'integer' },
+      employee_id: { type: 'integer' },
+      assigned_location_id: { type: 'integer' },
+      check_in_time: { type: 'string', format: 'date-time', nullable: true },
+      check_out_time: { type: 'string', format: 'date-time', nullable: true },
+      status: { type: 'string', enum: ['CHECKED_IN', 'CHECKED_OUT'] },
+      location: {
+        type: 'object',
+        nullable: true,
+        properties: {
+          id: { type: 'integer' },
+          code: { type: 'string' },
+          name: { type: 'string' },
+          type: { type: 'string' },
+        },
+      },
+    },
+  },
+  AttendanceStatusData: {
+    type: 'object',
+    properties: {
+      is_checked_in: { type: 'boolean' },
+      attendance: { allOf: [{ $ref: '#/components/schemas/AttendanceRecord' }], nullable: true },
+      location: {
+        type: 'object',
+        nullable: true,
+        properties: {
+          id: { type: 'integer' },
+          code: { type: 'string' },
+          name: { type: 'string' },
+          type: { type: 'string' },
+        },
+      },
+    },
+  },
+  SellerShipmentListItem: {
+    type: 'object',
+    properties: {
+      shipmentId: { type: 'integer' },
+      shipmentNumber: { type: 'string' },
+      status: { type: 'string' },
+      createdAt: { type: 'string' },
+      acceptedAt: { type: 'string', nullable: true },
+      items: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            productName: { type: 'string' },
+            productModel: { type: 'string' },
+            quantity: { type: 'integer' },
+          },
+        },
+      },
+    },
+  },
+  SellerShipmentsListResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean' },
+      message: { type: 'string' },
+      data: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/SellerShipmentListItem' },
+      },
+    },
+  },
   Customer: {
     type: 'object',
     properties: {
@@ -515,6 +593,18 @@ module.exports = {
       user_number: { type: 'string' },
       is_active: { type: 'boolean' },
       is_verified: { type: 'boolean' },
+      location_id: { type: 'integer', nullable: true },
+      location: {
+        type: 'object',
+        nullable: true,
+        properties: {
+          id: { type: 'integer' },
+          code: { type: 'string' },
+          name: { type: 'string' },
+          type: { type: 'string' },
+          is_active: { type: 'boolean' },
+        },
+      },
       statistics: { $ref: '#/components/schemas/SellerStatistics' },
       inventory: {
         type: 'array',
@@ -522,6 +612,121 @@ module.exports = {
       },
       created_at: { type: 'string', format: 'date-time' }
     }
+  },
+  ShopStaffMember: {
+    type: 'object',
+    properties: {
+      id: { type: 'integer' },
+      user_id: { type: 'string' },
+      user_name: { type: 'string' },
+      user_number: { type: 'string', nullable: true },
+      shop_name: { type: 'string', nullable: true },
+      role: { type: 'string', enum: ['SELLER', 'EMPLOYEE'] },
+      is_active: { type: 'boolean' },
+      is_verified: { type: 'boolean' },
+      employee_role: {
+        type: 'object',
+        nullable: true,
+        properties: {
+          id: { type: 'integer' },
+          name: { type: 'string' },
+          description: { type: 'string', nullable: true },
+        },
+      },
+    },
+  },
+  ShopStaffData: {
+    type: 'object',
+    properties: {
+      location: {
+        type: 'object',
+        nullable: true,
+        properties: {
+          id: { type: 'integer' },
+          code: { type: 'string' },
+          name: { type: 'string' },
+          type: { type: 'string' },
+          is_active: { type: 'boolean' },
+        },
+      },
+      sellers: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/ShopStaffMember' },
+      },
+      employees: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/ShopStaffMember' },
+      },
+    },
+  },
+  ShopStaffResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean' },
+      message: { type: 'string' },
+      data: { $ref: '#/components/schemas/ShopStaffData' },
+    },
+  },
+  EmployeeAction: {
+    type: 'object',
+    description: 'Employee-only action (CHECK_IN or CHECK_OUT)',
+    properties: {
+      action: { type: 'string', enum: ['CHECK_IN', 'CHECK_OUT'] },
+      attendance_id: { type: 'integer' },
+      at: { type: 'string', format: 'date-time', nullable: true },
+      lat: { type: 'number', nullable: true },
+      lng: { type: 'number', nullable: true },
+      address: { type: 'string', nullable: true },
+      location: {
+        type: 'object',
+        nullable: true,
+        properties: {
+          id: { type: 'integer' },
+          code: { type: 'string' },
+          name: { type: 'string' },
+          type: { type: 'string' },
+        },
+      },
+    },
+  },
+  AdminEmployeeDetailData: {
+    type: 'object',
+    properties: {
+      employee: { $ref: '#/components/schemas/ShopStaffMember' },
+      is_checked_in: { type: 'boolean' },
+      current_attendance: {
+        type: 'object',
+        nullable: true,
+        properties: {
+          id: { type: 'integer' },
+          check_in_time: { type: 'string', format: 'date-time', nullable: true },
+          status: { type: 'string' },
+          location: {
+            type: 'object',
+            nullable: true,
+            properties: {
+              id: { type: 'integer' },
+              code: { type: 'string' },
+              name: { type: 'string' },
+              type: { type: 'string' },
+            },
+          },
+        },
+      },
+      actions: {
+        type: 'array',
+        description: 'Only CHECK_IN and CHECK_OUT events, newest first',
+        items: { $ref: '#/components/schemas/EmployeeAction' },
+      },
+    },
+  },
+  AdminEmployeeDetailResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean' },
+      message: { type: 'string' },
+      data: { $ref: '#/components/schemas/AdminEmployeeDetailData' },
+    },
   },
   SellerDetailResponse: {
     type: 'object',

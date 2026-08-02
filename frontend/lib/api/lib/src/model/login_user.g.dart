@@ -75,6 +75,8 @@ class _$LoginUserRoleEnumSerializer
 
 class _$LoginUser extends LoginUser {
   @override
+  final int? id;
+  @override
   final String? username;
   @override
   final String? userNumber;
@@ -82,12 +84,29 @@ class _$LoginUser extends LoginUser {
   final String? shopName;
   @override
   final LoginUserRoleEnum? role;
+  @override
+  final int? locationId;
+  @override
+  final int? employeeRoleId;
+  @override
+  final LoginUserLocation? location;
+  @override
+  final LoginUserEmployeeRole? employeeRole;
 
   factory _$LoginUser([void Function(LoginUserBuilder)? updates]) =>
       (LoginUserBuilder()..update(updates))._build();
 
-  _$LoginUser._({this.username, this.userNumber, this.shopName, this.role})
-    : super._();
+  _$LoginUser._({
+    this.id,
+    this.username,
+    this.userNumber,
+    this.shopName,
+    this.role,
+    this.locationId,
+    this.employeeRoleId,
+    this.location,
+    this.employeeRole,
+  }) : super._();
   @override
   LoginUser rebuild(void Function(LoginUserBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -99,19 +118,29 @@ class _$LoginUser extends LoginUser {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is LoginUser &&
+        id == other.id &&
         username == other.username &&
         userNumber == other.userNumber &&
         shopName == other.shopName &&
-        role == other.role;
+        role == other.role &&
+        locationId == other.locationId &&
+        employeeRoleId == other.employeeRoleId &&
+        location == other.location &&
+        employeeRole == other.employeeRole;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, id.hashCode);
     _$hash = $jc(_$hash, username.hashCode);
     _$hash = $jc(_$hash, userNumber.hashCode);
     _$hash = $jc(_$hash, shopName.hashCode);
     _$hash = $jc(_$hash, role.hashCode);
+    _$hash = $jc(_$hash, locationId.hashCode);
+    _$hash = $jc(_$hash, employeeRoleId.hashCode);
+    _$hash = $jc(_$hash, location.hashCode);
+    _$hash = $jc(_$hash, employeeRole.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -119,16 +148,25 @@ class _$LoginUser extends LoginUser {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'LoginUser')
+          ..add('id', id)
           ..add('username', username)
           ..add('userNumber', userNumber)
           ..add('shopName', shopName)
-          ..add('role', role))
+          ..add('role', role)
+          ..add('locationId', locationId)
+          ..add('employeeRoleId', employeeRoleId)
+          ..add('location', location)
+          ..add('employeeRole', employeeRole))
         .toString();
   }
 }
 
 class LoginUserBuilder implements Builder<LoginUser, LoginUserBuilder> {
   _$LoginUser? _$v;
+
+  int? _id;
+  int? get id => _$this._id;
+  set id(int? id) => _$this._id = id;
 
   String? _username;
   String? get username => _$this._username;
@@ -146,6 +184,27 @@ class LoginUserBuilder implements Builder<LoginUser, LoginUserBuilder> {
   LoginUserRoleEnum? get role => _$this._role;
   set role(LoginUserRoleEnum? role) => _$this._role = role;
 
+  int? _locationId;
+  int? get locationId => _$this._locationId;
+  set locationId(int? locationId) => _$this._locationId = locationId;
+
+  int? _employeeRoleId;
+  int? get employeeRoleId => _$this._employeeRoleId;
+  set employeeRoleId(int? employeeRoleId) =>
+      _$this._employeeRoleId = employeeRoleId;
+
+  LoginUserLocationBuilder? _location;
+  LoginUserLocationBuilder get location =>
+      _$this._location ??= LoginUserLocationBuilder();
+  set location(LoginUserLocationBuilder? location) =>
+      _$this._location = location;
+
+  LoginUserEmployeeRoleBuilder? _employeeRole;
+  LoginUserEmployeeRoleBuilder get employeeRole =>
+      _$this._employeeRole ??= LoginUserEmployeeRoleBuilder();
+  set employeeRole(LoginUserEmployeeRoleBuilder? employeeRole) =>
+      _$this._employeeRole = employeeRole;
+
   LoginUserBuilder() {
     LoginUser._defaults(this);
   }
@@ -153,10 +212,15 @@ class LoginUserBuilder implements Builder<LoginUser, LoginUserBuilder> {
   LoginUserBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _id = $v.id;
       _username = $v.username;
       _userNumber = $v.userNumber;
       _shopName = $v.shopName;
       _role = $v.role;
+      _locationId = $v.locationId;
+      _employeeRoleId = $v.employeeRoleId;
+      _location = $v.location?.toBuilder();
+      _employeeRole = $v.employeeRole?.toBuilder();
       _$v = null;
     }
     return this;
@@ -176,14 +240,37 @@ class LoginUserBuilder implements Builder<LoginUser, LoginUserBuilder> {
   LoginUser build() => _build();
 
   _$LoginUser _build() {
-    final _$result =
-        _$v ??
-        _$LoginUser._(
-          username: username,
-          userNumber: userNumber,
-          shopName: shopName,
-          role: role,
+    _$LoginUser _$result;
+    try {
+      _$result =
+          _$v ??
+          _$LoginUser._(
+            id: id,
+            username: username,
+            userNumber: userNumber,
+            shopName: shopName,
+            role: role,
+            locationId: locationId,
+            employeeRoleId: employeeRoleId,
+            location: _location?.build(),
+            employeeRole: _employeeRole?.build(),
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'location';
+        _location?.build();
+        _$failedField = 'employeeRole';
+        _employeeRole?.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+          r'LoginUser',
+          _$failedField,
+          e.toString(),
         );
+      }
+      rethrow;
+    }
     replace(_$result);
     return _$result;
   }

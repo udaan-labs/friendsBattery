@@ -20,6 +20,10 @@ class _$SellerDetail extends SellerDetail {
   @override
   final bool? isVerified;
   @override
+  final int? locationId;
+  @override
+  final SellerDetailLocation? location;
+  @override
   final SellerStatistics? statistics;
   @override
   final BuiltList<InventoryListItem>? inventory;
@@ -36,6 +40,8 @@ class _$SellerDetail extends SellerDetail {
     this.userNumber,
     this.isActive,
     this.isVerified,
+    this.locationId,
+    this.location,
     this.statistics,
     this.inventory,
     this.createdAt,
@@ -57,6 +63,8 @@ class _$SellerDetail extends SellerDetail {
         userNumber == other.userNumber &&
         isActive == other.isActive &&
         isVerified == other.isVerified &&
+        locationId == other.locationId &&
+        location == other.location &&
         statistics == other.statistics &&
         inventory == other.inventory &&
         createdAt == other.createdAt;
@@ -71,6 +79,8 @@ class _$SellerDetail extends SellerDetail {
     _$hash = $jc(_$hash, userNumber.hashCode);
     _$hash = $jc(_$hash, isActive.hashCode);
     _$hash = $jc(_$hash, isVerified.hashCode);
+    _$hash = $jc(_$hash, locationId.hashCode);
+    _$hash = $jc(_$hash, location.hashCode);
     _$hash = $jc(_$hash, statistics.hashCode);
     _$hash = $jc(_$hash, inventory.hashCode);
     _$hash = $jc(_$hash, createdAt.hashCode);
@@ -87,6 +97,8 @@ class _$SellerDetail extends SellerDetail {
           ..add('userNumber', userNumber)
           ..add('isActive', isActive)
           ..add('isVerified', isVerified)
+          ..add('locationId', locationId)
+          ..add('location', location)
           ..add('statistics', statistics)
           ..add('inventory', inventory)
           ..add('createdAt', createdAt))
@@ -122,6 +134,16 @@ class SellerDetailBuilder
   bool? get isVerified => _$this._isVerified;
   set isVerified(bool? isVerified) => _$this._isVerified = isVerified;
 
+  int? _locationId;
+  int? get locationId => _$this._locationId;
+  set locationId(int? locationId) => _$this._locationId = locationId;
+
+  SellerDetailLocationBuilder? _location;
+  SellerDetailLocationBuilder get location =>
+      _$this._location ??= SellerDetailLocationBuilder();
+  set location(SellerDetailLocationBuilder? location) =>
+      _$this._location = location;
+
   SellerStatisticsBuilder? _statistics;
   SellerStatisticsBuilder get statistics =>
       _$this._statistics ??= SellerStatisticsBuilder();
@@ -151,6 +173,8 @@ class SellerDetailBuilder
       _userNumber = $v.userNumber;
       _isActive = $v.isActive;
       _isVerified = $v.isVerified;
+      _locationId = $v.locationId;
+      _location = $v.location?.toBuilder();
       _statistics = $v.statistics?.toBuilder();
       _inventory = $v.inventory?.toBuilder();
       _createdAt = $v.createdAt;
@@ -184,6 +208,8 @@ class SellerDetailBuilder
             userNumber: userNumber,
             isActive: isActive,
             isVerified: isVerified,
+            locationId: locationId,
+            location: _location?.build(),
             statistics: _statistics?.build(),
             inventory: _inventory?.build(),
             createdAt: createdAt,
@@ -191,6 +217,8 @@ class SellerDetailBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'location';
+        _location?.build();
         _$failedField = 'statistics';
         _statistics?.build();
         _$failedField = 'inventory';

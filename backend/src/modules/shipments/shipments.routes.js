@@ -1,12 +1,23 @@
 const express = require('express');
 const shipmentsController = require('./shipments.controller');
-const { createShipmentSchema, acceptShipmentSchema } = require('./shipments.validation');
+const {
+  createShipmentSchema,
+  acceptShipmentSchema,
+  viewShipmentSchema,
+} = require('./shipments.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
-const { requireAdmin, requireSeller, requireAdminOrSeller } = require('../../shared/middleware/role.middleware');
+const {
+  requireAdmin,
+  requireSeller,
+  requireAdminOrSeller,
+  requireAdminOrSellerOrEmployee,
+  requireEmployee,
+} = require('../../shared/middleware/role.middleware');
 const { validateRequest } = require('../../shared/middleware/validation.middleware');
 
 const shipmentsRouter = express.Router();
 const sellerRouter = express.Router();
+const employeeRouter = express.Router();
 
 /**
  * @swagger
@@ -215,7 +226,8 @@ shipmentsRouter.get(
 shipmentsRouter.get(
   '/:id',
   authenticate,
-  requireAdminOrSeller,
+  requireAdminOrSellerOrEmployee,
+  validateRequest(viewShipmentSchema),
   shipmentsController.getShipmentById.bind(shipmentsController)
 );
 
@@ -340,7 +352,38 @@ sellerRouter.get(
   shipmentsController.getShipments.bind(shipmentsController)
 );
 
+/**
+ * @swagger
+ * /api/employee/shipments:
+ *   get:
+ *     summary: List shipments for sellers at the employee's shop location (read-only)
+ *     description: |
+ *       EMPLOYEE only. Returns NewShipment rows where the seller shares
+ *       users.location_id with the employee. Does not allow accept/transfer.
+ *     tags: [Shipments]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Shop shipments list (same shape as seller list)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SellerShipmentsListResponse'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Employee only
+ */
+employeeRouter.get(
+  '/shipments',
+  authenticate,
+  requireEmployee,
+  shipmentsController.getEmployeeShipments.bind(shipmentsController)
+);
+
 module.exports = {
   shipments: shipmentsRouter,
-  seller: sellerRouter
+  seller: sellerRouter,
+  employee: employeeRouter,
 };

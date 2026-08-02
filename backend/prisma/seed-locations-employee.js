@@ -200,7 +200,7 @@ async function main() {
   });
   console.log('  AVAILABLE at SHOP001:', atShop);
   console.log('Done. Passwords:', PASSWORD);
-  console.log('  ADMIN001 | SELLER001 | EMP001');
+  console.log('  admin1 | seller1 | employee1');
   console.log('  EMP inventory → units at shop; SELLER → owner_id; ADMIN → admin stock');
 }
 

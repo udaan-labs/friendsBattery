@@ -9,6 +9,7 @@ All URIs are relative to *http://localhost:3000*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**apiEmployeeShipmentsGet**](ShipmentsApi.md#apiemployeeshipmentsget) | **GET** /api/employee/shipments | List shipments for sellers at the employee&#39;s shop location (read-only)
 [**apiSellerDashboardPendingShipmentsGet**](ShipmentsApi.md#apisellerdashboardpendingshipmentsget) | **GET** /api/seller/dashboard/pending-shipments | Get pending shipments count (Seller only)
 [**apiSellerShipmentsGet**](ShipmentsApi.md#apisellershipmentsget) | **GET** /api/seller/shipments | List shipments for seller (Seller only)
 [**apiShipmentsGet**](ShipmentsApi.md#apishipmentsget) | **GET** /api/shipments | List all shipments (Admin only)
@@ -16,6 +17,45 @@ Method | HTTP request | Description
 [**apiShipmentsPost**](ShipmentsApi.md#apishipmentspost) | **POST** /api/shipments | Transfer stock serials from admin to seller (Admin only)
 [**apiShipmentsShipmentIdAcceptPost**](ShipmentsApi.md#apishipmentsshipmentidacceptpost) | **POST** /api/shipments/{shipmentId}/accept | Accept a pending shipment (Seller only)
 
+
+# **apiEmployeeShipmentsGet**
+> SellerShipmentsListResponse apiEmployeeShipmentsGet()
+
+List shipments for sellers at the employee's shop location (read-only)
+
+EMPLOYEE only. Returns NewShipment rows where the seller shares users.location_id with the employee. Does not allow accept/transfer. 
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getShipmentsApi();
+
+try {
+    final response = api.apiEmployeeShipmentsGet();
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling ShipmentsApi->apiEmployeeShipmentsGet: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**SellerShipmentsListResponse**](SellerShipmentsListResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiSellerDashboardPendingShipmentsGet**
 > ApiSellerDashboardPendingShipmentsGet200Response apiSellerDashboardPendingShipmentsGet()

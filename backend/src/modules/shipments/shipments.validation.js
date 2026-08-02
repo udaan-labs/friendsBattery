@@ -24,7 +24,14 @@ const acceptShipmentSchema = z.object({
   })
 });
 
+const viewShipmentSchema = z.object({
+  params: z.object({
+    id: z.string().regex(/^\d+$/, 'Shipment ID must be numeric').transform(Number),
+  }),
+});
+
 module.exports = {
   createShipmentSchema,
-  acceptShipmentSchema
+  acceptShipmentSchema,
+  viewShipmentSchema,
 };

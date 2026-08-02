@@ -4,6 +4,8 @@
 
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
+import 'package:friends_battery_api/src/model/login_user_location.dart';
+import 'package:friends_battery_api/src/model/login_user_employee_role.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -12,12 +14,20 @@ part 'login_user.g.dart';
 /// LoginUser
 ///
 /// Properties:
+/// * [id] 
 /// * [username] 
 /// * [userNumber] 
 /// * [shopName] 
 /// * [role] 
+/// * [locationId] 
+/// * [employeeRoleId] 
+/// * [location] 
+/// * [employeeRole] 
 @BuiltValue()
 abstract class LoginUser implements Built<LoginUser, LoginUserBuilder> {
+  @BuiltValueField(wireName: r'id')
+  int? get id;
+
   @BuiltValueField(wireName: r'username')
   String? get username;
 
@@ -30,6 +40,18 @@ abstract class LoginUser implements Built<LoginUser, LoginUserBuilder> {
   @BuiltValueField(wireName: r'role')
   LoginUserRoleEnum? get role;
   // enum roleEnum {  ADMIN,  SELLER,  EMPLOYEE,  };
+
+  @BuiltValueField(wireName: r'location_id')
+  int? get locationId;
+
+  @BuiltValueField(wireName: r'employee_role_id')
+  int? get employeeRoleId;
+
+  @BuiltValueField(wireName: r'location')
+  LoginUserLocation? get location;
+
+  @BuiltValueField(wireName: r'employee_role')
+  LoginUserEmployeeRole? get employeeRole;
 
   LoginUser._();
 
@@ -54,6 +76,13 @@ class _$LoginUserSerializer implements PrimitiveSerializer<LoginUser> {
     LoginUser object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.id != null) {
+      yield r'id';
+      yield serializers.serialize(
+        object.id,
+        specifiedType: const FullType(int),
+      );
+    }
     if (object.username != null) {
       yield r'username';
       yield serializers.serialize(
@@ -82,6 +111,34 @@ class _$LoginUserSerializer implements PrimitiveSerializer<LoginUser> {
         specifiedType: const FullType(LoginUserRoleEnum),
       );
     }
+    if (object.locationId != null) {
+      yield r'location_id';
+      yield serializers.serialize(
+        object.locationId,
+        specifiedType: const FullType.nullable(int),
+      );
+    }
+    if (object.employeeRoleId != null) {
+      yield r'employee_role_id';
+      yield serializers.serialize(
+        object.employeeRoleId,
+        specifiedType: const FullType.nullable(int),
+      );
+    }
+    if (object.location != null) {
+      yield r'location';
+      yield serializers.serialize(
+        object.location,
+        specifiedType: const FullType.nullable(LoginUserLocation),
+      );
+    }
+    if (object.employeeRole != null) {
+      yield r'employee_role';
+      yield serializers.serialize(
+        object.employeeRole,
+        specifiedType: const FullType.nullable(LoginUserEmployeeRole),
+      );
+    }
   }
 
   @override
@@ -105,6 +162,13 @@ class _$LoginUserSerializer implements PrimitiveSerializer<LoginUser> {
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.id = valueDes;
+          break;
         case r'username':
           final valueDes = serializers.deserialize(
             value,
@@ -134,6 +198,38 @@ class _$LoginUserSerializer implements PrimitiveSerializer<LoginUser> {
             specifiedType: const FullType(LoginUserRoleEnum),
           ) as LoginUserRoleEnum;
           result.role = valueDes;
+          break;
+        case r'location_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
+          if (valueDes == null) continue;
+          result.locationId = valueDes;
+          break;
+        case r'employee_role_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
+          if (valueDes == null) continue;
+          result.employeeRoleId = valueDes;
+          break;
+        case r'location':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(LoginUserLocation),
+          ) as LoginUserLocation?;
+          if (valueDes == null) continue;
+          result.location.replace(valueDes);
+          break;
+        case r'employee_role':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(LoginUserEmployeeRole),
+          ) as LoginUserEmployeeRole?;
+          if (valueDes == null) continue;
+          result.employeeRole.replace(valueDes);
           break;
         default:
           unhandled.add(key);

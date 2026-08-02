@@ -1,0 +1,30 @@
+info:
+  name: attendance_check_out
+  type: http
+  seq: 7
+  description: Check out. Run login_employee + check_in first.
+
+http:
+  method: POST
+  url: "{{baseurl}}/employee/attendance/check-out"
+  headers:
+    - name: auth-id
+      value: "{{authId}}"
+    - name: auth-key
+      value: "{{authKey}}"
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "lat": 28.6139,
+        "lng": 77.2090,
+        "address": "Leaving shop"
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

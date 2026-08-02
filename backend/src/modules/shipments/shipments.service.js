@@ -112,7 +112,20 @@ class ShipmentsService {
 
   async getShipments(sellerId) {
     const shipments = await shipmentsRepository.getShipmentsBySeller(sellerId);
-    return shipments.map((s) => ({
+    return shipments.map((s) => this._mapSellerShipmentListItem(s));
+  }
+
+  /**
+   * Employee: list shipments for sellers at the same location_id.
+   */
+  async getShipmentsForEmployeeLocation(locationId) {
+    if (locationId == null) return [];
+    const shipments = await shipmentsRepository.getShipmentsBySellerLocationId(locationId);
+    return shipments.map((s) => this._mapSellerShipmentListItem(s));
+  }
+
+  _mapSellerShipmentListItem(s) {
+    return {
       shipmentId: Number(s.id),
       shipmentNumber: s.shipmentNumber,
       status: s.status,
@@ -123,7 +136,7 @@ class ShipmentsService {
         productModel: item.product?.productModel?.name || '',
         quantity: item.quantity,
       })),
-    }));
+    };
   }
 
   async getAllShipments() {
@@ -149,7 +162,7 @@ class ShipmentsService {
     }));
   }
 
-  async getShipmentById(shipmentId, userId, userRole) {
+  async getShipmentById(shipmentId, userId, userRole, locationId = null) {
     const shipment = await shipmentsRepository.getShipmentById(shipmentId);
 
     if (!shipment) {
@@ -158,8 +171,27 @@ class ShipmentsService {
       throw error;
     }
 
-    if (userRole === 'SELLER' && Number(shipment.sellerId) !== Number(userId)) {
-      const error = new Error('Forbidden: You can only view your own shipments');
+    // Explicit allow-list (default deny) — no fall-through for unknown roles
+    if (userRole === 'ADMIN') {
+      // ok
+    } else if (userRole === 'SELLER') {
+      if (Number(shipment.sellerId) !== Number(userId)) {
+        const error = new Error('Forbidden: You can only view your own shipments');
+        error.statusCode = 403;
+        throw error;
+      }
+    } else if (userRole === 'EMPLOYEE') {
+      const allowed = await shipmentsRepository.sellerSharesLocation(
+        shipment.sellerId,
+        locationId
+      );
+      if (!allowed) {
+        const error = new Error('Forbidden: Shipment is not for your shop location');
+        error.statusCode = 403;
+        throw error;
+      }
+    } else {
+      const error = new Error('Forbidden: You do not have access to this shipment');
       error.statusCode = 403;
       throw error;
     }
@@ -212,12 +244,7 @@ class ShipmentsService {
       throw error;
     }
 
-    if (shipment.status !== 'PENDING') {
-      const error = new Error(`Shipment cannot be accepted. Current status: ${shipment.status}`);
-      error.statusCode = 400;
-      throw error;
-    }
-
+    // Status claim + unit lock happen atomically in repository (race-safe)
     await shipmentsRepository.acceptPendingShipment(shipmentId, shipment.items, sellerId);
 
     return {

@@ -1,0 +1,24 @@
+info:
+  name: get_shop_staff
+  type: http
+  seq: 3
+  description: |
+    Admin: sellers + employees at the same location as this seller.
+    Login as admin first. Set sellerId path (default 3 = seller1 seed).
+
+http:
+  method: GET
+  url: "{{baseurl}}/shops/sellers/3/staff"
+  headers:
+    - name: auth-id
+      value: "{{authId}}"
+    - name: auth-key
+      value: "{{authKey}}"
+  body:
+    type: none
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const returnsController = require('./returns.controller');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
+const {
+  requireSeller,
+  requireAdminOrSeller,
+} = require('../../shared/middleware/role.middleware');
 
 /**
  * @swagger
@@ -31,8 +35,8 @@ const { authenticate } = require('../../shared/middleware/auth.middleware');
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-// Route to submit/process a product return
-router.post('/', authenticate, returnsController.processReturn);
+// Route to submit/process a product return (seller only — not employee)
+router.post('/', authenticate, requireSeller, returnsController.processReturn);
 
 /**
  * @swagger
@@ -56,7 +60,7 @@ router.post('/', authenticate, returnsController.processReturn);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-// Route to list product returns
-router.get('/', authenticate, returnsController.getReturns);
+// Route to list product returns (admin all / seller own)
+router.get('/', authenticate, requireAdminOrSeller, returnsController.getReturns);
 
 module.exports = router;

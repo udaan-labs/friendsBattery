@@ -13,6 +13,10 @@ part 'api_auth_login_post_request.g.dart';
 /// Properties:
 /// * [userId] 
 /// * [password] 
+/// * [deviceId] - Optional — stored on employee_sessions for EMPLOYEE
+/// * [ipAddress] 
+/// * [appVersion] 
+/// * [firebaseToken] 
 @BuiltValue()
 abstract class ApiAuthLoginPostRequest implements Built<ApiAuthLoginPostRequest, ApiAuthLoginPostRequestBuilder> {
   @BuiltValueField(wireName: r'user_id')
@@ -20,6 +24,19 @@ abstract class ApiAuthLoginPostRequest implements Built<ApiAuthLoginPostRequest,
 
   @BuiltValueField(wireName: r'password')
   String get password;
+
+  /// Optional — stored on employee_sessions for EMPLOYEE
+  @BuiltValueField(wireName: r'device_id')
+  String? get deviceId;
+
+  @BuiltValueField(wireName: r'ip_address')
+  String? get ipAddress;
+
+  @BuiltValueField(wireName: r'app_version')
+  String? get appVersion;
+
+  @BuiltValueField(wireName: r'firebase_token')
+  String? get firebaseToken;
 
   ApiAuthLoginPostRequest._();
 
@@ -54,6 +71,34 @@ class _$ApiAuthLoginPostRequestSerializer implements PrimitiveSerializer<ApiAuth
       object.password,
       specifiedType: const FullType(String),
     );
+    if (object.deviceId != null) {
+      yield r'device_id';
+      yield serializers.serialize(
+        object.deviceId,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.ipAddress != null) {
+      yield r'ip_address';
+      yield serializers.serialize(
+        object.ipAddress,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.appVersion != null) {
+      yield r'app_version';
+      yield serializers.serialize(
+        object.appVersion,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.firebaseToken != null) {
+      yield r'firebase_token';
+      yield serializers.serialize(
+        object.firebaseToken,
+        specifiedType: const FullType(String),
+      );
+    }
   }
 
   @override
@@ -90,6 +135,34 @@ class _$ApiAuthLoginPostRequestSerializer implements PrimitiveSerializer<ApiAuth
             specifiedType: const FullType(String),
           ) as String;
           result.password = valueDes;
+          break;
+        case r'device_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.deviceId = valueDes;
+          break;
+        case r'ip_address':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.ipAddress = valueDes;
+          break;
+        case r'app_version':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.appVersion = valueDes;
+          break;
+        case r'firebase_token':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.firebaseToken = valueDes;
           break;
         default:
           unhandled.add(key);

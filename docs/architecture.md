@@ -53,6 +53,9 @@ Doc: repo root `docs/architecture.md`. One domain = one module folder. Reuse exi
    - `ADMIN` — all data, inventory, sellers, approvals
    - `SELLER` — own inventory, sales, requests only
    - `EMPLOYEE` — staff at a location; inventory by `current_location_id = user.location_id` (not owner_id). Job title is `employee_roles` via `users.employee_role_id` (Manager, Cashier, …) — separate from system `Role`.
+   - Employee **attendance**: `POST/GET /api/employee/attendance/*` (check-in / check-out / status) on `employee_attendance` — not the same as app `employee_sessions`.
+   - Employee **shipments** (read-only): `GET /api/employee/shipments` — shipments where seller shares `location_id` with the employee. No accept/transfer.
+   - Admin **employee view**: `GET /api/shops/employees/:id` — profile + **only** CHECK_IN / CHECK_OUT actions (no sales/inventory).
    Auth from `req.user` (middleware). **Never** trust client-supplied seller/owner IDs for authorization.
 
 ---

@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 import '../providers/seller_details_provider.dart';
+import '../providers/shop_staff_provider.dart';
 import '../widgets/seller_info_card.dart';
 import '../widgets/statistic_card.dart';
+import '../widgets/shop_staff_section.dart';
 import '../../../shared/inventory/widgets/inventory_product_card.dart';
 
 class SellerDetailsScreen extends ConsumerStatefulWidget {
@@ -63,6 +65,7 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
         child: RefreshIndicator(
           onRefresh: () async {
             ref.invalidate(sellerDetailsProvider((sellerId: widget.sellerId, includeOutOfStock: _showOutOfStock)));
+            ref.invalidate(shopStaffProvider(widget.sellerId));
           },
           child: asyncData.when(
             data: (data) => _buildContent(data),
@@ -130,6 +133,8 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
             },
           ),
           
+          SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 24 : 32),
+          ShopStaffSection(sellerId: widget.sellerId),
           SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 24 : 32),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

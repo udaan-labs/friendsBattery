@@ -11,6 +11,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**apiAuthActivatePut**](AuthApi.md#apiauthactivateput) | **PUT** /api/auth/activate | Activate and verify a user account
 [**apiAuthLoginPost**](AuthApi.md#apiauthloginpost) | **POST** /api/auth/login | Authenticate user and return token
+[**apiAuthLogoutPost**](AuthApi.md#apiauthlogoutpost) | **POST** /api/auth/logout | End session (closes employee_sessions for EMPLOYEE)
 [**apiAuthRegisterPost**](AuthApi.md#apiauthregisterpost) | **POST** /api/auth/register | Register a new user
 
 
@@ -59,6 +60,8 @@ void (empty response body)
 
 Authenticate user and return token
 
+Works for ADMIN, SELLER, and EMPLOYEE. EMPLOYEE login may include location / employee_role on user and session_id (employee_sessions). 
+
 ### Example
 ```dart
 import 'package:friends_battery_api/api.dart';
@@ -92,6 +95,42 @@ Name | Type | Description  | Notes
 
  - **Content-Type**: application/json
  - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiAuthLogoutPost**
+> apiAuthLogoutPost()
+
+End session (closes employee_sessions for EMPLOYEE)
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getAuthApi();
+
+try {
+    api.apiAuthLogoutPost();
+} on DioException catch (e) {
+    print('Exception when calling AuthApi->apiAuthLogoutPost: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
