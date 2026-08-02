@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../seller/dashboard/screens/seller_shell_screen.dart';
+import '../../../employee/dashboard/screens/employee_shell_screen.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 import '../providers/inventory_provider.dart';
 import '../widgets/inventory_product_card.dart';
@@ -62,12 +63,15 @@ class _CurrentInventoryScreenState extends ConsumerState<CurrentInventoryScreen>
     final queryState = ref.watch(sharedInventoryQueryProvider);
     final String location = GoRouterState.of(context).uri.toString();
     final bool isSeller = location.startsWith('/seller');
+    final bool isEmployee = location.startsWith('/employee');
 
     return PopScope(
       canPop: context.canPop(),
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
-        if (isSeller) {
+        if (isEmployee) {
+          context.go('/employee/home');
+        } else if (isSeller) {
           context.go('/seller/dashboard');
         } else {
           context.go('/admin/dashboard');
@@ -79,7 +83,12 @@ class _CurrentInventoryScreenState extends ConsumerState<CurrentInventoryScreen>
         backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leading: context.canPop() || !isSeller
+        leading: isEmployee
+            ? IconButton(
+                icon: const Icon(Icons.menu, color: Color(0xFF3E4A3D)),
+                onPressed: () => employeeScaffoldKey.currentState?.openDrawer(),
+              )
+            : context.canPop() || !isSeller
             ? IconButton(
                 icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF3E4A3D)),
                 onPressed: () {
@@ -101,8 +110,16 @@ class _CurrentInventoryScreenState extends ConsumerState<CurrentInventoryScreen>
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Current Inventory', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-            Text('View your current inventory and stock details.', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+            Text(
+              isEmployee ? 'Shop stock' : 'Current Inventory',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+            Text(
+              isEmployee
+                  ? 'Batteries at your assigned shop location.'
+                  : 'View your current inventory and stock details.',
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+            ),
           ],
         ),
       ),
@@ -141,9 +158,14 @@ class _CurrentInventoryScreenState extends ConsumerState<CurrentInventoryScreen>
                 data: (data) {
                   if (data.items.isEmpty) {
                     return ListView(
-                      children: const [
-                        SizedBox(height: 100),
-                        Center(child: Text('No inventory found.', style: TextStyle(color: Colors.grey))),
+                      children: [
+                        const SizedBox(height: 100),
+                        Center(
+                          child: Text(
+                            isEmployee ? 'No stock at your shop.' : 'No inventory found.',
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                        ),
                       ],
                     );
                   }
@@ -171,6 +193,7 @@ class _CurrentInventoryScreenState extends ConsumerState<CurrentInventoryScreen>
                                     builder: (ctx) => AdminEditInventoryBottomSheet(item: item),
                                   );
                                 } else {
+                                  // Seller + employee: product detail (serials scoped by API).
                                   context.push('/shared/inventory/${item.productId}');
                                 }
                               },

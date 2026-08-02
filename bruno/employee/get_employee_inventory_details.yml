@@ -1,0 +1,24 @@
+info:
+  name: get_employee_inventory_details
+  type: http
+  seq: 2
+  description: |
+    EMPLOYEE inventory details (same auth as seller/admin list).
+    Run login_employee first.
+
+http:
+  method: GET
+  url: "{{baseurl}}/inventory/details?page=1&limit=5"
+  headers:
+    - name: auth-id
+      value: "{{authId}}"
+    - name: auth-key
+      value: "{{authKey}}"
+  body:
+    type: none
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

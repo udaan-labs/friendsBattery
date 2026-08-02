@@ -12,3 +12,9 @@ variables:
     value: ""
   - name: adminAuthKey
     value: ""
+  - name: employeeAuthId
+    value: ""
+  - name: employeeAuthKey
+    value: ""
+  - name: employeeSessionId
+    value: ""

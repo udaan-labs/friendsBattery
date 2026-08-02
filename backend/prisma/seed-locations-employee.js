@@ -10,22 +10,30 @@ const bcrypt = require('bcrypt');
 const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
-const PASSWORD = process.env.SEED_EMP_PASSWORD || 'password123';
+const PASSWORD = process.env.SEED_EMP_PASSWORD || '123';
 
 async function upsertUser({ userId, userName, role, userNumber, shopName, locationId, employeeRoleId, passwordHash }) {
-  return prisma.user.upsert({
-    where: { userId },
-    update: {
-      role,
-      locationId: locationId ?? null,
-      employeeRoleId: employeeRoleId ?? null,
-      isActive: true,
-      isVerified: true,
-      passwordHash,
-      userName,
-      shopName: shopName ?? null,
-    },
-    create: {
+  const existing = await prisma.user.findFirst({
+    where: { OR: [{ userId }, { userNumber }] },
+  });
+  if (existing) {
+    return prisma.user.update({
+      where: { id: existing.id },
+      data: {
+        userId,
+        role,
+        locationId: locationId ?? null,
+        employeeRoleId: employeeRoleId ?? null,
+        isActive: true,
+        isVerified: true,
+        passwordHash,
+        userName,
+        shopName: shopName ?? null,
+      },
+    });
+  }
+  return prisma.user.create({
+    data: {
       userId,
       userName,
       role,
@@ -76,7 +84,7 @@ async function main() {
   }
 
   const admin = await upsertUser({
-    userId: 'ADMIN001',
+    userId: 'admin1',
     userName: 'Admin',
     role: 'ADMIN',
     userNumber: '9000000000',
@@ -85,7 +93,7 @@ async function main() {
     passwordHash,
   });
   const seller = await upsertUser({
-    userId: 'SELLER001',
+    userId: 'seller1',
     userName: 'Seller A',
     role: 'SELLER',
     userNumber: '9000000002',
@@ -94,7 +102,7 @@ async function main() {
     passwordHash,
   });
   const emp = await upsertUser({
-    userId: 'EMP001',
+    userId: 'employee1',
     userName: 'Employee Rahul',
     role: 'EMPLOYEE',
     userNumber: '9000000001',
@@ -104,11 +112,11 @@ async function main() {
     passwordHash,
   });
   console.log(
-    '  users ADMIN001=',
+    '  users admin1=',
     Number(admin.id),
-    'SELLER001=',
+    'seller1=',
     Number(seller.id),
-    'EMP001=',
+    'employee1=',
     Number(emp.id)
   );
 

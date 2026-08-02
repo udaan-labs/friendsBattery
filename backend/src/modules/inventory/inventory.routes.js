@@ -28,6 +28,12 @@ const { validateRequest } = require('../../shared/middleware/validation.middlewa
  * /api/inventory:
  *   get:
  *     summary: Return logged-in user's inventory
+ *     description: |
+ *       Scope by role (unit inventory):
+ *       - ADMIN: units owned by admin users
+ *       - SELLER: units where owner_id = seller
+ *       - EMPLOYEE: units where current_location_id = employee.location_id
+ *       Employee with no location_id gets an empty list.
  *     tags: [Inventory]
  *     security:
  *       - bearerAuth: []

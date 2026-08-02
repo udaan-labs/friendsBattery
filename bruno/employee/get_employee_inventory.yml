@@ -1,0 +1,25 @@
+info:
+  name: get_employee_inventory
+  type: http
+  seq: 1
+  description: |
+    EMPLOYEE inventory via existing GET /inventory.
+    Scope: product_units.current_location_id = user.location_id.
+    Run login_employee first (sets authId / authKey).
+
+http:
+  method: GET
+  url: "{{baseurl}}/inventory?page=1&limit=20"
+  headers:
+    - name: auth-id
+      value: "{{authId}}"
+    - name: auth-key
+      value: "{{authKey}}"
+  body:
+    type: none
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

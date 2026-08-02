@@ -28,6 +28,8 @@ import '../../features/shared/inventory/screens/inventory_product_detail_screen.
 import '../../features/admin/sellers/screens/sellers_list_screen.dart';
 import '../../features/admin/sellers/screens/seller_details_screen.dart';
 import '../../features/shared/product_lookup/screens/verify_product_screen.dart';
+import '../../features/employee/dashboard/screens/employee_shell_screen.dart';
+import '../../features/employee/dashboard/screens/employee_home_screen.dart';
 import '../../shared/providers/auth_provider.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -56,9 +58,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       if ((isLoggingIn || isSplash || state.uri.toString() == '/register') && authState.isAuthenticated) {
-        // Employee has no dedicated shell yet — stay on login until employee UI exists.
         if (authState.role == UserRole.admin) return '/admin/dashboard';
         if (authState.role == UserRole.seller) return '/seller/dashboard';
+        if (authState.role == UserRole.employee) return '/employee/home';
         return '/login';
       }
 
@@ -66,10 +68,17 @@ final routerProvider = Provider<GoRouter>((ref) {
         final path = state.uri.toString();
         if (path.startsWith('/admin') && authState.role != UserRole.admin) {
           if (authState.role == UserRole.seller) return '/seller/dashboard';
+          if (authState.role == UserRole.employee) return '/employee/home';
           return '/login';
         }
         if (path.startsWith('/seller') && authState.role != UserRole.seller) {
           if (authState.role == UserRole.admin) return '/admin/dashboard';
+          if (authState.role == UserRole.employee) return '/employee/home';
+          return '/login';
+        }
+        if (path.startsWith('/employee') && authState.role != UserRole.employee) {
+          if (authState.role == UserRole.admin) return '/admin/dashboard';
+          if (authState.role == UserRole.seller) return '/seller/dashboard';
           return '/login';
         }
       }
@@ -212,6 +221,21 @@ final routerProvider = Provider<GoRouter>((ref) {
               final shipmentIdStr = state.pathParameters['shipmentId']!;
               return ShipmentDetailsScreen(shipmentId: int.parse(shipmentIdStr));
             },
+          ),
+        ],
+      ),
+
+      // ── Employee shell ───────────────────────────────────────────────────────
+      ShellRoute(
+        builder: (context, state, child) => EmployeeShellScreen(child: child),
+        routes: [
+          GoRoute(
+            path: '/employee/home',
+            builder: (context, state) => const EmployeeHomeScreen(),
+          ),
+          GoRoute(
+            path: '/employee/inventory',
+            builder: (context, state) => const CurrentInventoryScreen(),
           ),
         ],
       ),

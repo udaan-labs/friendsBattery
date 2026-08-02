@@ -4,7 +4,7 @@ import 'package:friends_battery_api/friends_battery_api.dart';
 class AuthResponse {
   final String authId;
   final String authKey;
-  final String role; // 'admin' or 'seller'
+  final String role; // 'admin' | 'seller' | 'employee'
   /// Hive-safe snapshot of [LoginUser] (local storage only, not an API DTO).
   final Map<String, dynamic> user;
 

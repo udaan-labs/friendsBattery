@@ -59,6 +59,9 @@ router.post('/register', validateRegister, authController.register);
  * /api/auth/login:
  *   post:
  *     summary: Authenticate user and return token
+ *     description: |
+ *       Works for ADMIN, SELLER, and EMPLOYEE.
+ *       EMPLOYEE login may include location / employee_role on user and session_id (employee_sessions).
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -72,11 +75,20 @@ router.post('/register', validateRegister, authController.register);
  *             properties:
  *               user_id:
  *                 type: string
- *                 example: SELLER001
+ *                 example: EMP001
  *               password:
  *                 type: string
  *                 format: password
  *                 example: password123
+ *               device_id:
+ *                 type: string
+ *                 description: Optional — stored on employee_sessions for EMPLOYEE
+ *               ip_address:
+ *                 type: string
+ *               app_version:
+ *                 type: string
+ *               firebase_token:
+ *                 type: string
  *     responses:
  *       200:
  *         description: Login successful
