@@ -12,7 +12,11 @@ const registerSchema = z.object({
 
 const loginSchema = z.object({
   user_id: z.string().min(1),
-  password: z.string().min(1)
+  password: z.string().min(1),
+  // Optional — used for employee_sessions on EMPLOYEE login
+  device_id: z.string().optional(),
+  app_version: z.string().optional(),
+  firebase_token: z.string().optional(),
 });
 
 const activateSchema = z.object({

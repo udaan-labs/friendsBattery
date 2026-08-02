@@ -1,4 +1,5 @@
 const productsRepository = require('./products.repository');
+const { resolveUnitScope } = require('../inventory/inventory.scope');
 
 /**
  * Products Service
@@ -99,17 +100,18 @@ class ProductsService {
 
   /**
    * Get products available in the authenticated user's inventory.
-   * Returns data grouped by product name, with models and stock counts.
-   * Excludes products with zero available quantity.
-   * For admin: uses stockQuantity from the Product model.
-   * For seller: counts available ProductUnit records.
+   * Admin: product stockQuantity. Seller: owner_id. Employee: current_location_id.
    */
   async getInventoryProducts(userId, role) {
     let products;
     if (role === 'ADMIN') {
       products = await productsRepository.findAdminInventoryProducts();
     } else {
-      products = await productsRepository.findInventoryProducts(userId);
+      const unitScope = await resolveUnitScope(userId, role);
+      if (!unitScope) {
+        return [];
+      }
+      products = await productsRepository.findInventoryProducts(unitScope);
     }
 
     const groupedMap = new Map();

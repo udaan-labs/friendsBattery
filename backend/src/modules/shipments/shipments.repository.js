@@ -1,4 +1,5 @@
 const { prisma } = require('../../config/db');
+const { getDefaultWarehouseId, getUserLocationId } = require('../../shared/utils/location.util');
 
 const SHIPMENT_DETAIL_INCLUDE = {
   seller: {
@@ -87,13 +88,17 @@ class ShipmentsRepository {
         },
       });
 
-      // 3. Ownership → seller
+      const fromLoc = await getDefaultWarehouseId(tx);
+      const toLoc = await getUserLocationId(sellerId, tx);
+
+      // 3. Ownership → seller (+ shop location when seller has one)
       await tx.productUnit.updateMany({
         where: { id: { in: unitIds } },
         data: {
           ownerId: BigInt(sellerId),
           ownerType: 'SELLER',
           status: 'AVAILABLE',
+          ...(toLoc ? { currentLocationId: toLoc } : {}),
         },
       });
 
@@ -104,6 +109,8 @@ class ShipmentsRepository {
           fromUserId: BigInt(adminId),
           toUserId: BigInt(sellerId),
           action: 'TRANSFERRED',
+          ...(fromLoc ? { fromLocationId: fromLoc } : {}),
+          ...(toLoc ? { toLocationId: toLoc } : {}),
         })),
       });
 
@@ -256,6 +263,8 @@ class ShipmentsRepository {
 
       if (items && items.length > 0) {
         const productUnitIds = items.map((item) => BigInt(item.productUnitId));
+        const fromLoc = await getDefaultWarehouseId(tx);
+        const toLoc = await getUserLocationId(sellerId, tx);
 
         await tx.productUnit.updateMany({
           where: { id: { in: productUnitIds } },
@@ -263,6 +272,7 @@ class ShipmentsRepository {
             ownerId: BigInt(sellerId),
             ownerType: 'SELLER',
             status: 'AVAILABLE',
+            ...(toLoc ? { currentLocationId: toLoc } : {}),
           },
         });
 
@@ -272,6 +282,8 @@ class ShipmentsRepository {
             fromUserId: updatedShipment.createdByAdminId,
             toUserId: BigInt(sellerId),
             action: 'RECEIVED',
+            ...(fromLoc ? { fromLocationId: fromLoc } : {}),
+            ...(toLoc ? { toLocationId: toLoc } : {}),
           })),
         });
       }

@@ -2,7 +2,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/storage/auth_token_cache.dart';
 import '../../core/storage/session_manager.dart';
 
-enum UserRole { admin, seller, guest }
+enum UserRole { admin, seller, employee, guest }
+
+/// Map API/session role string (case-insensitive) to [UserRole].
+UserRole parseUserRole(String? roleStr) {
+  switch (roleStr?.toLowerCase()) {
+    case 'admin':
+      return UserRole.admin;
+    case 'employee':
+      return UserRole.employee;
+    case 'seller':
+      return UserRole.seller;
+    default:
+      return UserRole.seller;
+  }
+}
 
 class AuthState {
   final bool isAuthenticated;
@@ -43,8 +57,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
       if (authId != null && authKey != null && roleStr != null) {
         AuthTokenCache.set(authId: authId, authKey: authKey, role: roleStr);
-        final role = roleStr.toLowerCase() == 'admin' ? UserRole.admin : UserRole.seller;
-        setAuthenticated(role);
+        setAuthenticated(parseUserRole(roleStr));
       }
     } catch (e) {
       // If error occurs during restore, stay as guest

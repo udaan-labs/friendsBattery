@@ -8,6 +8,10 @@ const isSeller = (user) => {
   return !!(user && user.role === ROLES.SELLER);
 };
 
+const isEmployee = (user) => {
+  return !!(user && user.role === ROLES.EMPLOYEE);
+};
+
 const hasRole = (user, role) => {
   return !!(user && user.role === role);
 };
@@ -15,5 +19,6 @@ const hasRole = (user, role) => {
 module.exports = {
   isAdmin,
   isSeller,
+  isEmployee,
   hasRole
 };

@@ -9,25 +9,22 @@ const { prisma } = require('../../config/db');
  */
 class InventoryRepository {
   /**
-   * Retrieves user's inventory grouped by product.
-   * Input: userId (BigInt)
-   * Output: Array of products with their unit count for the user.
+   * Retrieves inventory grouped by product for a unit scope filter.
+   * unitScope: Prisma filter on product_units (owner or current_location_id).
    */
-  async findInventory(userId, role, { search, skip, take, includeOutOfStock }) {
-    const ownerFilter = role === 'ADMIN' ? { owner: { role: 'ADMIN' } } : { ownerId: BigInt(userId) };
-
+  async findInventory(unitScope, { search, skip, take, includeOutOfStock }) {
     const whereClause = {};
     if (!includeOutOfStock) {
       whereClause.units = {
         some: {
-          ...ownerFilter,
+          ...unitScope,
           status: 'AVAILABLE'
         }
       };
     } else {
       whereClause.units = {
         some: {
-          ...ownerFilter
+          ...unitScope
         }
       };
     }
@@ -48,7 +45,7 @@ class InventoryRepository {
           select: {
             units: {
               where: {
-                ...ownerFilter,
+                ...unitScope,
                 status: 'AVAILABLE'
               }
             }
@@ -67,23 +64,21 @@ class InventoryRepository {
 
 
   /**
-   * Retrieves the total count of inventory items for a user based on search criteria.
+   * Retrieves the total count of inventory items for a unit scope.
    */
-  async countInventory(userId, role, { search, includeOutOfStock }) {
-    const ownerFilter = role === 'ADMIN' ? { owner: { role: 'ADMIN' } } : { ownerId: BigInt(userId) };
-
+  async countInventory(unitScope, { search, includeOutOfStock }) {
     const whereClause = {};
     if (!includeOutOfStock) {
       whereClause.units = {
         some: {
-          ...ownerFilter,
+          ...unitScope,
           status: 'AVAILABLE'
         }
       };
     } else {
       whereClause.units = {
         some: {
-          ...ownerFilter
+          ...unitScope
         }
       };
     }
@@ -99,17 +94,15 @@ class InventoryRepository {
   }
 
   /**
-   * Retrieves a single inventory item details for a user.
+   * Retrieves a single inventory item details for a unit scope.
    */
-  async findInventoryByProduct(userId, role, productId) {
-    const ownerFilter = role === 'ADMIN' ? { owner: { role: 'ADMIN' } } : { ownerId: BigInt(userId) };
-
+  async findInventoryByProduct(unitScope, productId) {
     return prisma.product.findFirst({
       where: {
         id: productId,
         units: {
           some: {
-            ...ownerFilter,
+            ...unitScope,
             status: 'AVAILABLE'
           }
         }
@@ -119,7 +112,7 @@ class InventoryRepository {
         productModel: true,
         units: {
           where: {
-            ...ownerFilter,
+            ...unitScope,
             status: 'AVAILABLE'
           },
           select: { serialNumber: true }
@@ -128,7 +121,7 @@ class InventoryRepository {
           select: {
             units: {
               where: {
-                ...ownerFilter,
+                ...unitScope,
                 status: 'AVAILABLE'
               }
             }
@@ -229,11 +222,9 @@ class InventoryRepository {
   }
 
   /**
-   * Find available serial numbers for a product owned by a specific user.
-   * Input: userId, productNameId, productModelId
-   * Output: Array of strings representing serial numbers.
+   * Find available serial numbers for a product within a unit scope.
    */
-  async findAvailableSerials(userId, { productNameId, productModelId }) {
+  async findAvailableSerials(unitScope, { productNameId, productModelId }) {
     // 1. Find product
     const product = await prisma.product.findFirst({
       where: {
@@ -246,11 +237,11 @@ class InventoryRepository {
       return [];
     }
 
-    // 2. Find units that are AVAILABLE
+    // 2. Find units that are AVAILABLE in scope
     const units = await prisma.productUnit.findMany({
       where: {
         productId: product.id,
-        ownerId: BigInt(userId),
+        ...unitScope,
         status: 'AVAILABLE'
       },
       select: {
@@ -316,14 +307,14 @@ class InventoryRepository {
   }
 
   /**
-   * Aggregates unit counts for product IDs grouped by status, filtered by owner.
+   * Aggregates unit counts for product IDs grouped by status, filtered by unit scope.
    */
-  async aggregateUnitCounts(productIds, ownerFilter) {
+  async aggregateUnitCounts(productIds, unitScope) {
     return prisma.productUnit.groupBy({
       by: ['productId', 'status'],
       where: {
         productId: { in: productIds },
-        ...ownerFilter
+        ...unitScope
       },
       _count: {
         id: true
@@ -334,7 +325,7 @@ class InventoryRepository {
   /**
    * Counts total products and total available inventory units for a product name.
    */
-  async getProductNameStats(productNameId, ownerFilter) {
+  async getProductNameStats(productNameId, unitScope) {
     const [totalProducts, totalInventory] = await Promise.all([
       prisma.product.count({
         where: { productNameId: BigInt(productNameId) }
@@ -343,7 +334,7 @@ class InventoryRepository {
         where: {
           product: { productNameId: BigInt(productNameId) },
           status: 'AVAILABLE',
-          ...ownerFilter
+          ...unitScope
         }
       })
     ]);

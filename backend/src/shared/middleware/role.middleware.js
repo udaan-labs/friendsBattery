@@ -1,5 +1,5 @@
 const { errorResponse } = require('../utils/response');
-const { isAdmin, isSeller } = require('../utils/role.util');
+const { isAdmin, isSeller, isEmployee } = require('../utils/role.util');
 
 const requireRole = (...allowedRoles) => {
   return (req, res, next) => {
@@ -29,6 +29,13 @@ const requireSeller = (req, res, next) => {
   next();
 };
 
+const requireEmployee = (req, res, next) => {
+  if (!req.user || !isEmployee(req.user)) {
+    return errorResponse(res, 403, 'Forbidden: Employee access required');
+  }
+  next();
+};
+
 const requireAdminOrSeller = (req, res, next) => {
   if (!req.user || (!isAdmin(req.user) && !isSeller(req.user))) {
     return errorResponse(res, 403, 'Forbidden: Admin or Seller access required');
@@ -36,4 +43,28 @@ const requireAdminOrSeller = (req, res, next) => {
   next();
 };
 
-module.exports = { requireRole, requireAdmin, requireSeller, requireAdminOrSeller };
+/** Seller or employee (e.g. shared inventory reads later). */
+const requireSellerOrEmployee = (req, res, next) => {
+  if (!req.user || (!isSeller(req.user) && !isEmployee(req.user))) {
+    return errorResponse(res, 403, 'Forbidden: Seller or Employee access required');
+  }
+  next();
+};
+
+/** Any of the three system roles. */
+const requireAdminOrSellerOrEmployee = (req, res, next) => {
+  if (!req.user || (!isAdmin(req.user) && !isSeller(req.user) && !isEmployee(req.user))) {
+    return errorResponse(res, 403, 'Forbidden: Admin, Seller or Employee access required');
+  }
+  next();
+};
+
+module.exports = {
+  requireRole,
+  requireAdmin,
+  requireSeller,
+  requireEmployee,
+  requireAdminOrSeller,
+  requireSellerOrEmployee,
+  requireAdminOrSellerOrEmployee,
+};

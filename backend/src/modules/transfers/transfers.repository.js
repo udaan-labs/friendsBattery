@@ -1,4 +1,5 @@
 const { prisma } = require('../../config/db');
+const { getDefaultWarehouseId, getUserLocationId } = require('../../shared/utils/location.util');
 
 /**
  * Transfers Repository
@@ -158,11 +159,16 @@ class TransfersRepository {
         }
 
         const unitIds = availableUnits.map(u => u.id);
+        const fromLoc = await getDefaultWarehouseId(tx);
+        const toLoc = await getUserLocationId(shipment.toUserId, tx);
 
-        // 2. Transfer ownership: update ownerId to seller
+        // 2. Transfer ownership (+ location when seller has one)
         await tx.productUnit.updateMany({
           where: { id: { in: unitIds } },
-          data: { ownerId: shipment.toUserId }
+          data: {
+            ownerId: shipment.toUserId,
+            ...(toLoc ? { currentLocationId: toLoc } : {}),
+          },
         });
 
         // 3. Create immutable ledger entries in inventory_transactions
@@ -170,7 +176,9 @@ class TransfersRepository {
           productUnitId: unitId,
           fromUserId: shipment.fromUserId,
           toUserId: shipment.toUserId,
-          action: 'TRANSFERRED'
+          action: 'TRANSFERRED',
+          ...(fromLoc ? { fromLocationId: fromLoc } : {}),
+          ...(toLoc ? { toLocationId: toLoc } : {}),
         }));
 
         await tx.inventoryTransaction.createMany({

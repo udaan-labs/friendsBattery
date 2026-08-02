@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET, JWT_EXPIRES_IN } = require('../../config/env');
 const authRepository = require('./auth.repository');
+const ROLES = require('../../shared/constants/roles');
 
 class AuthService {
   async registerUser({ user_id, username, user_number, shop_name, password }) {
@@ -37,28 +38,32 @@ class AuthService {
       userNumber: user_number,
       shopName: shop_name,
       passwordHash,
-      role: 'SELLER', 
+      role: 'SELLER',
       isActive: true,
       isVerified: true,
-      loginAttempt: 0
+      loginAttempt: 0,
     };
 
     const newUser = await authRepository.createUser(userData);
-    
+
     return {
       id: Number(newUser.id),
       user_id: newUser.userId,
       username: newUser.userName,
       user_number: newUser.userNumber,
       shop_name: newUser.shopName,
-      role: 'seller', // Response expects lowercase 'seller' per the requested response format
+      role: 'seller',
       is_active: newUser.isActive,
       is_verified: newUser.isVerified,
-      created_at: newUser.createdAt
+      created_at: newUser.createdAt,
     };
   }
 
-  async loginUser({ user_id, password }) {
+  /**
+   * Login any system role (ADMIN / SELLER / EMPLOYEE).
+   * Employees get an employee_sessions row (security) and location / employee_role on user payload.
+   */
+  async loginUser({ user_id, password, device_id, ip_address, app_version, firebase_token }) {
     const user = await authRepository.findUserByUserId(user_id);
     if (!user) {
       const error = new Error('Invalid User ID');
@@ -90,29 +95,82 @@ class AuthService {
       await authRepository.updateLoginAttempt(user_id, 0);
     }
 
+    let sessionId = null;
+    if (user.role === ROLES.EMPLOYEE) {
+      const session = await authRepository.createEmployeeSession({
+        employeeId: user.id,
+        deviceId: device_id,
+        ipAddress: ip_address,
+        appVersion: app_version,
+        firebaseToken: firebase_token,
+      });
+      sessionId = Number(session.id);
+    }
+
     const payload = {
       id: Number(user.id),
-      userId: user.userId, // required by auth.middleware.js
+      userId: user.userId,
       user_id: user.userId,
-      role: user.role, // Use actual role from DB (e.g. ADMIN or SELLER) instead of hardcoding 'seller'
-      jti: crypto.randomUUID()
+      role: user.role,
+      jti: crypto.randomUUID(),
+      ...(sessionId != null ? { sessionId } : {}),
     };
 
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
-    // Create a dynamic auth_id that changes every time
     const randomSalt = crypto.randomBytes(8).toString('hex');
     const dynamicAuthId = Buffer.from(`${user.id}:${randomSalt}`).toString('base64');
 
     return {
       auth_id: dynamicAuthId,
       auth_key: token,
+      ...(sessionId != null ? { session_id: sessionId } : {}),
       user: {
+        id: Number(user.id),
         username: user.userName,
         user_number: user.userNumber,
         shop_name: user.shopName,
-        role: user.role
-      }
+        role: user.role,
+        location_id: user.locationId != null ? Number(user.locationId) : null,
+        employee_role_id: user.employeeRoleId != null ? Number(user.employeeRoleId) : null,
+        location: user.location
+          ? {
+              id: Number(user.location.id),
+              code: user.location.code,
+              name: user.location.name,
+              type: user.location.type,
+            }
+          : null,
+        employee_role: user.employeeRole
+          ? {
+              id: Number(user.employeeRole.id),
+              name: user.employeeRole.name,
+              description: user.employeeRole.description,
+            }
+          : null,
+      },
+    };
+  }
+
+  async logoutUser({ userId, role, sessionId }) {
+    if (role !== ROLES.EMPLOYEE) {
+      return { logged_out: true, session: null };
+    }
+
+    const closed = await authRepository.closeEmployeeSession({
+      sessionId: sessionId || null,
+      employeeId: userId,
+    });
+
+    return {
+      logged_out: true,
+      session: closed
+        ? {
+            id: Number(closed.id),
+            login_time: closed.loginTime,
+            logout_time: closed.logoutTime,
+          }
+        : null,
     };
   }
 
@@ -125,11 +183,11 @@ class AuthService {
     }
 
     const updatedUser = await authRepository.updateUserStatus(user_id, is_active, is_verified);
-    
+
     return {
       user_id: updatedUser.userId,
       is_active: updatedUser.isActive,
-      is_verified: updatedUser.isVerified
+      is_verified: updatedUser.isVerified,
     };
   }
 }

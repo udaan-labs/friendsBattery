@@ -51,7 +51,8 @@ Doc: repo root `docs/architecture.md`. One domain = one module folder. Reuse exi
 2. **Immutable ledger** — `inventory_transactions` is **append-only**. Never UPDATE/DELETE history. Ownership/status change = new row.
 3. **Roles**
    - `ADMIN` — all data, inventory, sellers, approvals
-   - `SELLER` — own inventory, sales, requests only  
+   - `SELLER` — own inventory, sales, requests only
+   - `EMPLOYEE` — staff at a location; inventory by `current_location_id = user.location_id` (not owner_id). Job title is `employee_roles` via `users.employee_role_id` (Manager, Cashier, …) — separate from system `Role`.
    Auth from `req.user` (middleware). **Never** trust client-supplied seller/owner IDs for authorization.
 
 ---

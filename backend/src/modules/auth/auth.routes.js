@@ -107,6 +107,22 @@ router.post('/login', validateLogin, authController.login);
 
 /**
  * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     summary: End session (closes employee_sessions for EMPLOYEE)
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logout successful
+ *       401:
+ *         description: Unauthorized
+ */
+router.post('/logout', authenticate, authController.logout);
+
+/**
+ * @swagger
  * /api/auth/activate:
  *   put:
  *     summary: Activate and verify a user account

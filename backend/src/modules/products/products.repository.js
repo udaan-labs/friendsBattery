@@ -133,14 +133,15 @@ class ProductsRepository {
   }
 
   /**
-   * Find products that the user has available (AVAILABLE) inventory for
+   * Find products that have available (AVAILABLE) units matching unitScope.
+   * unitScope: e.g. { ownerId } for seller or { currentLocationId } for employee.
    */
-  async findInventoryProducts(userId) {
+  async findInventoryProducts(unitScope) {
     return prisma.product.findMany({
       where: {
         units: {
           some: {
-            ownerId: BigInt(userId),
+            ...unitScope,
             status: 'AVAILABLE'
           }
         }
@@ -152,7 +153,7 @@ class ProductsRepository {
           select: {
             units: {
               where: {
-                ownerId: BigInt(userId),
+                ...unitScope,
                 status: 'AVAILABLE'
               }
             }

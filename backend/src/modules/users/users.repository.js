@@ -3,7 +3,7 @@ const { prisma } = require('../../config/db');
 class UserRepository {
   /**
    * Find all users optionally filtered by role.
-   * @param {string} [role] - Optional role filter ('ADMIN', 'SELLER')
+   * @param {string} [role] - Optional role filter ('ADMIN', 'SELLER', 'EMPLOYEE')
    * @returns {Promise<Array>}
    */
   async findAll(role) {

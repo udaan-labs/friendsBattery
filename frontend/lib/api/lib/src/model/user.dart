@@ -36,7 +36,7 @@ abstract class User implements Built<User, UserBuilder> {
 
   @BuiltValueField(wireName: r'role')
   UserRoleEnum? get role;
-  // enum roleEnum {  ADMIN,  SELLER,  };
+  // enum roleEnum {  ADMIN,  SELLER,  EMPLOYEE,  };
 
   @BuiltValueField(wireName: r'userNumber')
   String? get userNumber;
@@ -279,6 +279,8 @@ class UserRoleEnum extends EnumClass {
   static const UserRoleEnum ADMIN = _$userRoleEnum_ADMIN;
   @BuiltValueEnumConst(wireName: r'SELLER')
   static const UserRoleEnum SELLER = _$userRoleEnum_SELLER;
+  @BuiltValueEnumConst(wireName: r'EMPLOYEE')
+  static const UserRoleEnum EMPLOYEE = _$userRoleEnum_EMPLOYEE;
 
   static Serializer<UserRoleEnum> get serializer => _$userRoleEnumSerializer;
 

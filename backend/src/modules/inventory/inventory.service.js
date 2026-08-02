@@ -1,5 +1,7 @@
 const crypto = require('crypto');
 const inventoryRepository = require('./inventory.repository');
+const { resolveUnitScope } = require('./inventory.scope');
+const { getDefaultWarehouseId, getUserLocationId } = require('../../shared/utils/location.util');
 const { prisma } = require('../../config/db');
 
 /**
@@ -10,19 +12,35 @@ const { prisma } = require('../../config/db');
  * Does not access Express req/res directly.
  */
 class InventoryService {
+  _emptyInventoryPage(page, limit) {
+    return {
+      data: [],
+      pagination: {
+        total: 0,
+        page: Number(page),
+        limit: Number(limit),
+        total_pages: 0
+      }
+    };
+  }
+
   /**
    * Fetch inventory for a specific user.
-   * Input: userId, search, page, limit
-   * Output: Array of inventory items mapped to response format
+   * Seller: owner_id = seller. Employee: current_location_id = employee.location_id.
    */
-  async getInventory(userId, role, { search, page = 1, limit = 10, includeOutOfStock = false }) {
+  async getInventory(userId, role, { search, page = 1, limit = 10, includeOutOfStock = false, locationId } = {}) {
     const skip = (page - 1) * limit;
     const includeOOS = String(includeOutOfStock) === 'true';
 
+    const unitScope = await resolveUnitScope(userId, role, locationId);
+    if (!unitScope) {
+      return this._emptyInventoryPage(page, limit);
+    }
+
     let products, total;
     [products, total] = await Promise.all([
-      inventoryRepository.findInventory(userId, role, { search, skip, take: limit, includeOutOfStock: includeOOS }),
-      inventoryRepository.countInventory(userId, role, { search, includeOutOfStock: includeOOS })
+      inventoryRepository.findInventory(unitScope, { search, skip, take: limit, includeOutOfStock: includeOOS }),
+      inventoryRepository.countInventory(unitScope, { search, includeOutOfStock: includeOOS })
     ]);
 
     return {
@@ -56,9 +74,15 @@ class InventoryService {
    * Input: userId, productId
    * Output: Inventory item details
    */
-  async getInventoryItem(userId, role, productId) {
-    let product;
-    product = await inventoryRepository.findInventoryByProduct(userId, role, productId);
+  async getInventoryItem(userId, role, productId, locationId) {
+    const unitScope = await resolveUnitScope(userId, role, locationId);
+    if (!unitScope) {
+      const error = new Error('Inventory item not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const product = await inventoryRepository.findInventoryByProduct(unitScope, productId);
     
     if (!product) {
       const error = new Error('Inventory item not found');
@@ -101,19 +125,23 @@ class InventoryService {
     // Wrap in a transaction to ensure atomicity
     return prisma.$transaction(async (tx) => {
       if (adjustment_quantity > 0) {
+        const locationId =
+          (await getUserLocationId(userIdBig, tx)) || (await getDefaultWarehouseId(tx));
         // Positive adjustment: increase stock by creating new product units
         const unitsData = Array.from({ length: adjustment_quantity }).map(() => ({
           productId: productIdBig,
           ownerId: userIdBig,
           serialNumber: `ADJ-${Date.now()}-${crypto.randomUUID()}`,
-          status: 'AVAILABLE'
+          status: 'AVAILABLE',
+          ...(locationId ? { currentLocationId: locationId } : {}),
         }));
 
         const createdUnits = await inventoryRepository.createInventory(unitsData, tx);
         const auditLogs = createdUnits.map(unit => ({
           productUnitId: unit.id,
           toUserId: userIdBig,
-          action: 'RECEIVED' // Using RECEIVED as fallback for ADJUSTED_IN
+          action: 'RECEIVED', // Using RECEIVED as fallback for ADJUSTED_IN
+          ...(locationId ? { toLocationId: locationId } : {}),
         }));
         await inventoryRepository.createInventoryTransaction(auditLogs, tx);
       } else {
@@ -186,8 +214,19 @@ class InventoryService {
         totalProductsShipped += item.quantity;
       }
 
-      // Decrease admin inventory & Increase seller inventory (Changing ownerId)
-      await inventoryRepository.updateInventory(unitIdsToTransfer, { ownerId: sellerId, ownerType: 'SELLER' }, tx);
+      const fromLoc = await getDefaultWarehouseId(tx);
+      const toLoc = (await getUserLocationId(sellerId, tx)) || null;
+
+      // Ownership + location (seller location if set)
+      await inventoryRepository.updateInventory(
+        unitIdsToTransfer,
+        {
+          ownerId: sellerId,
+          ownerType: 'SELLER',
+          ...(toLoc ? { currentLocationId: toLoc } : {}),
+        },
+        tx
+      );
 
       // Create shipment record
       const shipment = await inventoryRepository.createShipment({
@@ -213,7 +252,9 @@ class InventoryService {
         productUnitId: unitId,
         fromUserId: adminId,
         toUserId: sellerId,
-        action: 'TRANSFERRED'
+        action: 'TRANSFERRED',
+        ...(fromLoc ? { fromLocationId: fromLoc } : {}),
+        ...(toLoc ? { toLocationId: toLoc } : {}),
       }));
       await inventoryRepository.createInventoryTransaction(auditLogs, tx);
 
@@ -335,11 +376,14 @@ class InventoryService {
       }
 
       if (quantity && quantity > 0) {
+        const locationId =
+          (await getUserLocationId(adminId, tx)) || (await getDefaultWarehouseId(tx));
         const unitsData = Array.from({ length: quantity }).map(() => ({
           productId: product.id,
           ownerId: adminId,
           serialNumber: `STK-${Date.now()}-${crypto.randomUUID()}`,
-          status: 'AVAILABLE'
+          status: 'AVAILABLE',
+          ...(locationId ? { currentLocationId: locationId } : {}),
         }));
         await inventoryRepository.createInventory(unitsData, tx);
       }
@@ -376,14 +420,16 @@ class InventoryService {
       };
     }
 
-    // 2. Determine stock based on ProductUnit count
-    let stockCount = await prisma.productUnit.count({
-      where: {
-        productId: product.id,
-        ownerId: BigInt(userId),
-        status: 'AVAILABLE'
-      }
-    });
+    const unitScope = await resolveUnitScope(userId, role);
+    const stockCount = unitScope
+      ? await prisma.productUnit.count({
+          where: {
+            productId: product.id,
+            ...unitScope,
+            status: 'AVAILABLE'
+          }
+        })
+      : 0;
 
     return {
       productId: Number(product.id),
@@ -393,24 +439,37 @@ class InventoryService {
   }
 
   /**
-   * Fetch available serial numbers for a product owned by a specific user.
+   * Fetch available serial numbers for a product in the user's inventory scope.
    */
-  async getAvailableSerials(userId, { productNameId, productModelId }) {
-    return inventoryRepository.findAvailableSerials(userId, { productNameId, productModelId });
+  async getAvailableSerials(userId, role, { productNameId, productModelId }) {
+    const unitScope = await resolveUnitScope(userId, role);
+    if (!unitScope) {
+      return [];
+    }
+    return inventoryRepository.findAvailableSerials(unitScope, { productNameId, productModelId });
   }
 
   /**
    * Fetch inventory details grouped by ProductName -> Product.
-   * Input: userId, role, filters
-   * Output: Grouped inventory details and pagination
+   * Seller: by owner. Employee: by current_location_id.
    */
-  async getInventoryDetails(userId, role, { product_name_id, search, page = 1, limit = 10 }) {
+  async getInventoryDetails(userId, role, { product_name_id, search, page = 1, limit = 10, locationId } = {}) {
     const pageNum = Number(page);
     const limitNum = Number(limit);
     const skip = (pageNum - 1) * limitNum;
 
-    // Filter stock counts to only show the logged-in user's own stock, or all admins' stock if admin
-    const ownerFilter = role === 'ADMIN' ? { owner: { role: 'ADMIN' } } : { ownerId: BigInt(userId) };
+    const unitScope = await resolveUnitScope(userId, role, locationId);
+    if (!unitScope) {
+      return {
+        productNames: [],
+        pagination: {
+          total: 0,
+          page: Number(page),
+          limit: Number(limit),
+          total_pages: 0
+        }
+      };
+    }
 
     const filters = {
       productNameId: product_name_id,
@@ -442,7 +501,7 @@ class InventoryService {
     const productNameIds = [...new Set(products.map(p => p.productNameId))];
 
     // 3. Fetch product unit aggregates (total, sold, remaining)
-    const unitGroups = await inventoryRepository.aggregateUnitCounts(productIds, ownerFilter);
+    const unitGroups = await inventoryRepository.aggregateUnitCounts(productIds, unitScope);
     const countMap = {};
     for (const group of unitGroups) {
       const pid = Number(group.productId);
@@ -465,7 +524,7 @@ class InventoryService {
     // 4. Fetch ProductName Stats (Total products and total available inventory)
     const productNameStats = await Promise.all(
       productNameIds.map(async (nameId) => {
-        const stats = await inventoryRepository.getProductNameStats(nameId, ownerFilter);
+        const stats = await inventoryRepository.getProductNameStats(nameId, unitScope);
         return { productNameId: nameId, ...stats };
       })
     );

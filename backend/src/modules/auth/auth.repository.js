@@ -3,42 +3,94 @@ const { prisma } = require('../../config/db');
 class AuthRepository {
   async findUserByUserId(userId) {
     return await prisma.user.findFirst({
-      where: { userId: userId }
+      where: { userId: userId },
+      include: {
+        location: {
+          select: { id: true, code: true, name: true, type: true },
+        },
+        employeeRole: {
+          select: { id: true, name: true, description: true },
+        },
+      },
     });
   }
 
   async findUserByUsername(username) {
     return await prisma.user.findFirst({
-      where: { userName: username }
+      where: { userName: username },
     });
   }
 
   async findUserByNumber(userNumber) {
     return await prisma.user.findFirst({
-      where: { userNumber: userNumber }
+      where: { userNumber: userNumber },
     });
   }
 
   async createUser(userData) {
     return await prisma.user.create({
-      data: userData
+      data: userData,
     });
   }
 
   async updateLoginAttempt(userId, attempts) {
     return await prisma.user.update({
       where: { userId: userId },
-      data: { loginAttempt: attempts }
+      data: { loginAttempt: attempts },
     });
   }
 
   async updateUserStatus(userId, isActive, isVerified) {
     return await prisma.user.update({
       where: { userId: userId },
-      data: { 
+      data: {
         isActive: isActive,
-        isVerified: isVerified
-      }
+        isVerified: isVerified,
+      },
+    });
+  }
+
+  /** Create app login session (employee_sessions) — not attendance. */
+  async createEmployeeSession({ employeeId, deviceId, ipAddress, appVersion, firebaseToken }) {
+    return prisma.employeeSession.create({
+      data: {
+        employeeId: BigInt(employeeId),
+        deviceId: deviceId || null,
+        ipAddress: ipAddress || null,
+        appVersion: appVersion || null,
+        firebaseToken: firebaseToken || null,
+      },
+    });
+  }
+
+  /** Close open session by id, or latest open session for employee. */
+  async closeEmployeeSession({ sessionId, employeeId }) {
+    if (sessionId) {
+      const session = await prisma.employeeSession.findFirst({
+        where: {
+          id: BigInt(sessionId),
+          employeeId: BigInt(employeeId),
+          logoutTime: null,
+        },
+      });
+      if (!session) return null;
+      return prisma.employeeSession.update({
+        where: { id: session.id },
+        data: { logoutTime: new Date() },
+      });
+    }
+
+    const open = await prisma.employeeSession.findFirst({
+      where: {
+        employeeId: BigInt(employeeId),
+        logoutTime: null,
+      },
+      orderBy: { loginTime: 'desc' },
+    });
+    if (!open) return null;
+    return prisma.employeeSession.update({
+      where: { id: open.id },
+      data: { logoutTime: new Date() },
     });
   }
 }

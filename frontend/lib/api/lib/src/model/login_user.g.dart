@@ -12,6 +12,8 @@ const LoginUserRoleEnum _$loginUserRoleEnum_ADMIN = const LoginUserRoleEnum._(
 const LoginUserRoleEnum _$loginUserRoleEnum_SELLER = const LoginUserRoleEnum._(
   'SELLER',
 );
+const LoginUserRoleEnum _$loginUserRoleEnum_EMPLOYEE =
+    const LoginUserRoleEnum._('EMPLOYEE');
 
 LoginUserRoleEnum _$loginUserRoleEnumValueOf(String name) {
   switch (name) {
@@ -19,6 +21,8 @@ LoginUserRoleEnum _$loginUserRoleEnumValueOf(String name) {
       return _$loginUserRoleEnum_ADMIN;
     case 'SELLER':
       return _$loginUserRoleEnum_SELLER;
+    case 'EMPLOYEE':
+      return _$loginUserRoleEnum_EMPLOYEE;
     default:
       throw ArgumentError(name);
   }
@@ -28,6 +32,7 @@ final BuiltSet<LoginUserRoleEnum> _$loginUserRoleEnumValues =
     BuiltSet<LoginUserRoleEnum>(const <LoginUserRoleEnum>[
       _$loginUserRoleEnum_ADMIN,
       _$loginUserRoleEnum_SELLER,
+      _$loginUserRoleEnum_EMPLOYEE,
     ]);
 
 Serializer<LoginUserRoleEnum> _$loginUserRoleEnumSerializer =
@@ -38,10 +43,12 @@ class _$LoginUserRoleEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'ADMIN': 'ADMIN',
     'SELLER': 'SELLER',
+    'EMPLOYEE': 'EMPLOYEE',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'ADMIN': 'ADMIN',
     'SELLER': 'SELLER',
+    'EMPLOYEE': 'EMPLOYEE',
   };
 
   @override

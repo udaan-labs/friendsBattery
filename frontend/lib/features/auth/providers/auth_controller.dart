@@ -33,8 +33,7 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
         user: response.user,
       );
       
-      final role = response.role.toLowerCase() == 'admin' ? UserRole.admin : UserRole.seller;
-      ref.read(authProvider.notifier).setAuthenticated(role);
+      ref.read(authProvider.notifier).setAuthenticated(parseUserRole(response.role));
       
       state = const AsyncValue.data(null);
     } catch (e, stack) {

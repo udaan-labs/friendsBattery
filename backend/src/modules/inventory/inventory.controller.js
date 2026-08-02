@@ -11,17 +11,23 @@ const { successResponse, errorResponse } = require('../../shared/utils/response'
 class InventoryController {
   /**
    * Return logged-in user's inventory.
-   * Admin returns admin inventory.
-   * Seller returns only seller inventory.
+   * Admin: admin-owned units. Seller: owner_id. Employee: current_location_id.
    */
   async getInventory(req, res) {
     try {
       const userId = Number(req.user.id);
       const role = req.user.role;
+      const locationId = req.user.locationId ?? null;
       const { search, page, limit, includeOutOfStock } = req.query;
 
       // Call business layer
-      const inventory = await inventoryService.getInventory(userId, role, { search, page, limit, includeOutOfStock });
+      const inventory = await inventoryService.getInventory(userId, role, {
+        search,
+        page,
+        limit,
+        includeOutOfStock,
+        locationId,
+      });
 
       // Return standardized success response
       return successResponse(res, 200, 'Inventory fetched successfully', inventory);
@@ -38,10 +44,11 @@ class InventoryController {
     try {
       const userId = Number(req.user.id);
       const role = req.user.role;
+      const locationId = req.user.locationId ?? null;
       const { productId } = req.params;
 
       // Call business layer
-      const inventoryItem = await inventoryService.getInventoryItem(userId, role, productId);
+      const inventoryItem = await inventoryService.getInventoryItem(userId, role, productId, locationId);
 
       // Return standardized success response
       return successResponse(res, 200, 'Inventory item fetched successfully', inventoryItem);
@@ -171,14 +178,15 @@ class InventoryController {
   }
 
   /**
-   * Fetch available serial numbers for a product owned by the logged-in user.
+   * Fetch available serial numbers for a product in the logged-in user's inventory scope.
    */
   async getAvailableSerials(req, res) {
     try {
       const userId = Number(req.user.id);
+      const role = req.user.role;
       const { product_name_id, product_model_id } = req.query;
 
-      const serials = await inventoryService.getAvailableSerials(userId, {
+      const serials = await inventoryService.getAvailableSerials(userId, role, {
         productNameId: Number(product_name_id),
         productModelId: Number(product_model_id)
       });
@@ -197,6 +205,7 @@ class InventoryController {
     try {
       const userId = Number(req.user.id);
       const role = req.user.role;
+      const locationId = req.user.locationId ?? null;
       const { product_name_id, search, page, limit } = req.query;
 
       // Call business layer
@@ -204,7 +213,8 @@ class InventoryController {
         product_name_id,
         search,
         page,
-        limit
+        limit,
+        locationId,
       });
 
       // Return standardized success response

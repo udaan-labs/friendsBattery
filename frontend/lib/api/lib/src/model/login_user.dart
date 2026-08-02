@@ -29,7 +29,7 @@ abstract class LoginUser implements Built<LoginUser, LoginUserBuilder> {
 
   @BuiltValueField(wireName: r'role')
   LoginUserRoleEnum? get role;
-  // enum roleEnum {  ADMIN,  SELLER,  };
+  // enum roleEnum {  ADMIN,  SELLER,  EMPLOYEE,  };
 
   LoginUser._();
 
@@ -170,6 +170,8 @@ class LoginUserRoleEnum extends EnumClass {
   static const LoginUserRoleEnum ADMIN = _$loginUserRoleEnum_ADMIN;
   @BuiltValueEnumConst(wireName: r'SELLER')
   static const LoginUserRoleEnum SELLER = _$loginUserRoleEnum_SELLER;
+  @BuiltValueEnumConst(wireName: r'EMPLOYEE')
+  static const LoginUserRoleEnum EMPLOYEE = _$loginUserRoleEnum_EMPLOYEE;
 
   static Serializer<LoginUserRoleEnum> get serializer => _$loginUserRoleEnumSerializer;
 

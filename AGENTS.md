@@ -166,6 +166,7 @@ FriendsBattery/
 3. **Roles**  
    - `ADMIN`: all data, inventory, sellers, approvals  
    - `SELLER`: only own inventory, sales, and requests  
+   - `EMPLOYEE`: staff at a location; inventory via `current_location_id = user.location_id` (seller still uses `owner_id`). Job title = `employee_roles` (`users.employee_role_id`), separate from system `Role`.  
    Never trust client-supplied seller/owner IDs for authorization; use `req.user` from auth middleware.
 
 4. **Layered backend**  

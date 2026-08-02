@@ -56,16 +56,21 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       if ((isLoggingIn || isSplash || state.uri.toString() == '/register') && authState.isAuthenticated) {
-        return authState.role == UserRole.admin ? '/admin/dashboard' : '/seller/dashboard';
+        // Employee has no dedicated shell yet — stay on login until employee UI exists.
+        if (authState.role == UserRole.admin) return '/admin/dashboard';
+        if (authState.role == UserRole.seller) return '/seller/dashboard';
+        return '/login';
       }
 
       if (authState.isAuthenticated) {
         final path = state.uri.toString();
         if (path.startsWith('/admin') && authState.role != UserRole.admin) {
-          return '/seller/dashboard';
+          if (authState.role == UserRole.seller) return '/seller/dashboard';
+          return '/login';
         }
         if (path.startsWith('/seller') && authState.role != UserRole.seller) {
-          return '/admin/dashboard';
+          if (authState.role == UserRole.admin) return '/admin/dashboard';
+          return '/login';
         }
       }
 

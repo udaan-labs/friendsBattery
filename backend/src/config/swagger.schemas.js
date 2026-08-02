@@ -16,7 +16,7 @@ module.exports = {
       id: { type: 'string', description: 'User ID in BigInt format converted to string' },
       userId: { type: 'string' },
       userName: { type: 'string' },
-      role: { type: 'string', enum: ['ADMIN', 'SELLER'] },
+      role: { type: 'string', enum: ['ADMIN', 'SELLER', 'EMPLOYEE'] },
       userNumber: { type: 'string', nullable: true },
       shopName: { type: 'string', nullable: true },
       isActive: { type: 'boolean' },
@@ -29,10 +29,32 @@ module.exports = {
   LoginUser: {
     type: 'object',
     properties: {
+      id: { type: 'integer' },
       username: { type: 'string' },
       user_number: { type: 'string', nullable: true },
       shop_name: { type: 'string', nullable: true },
-      role: { type: 'string', enum: ['ADMIN', 'SELLER'] }
+      role: { type: 'string', enum: ['ADMIN', 'SELLER', 'EMPLOYEE'] },
+      location_id: { type: 'integer', nullable: true },
+      employee_role_id: { type: 'integer', nullable: true },
+      location: {
+        type: 'object',
+        nullable: true,
+        properties: {
+          id: { type: 'integer' },
+          code: { type: 'string' },
+          name: { type: 'string' },
+          type: { type: 'string', enum: ['WAREHOUSE', 'SHOP'] }
+        }
+      },
+      employee_role: {
+        type: 'object',
+        nullable: true,
+        properties: {
+          id: { type: 'integer' },
+          name: { type: 'string' },
+          description: { type: 'string', nullable: true }
+        }
+      }
     }
   },
   LoginData: {
@@ -40,6 +62,7 @@ module.exports = {
     properties: {
       auth_id: { type: 'string' },
       auth_key: { type: 'string' },
+      session_id: { type: 'integer', nullable: true, description: 'Present for EMPLOYEE logins (employee_sessions)' },
       user: { $ref: '#/components/schemas/LoginUser' }
     }
   },

@@ -52,7 +52,8 @@
             "type": "string",
             "enum": [
               "ADMIN",
-              "SELLER"
+              "SELLER",
+              "EMPLOYEE"
             ]
           },
           "userNumber": {
@@ -97,7 +98,8 @@
             "type": "string",
             "enum": [
               "ADMIN",
-              "SELLER"
+              "SELLER",
+              "EMPLOYEE"
             ]
           }
         }

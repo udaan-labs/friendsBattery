@@ -18,14 +18,41 @@ class AuthController {
 
   async login(req, res) {
     try {
-      const { user_id, password } = req.body;
-      const result = await authService.loginUser({ user_id, password });
+      const { user_id, password, device_id, app_version, firebase_token } = req.body;
+      const ip_address =
+        req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() ||
+        req.ip ||
+        req.socket?.remoteAddress ||
+        null;
+
+      const result = await authService.loginUser({
+        user_id,
+        password,
+        device_id,
+        ip_address,
+        app_version,
+        firebase_token,
+      });
       return successResponse(res, 200, 'Login successful', result);
     } catch (error) {
       if (error.statusCode === 401 || error.statusCode === 403) {
         return errorResponse(res, error.statusCode, error.message);
       }
       console.error('Login Error:', error);
+      return errorResponse(res, 500, 'Internal server error');
+    }
+  }
+
+  async logout(req, res) {
+    try {
+      const result = await authService.logoutUser({
+        userId: req.user.id,
+        role: req.user.role,
+        sessionId: req.user.sessionId || req.body?.session_id,
+      });
+      return successResponse(res, 200, 'Logout successful', result);
+    } catch (error) {
+      console.error('Logout Error:', error);
       return errorResponse(res, 500, 'Internal server error');
     }
   }
