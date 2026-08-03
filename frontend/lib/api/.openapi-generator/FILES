@@ -9,6 +9,9 @@ doc/AdjustInventoryResponse.md
 doc/AdjustInventoryResult.md
 doc/AdminDashboardStats.md
 doc/AdminDashboardStatsResponse.md
+doc/AdminEmployeeDetailData.md
+doc/AdminEmployeeDetailDataCurrentAttendance.md
+doc/AdminEmployeeDetailResponse.md
 doc/AdminSaleHistoryPage.md
 doc/AdminSaleHistoryResponse.md
 doc/AdminSaleRecord.md
@@ -43,10 +46,10 @@ doc/ApiShipmentsIdGet200ResponseDataItemsInner.md
 doc/ApiShipmentsIdGet200ResponseDataSeller.md
 doc/ApiTransfersPostRequest.md
 doc/ApiTransfersPostRequestItemsInner.md
+doc/AssignedLocation.md
 doc/AttendanceApi.md
 doc/AttendanceGeoBody.md
 doc/AttendanceRecord.md
-doc/AttendanceRecordLocation.md
 doc/AttendanceStatusData.md
 doc/AuthApi.md
 doc/AvailableSerialsResponse.md
@@ -68,6 +71,8 @@ doc/CreateShipmentResult.md
 doc/Customer.md
 doc/CustomersApi.md
 doc/DashboardApi.md
+doc/EmployeeAction.md
+doc/EmployeeActionLocation.md
 doc/Error.md
 doc/HealthApi.md
 doc/HealthStatus.md
@@ -184,6 +189,9 @@ lib/src/model/adjust_inventory_response.dart
 lib/src/model/adjust_inventory_result.dart
 lib/src/model/admin_dashboard_stats.dart
 lib/src/model/admin_dashboard_stats_response.dart
+lib/src/model/admin_employee_detail_data.dart
+lib/src/model/admin_employee_detail_data_current_attendance.dart
+lib/src/model/admin_employee_detail_response.dart
 lib/src/model/admin_sale_history_page.dart
 lib/src/model/admin_sale_history_response.dart
 lib/src/model/admin_sale_record.dart
@@ -218,9 +226,9 @@ lib/src/model/api_shipments_id_get200_response_data_items_inner.dart
 lib/src/model/api_shipments_id_get200_response_data_seller.dart
 lib/src/model/api_transfers_post_request.dart
 lib/src/model/api_transfers_post_request_items_inner.dart
+lib/src/model/assigned_location.dart
 lib/src/model/attendance_geo_body.dart
 lib/src/model/attendance_record.dart
-lib/src/model/attendance_record_location.dart
 lib/src/model/attendance_status_data.dart
 lib/src/model/available_serials_response.dart
 lib/src/model/category.dart
@@ -240,6 +248,8 @@ lib/src/model/create_shipment_response.dart
 lib/src/model/create_shipment_result.dart
 lib/src/model/customer.dart
 lib/src/model/date.dart
+lib/src/model/employee_action.dart
+lib/src/model/employee_action_location.dart
 lib/src/model/error.dart
 lib/src/model/health_status.dart
 lib/src/model/inventory_item_detail.dart
@@ -319,7 +329,9 @@ lib/src/model/verify_product_response.dart
 lib/src/model/verify_product_unit.dart
 lib/src/serializers.dart
 pubspec.yaml
-test/seller_detail_location_test.dart
-test/shop_staff_data_test.dart
-test/shop_staff_member_test.dart
-test/shop_staff_response_test.dart
+test/admin_employee_detail_data_current_attendance_test.dart
+test/admin_employee_detail_data_test.dart
+test/admin_employee_detail_response_test.dart
+test/assigned_location_test.dart
+test/employee_action_location_test.dart
+test/employee_action_test.dart

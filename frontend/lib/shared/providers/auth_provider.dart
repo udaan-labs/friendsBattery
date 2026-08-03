@@ -69,6 +69,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isAuthenticated: true, role: role);
   }
 
+  /// Local session kill only (tokens + state). Call API logout first when online.
   Future<void> logout() async {
     try {
       await SessionManager.clearSession();

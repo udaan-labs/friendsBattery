@@ -178,12 +178,13 @@ class _CurrentInventoryScreenState extends ConsumerState<CurrentInventoryScreen>
                           itemBuilder: (context, index) {
                             final item = data.items[index];
                             final serialNumber = ((queryState.page - 1) * queryState.limit) + index + 1;
+                            final role = ref.read(authProvider).role;
                             return InventoryProductCard(
                               item: item,
                               index: serialNumber,
+                              showPricingMeta: role != UserRole.employee,
                               onTap: () {
-                                final authState = ref.read(authProvider);
-                                if (authState.role == UserRole.admin) {
+                                if (role == UserRole.admin) {
                                   showModalBottomSheet(
                                     context: context,
                                     isScrollControlled: true,

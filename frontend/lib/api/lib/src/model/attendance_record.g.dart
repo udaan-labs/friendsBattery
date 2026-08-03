@@ -78,7 +78,7 @@ class _$AttendanceRecord extends AttendanceRecord {
   @override
   final AttendanceRecordStatusEnum? status;
   @override
-  final AttendanceRecordLocation? location;
+  final AssignedLocation? location;
 
   factory _$AttendanceRecord([
     void Function(AttendanceRecordBuilder)? updates,
@@ -172,10 +172,10 @@ class AttendanceRecordBuilder
   AttendanceRecordStatusEnum? get status => _$this._status;
   set status(AttendanceRecordStatusEnum? status) => _$this._status = status;
 
-  AttendanceRecordLocationBuilder? _location;
-  AttendanceRecordLocationBuilder get location =>
-      _$this._location ??= AttendanceRecordLocationBuilder();
-  set location(AttendanceRecordLocationBuilder? location) =>
+  AssignedLocationBuilder? _location;
+  AssignedLocationBuilder get location =>
+      _$this._location ??= AssignedLocationBuilder();
+  set location(AssignedLocationBuilder? location) =>
       _$this._location = location;
 
   AttendanceRecordBuilder() {

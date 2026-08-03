@@ -79,13 +79,14 @@ class SalesService {
     }
 
     // 4. Create sale transaction & update inventory (Atomically handled in repository)
+    // Use unit's canonical serial (find was case-insensitive)
     const sale = await salesRepository.createSaleTransaction({
       productUnitId: productUnit.id,
       productId: productUnit.productId,
       customerId: customer.id,
       sellerId: sellerId,
       sellPrice: data.sell_price,
-      serialNumber: data.serial_number,
+      serialNumber: productUnit.serialNumber,
       vehicleNumber: data.vehicle_number
     });
 

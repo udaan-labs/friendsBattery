@@ -3,8 +3,8 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:friends_battery_api/src/model/attendance_record_location.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:friends_battery_api/src/model/assigned_location.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -42,7 +42,7 @@ abstract class AttendanceRecord implements Built<AttendanceRecord, AttendanceRec
   // enum statusEnum {  CHECKED_IN,  CHECKED_OUT,  };
 
   @BuiltValueField(wireName: r'location')
-  AttendanceRecordLocation? get location;
+  AssignedLocation? get location;
 
   AttendanceRecord._();
 
@@ -113,7 +113,7 @@ class _$AttendanceRecordSerializer implements PrimitiveSerializer<AttendanceReco
       yield r'location';
       yield serializers.serialize(
         object.location,
-        specifiedType: const FullType.nullable(AttendanceRecordLocation),
+        specifiedType: const FullType.nullable(AssignedLocation),
       );
     }
   }
@@ -186,8 +186,8 @@ class _$AttendanceRecordSerializer implements PrimitiveSerializer<AttendanceReco
         case r'location':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(AttendanceRecordLocation),
-          ) as AttendanceRecordLocation?;
+            specifiedType: const FullType.nullable(AssignedLocation),
+          ) as AssignedLocation?;
           if (valueDes == null) continue;
           result.location.replace(valueDes);
           break;

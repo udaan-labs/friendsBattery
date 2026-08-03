@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../features/auth/providers/auth_controller.dart';
 import '../providers/auth_provider.dart';
-import 'responsive_helper.dart';
 
 void showLogoutConfirmationDialog(BuildContext context, WidgetRef ref) {
   showDialog(
@@ -30,6 +30,10 @@ void showLogoutConfirmationDialog(BuildContext context, WidgetRef ref) {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(dialogContext);
+              // Server session first (employee_sessions), then wipe local tokens.
+              try {
+                await ref.read(authRepositoryProvider).logout();
+              } catch (_) {}
               await ref.read(authProvider.notifier).logout();
             },
             style: ElevatedButton.styleFrom(

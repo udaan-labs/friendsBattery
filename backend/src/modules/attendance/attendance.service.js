@@ -1,4 +1,26 @@
 const attendanceRepository = require('./attendance.repository');
+const { distanceMeters, normalizeGeoBody } = require('../../shared/utils/geo.util');
+
+function fail(message, statusCode, meta) {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  if (meta) error.meta = meta;
+  throw error;
+}
+
+function mapLocation(loc) {
+  if (!loc) return null;
+  return {
+    id: Number(loc.id),
+    code: loc.code ?? null,
+    name: loc.name,
+    type: loc.type ?? null,
+    latitude: loc.latitude != null ? Number(loc.latitude) : null,
+    longitude: loc.longitude != null ? Number(loc.longitude) : null,
+    allowed_radius:
+      loc.allowedRadius != null ? Number(loc.allowedRadius) : 100,
+  };
+}
 
 function mapAttendance(row) {
   if (!row) return null;
@@ -15,43 +37,87 @@ function mapAttendance(row) {
     check_in_address: row.checkInAddress ?? null,
     check_out_address: row.checkOutAddress ?? null,
     status: row.status,
-    location: row.assignedLocation
-      ? {
-          id: Number(row.assignedLocation.id),
-          code: row.assignedLocation.code,
-          name: row.assignedLocation.name,
-          type: row.assignedLocation.type,
-        }
-      : null,
+    location: mapLocation(row.assignedLocation),
   };
 }
 
+function assertWithinAssignedLocation(location, lat, lng) {
+  if (lat == null || lng == null || Number.isNaN(lat) || Number.isNaN(lng)) {
+    fail('GPS coordinates are required for attendance', 400);
+  }
+
+  if (
+    location.latitude == null ||
+    location.longitude == null ||
+    Number.isNaN(Number(location.latitude)) ||
+    Number.isNaN(Number(location.longitude))
+  ) {
+    fail(
+      'Assigned location has no GPS coordinates configured. Contact admin.',
+      400
+    );
+  }
+
+  const radius =
+    location.allowedRadius != null ? Number(location.allowedRadius) : 100;
+  const meters = distanceMeters(
+    lat,
+    lng,
+    Number(location.latitude),
+    Number(location.longitude)
+  );
+
+  if (meters > radius) {
+    fail('You are not at your assigned location.', 403, {
+      distance_meters: Math.round(meters),
+      allowed_radius: radius,
+    });
+  }
+
+  return meters;
+}
+
+function buildGeoAddress({ address, accuracy, timestamp }) {
+  const parts = [];
+  if (address) parts.push(address);
+  if (accuracy != null && !Number.isNaN(accuracy)) {
+    parts.push(`accuracy=${Number(accuracy).toFixed(1)}m`);
+  }
+  if (timestamp) parts.push(`ts=${timestamp}`);
+  return parts.length ? parts.join(' | ') : null;
+}
+
 class AttendanceService {
-  /**
-   * @param {{ id: number, locationId: number|null, location?: object }} user
-   */
   async getStatus(user) {
-    const open = await attendanceRepository.findOpenAttendance(user.id);
+    const [open, location] = await Promise.all([
+      attendanceRepository.findOpenAttendance(user.id),
+      user.locationId != null
+        ? attendanceRepository.findLocationById(user.locationId)
+        : Promise.resolve(null),
+    ]);
+
     return {
       is_checked_in: !!open,
       attendance: mapAttendance(open),
-      location: user.location || null,
+      location: mapLocation(location),
     };
   }
 
-  async checkIn(user, { lat, lng, address } = {}) {
+  async checkIn(user, rawBody = {}) {
     if (user.locationId == null) {
-      const error = new Error('Employee has no assigned location');
-      error.statusCode = 400;
-      throw error;
+      fail('Employee has no assigned location', 400);
     }
 
+    const location = await attendanceRepository.findLocationById(user.locationId);
+    if (!location) fail('Assigned location not found', 400);
+
+    const { lat, lng, accuracy, timestamp, address } = normalizeGeoBody(rawBody);
+    assertWithinAssignedLocation(location, lat, lng);
+
     const open = await attendanceRepository.findOpenAttendance(user.id);
-    if (open) {
-      const error = new Error('Already checked in. Check out first.');
-      error.statusCode = 409;
-      throw error;
-    }
+    if (open) fail('Already checked in. Check out first.', 409);
+
+    const geoAddress = buildGeoAddress({ address, accuracy, timestamp });
 
     let row;
     try {
@@ -60,19 +126,13 @@ class AttendanceService {
         assignedLocationId: user.locationId,
         lat,
         lng,
-        address,
+        address: geoAddress,
       });
     } catch (err) {
-      // Unique open-check-in index (race between two parallel check-ins)
-      if (err.code === 'P2002') {
-        const error = new Error('Already checked in. Check out first.');
-        error.statusCode = 409;
-        throw error;
-      }
+      if (err.code === 'P2002') fail('Already checked in. Check out first.', 409);
       throw err;
     }
 
-    // Secondary log — never roll back a successful check-in
     try {
       await attendanceRepository.logActivity({
         employeeId: user.id,
@@ -80,21 +140,33 @@ class AttendanceService {
         referenceId: Number(row.id),
       });
     } catch (_) {
-      /* ponytail: activity log best-effort */
+      /* best-effort activity log */
     }
 
     return mapAttendance(row);
   }
 
-  async checkOut(user, { lat, lng, address } = {}) {
+  async checkOut(user, rawBody = {}) {
     const open = await attendanceRepository.findOpenAttendance(user.id);
-    if (!open) {
-      const error = new Error('Not checked in');
-      error.statusCode = 400;
-      throw error;
-    }
+    if (!open) fail('Not checked in', 400);
 
-    const row = await attendanceRepository.checkOut(open.id, { lat, lng, address });
+    const locationId = user.locationId ?? Number(open.assignedLocationId);
+    const location =
+      open.assignedLocation ||
+      (await attendanceRepository.findLocationById(locationId));
+
+    if (!location) fail('Assigned location not found', 400);
+
+    const { lat, lng, accuracy, timestamp, address } = normalizeGeoBody(rawBody);
+    assertWithinAssignedLocation(location, lat, lng);
+
+    const geoAddress = buildGeoAddress({ address, accuracy, timestamp });
+    const row = await attendanceRepository.checkOut(open.id, {
+      lat,
+      lng,
+      address: geoAddress,
+    });
+    if (!row) fail('Not checked in', 400);
 
     try {
       await attendanceRepository.logActivity({
@@ -103,7 +175,7 @@ class AttendanceService {
         referenceId: Number(row.id),
       });
     } catch (_) {
-      /* ponytail: activity log best-effort */
+      /* best-effort activity log */
     }
 
     return mapAttendance(row);

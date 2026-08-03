@@ -1,12 +1,18 @@
 import 'package:dio/dio.dart';
 import 'api_exceptions.dart';
 import '../storage/auth_token_cache.dart';
+import '../storage/session_guard.dart';
 import 'perf_interceptor.dart';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
 import '../../app/router/app_router.dart';
 
 class ApiInterceptor extends Interceptor {
+  static bool _isPublicAuthPath(String path) {
+    // Don't force-logout on failed login / register
+    return path.contains('/auth/login') || path.contains('/auth/register');
+  }
+
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     // Prefer in-memory tokens (sync). Cold path loads secure storage once.
@@ -17,7 +23,9 @@ class ApiInterceptor extends Interceptor {
     final token = AuthTokenCache.authKey;
     final authId = AuthTokenCache.authId;
     if (token != null && token.isNotEmpty) {
+      // Backend accepts auth-key or Authorization Bearer
       options.headers['Authorization'] = 'Bearer $token';
+      options.headers['auth-key'] = token;
     }
     if (authId != null && authId.isNotEmpty) {
       options.headers['auth-id'] = authId;
@@ -32,8 +40,8 @@ class ApiInterceptor extends Interceptor {
 
   void _showDebouncedSnackBar(String message) {
     final now = DateTime.now();
-    if (_lastErrorMessage == message && 
-        _lastErrorTime != null && 
+    if (_lastErrorMessage == message &&
+        _lastErrorTime != null &&
         now.difference(_lastErrorTime!) < const Duration(seconds: 2)) {
       return;
     }
@@ -53,6 +61,7 @@ class ApiInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) {
     String errorMessage = 'An unexpected error occurred';
     ApiException? apiException;
+    var forceLogout = false;
 
     switch (err.type) {
       case DioExceptionType.connectionTimeout:
@@ -68,6 +77,7 @@ class ApiInterceptor extends Interceptor {
       case DioExceptionType.badResponse:
         final statusCode = err.response?.statusCode;
         final responseData = err.response?.data;
+        final path = err.requestOptions.path;
 
         if (responseData is Map && responseData['data'] is Map && responseData['data']['message'] != null) {
           errorMessage = responseData['data']['message'].toString();
@@ -84,10 +94,22 @@ class ApiInterceptor extends Interceptor {
         } else {
           errorMessage = err.message ?? 'A server error occurred.';
         }
+
+        // 401 = session dead (revoked / expired). 403 = still logged in, no access.
+        if (statusCode == 401 && !_isPublicAuthPath(path)) {
+          forceLogout = true;
+          errorMessage = 'Session expired. Please login again.';
+          apiException = UnauthorizedException();
+        }
         break;
       default:
         errorMessage = err.message ?? 'An unexpected error occurred.';
         break;
+    }
+
+    if (forceLogout) {
+      // Fire-and-forget: clear local auth so router kicks to /login
+      SessionGuard.forceUnauthorized();
     }
 
     // Show debounced error snackbar automatically using global navigator overlay

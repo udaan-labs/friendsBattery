@@ -30,14 +30,28 @@ class ReturnsRepository {
     const { productUnitId, productId, transactionId, serialNumber, reason, sellerId } = data;
 
     return prisma.$transaction(async (tx) => {
-      // 1. Update ProductUnit status to RETURNED
-      const updatedUnit = await tx.productUnit.update({
-        where: { id: productUnitId },
+      // 1. Atomic claim — only one concurrent return can flip SOLD → RETURNED
+      const claimed = await tx.productUnit.updateMany({
+        where: {
+          id: productUnitId,
+          status: 'SOLD',
+        },
         data: {
           status: 'RETURNED',
           ownerId: sellerId,
-          ownerType: 'SELLER'
-        }
+          ownerType: 'SELLER',
+        },
+      });
+      if (claimed.count !== 1) {
+        const error = new Error(
+          'Product is no longer in SOLD status (already returned or sold again).'
+        );
+        error.statusCode = 409;
+        throw error;
+      }
+
+      const updatedUnit = await tx.productUnit.findUnique({
+        where: { id: productUnitId },
       });
 
       // 2. Create ReturnProduct record

@@ -52,7 +52,8 @@ const { requireAdmin } = require('../../shared/middleware/role.middleware');
  *       409:
  *         description: Username already exists
  */
-router.post('/register', validateRegister, authController.register);
+// Admin-only: no open self-register of active sellers
+router.post('/register', authenticate, requireAdmin, validateRegister, authController.register);
 
 /**
  * @swagger

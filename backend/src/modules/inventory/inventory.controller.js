@@ -163,11 +163,13 @@ class InventoryController {
     try {
       const userId = Number(req.user.id);
       const role = req.user.role;
+      const locationId = req.user.locationId ?? null;
       const { product_name_id, product_model_id } = req.query;
 
       const details = await inventoryService.getProductDetails(userId, role, {
         productNameId: Number(product_name_id),
-        productModelId: Number(product_model_id)
+        productModelId: Number(product_model_id),
+        locationId,
       });
 
       return successResponse(res, 200, 'Product details fetched successfully', details);
@@ -184,11 +186,13 @@ class InventoryController {
     try {
       const userId = Number(req.user.id);
       const role = req.user.role;
+      const locationId = req.user.locationId ?? null;
       const { product_name_id, product_model_id } = req.query;
 
       const serials = await inventoryService.getAvailableSerials(userId, role, {
         productNameId: Number(product_name_id),
-        productModelId: Number(product_model_id)
+        productModelId: Number(product_model_id),
+        locationId,
       });
 
       return successResponse(res, 200, 'Available serials fetched successfully', serials);

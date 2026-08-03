@@ -119,8 +119,26 @@ class InventoryService {
       return { success: true, message: 'No adjustment needed' };
     }
 
+    // Hard cap — prevents accidental / abusive million-unit inserts
+    if (Math.abs(Number(adjustment_quantity)) > 500) {
+      const error = new Error('Adjustment quantity cannot exceed 500 units per request');
+      error.statusCode = 400;
+      throw error;
+    }
+
     const productIdBig = BigInt(product_id);
     const userIdBig = BigInt(user_id);
+
+    // Never assign inventory ownership to EMPLOYEE / unknown roles
+    const owner = await prisma.user.findUnique({
+      where: { id: userIdBig },
+      select: { id: true, role: true },
+    });
+    if (!owner || (owner.role !== 'ADMIN' && owner.role !== 'SELLER')) {
+      const error = new Error('Adjustment target must be an ADMIN or SELLER user');
+      error.statusCode = 400;
+      throw error;
+    }
 
     // Wrap in a transaction to ensure atomicity
     return prisma.$transaction(async (tx) => {
@@ -408,7 +426,7 @@ class InventoryService {
   /**
    * Fetch details of a product (stock count & min sell price) by product name and model IDs
    */
-  async getProductDetails(userId, role, { productNameId, productModelId }) {
+  async getProductDetails(userId, role, { productNameId, productModelId, locationId }) {
     // 1. Find product
     const product = await prisma.product.findFirst({
       where: {
@@ -425,7 +443,7 @@ class InventoryService {
       };
     }
 
-    const unitScope = await resolveUnitScope(userId, role);
+    const unitScope = await resolveUnitScope(userId, role, locationId);
     const stockCount = unitScope
       ? await prisma.productUnit.count({
           where: {
@@ -446,8 +464,8 @@ class InventoryService {
   /**
    * Fetch available serial numbers for a product in the user's inventory scope.
    */
-  async getAvailableSerials(userId, role, { productNameId, productModelId }) {
-    const unitScope = await resolveUnitScope(userId, role);
+  async getAvailableSerials(userId, role, { productNameId, productModelId, locationId }) {
+    const unitScope = await resolveUnitScope(userId, role, locationId);
     if (!unitScope) {
       return [];
     }

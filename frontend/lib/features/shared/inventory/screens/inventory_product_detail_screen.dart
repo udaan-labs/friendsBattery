@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/inventory_provider.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
+import '../../../../shared/providers/auth_provider.dart';
 
 class InventoryProductDetailScreen extends ConsumerWidget {
   final int productId;
@@ -15,6 +16,8 @@ class InventoryProductDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final productState = ref.watch(sharedInventoryProductDetailProvider(productId));
+    // Employees: stock only — no money fields (MVP: no sales for employees).
+    final showPrice = ref.watch(authProvider).role != UserRole.employee;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FB),
@@ -86,15 +89,16 @@ class InventoryProductDetailScreen extends ConsumerWidget {
                                   value: '${product.quantity} Units',
                                 ),
                               ),
-                              Expanded(
-                                child: _buildStatItem(
-                                  icon: Icons.currency_rupee_rounded,
-                                  iconColor: Colors.blue.shade700,
-                                  iconBg: Colors.blue.shade50,
-                                  label: 'Min Price',
-                                  value: '₹${product.minPrice.toStringAsFixed(0)}',
+                              if (showPrice)
+                                Expanded(
+                                  child: _buildStatItem(
+                                    icon: Icons.currency_rupee_rounded,
+                                    iconColor: Colors.blue.shade700,
+                                    iconBg: Colors.blue.shade50,
+                                    label: 'Min Price',
+                                    value: '₹${product.minPrice.toStringAsFixed(0)}',
+                                  ),
                                 ),
-                              ),
                             ],
                           ),
                         ],

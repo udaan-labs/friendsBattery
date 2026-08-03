@@ -16,6 +16,9 @@ Serializers _$serializers =
           ..add(AdjustInventoryResult.serializer)
           ..add(AdminDashboardStats.serializer)
           ..add(AdminDashboardStatsResponse.serializer)
+          ..add(AdminEmployeeDetailData.serializer)
+          ..add(AdminEmployeeDetailDataCurrentAttendance.serializer)
+          ..add(AdminEmployeeDetailResponse.serializer)
           ..add(AdminSaleHistoryPage.serializer)
           ..add(AdminSaleHistoryResponse.serializer)
           ..add(AdminSaleRecord.serializer)
@@ -56,9 +59,9 @@ Serializers _$serializers =
           ..add(ApiShipmentsIdGet200ResponseDataSeller.serializer)
           ..add(ApiTransfersPostRequest.serializer)
           ..add(ApiTransfersPostRequestItemsInner.serializer)
+          ..add(AssignedLocation.serializer)
           ..add(AttendanceGeoBody.serializer)
           ..add(AttendanceRecord.serializer)
-          ..add(AttendanceRecordLocation.serializer)
           ..add(AttendanceRecordStatusEnum.serializer)
           ..add(AttendanceStatusData.serializer)
           ..add(AvailableSerialsResponse.serializer)
@@ -79,6 +82,9 @@ Serializers _$serializers =
           ..add(CreateShipmentResult.serializer)
           ..add(CreateShipmentResultStatusEnum.serializer)
           ..add(Customer.serializer)
+          ..add(EmployeeAction.serializer)
+          ..add(EmployeeActionActionEnum.serializer)
+          ..add(EmployeeActionLocation.serializer)
           ..add(Error.serializer)
           ..add(HealthStatus.serializer)
           ..add(InventoryItemDetail.serializer)
@@ -255,6 +261,10 @@ Serializers _$serializers =
               const FullType(CreateShipmentItem),
             ]),
             () => ListBuilder<CreateShipmentItem>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(EmployeeAction)]),
+            () => ListBuilder<EmployeeAction>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

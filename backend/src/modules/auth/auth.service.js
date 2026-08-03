@@ -39,8 +39,9 @@ class AuthService {
       shopName: shop_name,
       passwordHash,
       role: 'SELLER',
-      isActive: true,
-      isVerified: true,
+      // Admin activates via PUT /auth/activate — never auto-login-ready
+      isActive: false,
+      isVerified: false,
       loginAttempt: 0,
     };
 
@@ -71,6 +72,13 @@ class AuthService {
       throw error;
     }
 
+    // loginAttempt is real lockout (admin clears via activate / successful login reset)
+    if (Number(user.loginAttempt) >= 10) {
+      const error = new Error('Too many failed logins. Contact admin.');
+      error.statusCode = 403;
+      throw error;
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
       await authRepository.updateLoginAttempt(user_id, user.loginAttempt + 1);
@@ -97,6 +105,8 @@ class AuthService {
 
     let sessionId = null;
     if (user.role === ROLES.EMPLOYEE) {
+      // Single active session: re-login kills old JWTs (middleware checks open session)
+      await authRepository.closeAllOpenEmployeeSessions(user.id);
       const session = await authRepository.createEmployeeSession({
         employeeId: user.id,
         deviceId: device_id,
@@ -183,6 +193,19 @@ class AuthService {
     }
 
     const updatedUser = await authRepository.updateUserStatus(user_id, is_active, is_verified);
+
+    // Activating also clears lockout counter (admin unlock path)
+    if (is_active === true || is_verified === true) {
+      await authRepository.updateLoginAttempt(user_id, 0);
+    }
+
+    // Deactivate / de-verify employee → kill open sessions immediately
+    if (
+      user.role === ROLES.EMPLOYEE &&
+      (is_active === false || is_verified === false)
+    ) {
+      await authRepository.closeAllOpenEmployeeSessions(user.id);
+    }
 
     return {
       user_id: updatedUser.userId,

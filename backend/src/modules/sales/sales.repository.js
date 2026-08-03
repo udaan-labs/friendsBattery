@@ -32,9 +32,10 @@ class SalesRepository {
    * Find an available product unit by serial number and seller ID
    */
   async findAvailableProductUnit(serialNumber, sellerId) {
+    const clean = serialNumber != null ? String(serialNumber).trim() : '';
     return prisma.productUnit.findFirst({
       where: {
-        serialNumber,
+        serialNumber: { equals: clean, mode: 'insensitive' },
         ownerId: BigInt(sellerId),
         status: 'AVAILABLE'
       },
@@ -72,15 +73,25 @@ class SalesRepository {
    */
   async createSaleTransaction(saleData) {
     return prisma.$transaction(async (tx) => {
-      // 1. Update ProductUnit status to SOLD and update serialNumber
-      await tx.productUnit.update({
-        where: { id: saleData.productUnitId },
-        data: { 
+      // 1. Atomic claim — only one concurrent sale can flip AVAILABLE → SOLD
+      const claimed = await tx.productUnit.updateMany({
+        where: {
+          id: saleData.productUnitId,
+          ownerId: BigInt(saleData.sellerId),
+          status: 'AVAILABLE',
+        },
+        data: {
           status: 'SOLD',
-          soldDate: new Date()
-          // serialNumber doesn't change since we are scanning the actual serial
-        }
+          soldDate: new Date(),
+        },
       });
+      if (claimed.count !== 1) {
+        const error = new Error(
+          'The scanned serial number is not available in your inventory.'
+        );
+        error.statusCode = 409;
+        throw error;
+      }
 
       // 2. Create the SalesTransaction record
       const sale = await tx.salesTransaction.create({

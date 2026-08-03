@@ -110,6 +110,7 @@ Class | Method | HTTP request | Description
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiShipmentsIdGet**](doc/ShipmentsApi.md#apishipmentsidget) | **GET** /api/shipments/{id} | Get shipment details by ID (Admin or Seller)
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiShipmentsPost**](doc/ShipmentsApi.md#apishipmentspost) | **POST** /api/shipments | Transfer stock serials from admin to seller (Admin only)
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiShipmentsShipmentIdAcceptPost**](doc/ShipmentsApi.md#apishipmentsshipmentidacceptpost) | **POST** /api/shipments/{shipmentId}/accept | Accept a pending shipment (Seller only)
+[*ShopsApi*](doc/ShopsApi.md) | [**apiShopsEmployeesEmployeeIdGet**](doc/ShopsApi.md#apishopsemployeesemployeeidget) | **GET** /api/shops/employees/{employeeId} | Admin view one employee (profile + check-in/check-out only)
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsSellersGet**](doc/ShopsApi.md#apishopssellersget) | **GET** /api/shops/sellers | Return all sellers
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsSellersSellerIdGet**](doc/ShopsApi.md#apishopssellersselleridget) | **GET** /api/shops/sellers/{sellerId} | Return one seller
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsSellersSellerIdStaffGet**](doc/ShopsApi.md#apishopssellersselleridstaffget) | **GET** /api/shops/sellers/{sellerId}/staff | Sellers and employees at the same shop location as this seller
@@ -130,6 +131,9 @@ Class | Method | HTTP request | Description
  - [AdjustInventoryResult](doc/AdjustInventoryResult.md)
  - [AdminDashboardStats](doc/AdminDashboardStats.md)
  - [AdminDashboardStatsResponse](doc/AdminDashboardStatsResponse.md)
+ - [AdminEmployeeDetailData](doc/AdminEmployeeDetailData.md)
+ - [AdminEmployeeDetailDataCurrentAttendance](doc/AdminEmployeeDetailDataCurrentAttendance.md)
+ - [AdminEmployeeDetailResponse](doc/AdminEmployeeDetailResponse.md)
  - [AdminSaleHistoryPage](doc/AdminSaleHistoryPage.md)
  - [AdminSaleHistoryResponse](doc/AdminSaleHistoryResponse.md)
  - [AdminSaleRecord](doc/AdminSaleRecord.md)
@@ -164,9 +168,9 @@ Class | Method | HTTP request | Description
  - [ApiShipmentsIdGet200ResponseDataSeller](doc/ApiShipmentsIdGet200ResponseDataSeller.md)
  - [ApiTransfersPostRequest](doc/ApiTransfersPostRequest.md)
  - [ApiTransfersPostRequestItemsInner](doc/ApiTransfersPostRequestItemsInner.md)
+ - [AssignedLocation](doc/AssignedLocation.md)
  - [AttendanceGeoBody](doc/AttendanceGeoBody.md)
  - [AttendanceRecord](doc/AttendanceRecord.md)
- - [AttendanceRecordLocation](doc/AttendanceRecordLocation.md)
  - [AttendanceStatusData](doc/AttendanceStatusData.md)
  - [AvailableSerialsResponse](doc/AvailableSerialsResponse.md)
  - [Category](doc/Category.md)
@@ -185,6 +189,8 @@ Class | Method | HTTP request | Description
  - [CreateShipmentResponse](doc/CreateShipmentResponse.md)
  - [CreateShipmentResult](doc/CreateShipmentResult.md)
  - [Customer](doc/Customer.md)
+ - [EmployeeAction](doc/EmployeeAction.md)
+ - [EmployeeActionLocation](doc/EmployeeActionLocation.md)
  - [Error](doc/Error.md)
  - [HealthStatus](doc/HealthStatus.md)
  - [InventoryItemDetail](doc/InventoryItemDetail.md)

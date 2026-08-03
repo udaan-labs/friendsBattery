@@ -12,7 +12,7 @@ class _$AttendanceStatusData extends AttendanceStatusData {
   @override
   final AttendanceRecord? attendance;
   @override
-  final AttendanceRecordLocation? location;
+  final AssignedLocation? location;
 
   factory _$AttendanceStatusData([
     void Function(AttendanceStatusDataBuilder)? updates,
@@ -72,10 +72,10 @@ class AttendanceStatusDataBuilder
   set attendance(AttendanceRecordBuilder? attendance) =>
       _$this._attendance = attendance;
 
-  AttendanceRecordLocationBuilder? _location;
-  AttendanceRecordLocationBuilder get location =>
-      _$this._location ??= AttendanceRecordLocationBuilder();
-  set location(AttendanceRecordLocationBuilder? location) =>
+  AssignedLocationBuilder? _location;
+  AssignedLocationBuilder get location =>
+      _$this._location ??= AssignedLocationBuilder();
+  set location(AssignedLocationBuilder? location) =>
       _$this._location = location;
 
   AttendanceStatusDataBuilder() {

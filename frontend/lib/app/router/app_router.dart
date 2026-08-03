@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/screens/splash_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
-import '../../features/auth/screens/register_screen.dart';
+import '../../features/auth/screens/register_screen.dart'; // admin add-seller only
 import '../../features/admin/dashboard/screens/admin_dashboard_screen.dart';
 import '../../features/admin/dashboard/screens/admin_shell_screen.dart';
 import '../../features/admin/dashboard/screens/admin_activity_history_screen.dart';
@@ -30,7 +30,7 @@ import '../../features/admin/sellers/screens/seller_details_screen.dart';
 import '../../features/shared/product_lookup/screens/verify_product_screen.dart';
 import '../../features/employee/dashboard/screens/employee_shell_screen.dart';
 import '../../features/employee/dashboard/screens/employee_home_screen.dart';
-import '../../features/employee/attendance/screens/employee_attendance_screen.dart';
+import '../../features/employee/attendance/presentation/employee_attendance_screen.dart';
 import '../../features/employee/shipments/screens/employee_shipments_screen.dart';
 import '../../features/employee/shipments/screens/employee_shipment_detail_screen.dart';
 import '../../shared/providers/auth_provider.dart';
@@ -55,12 +55,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isLoggingIn = state.uri.toString() == '/login';
       final isSplash = state.uri.toString() == '/splash';
 
+      // Public self-register closed (admin-only via /admin/add-seller)
       if (!authState.isAuthenticated) {
-        if (isSplash || isLoggingIn || state.uri.toString() == '/register') return null;
+        if (isSplash || isLoggingIn) return null;
         return '/login';
       }
 
-      if ((isLoggingIn || isSplash || state.uri.toString() == '/register') && authState.isAuthenticated) {
+      if ((isLoggingIn || isSplash || state.uri.path == '/register') && authState.isAuthenticated) {
         if (authState.role == UserRole.admin) return '/admin/dashboard';
         if (authState.role == UserRole.seller) return '/seller/dashboard';
         if (authState.role == UserRole.employee) return '/employee/home';
@@ -68,7 +69,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       if (authState.isAuthenticated) {
-        final path = state.uri.toString();
+        final path = state.uri.path;
+        // Guest / unknown role: never stay in app shell
+        if (authState.role == UserRole.guest) {
+          return '/login';
+        }
         if (path.startsWith('/admin') && authState.role != UserRole.admin) {
           if (authState.role == UserRole.seller) return '/seller/dashboard';
           if (authState.role == UserRole.employee) return '/employee/home';
@@ -84,6 +89,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           if (authState.role == UserRole.seller) return '/seller/dashboard';
           return '/login';
         }
+        // Shared inventory deep links: any real role OK; guest already redirected
       }
 
       return null;
@@ -96,10 +102,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
-      ),
-      GoRoute(
-        path: '/register',
-        builder: (context, state) => const RegisterScreen(isAdminFlow: false),
       ),
 
       // ── Admin shell ──────────────────────────────────────────────────────────
@@ -145,8 +147,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/admin/sellers/:id',
             builder: (context, state) {
-              final idStr = state.pathParameters['id']!;
-              return SellerDetailsScreen(sellerId: int.parse(idStr));
+              final id = int.tryParse(state.pathParameters['id'] ?? '');
+              if (id == null) {
+                return const Scaffold(body: Center(child: Text('Invalid seller')));
+              }
+              return SellerDetailsScreen(sellerId: id);
             },
           ),
           GoRoute(
@@ -156,8 +161,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/admin/shipments/:id',
             builder: (context, state) {
-              final idStr = state.pathParameters['id']!;
-              return AdminShipmentDetailScreen(shipmentId: int.parse(idStr));
+              final id = int.tryParse(state.pathParameters['id'] ?? '');
+              if (id == null) {
+                return const Scaffold(body: Center(child: Text('Invalid shipment')));
+              }
+              return AdminShipmentDetailScreen(shipmentId: id);
             },
           ),
           GoRoute(
@@ -210,8 +218,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/seller/sales/:id',
             builder: (context, state) {
-              final idStr = state.pathParameters['id']!;
-              return SellerSaleDetailsScreen(saleId: int.parse(idStr));
+              final id = int.tryParse(state.pathParameters['id'] ?? '');
+              if (id == null) {
+                return const Scaffold(body: Center(child: Text('Invalid sale')));
+              }
+              return SellerSaleDetailsScreen(saleId: id);
             },
           ),
           GoRoute(
@@ -221,8 +232,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/seller/shipments/:shipmentId',
             builder: (context, state) {
-              final shipmentIdStr = state.pathParameters['shipmentId']!;
-              return ShipmentDetailsScreen(shipmentId: int.parse(shipmentIdStr));
+              final id = int.tryParse(state.pathParameters['shipmentId'] ?? '');
+              if (id == null) {
+                return const Scaffold(body: Center(child: Text('Invalid shipment')));
+              }
+              return ShipmentDetailsScreen(shipmentId: id);
             },
           ),
         ],
@@ -251,8 +265,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/employee/shipments/:shipmentId',
             builder: (context, state) {
-              final idStr = state.pathParameters['shipmentId']!;
-              return EmployeeShipmentDetailScreen(shipmentId: int.parse(idStr));
+              final id = int.tryParse(state.pathParameters['shipmentId'] ?? '');
+              if (id == null) {
+                return const Scaffold(body: Center(child: Text('Invalid shipment')));
+              }
+              return EmployeeShipmentDetailScreen(shipmentId: id);
             },
           ),
         ],
@@ -266,8 +283,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/shared/inventory/:productId',
         builder: (context, state) {
-          final idStr = state.pathParameters['productId']!;
-          return InventoryProductDetailScreen(productId: int.parse(idStr));
+          final id = int.tryParse(state.pathParameters['productId'] ?? '');
+          if (id == null) {
+            return const Scaffold(body: Center(child: Text('Invalid product')));
+          }
+          return InventoryProductDetailScreen(productId: id);
         },
       ),
     ],

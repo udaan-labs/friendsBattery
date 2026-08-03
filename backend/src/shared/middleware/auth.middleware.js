@@ -3,6 +3,7 @@ const { JWT_SECRET } = require('../../config/env');
 const { errorResponse } = require('../utils/response');
 const { isAdmin, isSeller, isEmployee } = require('../utils/role.util');
 const { prisma } = require('../../config/db');
+const ROLES = require('../constants/roles');
 
 const authenticate = async (req, res, next) => {
   // Check for custom headers first
@@ -64,6 +65,29 @@ const authenticate = async (req, res, next) => {
 
     if (!userFromDb.isActive) {
       return errorResponse(res, 403, 'Unauthorized: Account inactive');
+    }
+
+    // De-verified accounts must not keep working on an old JWT
+    if (!userFromDb.isVerified) {
+      return errorResponse(res, 403, 'Unauthorized: Account not verified');
+    }
+
+    // EMPLOYEE: JWT dies when employee_sessions is closed (logout / revoke)
+    if (userFromDb.role === ROLES.EMPLOYEE) {
+      if (decoded.sessionId == null) {
+        return errorResponse(res, 401, 'Unauthorized: Session required');
+      }
+      const openSession = await prisma.employeeSession.findFirst({
+        where: {
+          id: BigInt(decoded.sessionId),
+          employeeId: userFromDb.id,
+          logoutTime: null,
+        },
+        select: { id: true },
+      });
+      if (!openSession) {
+        return errorResponse(res, 401, 'Unauthorized: Session expired or logged out');
+      }
     }
 
     // Build req.user from DB (not trusted client/JWT claims alone)

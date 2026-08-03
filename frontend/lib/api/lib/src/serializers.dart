@@ -22,6 +22,9 @@ import 'package:friends_battery_api/src/model/adjust_inventory_response.dart';
 import 'package:friends_battery_api/src/model/adjust_inventory_result.dart';
 import 'package:friends_battery_api/src/model/admin_dashboard_stats.dart';
 import 'package:friends_battery_api/src/model/admin_dashboard_stats_response.dart';
+import 'package:friends_battery_api/src/model/admin_employee_detail_data.dart';
+import 'package:friends_battery_api/src/model/admin_employee_detail_data_current_attendance.dart';
+import 'package:friends_battery_api/src/model/admin_employee_detail_response.dart';
 import 'package:friends_battery_api/src/model/admin_sale_history_page.dart';
 import 'package:friends_battery_api/src/model/admin_sale_history_response.dart';
 import 'package:friends_battery_api/src/model/admin_sale_record.dart';
@@ -56,9 +59,9 @@ import 'package:friends_battery_api/src/model/api_shipments_id_get200_response_d
 import 'package:friends_battery_api/src/model/api_shipments_id_get200_response_data_seller.dart';
 import 'package:friends_battery_api/src/model/api_transfers_post_request.dart';
 import 'package:friends_battery_api/src/model/api_transfers_post_request_items_inner.dart';
+import 'package:friends_battery_api/src/model/assigned_location.dart';
 import 'package:friends_battery_api/src/model/attendance_geo_body.dart';
 import 'package:friends_battery_api/src/model/attendance_record.dart';
-import 'package:friends_battery_api/src/model/attendance_record_location.dart';
 import 'package:friends_battery_api/src/model/attendance_status_data.dart';
 import 'package:friends_battery_api/src/model/available_serials_response.dart';
 import 'package:friends_battery_api/src/model/category.dart';
@@ -77,6 +80,8 @@ import 'package:friends_battery_api/src/model/create_shipment_request.dart';
 import 'package:friends_battery_api/src/model/create_shipment_response.dart';
 import 'package:friends_battery_api/src/model/create_shipment_result.dart';
 import 'package:friends_battery_api/src/model/customer.dart';
+import 'package:friends_battery_api/src/model/employee_action.dart';
+import 'package:friends_battery_api/src/model/employee_action_location.dart';
 import 'package:friends_battery_api/src/model/error.dart';
 import 'package:friends_battery_api/src/model/health_status.dart';
 import 'package:friends_battery_api/src/model/inventory_item_detail.dart';
@@ -166,6 +171,9 @@ part 'serializers.g.dart';
   AdjustInventoryResult,
   AdminDashboardStats,
   AdminDashboardStatsResponse,
+  AdminEmployeeDetailData,
+  AdminEmployeeDetailDataCurrentAttendance,
+  AdminEmployeeDetailResponse,
   AdminSaleHistoryPage,
   AdminSaleHistoryResponse,
   AdminSaleRecord,
@@ -200,9 +208,9 @@ part 'serializers.g.dart';
   ApiShipmentsIdGet200ResponseDataSeller,
   ApiTransfersPostRequest,
   ApiTransfersPostRequestItemsInner,
+  AssignedLocation,
   AttendanceGeoBody,
   AttendanceRecord,
-  AttendanceRecordLocation,
   AttendanceStatusData,
   AvailableSerialsResponse,
   Category,
@@ -221,6 +229,8 @@ part 'serializers.g.dart';
   CreateShipmentResponse,
   CreateShipmentResult,
   Customer,
+  EmployeeAction,
+  EmployeeActionLocation,
   Error,
   HealthStatus,
   InventoryItemDetail,

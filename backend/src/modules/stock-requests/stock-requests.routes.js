@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
+const { authenticate } = require('../../shared/middleware/auth.middleware');
 
-router.get('/', (req, res) => {
+// Stub — auth only (feature not built)
+router.get('/', authenticate, (req, res) => {
   res.status(200).json([]);
 });
 

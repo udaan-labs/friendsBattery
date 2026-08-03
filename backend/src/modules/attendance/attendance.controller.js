@@ -18,14 +18,13 @@ class AttendanceController {
 
   async checkIn(req, res) {
     try {
-      const { lat, lng, address } = req.body || {};
       const data = await attendanceService.checkIn(
         {
           id: Number(req.user.id),
           locationId: req.user.locationId ?? null,
           location: req.user.location ?? null,
         },
-        { lat, lng, address }
+        req.body || {}
       );
       return successResponse(res, 201, 'Checked in successfully', data);
     } catch (error) {
@@ -39,14 +38,13 @@ class AttendanceController {
 
   async checkOut(req, res) {
     try {
-      const { lat, lng, address } = req.body || {};
       const data = await attendanceService.checkOut(
         {
           id: Number(req.user.id),
           locationId: req.user.locationId ?? null,
           location: req.user.location ?? null,
         },
-        { lat, lng, address }
+        req.body || {}
       );
       return successResponse(res, 200, 'Checked out successfully', data);
     } catch (error) {

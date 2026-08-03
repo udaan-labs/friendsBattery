@@ -26,15 +26,20 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
     try {
       final response = await repository.login(username, password);
       
+      final role = parseUserRole(response.role);
+      if (role == UserRole.guest) {
+        throw Exception('Unsupported account role');
+      }
+
       await SessionManager.saveSession(
         authId: response.authId,
         authKey: response.authKey,
         role: response.role,
         user: response.user,
       );
-      
-      ref.read(authProvider.notifier).setAuthenticated(parseUserRole(response.role));
-      
+
+      ref.read(authProvider.notifier).setAuthenticated(role);
+
       state = const AsyncValue.data(null);
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);

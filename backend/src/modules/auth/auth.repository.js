@@ -63,6 +63,17 @@ class AuthRepository {
     });
   }
 
+  /** Revoke every open employee session (single-device login). */
+  async closeAllOpenEmployeeSessions(employeeId) {
+    return prisma.employeeSession.updateMany({
+      where: {
+        employeeId: BigInt(employeeId),
+        logoutTime: null,
+      },
+      data: { logoutTime: new Date() },
+    });
+  }
+
   /** Close open session by id, or latest open session for employee. */
   async closeEmployeeSession({ sessionId, employeeId }) {
     if (sessionId) {

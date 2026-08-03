@@ -140,6 +140,22 @@ class TransfersRepository {
    */
   async receiveShipment(shipmentId, shipment) {
     return prisma.$transaction(async (tx) => {
+      // Claim PENDING first so concurrent receives cannot both transfer stock
+      const claimed = await tx.shipment.updateMany({
+        where: { id: shipmentId, status: 'PENDING' },
+        data: {
+          status: 'DELIVERED',
+          deliveredOn: new Date(),
+        },
+      });
+      if (claimed.count !== 1) {
+        const error = new Error(
+          'Shipment cannot be received. It may already be processed.'
+        );
+        error.statusCode = 400;
+        throw error;
+      }
+
       // Process each shipment item
       for (const item of shipment.items) {
         // 1. Find available AVAILABLE units owned by admin for this product
@@ -153,23 +169,36 @@ class TransfersRepository {
         });
 
         if (availableUnits.length < item.quantity) {
-          throw new Error(
+          const error = new Error(
             `Insufficient admin inventory for product ID ${Number(item.productId)}. Required: ${item.quantity}, Available: ${availableUnits.length}`
           );
+          error.statusCode = 400;
+          throw error;
         }
 
         const unitIds = availableUnits.map(u => u.id);
         const fromLoc = await getDefaultWarehouseId(tx);
         const toLoc = await getUserLocationId(shipment.toUserId, tx);
 
-        // 2. Transfer ownership (+ location when seller has one)
-        await tx.productUnit.updateMany({
-          where: { id: { in: unitIds } },
+        // 2. Transfer ownership (+ location when seller has one) — only still-AVAILABLE
+        const moved = await tx.productUnit.updateMany({
+          where: {
+            id: { in: unitIds },
+            status: 'AVAILABLE',
+            ownerId: shipment.fromUserId,
+          },
           data: {
             ownerId: shipment.toUserId,
             ...(toLoc ? { currentLocationId: toLoc } : {}),
           },
         });
+        if (moved.count !== unitIds.length) {
+          const error = new Error(
+            'One or more units are no longer available. Contact admin.'
+          );
+          error.statusCode = 409;
+          throw error;
+        }
 
         // 3. Create immutable ledger entries in inventory_transactions
         const ledgerEntries = unitIds.map(unitId => ({
@@ -186,16 +215,7 @@ class TransfersRepository {
         });
       }
 
-      // 4. Mark shipment as DELIVERED with timestamp
-      const updatedShipment = await tx.shipment.update({
-        where: { id: shipmentId },
-        data: {
-          status: 'DELIVERED',
-          deliveredOn: new Date()
-        }
-      });
-
-      return updatedShipment;
+      return tx.shipment.findUnique({ where: { id: shipmentId } });
     });
   }
 

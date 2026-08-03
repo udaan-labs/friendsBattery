@@ -38,11 +38,20 @@ class AuthRepository {
         throw Exception(response.data?.message ?? 'Login response missing credentials');
       }
 
-      final roleRaw = loginUser?.role?.name ?? 'SELLER';
+      // Never invent SELLER when role is missing — that would escalate rights.
+      final roleRaw = loginUser?.role?.name;
+      if (roleRaw == null || roleRaw.isEmpty) {
+        throw Exception('Login response missing role');
+      }
+      final roleLower = roleRaw.toLowerCase();
+      if (roleLower != 'admin' && roleLower != 'seller' && roleLower != 'employee') {
+        throw Exception('Unsupported role: $roleRaw');
+      }
+
       return AuthResponse(
         authId: authId,
         authKey: authKey,
-        role: roleRaw.toLowerCase(),
+        role: roleLower,
         user: {
           'username': loginUser?.username,
           'user_number': loginUser?.userNumber,
@@ -52,6 +61,15 @@ class AuthRepository {
       );
     } catch (e) {
       throw Exception(_authError(e, 'Login failed'));
+    }
+  }
+
+  /// Closes server session (employee_sessions) while tokens are still present.
+  Future<void> logout() async {
+    try {
+      await api.apiAuthLogoutPost();
+    } catch (_) {
+      // Local clear still runs; server session may expire with JWT.
     }
   }
 

@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 **checkInTime** | [**DateTime**](DateTime.md) |  | [optional] 
 **checkOutTime** | [**DateTime**](DateTime.md) |  | [optional] 
 **status** | **String** |  | [optional] 
-**location** | [**AttendanceRecordLocation**](AttendanceRecordLocation.md) |  | [optional] 
+**location** | [**AssignedLocation**](AssignedLocation.md) |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

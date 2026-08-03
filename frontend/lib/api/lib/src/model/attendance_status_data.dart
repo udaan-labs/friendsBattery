@@ -3,7 +3,7 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:friends_battery_api/src/model/attendance_record_location.dart';
+import 'package:friends_battery_api/src/model/assigned_location.dart';
 import 'package:friends_battery_api/src/model/attendance_record.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -25,7 +25,7 @@ abstract class AttendanceStatusData implements Built<AttendanceStatusData, Atten
   AttendanceRecord? get attendance;
 
   @BuiltValueField(wireName: r'location')
-  AttendanceRecordLocation? get location;
+  AssignedLocation? get location;
 
   AttendanceStatusData._();
 
@@ -68,7 +68,7 @@ class _$AttendanceStatusDataSerializer implements PrimitiveSerializer<Attendance
       yield r'location';
       yield serializers.serialize(
         object.location,
-        specifiedType: const FullType.nullable(AttendanceRecordLocation),
+        specifiedType: const FullType.nullable(AssignedLocation),
       );
     }
   }
@@ -112,8 +112,8 @@ class _$AttendanceStatusDataSerializer implements PrimitiveSerializer<Attendance
         case r'location':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(AttendanceRecordLocation),
-          ) as AttendanceRecordLocation?;
+            specifiedType: const FullType.nullable(AssignedLocation),
+          ) as AssignedLocation?;
           if (valueDes == null) continue;
           result.location.replace(valueDes);
           break;

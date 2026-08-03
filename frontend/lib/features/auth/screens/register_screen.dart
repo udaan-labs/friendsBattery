@@ -59,13 +59,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       );
       
       if (mounted) {
-        context.showSuccessSnackBar(widget.isAdminFlow 
-            ? 'Seller created successfully' 
-            : 'Registration successful! Please login.');
+        // Backend: new sellers start inactive — admin activates via activate API if needed.
+        context.showSuccessSnackBar(
+          widget.isAdminFlow
+              ? 'Seller created (inactive until activated).'
+              : 'Registration successful.',
+        );
         if (widget.isAdminFlow) {
           DataSync.afterSellerMutation(ref);
         }
-        context.pop(); // Go back to login or seller list
+        context.pop();
       }
     } catch (_) {
       // Errors are handled automatically by ApiInterceptor

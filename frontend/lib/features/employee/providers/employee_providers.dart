@@ -3,7 +3,7 @@ import 'package:friends_battery_api/friends_battery_api.dart';
 import '../../../core/network/api_client_provider.dart';
 import '../../../core/storage/local_storage.dart';
 import '../../shared/inventory/providers/inventory_provider.dart';
-import '../repository/employee_attendance_repository.dart';
+import '../attendance/data/attendance_repository.dart';
 import '../repository/employee_shipments_repository.dart';
 
 class EmployeeProfile {
@@ -30,8 +30,8 @@ final employeeProfileProvider = Provider<EmployeeProfile>((ref) {
   return EmployeeProfile(userName: 'Employee', shopName: '', role: 'employee');
 });
 
-final employeeAttendanceRepositoryProvider = Provider<EmployeeAttendanceRepository>((ref) {
-  return EmployeeAttendanceRepository(api: ref.watch(apiClientProvider));
+final employeeAttendanceRepositoryProvider = Provider<AttendanceRepository>((ref) {
+  return AttendanceRepository(api: ref.watch(apiClientProvider));
 });
 
 final employeeShipmentsRepositoryProvider = Provider<EmployeeShipmentsRepository>((ref) {

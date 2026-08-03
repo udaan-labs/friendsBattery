@@ -1,6 +1,24 @@
 const { prisma } = require('../../config/db');
 
+const LOCATION_SELECT = {
+  id: true,
+  code: true,
+  name: true,
+  type: true,
+  latitude: true,
+  longitude: true,
+  allowedRadius: true,
+};
+
 class AttendanceRepository {
+  async findLocationById(locationId) {
+    if (locationId == null) return null;
+    return prisma.location.findUnique({
+      where: { id: BigInt(locationId) },
+      select: LOCATION_SELECT,
+    });
+  }
+
   async findOpenAttendance(employeeId) {
     return prisma.employeeAttendance.findFirst({
       where: {
@@ -9,9 +27,7 @@ class AttendanceRepository {
         checkOutTime: null,
       },
       include: {
-        assignedLocation: {
-          select: { id: true, code: true, name: true, type: true },
-        },
+        assignedLocation: { select: LOCATION_SELECT },
       },
       orderBy: { checkInTime: 'desc' },
     });
@@ -29,16 +45,18 @@ class AttendanceRepository {
         status: 'CHECKED_IN',
       },
       include: {
-        assignedLocation: {
-          select: { id: true, code: true, name: true, type: true },
-        },
+        assignedLocation: { select: LOCATION_SELECT },
       },
     });
   }
 
   async checkOut(attendanceId, { lat, lng, address }) {
-    return prisma.employeeAttendance.update({
-      where: { id: BigInt(attendanceId) },
+    const result = await prisma.employeeAttendance.updateMany({
+      where: {
+        id: BigInt(attendanceId),
+        status: 'CHECKED_IN',
+        checkOutTime: null,
+      },
       data: {
         checkOutTime: new Date(),
         checkOutLat: lat != null ? lat : null,
@@ -46,10 +64,12 @@ class AttendanceRepository {
         checkOutAddress: address || null,
         status: 'CHECKED_OUT',
       },
+    });
+    if (result.count === 0) return null;
+    return prisma.employeeAttendance.findUnique({
+      where: { id: BigInt(attendanceId) },
       include: {
-        assignedLocation: {
-          select: { id: true, code: true, name: true, type: true },
-        },
+        assignedLocation: { select: LOCATION_SELECT },
       },
     });
   }
@@ -64,18 +84,11 @@ class AttendanceRepository {
     });
   }
 
-  /**
-   * Attendance rows for admin history (check-in / check-out only source).
-   * @param {number|string|bigint} employeeId
-   * @param {{ take?: number }} [opts]
-   */
   async findAttendanceHistory(employeeId, { take = 50 } = {}) {
     return prisma.employeeAttendance.findMany({
       where: { employeeId: BigInt(employeeId) },
       include: {
-        assignedLocation: {
-          select: { id: true, code: true, name: true, type: true },
-        },
+        assignedLocation: { select: LOCATION_SELECT },
       },
       orderBy: { checkInTime: 'desc' },
       take: Math.min(Math.max(Number(take) || 50, 1), 100),

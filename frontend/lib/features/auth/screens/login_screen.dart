@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_controller.dart';
 import '../../../theme/app_theme.dart';
-import 'package:go_router/go_router.dart';
 import '../../../shared/widgets/responsive_helper.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -114,13 +113,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ),
                       ),
-                    const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: () {
-                        context.push('/register');
-                      },
-                      child: const Text('New here? Sign up for the first time'),
-                    ),
                   ],
                 ),
               ),

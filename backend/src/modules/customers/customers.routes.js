@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const { authenticate } = require('../../shared/middleware/auth.middleware');
+const { requireAdminOrSeller } = require('../../shared/middleware/role.middleware');
 
 /**
  * @swagger
@@ -25,7 +27,8 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/', (req, res) => {
+// Stub — auth required so the path is not a public probe
+router.get('/', authenticate, requireAdminOrSeller, (req, res) => {
   res.status(200).json([]);
 });
 

@@ -53,25 +53,46 @@ async function main() {
   console.log('Seed locations + users + sample stock...');
   const passwordHash = await bcrypt.hash(PASSWORD, 10);
 
+  // Sample geofence coords (Ahmedabad) — replace with real shop GPS in production
   const warehouse = await prisma.location.upsert({
     where: { code: 'WH001' },
-    update: { name: 'Main Warehouse', type: 'WAREHOUSE', isActive: true },
+    update: {
+      name: 'Main Warehouse',
+      type: 'WAREHOUSE',
+      isActive: true,
+      latitude: 23.0225,
+      longitude: 72.5714,
+      allowedRadius: 100,
+    },
     create: {
       code: 'WH001',
       name: 'Main Warehouse',
       type: 'WAREHOUSE',
       isActive: true,
+      latitude: 23.0225,
+      longitude: 72.5714,
+      allowedRadius: 100,
     },
   });
 
   const shop = await prisma.location.upsert({
     where: { code: 'SHOP001' },
-    update: { name: 'Friends Battery Shop', type: 'SHOP', isActive: true },
+    update: {
+      name: 'Friends Battery Shop',
+      type: 'SHOP',
+      isActive: true,
+      latitude: 23.0225,
+      longitude: 72.5714,
+      allowedRadius: 100,
+    },
     create: {
       code: 'SHOP001',
       name: 'Friends Battery Shop',
       type: 'SHOP',
       isActive: true,
+      latitude: 23.0225,
+      longitude: 72.5714,
+      allowedRadius: 100,
     },
   });
   console.log('  locations WH001=', Number(warehouse.id), 'SHOP001=', Number(shop.id));

@@ -97,10 +97,31 @@ module.exports = {
   },
   AttendanceGeoBody: {
     type: 'object',
+    required: ['latitude', 'longitude'],
     properties: {
-      lat: { type: 'number', nullable: true },
-      lng: { type: 'number', nullable: true },
+      latitude: { type: 'number', description: 'Device GPS latitude (WGS84)' },
+      longitude: { type: 'number', description: 'Device GPS longitude (WGS84)' },
+      lat: { type: 'number', nullable: true, description: 'Alias for latitude' },
+      lng: { type: 'number', nullable: true, description: 'Alias for longitude' },
+      accuracy: { type: 'number', nullable: true, description: 'GPS accuracy in meters' },
+      timestamp: { type: 'string', nullable: true, description: 'Client capture time (ISO-8601)' },
       address: { type: 'string', nullable: true },
+    },
+  },
+  AssignedLocation: {
+    type: 'object',
+    nullable: true,
+    properties: {
+      id: { type: 'integer' },
+      code: { type: 'string', nullable: true },
+      name: { type: 'string' },
+      type: { type: 'string', nullable: true },
+      latitude: { type: 'number', nullable: true },
+      longitude: { type: 'number', nullable: true },
+      allowed_radius: {
+        type: 'integer',
+        description: 'Max distance from center in meters for attendance',
+      },
     },
   },
   AttendanceRecord: {
@@ -112,16 +133,7 @@ module.exports = {
       check_in_time: { type: 'string', format: 'date-time', nullable: true },
       check_out_time: { type: 'string', format: 'date-time', nullable: true },
       status: { type: 'string', enum: ['CHECKED_IN', 'CHECKED_OUT'] },
-      location: {
-        type: 'object',
-        nullable: true,
-        properties: {
-          id: { type: 'integer' },
-          code: { type: 'string' },
-          name: { type: 'string' },
-          type: { type: 'string' },
-        },
-      },
+      location: { $ref: '#/components/schemas/AssignedLocation' },
     },
   },
   AttendanceStatusData: {
@@ -129,16 +141,7 @@ module.exports = {
     properties: {
       is_checked_in: { type: 'boolean' },
       attendance: { allOf: [{ $ref: '#/components/schemas/AttendanceRecord' }], nullable: true },
-      location: {
-        type: 'object',
-        nullable: true,
-        properties: {
-          id: { type: 'integer' },
-          code: { type: 'string' },
-          name: { type: 'string' },
-          type: { type: 'string' },
-        },
-      },
+      location: { $ref: '#/components/schemas/AssignedLocation' },
     },
   },
   SellerShipmentListItem: {
