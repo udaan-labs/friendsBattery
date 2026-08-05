@@ -1,0 +1,29 @@
+info:
+  name: get_employee_roles
+  type: http
+  seq: 5
+  description: |
+    List job titles for employees (Manager, Cashier, …).
+    Login as admin or seller first (authId / authKey).
+
+http:
+  method: GET
+  url: "{{baseurl}}/shops/employee-roles"
+  headers:
+    - name: auth-id
+      value: "{{authId}}"
+    - name: auth-key
+      value: "{{authKey}}"
+  body:
+    type: none
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+assert:
+  - res.status: eq 200
+  - res.body.success: eq true
+  - res.body.data: isDefined

@@ -215,6 +215,16 @@ class _SellerDrawer extends StatelessWidget {
                       context.go('/seller/return-product');
                     },
                   ),
+                  _DrawerItem(
+                    icon: Icons.groups_rounded,
+                    label: 'My Team',
+                    isActive: _isActive('/seller/staff') ||
+                        _isActive('/seller/add-employee'),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      context.go('/seller/staff');
+                    },
+                  ),
                   const Divider(height: 32, color: Color(0xFFE0E4E8)),
                   _DrawerItem(
                     icon: Icons.logout_rounded,

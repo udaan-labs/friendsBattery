@@ -66,6 +66,11 @@ Serializers _$serializers =
           ..add(AttendanceStatusData.serializer)
           ..add(AvailableSerialsResponse.serializer)
           ..add(Category.serializer)
+          ..add(CreateEmployeeRequest.serializer)
+          ..add(CreateEmployeeResponse.serializer)
+          ..add(CreateLocationRequest.serializer)
+          ..add(CreateLocationRequestTypeEnum.serializer)
+          ..add(CreateLocationResponse.serializer)
           ..add(CreateProductModelRequest.serializer)
           ..add(CreateProductNameRequest.serializer)
           ..add(CreateProductRequest.serializer)
@@ -81,10 +86,16 @@ Serializers _$serializers =
           ..add(CreateShipmentResponse.serializer)
           ..add(CreateShipmentResult.serializer)
           ..add(CreateShipmentResultStatusEnum.serializer)
+          ..add(CreatedEmployee.serializer)
+          ..add(CreatedEmployeeLocation.serializer)
+          ..add(CreatedEmployeeLocationTypeEnum.serializer)
+          ..add(CreatedEmployeeRoleEnum.serializer)
           ..add(Customer.serializer)
           ..add(EmployeeAction.serializer)
           ..add(EmployeeActionActionEnum.serializer)
           ..add(EmployeeActionLocation.serializer)
+          ..add(EmployeeRoleItem.serializer)
+          ..add(EmployeeRolesResponse.serializer)
           ..add(Error.serializer)
           ..add(HealthStatus.serializer)
           ..add(InventoryItemDetail.serializer)
@@ -99,6 +110,9 @@ Serializers _$serializers =
           ..add(InventoryTransaction.serializer)
           ..add(InventoryTransactionActionEnum.serializer)
           ..add(ListProductModelsRequest.serializer)
+          ..add(LocationItem.serializer)
+          ..add(LocationItemTypeEnum.serializer)
+          ..add(LocationsListResponse.serializer)
           ..add(LoginData.serializer)
           ..add(LoginResponse.serializer)
           ..add(LoginUser.serializer)
@@ -267,6 +281,10 @@ Serializers _$serializers =
             () => ListBuilder<EmployeeAction>(),
           )
           ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(EmployeeRoleItem)]),
+            () => ListBuilder<EmployeeRoleItem>(),
+          )
+          ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(InventoryListItem),
             ]),
@@ -293,6 +311,10 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(JsonObject)]),
             () => ListBuilder<JsonObject>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(LocationItem)]),
+            () => ListBuilder<LocationItem>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(ProductModel)]),

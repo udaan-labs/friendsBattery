@@ -6,7 +6,7 @@ const authRepository = require('./auth.repository');
 const ROLES = require('../../shared/constants/roles');
 
 class AuthService {
-  async registerUser({ user_id, username, user_number, shop_name, password }) {
+  async registerUser({ user_id, username, user_number, shop_name, password, location_id }) {
     // Check constraints sequentially to return specific error messages
     const existingUserId = await authRepository.findUserByUserId(user_id);
     if (existingUserId) {
@@ -29,6 +29,21 @@ class AuthService {
       throw error;
     }
 
+    let locationId = null;
+    let resolvedShopName = shop_name;
+    if (location_id != null) {
+      const location = await authRepository.findActiveShopLocation(location_id);
+      if (!location) {
+        const error = new Error('Shop location not found or inactive (must be type SHOP)');
+        error.statusCode = 400;
+        throw error;
+      }
+      locationId = Number(location.id);
+      if (!resolvedShopName || !String(resolvedShopName).trim()) {
+        resolvedShopName = location.name;
+      }
+    }
+
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
@@ -36,9 +51,10 @@ class AuthService {
       userId: user_id,
       userName: username,
       userNumber: user_number,
-      shopName: shop_name,
+      shopName: resolvedShopName,
       passwordHash,
       role: 'SELLER',
+      locationId: locationId != null ? BigInt(locationId) : null,
       // Admin activates via PUT /auth/activate — never auto-login-ready
       isActive: false,
       isVerified: false,
@@ -53,6 +69,7 @@ class AuthService {
       username: newUser.userName,
       user_number: newUser.userNumber,
       shop_name: newUser.shopName,
+      location_id: newUser.locationId != null ? Number(newUser.locationId) : null,
       role: 'seller',
       is_active: newUser.isActive,
       is_verified: newUser.isVerified,

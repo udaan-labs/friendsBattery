@@ -1,9 +1,20 @@
 const express = require('express');
 const router = express.Router();
 const shopsController = require('./shops.controller');
-const { viewSellerSchema, shopStaffSchema, viewEmployeeSchema } = require('./shops.validation');
+const {
+  viewSellerSchema,
+  shopStaffSchema,
+  viewEmployeeSchema,
+  createEmployeeSchema,
+  listLocationsSchema,
+  createLocationSchema,
+} = require('./shops.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
-const { requireAdmin } = require('../../shared/middleware/role.middleware');
+const {
+  requireAdmin,
+  requireSeller,
+  requireAdminOrSeller,
+} = require('../../shared/middleware/role.middleware');
 const { validateRequest } = require('../../shared/middleware/validation.middleware');
 
 /**
@@ -118,6 +129,176 @@ router.get(
   requireAdmin,
   validateRequest(shopStaffSchema),
   shopsController.getShopStaff
+);
+
+/**
+ * @swagger
+ * /api/shops/my-staff:
+ *   get:
+ *     summary: Seller — staff at own shop location
+ *     tags: [Shops]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Shop staff fetched
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ShopStaffResponse'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Seller only
+ */
+router.get(
+  '/my-staff',
+  authenticate,
+  requireSeller,
+  shopsController.getMyStaff
+);
+
+/**
+ * @swagger
+ * /api/shops/employee-roles:
+ *   get:
+ *     summary: List job titles for employees (Manager, Cashier, …)
+ *     tags: [Shops]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Roles list
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/EmployeeRolesResponse'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Admin or Seller only
+ */
+router.get(
+  '/employee-roles',
+  authenticate,
+  requireAdminOrSeller,
+  shopsController.listEmployeeRoles
+);
+
+/**
+ * @swagger
+ * /api/shops/locations:
+ *   get:
+ *     summary: List active locations (warehouse + shops)
+ *     description: Admin only. Optional type filter for shops vs warehouses.
+ *     tags: [Shops]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [SHOP, WAREHOUSE]
+ *         description: Filter by location type
+ *     responses:
+ *       200:
+ *         description: Locations list
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/LocationsListResponse'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Admin only
+ *   post:
+ *     summary: Create a shop or warehouse location
+ *     description: |
+ *       Admin only. Creates an active location used for seller assignment,
+ *       employees, and inventory placement.
+ *     tags: [Shops]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateLocationRequest'
+ *     responses:
+ *       201:
+ *         description: Location created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CreateLocationResponse'
+ *       400:
+ *         description: Validation error
+ *       409:
+ *         description: Location code already exists
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Admin only
+ */
+router.get(
+  '/locations',
+  authenticate,
+  requireAdmin,
+  validateRequest(listLocationsSchema),
+  shopsController.listLocations
+);
+
+router.post(
+  '/locations',
+  authenticate,
+  requireAdmin,
+  validateRequest(createLocationSchema),
+  shopsController.createLocation
+);
+
+/**
+ * @swagger
+ * /api/shops/employees:
+ *   post:
+ *     summary: Create an employee at a shop or warehouse
+ *     description: |
+ *       **Seller:** employee is always assigned to the seller's `location_id`
+ *       (body `location_id` is ignored). Seller must have a location.
+ *       **Admin:** body `location_id` is required (WAREHOUSE or SHOP).
+ *       New employees are active and verified (can log in immediately).
+ *     tags: [Shops]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateEmployeeRequest'
+ *     responses:
+ *       201:
+ *         description: Employee created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CreateEmployeeResponse'
+ *       400:
+ *         description: Validation / missing location / invalid role
+ *       409:
+ *         description: user_id, username, or mobile already exists
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Admin or Seller only
+ */
+router.post(
+  '/employees',
+  authenticate,
+  requireAdminOrSeller,
+  validateRequest(createEmployeeSchema),
+  shopsController.createEmployee
 );
 
 /**

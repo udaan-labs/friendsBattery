@@ -1,0 +1,41 @@
+info:
+  name: create_employee
+  type: http
+  seq: 7
+  description: |
+    Create an EMPLOYEE at a shop/warehouse.
+    - Seller: location is always the seller's own location (location_id ignored).
+    - Admin: pass location_id (required).
+    Login as seller (or admin) first. Use a unique user_id / mobile each run.
+
+http:
+  method: POST
+  url: "{{baseurl}}/shops/employees"
+  headers:
+    - name: auth-id
+      value: "{{authId}}"
+    - name: auth-key
+      value: "{{authKey}}"
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "user_id": "EMP_TEST_001",
+        "username": "Test Employee",
+        "user_number": "9000000001",
+        "password": "password123",
+        "employee_role_id": null
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+assert:
+  - res.status: in [201, 409]
+  - res.body.success: isDefined

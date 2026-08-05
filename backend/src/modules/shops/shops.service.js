@@ -1,4 +1,7 @@
+const bcrypt = require('bcrypt');
 const shopsRepository = require('./shops.repository');
+const authRepository = require('../auth/auth.repository');
+const ROLES = require('../../shared/constants/roles');
 
 /**
  * Shops Service
@@ -8,6 +11,49 @@ const shopsRepository = require('./shops.repository');
  * Does not access Express req/res directly.
  */
 class ShopsService {
+  _mapStaffUser(u) {
+    return {
+      id: Number(u.id),
+      user_id: u.userId,
+      user_name: u.userName,
+      user_number: u.userNumber,
+      shop_name: u.shopName,
+      role: u.role,
+      is_active: u.isActive,
+      is_verified: u.isVerified,
+      employee_role: u.employeeRole
+        ? {
+            id: Number(u.employeeRole.id),
+            name: u.employeeRole.name,
+            description: u.employeeRole.description,
+          }
+        : null,
+    };
+  }
+
+  _mapLocationBrief(location) {
+    if (!location) return null;
+    return {
+      id: Number(location.id),
+      code: location.code,
+      name: location.name,
+      type: location.type,
+      is_active: location.isActive != null ? location.isActive : true,
+    };
+  }
+
+  async _staffAtLocation(locationId) {
+    const [location, users] = await Promise.all([
+      shopsRepository.findLocationById(locationId),
+      shopsRepository.findUsersByLocationId(locationId),
+    ]);
+
+    return {
+      location: this._mapLocationBrief(location),
+      sellers: users.filter((u) => u.role === 'SELLER').map((u) => this._mapStaffUser(u)),
+      employees: users.filter((u) => u.role === 'EMPLOYEE').map((u) => this._mapStaffUser(u)),
+    };
+  }
   /**
    * Fetch all active sellers.
    * Output: Array of sellers mapped to response format
@@ -127,42 +173,188 @@ class ShopsService {
       };
     }
 
-    const locationId = Number(seller.locationId);
-    const [location, users] = await Promise.all([
-      shopsRepository.findLocationById(locationId),
-      shopsRepository.findUsersByLocationId(locationId),
-    ]);
+    return this._staffAtLocation(Number(seller.locationId));
+  }
 
-    const mapUser = (u) => ({
-      id: Number(u.id),
-      user_id: u.userId,
-      user_name: u.userName,
-      user_number: u.userNumber,
-      shop_name: u.shopName,
-      role: u.role,
-      is_active: u.isActive,
-      is_verified: u.isVerified,
-      employee_role: u.employeeRole
-        ? {
-            id: Number(u.employeeRole.id),
-            name: u.employeeRole.name,
-            description: u.employeeRole.description,
-          }
-        : null,
+  /**
+   * Seller: staff at own assigned shop location.
+   * @param {number} sellerUserId - numeric users.id from JWT/auth
+   */
+  async getMyStaff(sellerUserId) {
+    const seller = await shopsRepository.findUserById(sellerUserId);
+    if (!seller || seller.role !== ROLES.SELLER) {
+      const error = new Error('Seller not found');
+      error.statusCode = 404;
+      throw error;
+    }
+    if (seller.locationId == null) {
+      return {
+        location: null,
+        sellers: [],
+        employees: [],
+      };
+    }
+    return this._staffAtLocation(Number(seller.locationId));
+  }
+
+  async listEmployeeRoles() {
+    const roles = await shopsRepository.findAllEmployeeRoles();
+    return roles.map((r) => ({
+      id: Number(r.id),
+      name: r.name,
+      description: r.description,
+    }));
+  }
+
+  /**
+   * @param {{ type?: 'SHOP'|'WAREHOUSE' }} [filter]
+   */
+  async listLocations(filter = {}) {
+    const rows = await shopsRepository.findActiveLocations(filter);
+    return rows.map((loc) => this._mapLocationItem(loc));
+  }
+
+  _mapLocationItem(loc) {
+    return {
+      id: Number(loc.id),
+      code: loc.code,
+      name: loc.name,
+      type: loc.type,
+      is_active: loc.isActive,
+      address: loc.address ?? null,
+      phone: loc.phone ?? null,
+    };
+  }
+
+  /**
+   * Admin: create SHOP or WAREHOUSE (for sellers / employees / inventory).
+   * @param {{ code: string, name: string, type: 'SHOP'|'WAREHOUSE', address?: string|null, phone?: string|null }} body
+   */
+  async createLocation(body) {
+    const code = body.code;
+    const existing = await shopsRepository.findLocationByCode(code);
+    if (existing) {
+      const error = new Error(`Location code already exists: ${code}`);
+      error.statusCode = 409;
+      throw error;
+    }
+
+    const created = await shopsRepository.createLocation({
+      code,
+      name: body.name,
+      type: body.type,
+      address: body.address ?? null,
+      phone: body.phone ?? null,
+    });
+
+    return this._mapLocationItem(created);
+  }
+
+  /**
+   * Create EMPLOYEE at a location.
+   * - SELLER: always own location_id (client location_id ignored)
+   * - ADMIN: location_id required (warehouse or any shop)
+   *
+   * @param {{ id: number, role: string }} actor - from req.user
+   * @param {object} body - validated create body
+   */
+  async createEmployee(actor, body) {
+    const {
+      user_id,
+      username,
+      user_number,
+      password,
+      employee_role_id,
+      location_id,
+    } = body;
+
+    let locationId;
+    let shopName;
+
+    if (actor.role === ROLES.SELLER) {
+      const seller = await shopsRepository.findUserById(actor.id);
+      if (!seller || seller.role !== ROLES.SELLER) {
+        const error = new Error('Seller not found');
+        error.statusCode = 404;
+        throw error;
+      }
+      if (seller.locationId == null) {
+        const error = new Error(
+          'Your account has no shop location. Contact admin before adding employees.'
+        );
+        error.statusCode = 400;
+        throw error;
+      }
+      locationId = Number(seller.locationId);
+      shopName = seller.shopName || null;
+    } else if (actor.role === ROLES.ADMIN) {
+      if (location_id == null) {
+        const error = new Error('location_id is required');
+        error.statusCode = 400;
+        throw error;
+      }
+      const location = await shopsRepository.findLocationById(location_id);
+      if (!location || location.isActive === false) {
+        const error = new Error('Location not found or inactive');
+        error.statusCode = 400;
+        throw error;
+      }
+      locationId = Number(location.id);
+      shopName = location.name;
+    } else {
+      const error = new Error('Forbidden');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    let employeeRoleId = null;
+    if (employee_role_id != null) {
+      const er = await shopsRepository.findEmployeeRoleById(employee_role_id);
+      if (!er) {
+        const error = new Error('Invalid employee_role_id');
+        error.statusCode = 400;
+        throw error;
+      }
+      employeeRoleId = Number(er.id);
+    }
+
+    if (await authRepository.findUserByUserId(user_id)) {
+      const error = new Error('User ID already exists');
+      error.statusCode = 409;
+      throw error;
+    }
+    if (await authRepository.findUserByUsername(username)) {
+      const error = new Error('Username already exists');
+      error.statusCode = 409;
+      throw error;
+    }
+    if (await authRepository.findUserByNumber(user_number)) {
+      const error = new Error('Mobile number already exists');
+      error.statusCode = 409;
+      throw error;
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const created = await shopsRepository.createEmployeeUser({
+      userId: user_id,
+      userName: username,
+      userNumber: user_number,
+      shopName,
+      passwordHash,
+      role: ROLES.EMPLOYEE,
+      locationId: BigInt(locationId),
+      employeeRoleId: employeeRoleId != null ? BigInt(employeeRoleId) : null,
+      // Ready to log in — managed staff, not open self-register
+      isActive: true,
+      isVerified: true,
+      loginAttempt: 0,
     });
 
     return {
-      location: location
-        ? {
-            id: Number(location.id),
-            code: location.code,
-            name: location.name,
-            type: location.type,
-            is_active: location.isActive,
-          }
-        : null,
-      sellers: users.filter((u) => u.role === 'SELLER').map(mapUser),
-      employees: users.filter((u) => u.role === 'EMPLOYEE').map(mapUser),
+      ...this._mapStaffUser(created),
+      location_id: created.locationId != null ? Number(created.locationId) : null,
+      location: this._mapLocationBrief(created.location),
+      created_at: created.createdAt,
     };
   }
 

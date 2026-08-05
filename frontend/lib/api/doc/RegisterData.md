@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **username** | **String** |  | [optional] 
 **userNumber** | **String** |  | [optional] 
 **shopName** | **String** |  | [optional] 
+**locationId** | **int** |  | [optional] 
 **role** | **String** |  | [optional] 
 **isActive** | **bool** |  | [optional] 
 **isVerified** | **bool** |  | [optional] 

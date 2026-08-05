@@ -79,13 +79,15 @@ class AuthRepository {
     required String userNumber,
     required String shopName,
     required String password,
+    int? locationId,
   }) async {
     final request = (ApiAuthRegisterPostRequestBuilder()
           ..userId = userId
           ..username = username
           ..userNumber = userNumber
           ..shopName = shopName
-          ..password = password)
+          ..password = password
+          ..locationId = locationId)
         .build();
 
     try {

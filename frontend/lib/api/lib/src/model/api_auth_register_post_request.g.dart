@@ -17,6 +17,8 @@ class _$ApiAuthRegisterPostRequest extends ApiAuthRegisterPostRequest {
   final String shopName;
   @override
   final String password;
+  @override
+  final int? locationId;
 
   factory _$ApiAuthRegisterPostRequest([
     void Function(ApiAuthRegisterPostRequestBuilder)? updates,
@@ -28,6 +30,7 @@ class _$ApiAuthRegisterPostRequest extends ApiAuthRegisterPostRequest {
     required this.userNumber,
     required this.shopName,
     required this.password,
+    this.locationId,
   }) : super._();
   @override
   ApiAuthRegisterPostRequest rebuild(
@@ -46,7 +49,8 @@ class _$ApiAuthRegisterPostRequest extends ApiAuthRegisterPostRequest {
         username == other.username &&
         userNumber == other.userNumber &&
         shopName == other.shopName &&
-        password == other.password;
+        password == other.password &&
+        locationId == other.locationId;
   }
 
   @override
@@ -57,6 +61,7 @@ class _$ApiAuthRegisterPostRequest extends ApiAuthRegisterPostRequest {
     _$hash = $jc(_$hash, userNumber.hashCode);
     _$hash = $jc(_$hash, shopName.hashCode);
     _$hash = $jc(_$hash, password.hashCode);
+    _$hash = $jc(_$hash, locationId.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -68,7 +73,8 @@ class _$ApiAuthRegisterPostRequest extends ApiAuthRegisterPostRequest {
           ..add('username', username)
           ..add('userNumber', userNumber)
           ..add('shopName', shopName)
-          ..add('password', password))
+          ..add('password', password)
+          ..add('locationId', locationId))
         .toString();
   }
 }
@@ -98,6 +104,10 @@ class ApiAuthRegisterPostRequestBuilder
   String? get password => _$this._password;
   set password(String? password) => _$this._password = password;
 
+  int? _locationId;
+  int? get locationId => _$this._locationId;
+  set locationId(int? locationId) => _$this._locationId = locationId;
+
   ApiAuthRegisterPostRequestBuilder() {
     ApiAuthRegisterPostRequest._defaults(this);
   }
@@ -110,6 +120,7 @@ class ApiAuthRegisterPostRequestBuilder
       _userNumber = $v.userNumber;
       _shopName = $v.shopName;
       _password = $v.password;
+      _locationId = $v.locationId;
       _$v = null;
     }
     return this;
@@ -157,6 +168,7 @@ class ApiAuthRegisterPostRequestBuilder
             r'ApiAuthRegisterPostRequest',
             'password',
           ),
+          locationId: locationId,
         );
     replace(_$result);
     return _$result;

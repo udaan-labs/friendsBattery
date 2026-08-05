@@ -81,6 +81,7 @@ module.exports = {
       username: { type: 'string' },
       user_number: { type: 'string', nullable: true },
       shop_name: { type: 'string', nullable: true },
+      location_id: { type: 'integer', nullable: true },
       role: { type: 'string' },
       is_active: { type: 'boolean' },
       is_verified: { type: 'boolean' },
@@ -668,6 +669,135 @@ module.exports = {
       success: { type: 'boolean' },
       message: { type: 'string' },
       data: { $ref: '#/components/schemas/ShopStaffData' },
+    },
+  },
+  CreateEmployeeRequest: {
+    type: 'object',
+    required: ['user_id', 'username', 'user_number', 'password'],
+    properties: {
+      user_id: { type: 'string', example: 'EMP002' },
+      username: { type: 'string', example: 'Ravi Kumar' },
+      user_number: { type: 'string', example: '9876543210', description: '10-digit mobile' },
+      password: { type: 'string', format: 'password', minLength: 6 },
+      employee_role_id: {
+        type: 'integer',
+        nullable: true,
+        description: 'Optional job title id from GET /api/shops/employee-roles',
+      },
+      location_id: {
+        type: 'integer',
+        nullable: true,
+        description: 'Required for admin (warehouse or shop). Ignored for seller.',
+      },
+    },
+  },
+  CreatedEmployee: {
+    type: 'object',
+    properties: {
+      id: { type: 'integer' },
+      user_id: { type: 'string' },
+      user_name: { type: 'string' },
+      user_number: { type: 'string', nullable: true },
+      shop_name: { type: 'string', nullable: true },
+      role: { type: 'string', enum: ['EMPLOYEE'] },
+      is_active: { type: 'boolean' },
+      is_verified: { type: 'boolean' },
+      employee_role: {
+        type: 'object',
+        nullable: true,
+        properties: {
+          id: { type: 'integer' },
+          name: { type: 'string' },
+          description: { type: 'string', nullable: true },
+        },
+      },
+      location_id: { type: 'integer', nullable: true },
+      location: {
+        type: 'object',
+        nullable: true,
+        properties: {
+          id: { type: 'integer' },
+          code: { type: 'string' },
+          name: { type: 'string' },
+          type: { type: 'string', enum: ['WAREHOUSE', 'SHOP'] },
+          is_active: { type: 'boolean' },
+        },
+      },
+      created_at: { type: 'string', format: 'date-time' },
+    },
+  },
+  CreateEmployeeResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean' },
+      message: { type: 'string' },
+      data: { $ref: '#/components/schemas/CreatedEmployee' },
+    },
+  },
+  EmployeeRoleItem: {
+    type: 'object',
+    properties: {
+      id: { type: 'integer' },
+      name: { type: 'string' },
+      description: { type: 'string', nullable: true },
+    },
+  },
+  EmployeeRolesResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean' },
+      message: { type: 'string' },
+      data: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/EmployeeRoleItem' },
+      },
+    },
+  },
+  LocationItem: {
+    type: 'object',
+    properties: {
+      id: { type: 'integer' },
+      code: { type: 'string' },
+      name: { type: 'string' },
+      type: { type: 'string', enum: ['WAREHOUSE', 'SHOP'] },
+      is_active: { type: 'boolean' },
+      address: { type: 'string', nullable: true },
+      phone: { type: 'string', nullable: true },
+    },
+  },
+  LocationsListResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean' },
+      message: { type: 'string' },
+      data: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/LocationItem' },
+      },
+    },
+  },
+  CreateLocationRequest: {
+    type: 'object',
+    required: ['code', 'name', 'type'],
+    properties: {
+      code: {
+        type: 'string',
+        maxLength: 50,
+        example: 'SHOP002',
+        description: 'Unique location code (stored uppercase)',
+      },
+      name: { type: 'string', maxLength: 150, example: 'Andheri Shop' },
+      type: { type: 'string', enum: ['SHOP', 'WAREHOUSE'] },
+      address: { type: 'string', nullable: true },
+      phone: { type: 'string', nullable: true },
+    },
+  },
+  CreateLocationResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean' },
+      message: { type: 'string' },
+      data: { $ref: '#/components/schemas/LocationItem' },
     },
   },
   EmployeeAction: {

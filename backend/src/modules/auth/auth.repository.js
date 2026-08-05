@@ -33,6 +33,18 @@ class AuthRepository {
     });
   }
 
+  /** Active SHOP location only (sellers assign to shops, not warehouses). */
+  async findActiveShopLocation(locationId) {
+    return prisma.location.findFirst({
+      where: {
+        id: BigInt(locationId),
+        type: 'SHOP',
+        isActive: true,
+      },
+      select: { id: true, code: true, name: true, type: true, isActive: true },
+    });
+  }
+
   async updateLoginAttempt(userId, attempts) {
     return await prisma.user.update({
       where: { userId: userId },

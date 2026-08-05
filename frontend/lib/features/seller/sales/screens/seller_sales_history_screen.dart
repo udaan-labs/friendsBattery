@@ -6,7 +6,6 @@ import '../../../../theme/app_theme.dart';
 import 'package:intl/intl.dart';
 import '../providers/seller_sales_provider.dart';
 import '../widgets/seller_sale_card.dart';
-import '../../dashboard/screens/seller_shell_screen.dart';
 
 class SellerSalesHistoryScreen extends ConsumerStatefulWidget {
   const SellerSalesHistoryScreen({super.key});

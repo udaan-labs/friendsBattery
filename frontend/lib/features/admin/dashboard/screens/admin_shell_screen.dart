@@ -16,7 +16,11 @@ class AdminShellScreen extends StatelessWidget {
     final String location = GoRouterState.of(context).uri.toString();
     if (location.startsWith('/admin/dashboard')) {
       currentIndex = 0;
-    } else if (location.startsWith('/admin/sellers') || location.startsWith('/admin/add-seller')) {
+    } else if (location.startsWith('/admin/sellers') ||
+        location.startsWith('/admin/add-seller') ||
+        location.startsWith('/admin/shops') ||
+        location.startsWith('/admin/warehouses') ||
+        location.startsWith('/admin/add-employee')) {
       currentIndex = 1;
     } else if (location.startsWith('/admin/inventory') || location.startsWith('/admin/add-stock')) {
       currentIndex = 2;

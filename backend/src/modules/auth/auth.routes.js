@@ -40,6 +40,10 @@ const { requireAdmin } = require('../../shared/middleware/role.middleware');
  *                 type: string
  *                 format: password
  *                 example: password123
+ *               location_id:
+ *                 type: integer
+ *                 description: Optional SHOP location id (assign seller to a shop)
+ *                 example: 2
  *     responses:
  *       201:
  *         description: User registered successfully

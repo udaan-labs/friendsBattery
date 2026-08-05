@@ -33,8 +33,49 @@ const viewEmployeeSchema = z.object({
     .default({}),
 });
 
+// Schema for POST /shops/employees
+const createEmployeeSchema = z.object({
+  body: z.object({
+    user_id: z.string().min(1).max(50),
+    username: z.string().min(1).max(100),
+    user_number: z.string().regex(/^\d{10}$/, 'Mobile number must be exactly 10 digits'),
+    password: z.string().min(6).max(100),
+    employee_role_id: z.coerce.number().int().positive().optional().nullable(),
+    /** Admin only — seller location is taken from the authenticated seller. */
+    location_id: z.coerce.number().int().positive().optional().nullable(),
+  }),
+});
+
+// Schema for GET /shops/locations?type=SHOP|WAREHOUSE
+const listLocationsSchema = z.object({
+  query: z
+    .object({
+      type: z.enum(['SHOP', 'WAREHOUSE']).optional(),
+    })
+    .optional()
+    .default({}),
+});
+
+// Schema for POST /shops/locations
+const createLocationSchema = z.object({
+  body: z.object({
+    code: z
+      .string()
+      .min(1)
+      .max(50)
+      .transform((s) => s.trim().toUpperCase()),
+    name: z.string().min(1).max(150).transform((s) => s.trim()),
+    type: z.enum(['SHOP', 'WAREHOUSE']),
+    address: z.string().max(2000).optional().nullable(),
+    phone: z.string().max(20).optional().nullable(),
+  }),
+});
+
 module.exports = {
   viewSellerSchema,
   shopStaffSchema,
   viewEmployeeSchema,
+  createEmployeeSchema,
+  listLocationsSchema,
+  createLocationSchema,
 };

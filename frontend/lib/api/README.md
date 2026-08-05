@@ -110,7 +110,12 @@ Class | Method | HTTP request | Description
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiShipmentsIdGet**](doc/ShipmentsApi.md#apishipmentsidget) | **GET** /api/shipments/{id} | Get shipment details by ID (Admin or Seller)
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiShipmentsPost**](doc/ShipmentsApi.md#apishipmentspost) | **POST** /api/shipments | Transfer stock serials from admin to seller (Admin only)
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiShipmentsShipmentIdAcceptPost**](doc/ShipmentsApi.md#apishipmentsshipmentidacceptpost) | **POST** /api/shipments/{shipmentId}/accept | Accept a pending shipment (Seller only)
+[*ShopsApi*](doc/ShopsApi.md) | [**apiShopsEmployeeRolesGet**](doc/ShopsApi.md#apishopsemployeerolesget) | **GET** /api/shops/employee-roles | List job titles for employees (Manager, Cashier, …)
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsEmployeesEmployeeIdGet**](doc/ShopsApi.md#apishopsemployeesemployeeidget) | **GET** /api/shops/employees/{employeeId} | Admin view one employee (profile + check-in/check-out only)
+[*ShopsApi*](doc/ShopsApi.md) | [**apiShopsEmployeesPost**](doc/ShopsApi.md#apishopsemployeespost) | **POST** /api/shops/employees | Create an employee at a shop or warehouse
+[*ShopsApi*](doc/ShopsApi.md) | [**apiShopsLocationsGet**](doc/ShopsApi.md#apishopslocationsget) | **GET** /api/shops/locations | List active locations (warehouse + shops)
+[*ShopsApi*](doc/ShopsApi.md) | [**apiShopsLocationsPost**](doc/ShopsApi.md#apishopslocationspost) | **POST** /api/shops/locations | Create a shop or warehouse location
+[*ShopsApi*](doc/ShopsApi.md) | [**apiShopsMyStaffGet**](doc/ShopsApi.md#apishopsmystaffget) | **GET** /api/shops/my-staff | Seller — staff at own shop location
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsSellersGet**](doc/ShopsApi.md#apishopssellersget) | **GET** /api/shops/sellers | Return all sellers
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsSellersSellerIdGet**](doc/ShopsApi.md#apishopssellersselleridget) | **GET** /api/shops/sellers/{sellerId} | Return one seller
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsSellersSellerIdStaffGet**](doc/ShopsApi.md#apishopssellersselleridstaffget) | **GET** /api/shops/sellers/{sellerId}/staff | Sellers and employees at the same shop location as this seller
@@ -174,6 +179,10 @@ Class | Method | HTTP request | Description
  - [AttendanceStatusData](doc/AttendanceStatusData.md)
  - [AvailableSerialsResponse](doc/AvailableSerialsResponse.md)
  - [Category](doc/Category.md)
+ - [CreateEmployeeRequest](doc/CreateEmployeeRequest.md)
+ - [CreateEmployeeResponse](doc/CreateEmployeeResponse.md)
+ - [CreateLocationRequest](doc/CreateLocationRequest.md)
+ - [CreateLocationResponse](doc/CreateLocationResponse.md)
  - [CreateProductModelRequest](doc/CreateProductModelRequest.md)
  - [CreateProductNameRequest](doc/CreateProductNameRequest.md)
  - [CreateProductRequest](doc/CreateProductRequest.md)
@@ -188,9 +197,13 @@ Class | Method | HTTP request | Description
  - [CreateShipmentRequest](doc/CreateShipmentRequest.md)
  - [CreateShipmentResponse](doc/CreateShipmentResponse.md)
  - [CreateShipmentResult](doc/CreateShipmentResult.md)
+ - [CreatedEmployee](doc/CreatedEmployee.md)
+ - [CreatedEmployeeLocation](doc/CreatedEmployeeLocation.md)
  - [Customer](doc/Customer.md)
  - [EmployeeAction](doc/EmployeeAction.md)
  - [EmployeeActionLocation](doc/EmployeeActionLocation.md)
+ - [EmployeeRoleItem](doc/EmployeeRoleItem.md)
+ - [EmployeeRolesResponse](doc/EmployeeRolesResponse.md)
  - [Error](doc/Error.md)
  - [HealthStatus](doc/HealthStatus.md)
  - [InventoryItemDetail](doc/InventoryItemDetail.md)
@@ -204,6 +217,8 @@ Class | Method | HTTP request | Description
  - [InventoryProductsResponse](doc/InventoryProductsResponse.md)
  - [InventoryTransaction](doc/InventoryTransaction.md)
  - [ListProductModelsRequest](doc/ListProductModelsRequest.md)
+ - [LocationItem](doc/LocationItem.md)
+ - [LocationsListResponse](doc/LocationsListResponse.md)
  - [LoginData](doc/LoginData.md)
  - [LoginResponse](doc/LoginResponse.md)
  - [LoginUser](doc/LoginUser.md)

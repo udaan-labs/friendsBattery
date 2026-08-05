@@ -16,6 +16,8 @@ class _$RegisterData extends RegisterData {
   @override
   final String? shopName;
   @override
+  final int? locationId;
+  @override
   final String? role;
   @override
   final bool? isActive;
@@ -32,6 +34,7 @@ class _$RegisterData extends RegisterData {
     this.username,
     this.userNumber,
     this.shopName,
+    this.locationId,
     this.role,
     this.isActive,
     this.isVerified,
@@ -52,6 +55,7 @@ class _$RegisterData extends RegisterData {
         username == other.username &&
         userNumber == other.userNumber &&
         shopName == other.shopName &&
+        locationId == other.locationId &&
         role == other.role &&
         isActive == other.isActive &&
         isVerified == other.isVerified &&
@@ -65,6 +69,7 @@ class _$RegisterData extends RegisterData {
     _$hash = $jc(_$hash, username.hashCode);
     _$hash = $jc(_$hash, userNumber.hashCode);
     _$hash = $jc(_$hash, shopName.hashCode);
+    _$hash = $jc(_$hash, locationId.hashCode);
     _$hash = $jc(_$hash, role.hashCode);
     _$hash = $jc(_$hash, isActive.hashCode);
     _$hash = $jc(_$hash, isVerified.hashCode);
@@ -80,6 +85,7 @@ class _$RegisterData extends RegisterData {
           ..add('username', username)
           ..add('userNumber', userNumber)
           ..add('shopName', shopName)
+          ..add('locationId', locationId)
           ..add('role', role)
           ..add('isActive', isActive)
           ..add('isVerified', isVerified)
@@ -108,6 +114,10 @@ class RegisterDataBuilder
   String? get shopName => _$this._shopName;
   set shopName(String? shopName) => _$this._shopName = shopName;
 
+  int? _locationId;
+  int? get locationId => _$this._locationId;
+  set locationId(int? locationId) => _$this._locationId = locationId;
+
   String? _role;
   String? get role => _$this._role;
   set role(String? role) => _$this._role = role;
@@ -135,6 +145,7 @@ class RegisterDataBuilder
       _username = $v.username;
       _userNumber = $v.userNumber;
       _shopName = $v.shopName;
+      _locationId = $v.locationId;
       _role = $v.role;
       _isActive = $v.isActive;
       _isVerified = $v.isVerified;
@@ -165,6 +176,7 @@ class RegisterDataBuilder
           username: username,
           userNumber: userNumber,
           shopName: shopName,
+          locationId: locationId,
           role: role,
           isActive: isActive,
           isVerified: isVerified,

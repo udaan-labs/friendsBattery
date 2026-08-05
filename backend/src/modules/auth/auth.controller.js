@@ -4,12 +4,19 @@ const { successResponse, errorResponse } = require('../../shared/utils/response'
 class AuthController {
   async register(req, res) {
     try {
-      const { user_id, username, user_number, shop_name, password } = req.body;
-      const result = await authService.registerUser({ user_id, username, user_number, shop_name, password });
+      const { user_id, username, user_number, shop_name, password, location_id } = req.body;
+      const result = await authService.registerUser({
+        user_id,
+        username,
+        user_number,
+        shop_name,
+        password,
+        location_id,
+      });
       return successResponse(res, 201, 'User registered successfully', result);
     } catch (error) {
-      if (error.statusCode === 409) {
-        return errorResponse(res, 409, error.message);
+      if (error.statusCode) {
+        return errorResponse(res, error.statusCode, error.message);
       }
       console.error('Registration Error:', error);
       return errorResponse(res, 500, 'Internal server error');

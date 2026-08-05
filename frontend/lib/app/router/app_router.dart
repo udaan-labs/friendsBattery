@@ -28,6 +28,10 @@ import '../../features/shared/inventory/screens/inventory_product_detail_screen.
 import '../../features/admin/sellers/screens/sellers_list_screen.dart';
 import '../../features/admin/sellers/screens/seller_details_screen.dart';
 import '../../features/shared/product_lookup/screens/verify_product_screen.dart';
+import '../../features/shared/staff/screens/add_employee_screen.dart';
+import '../../features/seller/staff/screens/seller_staff_screen.dart';
+import '../../features/admin/locations/screens/locations_list_screen.dart';
+import '../../features/admin/locations/screens/add_location_screen.dart';
 import '../../features/employee/dashboard/screens/employee_shell_screen.dart';
 import '../../features/employee/dashboard/screens/employee_home_screen.dart';
 import '../../features/employee/attendance/presentation/employee_attendance_screen.dart';
@@ -155,6 +159,39 @@ final routerProvider = Provider<GoRouter>((ref) {
             },
           ),
           GoRoute(
+            path: '/admin/shops',
+            builder: (context, state) =>
+                const LocationsListScreen(type: 'SHOP'),
+          ),
+          GoRoute(
+            path: '/admin/shops/add',
+            builder: (context, state) =>
+                const AddLocationScreen(type: 'SHOP'),
+          ),
+          GoRoute(
+            path: '/admin/warehouses',
+            builder: (context, state) =>
+                const LocationsListScreen(type: 'WAREHOUSE'),
+          ),
+          GoRoute(
+            path: '/admin/warehouses/add',
+            builder: (context, state) =>
+                const AddLocationScreen(type: 'WAREHOUSE'),
+          ),
+          GoRoute(
+            path: '/admin/add-employee',
+            builder: (context, state) {
+              final loc = int.tryParse(state.uri.queryParameters['locationId'] ?? '');
+              final sellerId =
+                  int.tryParse(state.uri.queryParameters['sellerId'] ?? '');
+              return AddEmployeeScreen(
+                isAdmin: true,
+                initialLocationId: loc,
+                sellerIdForRefresh: sellerId,
+              );
+            },
+          ),
+          GoRoute(
             path: '/admin/sales',
             builder: (context, state) => const AdminSalesScreen(),
           ),
@@ -228,6 +265,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/seller/return-product',
             builder: (context, state) => const SellerReturnProductScreen(),
+          ),
+          GoRoute(
+            path: '/seller/staff',
+            builder: (context, state) => const SellerStaffScreen(),
+          ),
+          GoRoute(
+            path: '/seller/add-employee',
+            builder: (context, state) => const AddEmployeeScreen(isAdmin: false),
           ),
           GoRoute(
             path: '/seller/shipments/:shipmentId',

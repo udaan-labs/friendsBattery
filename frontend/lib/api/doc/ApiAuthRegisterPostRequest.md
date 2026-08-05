@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **userNumber** | **String** |  | 
 **shopName** | **String** |  | 
 **password** | **String** |  | 
+**locationId** | **int** | Optional SHOP location id (assign seller to a shop) | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

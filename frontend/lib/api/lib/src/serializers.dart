@@ -65,6 +65,10 @@ import 'package:friends_battery_api/src/model/attendance_record.dart';
 import 'package:friends_battery_api/src/model/attendance_status_data.dart';
 import 'package:friends_battery_api/src/model/available_serials_response.dart';
 import 'package:friends_battery_api/src/model/category.dart';
+import 'package:friends_battery_api/src/model/create_employee_request.dart';
+import 'package:friends_battery_api/src/model/create_employee_response.dart';
+import 'package:friends_battery_api/src/model/create_location_request.dart';
+import 'package:friends_battery_api/src/model/create_location_response.dart';
 import 'package:friends_battery_api/src/model/create_product_model_request.dart';
 import 'package:friends_battery_api/src/model/create_product_name_request.dart';
 import 'package:friends_battery_api/src/model/create_product_request.dart';
@@ -79,9 +83,13 @@ import 'package:friends_battery_api/src/model/create_shipment_item.dart';
 import 'package:friends_battery_api/src/model/create_shipment_request.dart';
 import 'package:friends_battery_api/src/model/create_shipment_response.dart';
 import 'package:friends_battery_api/src/model/create_shipment_result.dart';
+import 'package:friends_battery_api/src/model/created_employee.dart';
+import 'package:friends_battery_api/src/model/created_employee_location.dart';
 import 'package:friends_battery_api/src/model/customer.dart';
 import 'package:friends_battery_api/src/model/employee_action.dart';
 import 'package:friends_battery_api/src/model/employee_action_location.dart';
+import 'package:friends_battery_api/src/model/employee_role_item.dart';
+import 'package:friends_battery_api/src/model/employee_roles_response.dart';
 import 'package:friends_battery_api/src/model/error.dart';
 import 'package:friends_battery_api/src/model/health_status.dart';
 import 'package:friends_battery_api/src/model/inventory_item_detail.dart';
@@ -95,6 +103,8 @@ import 'package:friends_battery_api/src/model/inventory_product_name_group.dart'
 import 'package:friends_battery_api/src/model/inventory_products_response.dart';
 import 'package:friends_battery_api/src/model/inventory_transaction.dart';
 import 'package:friends_battery_api/src/model/list_product_models_request.dart';
+import 'package:friends_battery_api/src/model/location_item.dart';
+import 'package:friends_battery_api/src/model/locations_list_response.dart';
 import 'package:friends_battery_api/src/model/login_data.dart';
 import 'package:friends_battery_api/src/model/login_response.dart';
 import 'package:friends_battery_api/src/model/login_user.dart';
@@ -214,6 +224,10 @@ part 'serializers.g.dart';
   AttendanceStatusData,
   AvailableSerialsResponse,
   Category,
+  CreateEmployeeRequest,
+  CreateEmployeeResponse,
+  CreateLocationRequest,
+  CreateLocationResponse,
   CreateProductModelRequest,
   CreateProductNameRequest,
   CreateProductRequest,
@@ -228,9 +242,13 @@ part 'serializers.g.dart';
   CreateShipmentRequest,
   CreateShipmentResponse,
   CreateShipmentResult,
+  CreatedEmployee,
+  CreatedEmployeeLocation,
   Customer,
   EmployeeAction,
   EmployeeActionLocation,
+  EmployeeRoleItem,
+  EmployeeRolesResponse,
   Error,
   HealthStatus,
   InventoryItemDetail,
@@ -244,6 +262,8 @@ part 'serializers.g.dart';
   InventoryProductsResponse,
   InventoryTransaction,
   ListProductModelsRequest,
+  LocationItem,
+  LocationsListResponse,
   LoginData,
   LoginResponse,
   LoginUser,

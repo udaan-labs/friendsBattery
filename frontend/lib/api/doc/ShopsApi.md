@@ -9,11 +9,53 @@ All URIs are relative to *http://localhost:3000*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**apiShopsEmployeeRolesGet**](ShopsApi.md#apishopsemployeerolesget) | **GET** /api/shops/employee-roles | List job titles for employees (Manager, Cashier, …)
 [**apiShopsEmployeesEmployeeIdGet**](ShopsApi.md#apishopsemployeesemployeeidget) | **GET** /api/shops/employees/{employeeId} | Admin view one employee (profile + check-in/check-out only)
+[**apiShopsEmployeesPost**](ShopsApi.md#apishopsemployeespost) | **POST** /api/shops/employees | Create an employee at a shop or warehouse
+[**apiShopsLocationsGet**](ShopsApi.md#apishopslocationsget) | **GET** /api/shops/locations | List active locations (warehouse + shops)
+[**apiShopsLocationsPost**](ShopsApi.md#apishopslocationspost) | **POST** /api/shops/locations | Create a shop or warehouse location
+[**apiShopsMyStaffGet**](ShopsApi.md#apishopsmystaffget) | **GET** /api/shops/my-staff | Seller — staff at own shop location
 [**apiShopsSellersGet**](ShopsApi.md#apishopssellersget) | **GET** /api/shops/sellers | Return all sellers
 [**apiShopsSellersSellerIdGet**](ShopsApi.md#apishopssellersselleridget) | **GET** /api/shops/sellers/{sellerId} | Return one seller
 [**apiShopsSellersSellerIdStaffGet**](ShopsApi.md#apishopssellersselleridstaffget) | **GET** /api/shops/sellers/{sellerId}/staff | Sellers and employees at the same shop location as this seller
 
+
+# **apiShopsEmployeeRolesGet**
+> EmployeeRolesResponse apiShopsEmployeeRolesGet()
+
+List job titles for employees (Manager, Cashier, …)
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getShopsApi();
+
+try {
+    final response = api.apiShopsEmployeeRolesGet();
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling ShopsApi->apiShopsEmployeeRolesGet: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**EmployeeRolesResponse**](EmployeeRolesResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiShopsEmployeesEmployeeIdGet**
 > AdminEmployeeDetailResponse apiShopsEmployeesEmployeeIdGet(employeeId, limit)
@@ -48,6 +90,172 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**AdminEmployeeDetailResponse**](AdminEmployeeDetailResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiShopsEmployeesPost**
+> CreateEmployeeResponse apiShopsEmployeesPost(createEmployeeRequest)
+
+Create an employee at a shop or warehouse
+
+**Seller:** employee is always assigned to the seller's `location_id` (body `location_id` is ignored). Seller must have a location. **Admin:** body `location_id` is required (WAREHOUSE or SHOP). New employees are active and verified (can log in immediately). 
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getShopsApi();
+final CreateEmployeeRequest createEmployeeRequest = ; // CreateEmployeeRequest | 
+
+try {
+    final response = api.apiShopsEmployeesPost(createEmployeeRequest);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling ShopsApi->apiShopsEmployeesPost: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **createEmployeeRequest** | [**CreateEmployeeRequest**](CreateEmployeeRequest.md)|  | 
+
+### Return type
+
+[**CreateEmployeeResponse**](CreateEmployeeResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiShopsLocationsGet**
+> LocationsListResponse apiShopsLocationsGet(type)
+
+List active locations (warehouse + shops)
+
+Admin only. Optional type filter for shops vs warehouses.
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getShopsApi();
+final String type = type_example; // String | Filter by location type
+
+try {
+    final response = api.apiShopsLocationsGet(type);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling ShopsApi->apiShopsLocationsGet: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **type** | **String**| Filter by location type | [optional] 
+
+### Return type
+
+[**LocationsListResponse**](LocationsListResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiShopsLocationsPost**
+> CreateLocationResponse apiShopsLocationsPost(createLocationRequest)
+
+Create a shop or warehouse location
+
+Admin only. Creates an active location used for seller assignment, employees, and inventory placement. 
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getShopsApi();
+final CreateLocationRequest createLocationRequest = ; // CreateLocationRequest | 
+
+try {
+    final response = api.apiShopsLocationsPost(createLocationRequest);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling ShopsApi->apiShopsLocationsPost: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **createLocationRequest** | [**CreateLocationRequest**](CreateLocationRequest.md)|  | 
+
+### Return type
+
+[**CreateLocationResponse**](CreateLocationResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiShopsMyStaffGet**
+> ShopStaffResponse apiShopsMyStaffGet()
+
+Seller — staff at own shop location
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getShopsApi();
+
+try {
+    final response = api.apiShopsMyStaffGet();
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling ShopsApi->apiShopsMyStaffGet: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**ShopStaffResponse**](ShopStaffResponse.md)
 
 ### Authorization
 

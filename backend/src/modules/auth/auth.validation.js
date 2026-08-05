@@ -7,7 +7,9 @@ const registerSchema = z.object({
   username: z.string().min(1),
   user_number: z.string().min(1),
   shop_name: z.string().min(1),
-  password: z.string().min(1)
+  password: z.string().min(1),
+  /** Optional shop location — assign seller to an existing SHOP */
+  location_id: z.coerce.number().int().positive().optional().nullable(),
 });
 
 const loginSchema = z.object({

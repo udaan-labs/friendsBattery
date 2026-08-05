@@ -52,6 +52,7 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
     required String userNumber,
     required String shopName,
     required String password,
+    int? locationId,
   }) async {
     state = const AsyncValue.loading();
     try {
@@ -61,6 +62,7 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
         userNumber: userNumber,
         shopName: shopName,
         password: password,
+        locationId: locationId,
       );
       state = const AsyncValue.data(null);
     } catch (e, stack) {

@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 import '../providers/seller_details_provider.dart';
-import '../providers/shop_staff_provider.dart';
 import '../widgets/seller_info_card.dart';
 import '../widgets/statistic_card.dart';
 import '../widgets/shop_staff_section.dart';
 import '../../../shared/inventory/widgets/inventory_product_card.dart';
+import '../../../shared/staff/providers/staff_providers.dart';
 
 class SellerDetailsScreen extends ConsumerStatefulWidget {
   final int sellerId;
@@ -153,7 +153,7 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
                   Switch(
                     value: _showOutOfStock,
                     onChanged: (val) => setState(() => _showOutOfStock = val),
-                    activeColor: const Color(0xFF006B2C),
+                    activeThumbColor: const Color(0xFF006B2C),
                   ),
                 ],
               ),

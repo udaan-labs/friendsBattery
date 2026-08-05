@@ -15,6 +15,7 @@ part 'register_data.g.dart';
 /// * [username] 
 /// * [userNumber] 
 /// * [shopName] 
+/// * [locationId] 
 /// * [role] 
 /// * [isActive] 
 /// * [isVerified] 
@@ -32,6 +33,9 @@ abstract class RegisterData implements Built<RegisterData, RegisterDataBuilder> 
 
   @BuiltValueField(wireName: r'shop_name')
   String? get shopName;
+
+  @BuiltValueField(wireName: r'location_id')
+  int? get locationId;
 
   @BuiltValueField(wireName: r'role')
   String? get role;
@@ -94,6 +98,13 @@ class _$RegisterDataSerializer implements PrimitiveSerializer<RegisterData> {
       yield serializers.serialize(
         object.shopName,
         specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.locationId != null) {
+      yield r'location_id';
+      yield serializers.serialize(
+        object.locationId,
+        specifiedType: const FullType.nullable(int),
       );
     }
     if (object.role != null) {
@@ -176,6 +187,14 @@ class _$RegisterDataSerializer implements PrimitiveSerializer<RegisterData> {
           ) as String?;
           if (valueDes == null) continue;
           result.shopName = valueDes;
+          break;
+        case r'location_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
+          if (valueDes == null) continue;
+          result.locationId = valueDes;
           break;
         case r'role':
           final valueDes = serializers.deserialize(

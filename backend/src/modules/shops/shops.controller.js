@@ -95,6 +95,85 @@ class ShopsController {
       return errorResponse(res, 500, 'Internal server error');
     }
   }
+
+  /**
+   * POST /api/shops/employees
+   * Admin or seller creates an EMPLOYEE at a location.
+   */
+  async createEmployee(req, res) {
+    try {
+      const data = await shopsService.createEmployee(
+        { id: req.user.id, role: req.user.role },
+        req.body
+      );
+      return successResponse(res, 201, 'Employee created successfully', data);
+    } catch (error) {
+      if (error.statusCode) {
+        return errorResponse(res, error.statusCode, error.message);
+      }
+      console.error('Create Employee Error:', error);
+      return errorResponse(res, 500, 'Internal server error');
+    }
+  }
+
+  /**
+   * GET /api/shops/my-staff — seller only, own shop location.
+   */
+  async getMyStaff(req, res) {
+    try {
+      const data = await shopsService.getMyStaff(req.user.id);
+      return successResponse(res, 200, 'Shop staff fetched successfully', data);
+    } catch (error) {
+      if (error.statusCode) {
+        return errorResponse(res, error.statusCode, error.message);
+      }
+      console.error('Get My Staff Error:', error);
+      return errorResponse(res, 500, 'Internal server error');
+    }
+  }
+
+  /**
+   * GET /api/shops/employee-roles
+   */
+  async listEmployeeRoles(req, res) {
+    try {
+      const data = await shopsService.listEmployeeRoles();
+      return successResponse(res, 200, 'Employee roles fetched successfully', data);
+    } catch (error) {
+      console.error('List Employee Roles Error:', error);
+      return errorResponse(res, 500, 'Internal server error');
+    }
+  }
+
+  /**
+   * GET /api/shops/locations — admin list (optional ?type=SHOP|WAREHOUSE).
+   */
+  async listLocations(req, res) {
+    try {
+      const type = req.query?.type;
+      const data = await shopsService.listLocations(type ? { type } : {});
+      return successResponse(res, 200, 'Locations fetched successfully', data);
+    } catch (error) {
+      console.error('List Locations Error:', error);
+      return errorResponse(res, 500, 'Internal server error');
+    }
+  }
+
+  /**
+   * POST /api/shops/locations — admin create shop or warehouse.
+   */
+  async createLocation(req, res) {
+    try {
+      const data = await shopsService.createLocation(req.body);
+      return successResponse(res, 201, 'Location created successfully', data);
+    } catch (error) {
+      if (error.statusCode) {
+        return errorResponse(res, error.statusCode, error.message);
+      }
+      console.error('Create Location Error:', error);
+      return errorResponse(res, 500, 'Internal server error');
+    }
+  }
 }
 
 module.exports = new ShopsController();

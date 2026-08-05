@@ -30,6 +30,18 @@ class QuickActions extends StatelessWidget {
         route: '/admin/add-seller',
       ),
       _ActionItemData(
+        title: 'Shops',
+        subtitle: 'List & create shop locations',
+        icon: Icons.storefront_outlined,
+        route: '/admin/shops',
+      ),
+      _ActionItemData(
+        title: 'Warehouses',
+        subtitle: 'List & create warehouses',
+        icon: Icons.warehouse_outlined,
+        route: '/admin/warehouses',
+      ),
+      _ActionItemData(
         title: 'View Sales',
         subtitle: 'Browse all sales transactions',
         icon: Icons.point_of_sale_outlined,
