@@ -32,22 +32,8 @@ class SellersListScreen extends ConsumerWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
+        // Only seller actions here — shops / warehouses / employees live elsewhere.
         actions: [
-          IconButton(
-            tooltip: 'Shops',
-            icon: const Icon(Icons.storefront_outlined, color: Color(0xFF006B2C)),
-            onPressed: () => context.push('/admin/shops'),
-          ),
-          IconButton(
-            tooltip: 'Warehouses',
-            icon: const Icon(Icons.warehouse_outlined, color: Color(0xFF006B2C)),
-            onPressed: () => context.push('/admin/warehouses'),
-          ),
-          IconButton(
-            tooltip: 'Add employee',
-            icon: const Icon(Icons.badge_outlined, color: Color(0xFF006B2C)),
-            onPressed: () => context.push('/admin/add-employee'),
-          ),
           IconButton(
             tooltip: 'Add seller',
             icon: const Icon(Icons.person_add_alt_1, color: Color(0xFF006B2C)),

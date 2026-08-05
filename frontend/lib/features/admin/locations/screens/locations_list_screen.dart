@@ -85,8 +85,8 @@ class LocationsListScreen extends ConsumerWidget {
                     const SizedBox(height: 8),
                     Text(
                       _isShop
-                          ? 'Create a shop, then assign sellers to it.'
-                          : 'Create a warehouse for inventory storage.',
+                          ? 'This is the only place to add shops. Then assign sellers to them.'
+                          : 'This is the only place to add warehouses.',
                       textAlign: TextAlign.center,
                       style: const TextStyle(color: Color(0xFF64748B)),
                     ),

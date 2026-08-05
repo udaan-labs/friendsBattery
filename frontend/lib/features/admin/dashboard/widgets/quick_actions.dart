@@ -10,6 +10,7 @@ class QuickActions extends StatelessWidget {
     final isSmall = ResponsiveHelper.isSmallPhone(context);
     final titleSize = isSmall ? 16.0 : 18.0;
 
+    // One clear home per task (no duplicates on Sellers / forms).
     final actions = [
       _ActionItemData(
         title: 'Add Stock',
@@ -24,20 +25,20 @@ class QuickActions extends StatelessWidget {
         route: '/admin/shipments/create',
       ),
       _ActionItemData(
-        title: 'Add Seller',
-        subtitle: 'Create new seller account',
-        icon: Icons.person_add_alt_1_outlined,
-        route: '/admin/add-seller',
+        title: 'Sellers',
+        subtitle: 'List sellers · add accounts',
+        icon: Icons.people_outline_rounded,
+        route: '/admin/sellers',
       ),
       _ActionItemData(
         title: 'Shops',
-        subtitle: 'List & create shop locations',
+        subtitle: 'Only place to add / list shops',
         icon: Icons.storefront_outlined,
         route: '/admin/shops',
       ),
       _ActionItemData(
         title: 'Warehouses',
-        subtitle: 'List & create warehouses',
+        subtitle: 'Only place to add / list warehouses',
         icon: Icons.warehouse_outlined,
         route: '/admin/warehouses',
       ),

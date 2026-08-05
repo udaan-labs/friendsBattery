@@ -9,9 +9,9 @@ import '../../../core/state/data_sync.dart';
 import '../../../shared/widgets/snackbar_helper.dart';
 import '../../admin/locations/providers/locations_providers.dart';
 
-/// Admin Add Seller (`isAdminFlow: true`) or closed public sign-up.
-/// Admin: shop dropdown from GET /api/shops/locations?type=SHOP;
-/// register sends location_id so multiple sellers can share one shop.
+/// Admin Add Seller (`isAdminFlow: true`).
+/// Shop list: GET /api/shops/locations?type=SHOP
+/// Create seller: POST /api/auth/register with location_id (many sellers per shop OK).
 class RegisterScreen extends ConsumerStatefulWidget {
   final bool isAdminFlow;
 
@@ -28,7 +28,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _shopNameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final _shopDropdownController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   int? _selectedShopLocationId;
@@ -41,7 +40,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     _shopNameController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    _shopDropdownController.dispose();
     super.dispose();
   }
 
@@ -74,7 +72,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             userNumber: number,
             shopName: _shopNameController.text.trim(),
             password: _passwordController.text,
-            // Wire: POST /api/auth/register { location_id } — many sellers → one shop
             locationId: widget.isAdminFlow ? _selectedShopLocationId : null,
           );
 
@@ -94,8 +91,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
   }
 
-  void _onShopSelected(int? id, List<LocationItem> shops) {
-    if (id == null) return;
+  void _selectShop(int? id, List<LocationItem> shops) {
+    if (id == null) {
+      setState(() => _selectedShopLocationId = null);
+      return;
+    }
     LocationItem? shop;
     for (final s in shops) {
       if (s.id == id) {
@@ -103,21 +103,155 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         break;
       }
     }
-    if (shop == null) return;
     setState(() {
       _selectedShopLocationId = id;
-      _shopNameController.text = shop!.name ?? shop.code ?? '';
+      if (shop != null) {
+        _shopNameController.text = shop.name ?? shop.code ?? '';
+      }
     });
+  }
+
+  Future<void> _goCreateShop() async {
+    await context.push('/admin/shops/add');
+    ref.invalidate(locationsByTypeProvider('SHOP'));
+  }
+
+  /// Always-visible shop block (admin only).
+  Widget _buildShopSection(bool formLoading) {
+    final shopsAsync = ref.watch(locationsByTypeProvider('SHOP'));
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE8F5E9),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.primary, width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.storefront, color: AppTheme.primary, size: 22),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Select shop for this seller',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: AppTheme.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Required. Multiple sellers can use the same shop.',
+            style: TextStyle(fontSize: 12, color: Color(0xFF545F73)),
+          ),
+          const SizedBox(height: 12),
+          shopsAsync.when(
+            data: (shops) {
+              if (shops.isEmpty) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text(
+                      'No shops in the system yet.',
+                      style: TextStyle(
+                        color: AppTheme.error,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    ElevatedButton.icon(
+                      onPressed: formLoading ? null : _goCreateShop,
+                      icon: const Icon(Icons.add_business),
+                      label: const Text('Go to Shops to create one'),
+                    ),
+                  ],
+                );
+              }
+
+              final ids = [
+                for (final s in shops)
+                  if (s.id != null) s.id!,
+              ];
+              final valueOk = _selectedShopLocationId != null &&
+                  ids.contains(_selectedShopLocationId);
+
+              // Pick only — create shops lives on Dashboard → Shops.
+              return DropdownButtonFormField<int>(
+                // ignore: deprecated_member_use
+                value: valueOk ? _selectedShopLocationId : null,
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  labelText: 'Shop *',
+                  filled: true,
+                  fillColor: Colors.white,
+                  prefixIcon: Icon(Icons.store),
+                ),
+                hint: const Text('Tap to choose shop'),
+                items: [
+                  for (final s in shops)
+                    if (s.id != null)
+                      DropdownMenuItem<int>(
+                        value: s.id!,
+                        child: Text(
+                          '${s.name ?? 'Shop'}${s.code != null ? ' · ${s.code}' : ''}',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                ],
+                onChanged:
+                    formLoading ? null : (id) => _selectShop(id, shops),
+              );
+            },
+            loading: () => const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Column(
+                children: [
+                  Text('Loading shops…'),
+                  SizedBox(height: 8),
+                  LinearProgressIndicator(),
+                ],
+              ),
+            ),
+            error: (e, _) => Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'Could not load shops: ${e.toString().replaceFirst('Exception: ', '')}',
+                  style: const TextStyle(color: AppTheme.error),
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton(
+                  onPressed: () =>
+                      ref.invalidate(locationsByTypeProvider('SHOP')),
+                  child: const Text('Retry'),
+                ),
+                TextButton(
+                  onPressed: () => context.push('/admin/shops'),
+                  child: const Text('Open Shops screen'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
     final isLoading = authState.isLoading;
-    final shopsAsync =
-        widget.isAdminFlow ? ref.watch(locationsByTypeProvider('SHOP')) : null;
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(widget.isAdminFlow ? 'Add Seller' : 'Sign Up'),
         leading: IconButton(
@@ -154,15 +288,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   color: Color(0xFF191C1E),
                 ),
               ),
+              SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 20 : 28),
+
+              // Shop first — cannot miss this block
               if (widget.isAdminFlow) ...[
-                const SizedBox(height: 8),
-                const Text(
-                  'Pick a shop. Several sellers can belong to the same shop.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
-                ),
+                _buildShopSection(isLoading),
+                const SizedBox(height: 16),
               ],
-              SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 24 : 48),
+
               Container(
                 decoration: BoxDecoration(
                   color: AppTheme.surface,
@@ -179,89 +312,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // ── Shop dropdown (admin) ─────────────────────────────
-                    if (widget.isAdminFlow && shopsAsync != null) ...[
-                      shopsAsync.when(
-                        data: (shops) {
-                          if (shops.isEmpty) {
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                const Text(
-                                  'No shops yet. Create a shop first, then add a seller.',
-                                  style: TextStyle(color: AppTheme.error),
-                                ),
-                                const SizedBox(height: 8),
-                                OutlinedButton.icon(
-                                  onPressed: () async {
-                                    await context.push('/admin/shops/add');
-                                    ref.invalidate(
-                                      locationsByTypeProvider('SHOP'),
-                                    );
-                                  },
-                                  icon: const Icon(Icons.add_business_outlined),
-                                  label: const Text('Create shop'),
-                                ),
-                              ],
-                            );
-                          }
-
-                          // Searchable dropdown — GET /api/shops/locations?type=SHOP
-                          return LayoutBuilder(
-                            builder: (context, constraints) {
-                              return DropdownMenu<int>(
-                                controller: _shopDropdownController,
-                                width: constraints.maxWidth,
-                                enabled: !isLoading,
-                                enableFilter: true,
-                                requestFocusOnTap: true,
-                                leadingIcon: const Icon(Icons.storefront_outlined),
-                                label: const Text('Shop *'),
-                                hintText: 'Search or select shop',
-                                helperText:
-                                    'Same shop can have multiple sellers',
-                                initialSelection: _selectedShopLocationId,
-                                onSelected: (id) =>
-                                    _onShopSelected(id, shops),
-                                dropdownMenuEntries: [
-                                  for (final s in shops)
-                                    if (s.id != null)
-                                      DropdownMenuEntry<int>(
-                                        value: s.id!,
-                                        label:
-                                            '${s.name ?? 'Shop'}${s.code != null ? ' · ${s.code}' : ''}',
-                                      ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                        loading: () => const Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Text('Loading shops…'),
-                            SizedBox(height: 8),
-                            LinearProgressIndicator(),
-                          ],
-                        ),
-                        error: (e, _) => Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Text(
-                              e.toString().replaceFirst('Exception: ', ''),
-                              style: const TextStyle(color: AppTheme.error),
-                            ),
-                            TextButton(
-                              onPressed: () => ref.invalidate(
-                                locationsByTypeProvider('SHOP'),
-                              ),
-                              child: const Text('Retry load shops'),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                    ],
                     TextField(
                       controller: _userIdController,
                       enabled: !isLoading,
@@ -287,7 +337,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       enabled: !isLoading,
                       decoration: const InputDecoration(
                         labelText: 'Shop Name',
-                        helperText: 'Defaults from shop; you can edit',
+                        helperText: 'Filled when you pick a shop; editable',
                       ),
                     ),
                     const SizedBox(height: 16),
