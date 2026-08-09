@@ -31,16 +31,10 @@ class QuickActions extends StatelessWidget {
         route: '/admin/sellers',
       ),
       _ActionItemData(
-        title: 'Shops',
-        subtitle: 'Only place to add / list shops',
-        icon: Icons.storefront_outlined,
-        route: '/admin/shops',
-      ),
-      _ActionItemData(
-        title: 'Warehouses',
-        subtitle: 'Only place to add / list warehouses',
-        icon: Icons.warehouse_outlined,
-        route: '/admin/warehouses',
+        title: 'Locations',
+        subtitle: 'Shops & warehouses · add / search',
+        icon: Icons.location_city_outlined,
+        route: '/admin/locations',
       ),
       _ActionItemData(
         title: 'View Sales',

@@ -112,8 +112,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<void> _goCreateShop() async {
-    await context.push('/admin/shops/add');
+    await context.push('/admin/locations/add?type=SHOP');
     ref.invalidate(locationsByTypeProvider('SHOP'));
+    ref.invalidate(allLocationsProvider);
   }
 
   /// Always-visible shop block (admin only).
@@ -234,8 +235,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   child: const Text('Retry'),
                 ),
                 TextButton(
-                  onPressed: () => context.push('/admin/shops'),
-                  child: const Text('Open Shops screen'),
+                  onPressed: () => context.push('/admin/locations'),
+                  child: const Text('Open Locations'),
                 ),
               ],
             ),

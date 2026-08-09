@@ -79,6 +79,12 @@ class _$LocationItem extends LocationItem {
   final String? address;
   @override
   final String? phone;
+  @override
+  final num? latitude;
+  @override
+  final num? longitude;
+  @override
+  final int? allowedRadius;
 
   factory _$LocationItem([void Function(LocationItemBuilder)? updates]) =>
       (LocationItemBuilder()..update(updates))._build();
@@ -91,6 +97,9 @@ class _$LocationItem extends LocationItem {
     this.isActive,
     this.address,
     this.phone,
+    this.latitude,
+    this.longitude,
+    this.allowedRadius,
   }) : super._();
   @override
   LocationItem rebuild(void Function(LocationItemBuilder) updates) =>
@@ -109,7 +118,10 @@ class _$LocationItem extends LocationItem {
         type == other.type &&
         isActive == other.isActive &&
         address == other.address &&
-        phone == other.phone;
+        phone == other.phone &&
+        latitude == other.latitude &&
+        longitude == other.longitude &&
+        allowedRadius == other.allowedRadius;
   }
 
   @override
@@ -122,6 +134,9 @@ class _$LocationItem extends LocationItem {
     _$hash = $jc(_$hash, isActive.hashCode);
     _$hash = $jc(_$hash, address.hashCode);
     _$hash = $jc(_$hash, phone.hashCode);
+    _$hash = $jc(_$hash, latitude.hashCode);
+    _$hash = $jc(_$hash, longitude.hashCode);
+    _$hash = $jc(_$hash, allowedRadius.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -135,7 +150,10 @@ class _$LocationItem extends LocationItem {
           ..add('type', type)
           ..add('isActive', isActive)
           ..add('address', address)
-          ..add('phone', phone))
+          ..add('phone', phone)
+          ..add('latitude', latitude)
+          ..add('longitude', longitude)
+          ..add('allowedRadius', allowedRadius))
         .toString();
   }
 }
@@ -172,6 +190,19 @@ class LocationItemBuilder
   String? get phone => _$this._phone;
   set phone(String? phone) => _$this._phone = phone;
 
+  num? _latitude;
+  num? get latitude => _$this._latitude;
+  set latitude(num? latitude) => _$this._latitude = latitude;
+
+  num? _longitude;
+  num? get longitude => _$this._longitude;
+  set longitude(num? longitude) => _$this._longitude = longitude;
+
+  int? _allowedRadius;
+  int? get allowedRadius => _$this._allowedRadius;
+  set allowedRadius(int? allowedRadius) =>
+      _$this._allowedRadius = allowedRadius;
+
   LocationItemBuilder() {
     LocationItem._defaults(this);
   }
@@ -186,6 +217,9 @@ class LocationItemBuilder
       _isActive = $v.isActive;
       _address = $v.address;
       _phone = $v.phone;
+      _latitude = $v.latitude;
+      _longitude = $v.longitude;
+      _allowedRadius = $v.allowedRadius;
       _$v = null;
     }
     return this;
@@ -215,6 +249,9 @@ class LocationItemBuilder
           isActive: isActive,
           address: address,
           phone: phone,
+          latitude: latitude,
+          longitude: longitude,
+          allowedRadius: allowedRadius,
         );
     replace(_$result);
     return _$result;

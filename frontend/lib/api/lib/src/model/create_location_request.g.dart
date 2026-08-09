@@ -80,6 +80,12 @@ class _$CreateLocationRequest extends CreateLocationRequest {
   final String? address;
   @override
   final String? phone;
+  @override
+  final num? latitude;
+  @override
+  final num? longitude;
+  @override
+  final int? allowedRadius;
 
   factory _$CreateLocationRequest([
     void Function(CreateLocationRequestBuilder)? updates,
@@ -91,6 +97,9 @@ class _$CreateLocationRequest extends CreateLocationRequest {
     required this.type,
     this.address,
     this.phone,
+    this.latitude,
+    this.longitude,
+    this.allowedRadius,
   }) : super._();
   @override
   CreateLocationRequest rebuild(
@@ -109,7 +118,10 @@ class _$CreateLocationRequest extends CreateLocationRequest {
         name == other.name &&
         type == other.type &&
         address == other.address &&
-        phone == other.phone;
+        phone == other.phone &&
+        latitude == other.latitude &&
+        longitude == other.longitude &&
+        allowedRadius == other.allowedRadius;
   }
 
   @override
@@ -120,6 +132,9 @@ class _$CreateLocationRequest extends CreateLocationRequest {
     _$hash = $jc(_$hash, type.hashCode);
     _$hash = $jc(_$hash, address.hashCode);
     _$hash = $jc(_$hash, phone.hashCode);
+    _$hash = $jc(_$hash, latitude.hashCode);
+    _$hash = $jc(_$hash, longitude.hashCode);
+    _$hash = $jc(_$hash, allowedRadius.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -131,7 +146,10 @@ class _$CreateLocationRequest extends CreateLocationRequest {
           ..add('name', name)
           ..add('type', type)
           ..add('address', address)
-          ..add('phone', phone))
+          ..add('phone', phone)
+          ..add('latitude', latitude)
+          ..add('longitude', longitude)
+          ..add('allowedRadius', allowedRadius))
         .toString();
   }
 }
@@ -160,6 +178,19 @@ class CreateLocationRequestBuilder
   String? get phone => _$this._phone;
   set phone(String? phone) => _$this._phone = phone;
 
+  num? _latitude;
+  num? get latitude => _$this._latitude;
+  set latitude(num? latitude) => _$this._latitude = latitude;
+
+  num? _longitude;
+  num? get longitude => _$this._longitude;
+  set longitude(num? longitude) => _$this._longitude = longitude;
+
+  int? _allowedRadius;
+  int? get allowedRadius => _$this._allowedRadius;
+  set allowedRadius(int? allowedRadius) =>
+      _$this._allowedRadius = allowedRadius;
+
   CreateLocationRequestBuilder() {
     CreateLocationRequest._defaults(this);
   }
@@ -172,6 +203,9 @@ class CreateLocationRequestBuilder
       _type = $v.type;
       _address = $v.address;
       _phone = $v.phone;
+      _latitude = $v.latitude;
+      _longitude = $v.longitude;
+      _allowedRadius = $v.allowedRadius;
       _$v = null;
     }
     return this;
@@ -211,6 +245,9 @@ class CreateLocationRequestBuilder
           ),
           address: address,
           phone: phone,
+          latitude: latitude,
+          longitude: longitude,
+          allowedRadius: allowedRadius,
         );
     replace(_$result);
     return _$result;

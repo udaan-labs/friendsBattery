@@ -28,6 +28,17 @@ class StaffRepository {
     return data;
   }
 
+  Future<ShopStaffData> getStaffByLocationId(int locationId) async {
+    final response = await _shops.apiShopsLocationsLocationIdStaffGet(
+      locationId: locationId,
+    );
+    final data = response.data?.data;
+    if (data == null) {
+      throw Exception(response.data?.message ?? 'Failed to load staff');
+    }
+    return data;
+  }
+
   Future<List<EmployeeRoleItem>> listEmployeeRoles() async {
     final response = await _shops.apiShopsEmployeeRolesGet();
     final data = response.data?.data;

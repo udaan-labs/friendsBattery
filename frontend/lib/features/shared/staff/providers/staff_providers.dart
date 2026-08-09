@@ -25,3 +25,9 @@ final shopStaffProvider =
     FutureProvider.family<ShopStaffData, int>((ref, sellerId) async {
   return ref.watch(staffRepositoryProvider).getStaffBySellerId(sellerId);
 });
+
+/// Admin: staff assigned to a shop/warehouse location.
+final locationStaffProvider =
+    FutureProvider.family<ShopStaffData, int>((ref, locationId) async {
+  return ref.watch(staffRepositoryProvider).getStaffByLocationId(locationId);
+});

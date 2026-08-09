@@ -133,6 +133,24 @@ class ShopsController {
   }
 
   /**
+   * GET /api/shops/locations/:locationId/staff
+   * Admin: sellers + employees at this shop/warehouse.
+   */
+  async getLocationStaff(req, res) {
+    try {
+      const { locationId } = req.params;
+      const data = await shopsService.getStaffByLocationId(Number(locationId));
+      return successResponse(res, 200, 'Shop staff fetched successfully', data);
+    } catch (error) {
+      if (error.statusCode) {
+        return errorResponse(res, error.statusCode, error.message);
+      }
+      console.error('Get Location Staff Error:', error);
+      return errorResponse(res, 500, 'Internal server error');
+    }
+  }
+
+  /**
    * GET /api/shops/employee-roles
    */
   async listEmployeeRoles(req, res) {

@@ -32,6 +32,7 @@ import '../../features/shared/staff/screens/add_employee_screen.dart';
 import '../../features/seller/staff/screens/seller_staff_screen.dart';
 import '../../features/admin/locations/screens/locations_list_screen.dart';
 import '../../features/admin/locations/screens/add_location_screen.dart';
+import '../../features/admin/locations/screens/location_detail_screen.dart';
 import '../../features/employee/dashboard/screens/employee_shell_screen.dart';
 import '../../features/employee/dashboard/screens/employee_home_screen.dart';
 import '../../features/employee/attendance/presentation/employee_attendance_screen.dart';
@@ -40,6 +41,18 @@ import '../../features/employee/shipments/screens/employee_shipment_detail_scree
 import '../../shared/providers/auth_provider.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
+
+/// Old `/admin/shops|:id` and `/admin/warehouses|:id` → unified locations detail.
+String _legacyLocationDetailRedirect(GoRouterState state) {
+  final id = state.pathParameters['id'] ?? '';
+  final name = state.uri.queryParameters['name'];
+  return Uri(
+    path: '/admin/locations/$id',
+    queryParameters: {
+      if (name != null && name.isNotEmpty) 'name': name,
+    },
+  ).toString();
+}
 
 /// Stable [GoRouter] — auth changes notify via [refreshListenable] instead of
 /// recreating the entire router (which rebuilds MaterialApp and all routes).
@@ -158,25 +171,59 @@ final routerProvider = Provider<GoRouter>((ref) {
               return SellerDetailsScreen(sellerId: id);
             },
           ),
+          // Unified shops + warehouses (same resource, type on each item).
+          GoRoute(
+            path: '/admin/locations',
+            builder: (context, state) => const LocationsListScreen(),
+          ),
+          GoRoute(
+            path: '/admin/locations/add',
+            builder: (context, state) {
+              final t = state.uri.queryParameters['type'];
+              return AddLocationScreen(
+                initialType: t == 'WAREHOUSE' ? 'WAREHOUSE' : 'SHOP',
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/locations/:id',
+            builder: (context, state) {
+              final id = int.tryParse(state.pathParameters['id'] ?? '');
+              if (id == null) {
+                return const Scaffold(
+                  body: Center(child: Text('Invalid location')),
+                );
+              }
+              return LocationDetailScreen(
+                locationId: id,
+                title: state.uri.queryParameters['name'],
+              );
+            },
+          ),
+          // Legacy redirects (old bookmarks / deep links).
           GoRoute(
             path: '/admin/shops',
-            builder: (context, state) =>
-                const LocationsListScreen(type: 'SHOP'),
+            redirect: (_, __) => '/admin/locations',
           ),
           GoRoute(
             path: '/admin/shops/add',
-            builder: (context, state) =>
-                const AddLocationScreen(type: 'SHOP'),
+            redirect: (_, __) => '/admin/locations/add?type=SHOP',
+          ),
+          GoRoute(
+            path: '/admin/shops/:id',
+            redirect: (_, state) => _legacyLocationDetailRedirect(state),
           ),
           GoRoute(
             path: '/admin/warehouses',
-            builder: (context, state) =>
-                const LocationsListScreen(type: 'WAREHOUSE'),
+            redirect: (_, __) => '/admin/locations',
           ),
           GoRoute(
             path: '/admin/warehouses/add',
-            builder: (context, state) =>
-                const AddLocationScreen(type: 'WAREHOUSE'),
+            redirect: (_, __) => '/admin/locations/add?type=WAREHOUSE',
+          ),
+          GoRoute(
+            path: '/admin/warehouses/:id',
+            redirect: (_, state) => _legacyLocationDetailRedirect(state),
           ),
           GoRoute(
             path: '/admin/add-employee',

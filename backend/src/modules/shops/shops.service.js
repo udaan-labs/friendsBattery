@@ -197,6 +197,17 @@ class ShopsService {
     return this._staffAtLocation(Number(seller.locationId));
   }
 
+  /** Admin: sellers + employees assigned to a shop/warehouse. */
+  async getStaffByLocationId(locationId) {
+    const data = await this._staffAtLocation(Number(locationId));
+    if (!data.location) {
+      const error = new Error('Location not found');
+      error.statusCode = 404;
+      throw error;
+    }
+    return data;
+  }
+
   async listEmployeeRoles() {
     const roles = await shopsRepository.findAllEmployeeRoles();
     return roles.map((r) => ({
@@ -223,13 +234,14 @@ class ShopsService {
       is_active: loc.isActive,
       address: loc.address ?? null,
       phone: loc.phone ?? null,
+      latitude: loc.latitude != null ? Number(loc.latitude) : null,
+      longitude: loc.longitude != null ? Number(loc.longitude) : null,
+      allowed_radius:
+        loc.allowedRadius != null ? Number(loc.allowedRadius) : 100,
     };
   }
 
-  /**
-   * Admin: create SHOP or WAREHOUSE (for sellers / employees / inventory).
-   * @param {{ code: string, name: string, type: 'SHOP'|'WAREHOUSE', address?: string|null, phone?: string|null }} body
-   */
+  /** Admin create SHOP/WAREHOUSE. Optional lat/lng = attendance geofence. */
   async createLocation(body) {
     const code = body.code;
     const existing = await shopsRepository.findLocationByCode(code);
@@ -239,12 +251,21 @@ class ShopsService {
       throw error;
     }
 
+    const lat = body.latitude != null ? Number(body.latitude) : null;
+    const lng = body.longitude != null ? Number(body.longitude) : null;
+    const hasGeo =
+      lat != null && lng != null && !Number.isNaN(lat) && !Number.isNaN(lng);
+
     const created = await shopsRepository.createLocation({
       code,
       name: body.name,
       type: body.type,
       address: body.address ?? null,
       phone: body.phone ?? null,
+      latitude: hasGeo ? lat : null,
+      longitude: hasGeo ? lng : null,
+      allowedRadius:
+        body.allowed_radius != null ? Number(body.allowed_radius) : undefined,
     });
 
     return this._mapLocationItem(created);

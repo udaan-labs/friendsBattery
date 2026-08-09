@@ -9,8 +9,8 @@ class LocationsRepository {
 
   ShopsApi get _shops => _api.getShopsApi();
 
-  /// [type] is `SHOP` or `WAREHOUSE`.
-  Future<List<LocationItem>> list({required String type}) async {
+  /// Active locations. Pass [type] `SHOP` or `WAREHOUSE` to filter; omit for both.
+  Future<List<LocationItem>> list({String? type}) async {
     final response = await _shops.apiShopsLocationsGet(type: type);
     final data = response.data?.data;
     if (data == null) {
@@ -25,6 +25,9 @@ class LocationsRepository {
     required String type,
     String? address,
     String? phone,
+    double? latitude,
+    double? longitude,
+    int? allowedRadius,
   }) async {
     try {
       final body = CreateLocationRequest((b) {
@@ -33,6 +36,11 @@ class LocationsRepository {
         b.type = CreateLocationRequestTypeEnum.valueOf(type);
         if (address != null && address.isNotEmpty) b.address = address;
         if (phone != null && phone.isNotEmpty) b.phone = phone;
+        if (latitude != null && longitude != null) {
+          b.latitude = latitude;
+          b.longitude = longitude;
+          if (allowedRadius != null) b.allowedRadius = allowedRadius;
+        }
       });
       final response =
           await _shops.apiShopsLocationsPost(createLocationRequest: body);

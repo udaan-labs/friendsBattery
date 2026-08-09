@@ -17,6 +17,9 @@ part 'create_location_request.g.dart';
 /// * [type] 
 /// * [address] 
 /// * [phone] 
+/// * [latitude] - Geofence center; required together with longitude
+/// * [longitude] - Geofence center; required together with latitude
+/// * [allowedRadius] - Attendance radius in meters (default 100 when lat/lng set)
 @BuiltValue()
 abstract class CreateLocationRequest implements Built<CreateLocationRequest, CreateLocationRequestBuilder> {
   /// Unique location code (stored uppercase)
@@ -35,6 +38,18 @@ abstract class CreateLocationRequest implements Built<CreateLocationRequest, Cre
 
   @BuiltValueField(wireName: r'phone')
   String? get phone;
+
+  /// Geofence center; required together with longitude
+  @BuiltValueField(wireName: r'latitude')
+  num? get latitude;
+
+  /// Geofence center; required together with latitude
+  @BuiltValueField(wireName: r'longitude')
+  num? get longitude;
+
+  /// Attendance radius in meters (default 100 when lat/lng set)
+  @BuiltValueField(wireName: r'allowed_radius')
+  int? get allowedRadius;
 
   CreateLocationRequest._();
 
@@ -86,6 +101,27 @@ class _$CreateLocationRequestSerializer implements PrimitiveSerializer<CreateLoc
       yield serializers.serialize(
         object.phone,
         specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.latitude != null) {
+      yield r'latitude';
+      yield serializers.serialize(
+        object.latitude,
+        specifiedType: const FullType.nullable(num),
+      );
+    }
+    if (object.longitude != null) {
+      yield r'longitude';
+      yield serializers.serialize(
+        object.longitude,
+        specifiedType: const FullType.nullable(num),
+      );
+    }
+    if (object.allowedRadius != null) {
+      yield r'allowed_radius';
+      yield serializers.serialize(
+        object.allowedRadius,
+        specifiedType: const FullType.nullable(int),
       );
     }
   }
@@ -147,6 +183,30 @@ class _$CreateLocationRequestSerializer implements PrimitiveSerializer<CreateLoc
           ) as String?;
           if (valueDes == null) continue;
           result.phone = valueDes;
+          break;
+        case r'latitude':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(num),
+          ) as num?;
+          if (valueDes == null) continue;
+          result.latitude = valueDes;
+          break;
+        case r'longitude':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(num),
+          ) as num?;
+          if (valueDes == null) continue;
+          result.longitude = valueDes;
+          break;
+        case r'allowed_radius':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
+          if (valueDes == null) continue;
+          result.allowedRadius = valueDes;
           break;
         default:
           unhandled.add(key);

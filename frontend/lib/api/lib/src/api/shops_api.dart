@@ -383,8 +383,89 @@ class ShopsApi {
     );
   }
 
+  /// Sellers and employees assigned to this location
+  /// Admin only. Returns SELLER and EMPLOYEE users with users.location_id equal to this shop/warehouse. 
+  ///
+  /// Parameters:
+  /// * [locationId] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [ShopStaffResponse] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<ShopStaffResponse>> apiShopsLocationsLocationIdStaffGet({ 
+    required int locationId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/api/shops/locations/{locationId}/staff'.replaceAll('{' r'locationId' '}', encodeQueryParameter(_serializers, locationId, const FullType(int)).toString());
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    ShopStaffResponse? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(ShopStaffResponse),
+      ) as ShopStaffResponse;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<ShopStaffResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// Create a shop or warehouse location
-  /// Admin only. Creates an active location used for seller assignment, employees, and inventory placement. 
+  /// Admin only. Creates an active location used for seller assignment, employees, and inventory placement. Optional latitude/longitude set the attendance geofence center (both required together); allowed_radius defaults to 100m. 
   ///
   /// Parameters:
   /// * [createLocationRequest] 

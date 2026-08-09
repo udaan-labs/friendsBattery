@@ -8,6 +8,8 @@ class SellerDetailsData {
   final String userNumber;
   final bool isActive;
   final bool isVerified;
+  /// Shop location label from API (`name` · `code`), null if unassigned.
+  final String? locationLabel;
   final int stock;
   final int products;
   final int sales;
@@ -20,6 +22,7 @@ class SellerDetailsData {
     required this.userNumber,
     required this.isActive,
     required this.isVerified,
+    this.locationLabel,
     required this.stock,
     required this.products,
     required this.sales,
@@ -60,12 +63,25 @@ final sellerDetailsProvider =
         )
         .toList();
 
+    final loc = d.location;
+    String? locationLabel;
+    if (loc != null) {
+      final name = loc.name?.trim();
+      final code = loc.code?.trim();
+      if (name != null && name.isNotEmpty) {
+        locationLabel = (code != null && code.isNotEmpty) ? '$name · $code' : name;
+      } else if (code != null && code.isNotEmpty) {
+        locationLabel = code;
+      }
+    }
+
     return SellerDetailsData(
       shopName: d.shopName ?? 'Unknown Shop',
       userName: d.userName ?? 'Unknown User',
       userNumber: d.userNumber ?? 'N/A',
       isActive: d.isActive ?? false,
       isVerified: d.isVerified ?? false,
+      locationLabel: locationLabel,
       stock: stats?.stock ?? 0,
       products: stats?.products ?? 0,
       sales: stats?.sales ?? 0,

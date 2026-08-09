@@ -20,6 +20,13 @@ const shopStaffSchema = z.object({
   }),
 });
 
+// Schema for GET /shops/locations/:locationId/staff
+const locationStaffSchema = z.object({
+  params: z.object({
+    locationId: z.string().regex(/^\d+$/).transform(Number),
+  }),
+});
+
 // Schema for GET /shops/employees/:employeeId
 const viewEmployeeSchema = z.object({
   params: z.object({
@@ -58,22 +65,39 @@ const listLocationsSchema = z.object({
 
 // Schema for POST /shops/locations
 const createLocationSchema = z.object({
-  body: z.object({
-    code: z
-      .string()
-      .min(1)
-      .max(50)
-      .transform((s) => s.trim().toUpperCase()),
-    name: z.string().min(1).max(150).transform((s) => s.trim()),
-    type: z.enum(['SHOP', 'WAREHOUSE']),
-    address: z.string().max(2000).optional().nullable(),
-    phone: z.string().max(20).optional().nullable(),
-  }),
+  body: z
+    .object({
+      code: z
+        .string()
+        .min(1)
+        .max(50)
+        .transform((s) => s.trim().toUpperCase()),
+      name: z.string().min(1).max(150).transform((s) => s.trim()),
+      type: z.enum(['SHOP', 'WAREHOUSE']),
+      address: z.string().max(2000).optional().nullable(),
+      phone: z.string().max(20).optional().nullable(),
+      latitude: z.coerce.number().min(-90).max(90).optional().nullable(),
+      longitude: z.coerce.number().min(-180).max(180).optional().nullable(),
+      allowed_radius: z.coerce
+        .number()
+        .int()
+        .min(10)
+        .max(5000)
+        .optional()
+        .nullable(),
+    })
+    .refine(
+      (b) =>
+        (b.latitude == null && b.longitude == null) ||
+        (b.latitude != null && b.longitude != null),
+      { message: 'latitude and longitude must both be provided' }
+    ),
 });
 
 module.exports = {
   viewSellerSchema,
   shopStaffSchema,
+  locationStaffSchema,
   viewEmployeeSchema,
   createEmployeeSchema,
   listLocationsSchema,

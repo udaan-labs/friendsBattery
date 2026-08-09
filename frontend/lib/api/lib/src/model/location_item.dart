@@ -19,6 +19,9 @@ part 'location_item.g.dart';
 /// * [isActive] 
 /// * [address] 
 /// * [phone] 
+/// * [latitude] - Geofence center latitude (WGS84)
+/// * [longitude] - Geofence center longitude (WGS84)
+/// * [allowedRadius] - Max check-in distance in meters from center
 @BuiltValue()
 abstract class LocationItem implements Built<LocationItem, LocationItemBuilder> {
   @BuiltValueField(wireName: r'id')
@@ -42,6 +45,18 @@ abstract class LocationItem implements Built<LocationItem, LocationItemBuilder> 
 
   @BuiltValueField(wireName: r'phone')
   String? get phone;
+
+  /// Geofence center latitude (WGS84)
+  @BuiltValueField(wireName: r'latitude')
+  num? get latitude;
+
+  /// Geofence center longitude (WGS84)
+  @BuiltValueField(wireName: r'longitude')
+  num? get longitude;
+
+  /// Max check-in distance in meters from center
+  @BuiltValueField(wireName: r'allowed_radius')
+  int? get allowedRadius;
 
   LocationItem._();
 
@@ -113,6 +128,27 @@ class _$LocationItemSerializer implements PrimitiveSerializer<LocationItem> {
       yield serializers.serialize(
         object.phone,
         specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.latitude != null) {
+      yield r'latitude';
+      yield serializers.serialize(
+        object.latitude,
+        specifiedType: const FullType.nullable(num),
+      );
+    }
+    if (object.longitude != null) {
+      yield r'longitude';
+      yield serializers.serialize(
+        object.longitude,
+        specifiedType: const FullType.nullable(num),
+      );
+    }
+    if (object.allowedRadius != null) {
+      yield r'allowed_radius';
+      yield serializers.serialize(
+        object.allowedRadius,
+        specifiedType: const FullType(int),
       );
     }
   }
@@ -188,6 +224,29 @@ class _$LocationItemSerializer implements PrimitiveSerializer<LocationItem> {
           ) as String?;
           if (valueDes == null) continue;
           result.phone = valueDes;
+          break;
+        case r'latitude':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(num),
+          ) as num?;
+          if (valueDes == null) continue;
+          result.latitude = valueDes;
+          break;
+        case r'longitude':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(num),
+          ) as num?;
+          if (valueDes == null) continue;
+          result.longitude = valueDes;
+          break;
+        case r'allowed_radius':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.allowedRadius = valueDes;
           break;
         default:
           unhandled.add(key);

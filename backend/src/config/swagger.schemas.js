@@ -763,6 +763,21 @@ module.exports = {
       is_active: { type: 'boolean' },
       address: { type: 'string', nullable: true },
       phone: { type: 'string', nullable: true },
+      latitude: {
+        type: 'number',
+        nullable: true,
+        description: 'Geofence center latitude (WGS84)',
+      },
+      longitude: {
+        type: 'number',
+        nullable: true,
+        description: 'Geofence center longitude (WGS84)',
+      },
+      allowed_radius: {
+        type: 'integer',
+        description: 'Max check-in distance in meters from center',
+        example: 100,
+      },
     },
   },
   LocationsListResponse: {
@@ -790,6 +805,30 @@ module.exports = {
       type: { type: 'string', enum: ['SHOP', 'WAREHOUSE'] },
       address: { type: 'string', nullable: true },
       phone: { type: 'string', nullable: true },
+      latitude: {
+        type: 'number',
+        nullable: true,
+        minimum: -90,
+        maximum: 90,
+        example: 23.0225,
+        description: 'Geofence center; required together with longitude',
+      },
+      longitude: {
+        type: 'number',
+        nullable: true,
+        minimum: -180,
+        maximum: 180,
+        example: 72.5714,
+        description: 'Geofence center; required together with latitude',
+      },
+      allowed_radius: {
+        type: 'integer',
+        nullable: true,
+        minimum: 10,
+        maximum: 5000,
+        example: 100,
+        description: 'Attendance radius in meters (default 100 when lat/lng set)',
+      },
     },
   },
   CreateLocationResponse: {

@@ -7,7 +7,12 @@ final locationsRepositoryProvider = Provider<LocationsRepository>((ref) {
   return LocationsRepository(ref.watch(apiClientProvider));
 });
 
-/// Family key: `SHOP` or `WAREHOUSE`.
+/// All active shops + warehouses (API returns `type` on each item).
+final allLocationsProvider = FutureProvider<List<LocationItem>>((ref) async {
+  return ref.watch(locationsRepositoryProvider).list();
+});
+
+/// Family key: `SHOP` or `WAREHOUSE` (e.g. register shop picker).
 final locationsByTypeProvider =
     FutureProvider.family<List<LocationItem>, String>((ref, type) async {
   return ref.watch(locationsRepositoryProvider).list(type: type);

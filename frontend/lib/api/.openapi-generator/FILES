@@ -349,5 +349,3 @@ lib/src/model/verify_product_response.dart
 lib/src/model/verify_product_unit.dart
 lib/src/serializers.dart
 pubspec.yaml
-test/create_location_request_test.dart
-test/create_location_response_test.dart

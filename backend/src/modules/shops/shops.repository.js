@@ -108,15 +108,14 @@ class ShopsRepository {
         isActive: true,
         address: true,
         phone: true,
+        latitude: true,
+        longitude: true,
+        allowedRadius: true,
       },
       orderBy: [{ type: 'asc' }, { name: 'asc' }],
     });
   }
 
-  /**
-   * Create shop or warehouse location.
-   * @param {{ code: string, name: string, type: 'SHOP'|'WAREHOUSE', address?: string|null, phone?: string|null }} data
-   */
   async createLocation(data) {
     return prisma.location.create({
       data: {
@@ -125,6 +124,11 @@ class ShopsRepository {
         type: data.type,
         address: data.address ?? null,
         phone: data.phone ?? null,
+        latitude: data.latitude ?? null,
+        longitude: data.longitude ?? null,
+        ...(data.allowedRadius != null
+          ? { allowedRadius: data.allowedRadius }
+          : {}),
         isActive: true,
       },
       select: {
@@ -135,6 +139,9 @@ class ShopsRepository {
         isActive: true,
         address: true,
         phone: true,
+        latitude: true,
+        longitude: true,
+        allowedRadius: true,
         createdAt: true,
       },
     });

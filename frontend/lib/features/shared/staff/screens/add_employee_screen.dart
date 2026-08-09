@@ -99,6 +99,10 @@ class _AddEmployeeScreenState extends ConsumerState<AddEmployeeScreen> {
       if (widget.sellerIdForRefresh != null) {
         ref.invalidate(shopStaffProvider(widget.sellerIdForRefresh!));
       }
+      final locId = widget.isAdmin ? _selectedLocationId : null;
+      if (locId != null) {
+        ref.invalidate(locationStaffProvider(locId));
+      }
 
       if (!mounted) return;
       context.showSuccessSnackBar('Employee created — they can log in now');

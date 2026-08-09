@@ -4,6 +4,7 @@ const shopsController = require('./shops.controller');
 const {
   viewSellerSchema,
   shopStaffSchema,
+  locationStaffSchema,
   viewEmployeeSchema,
   createEmployeeSchema,
   listLocationsSchema,
@@ -216,7 +217,8 @@ router.get(
  *     summary: Create a shop or warehouse location
  *     description: |
  *       Admin only. Creates an active location used for seller assignment,
- *       employees, and inventory placement.
+ *       employees, and inventory placement. Optional latitude/longitude set the
+ *       attendance geofence center (both required together); allowed_radius defaults to 100m.
  *     tags: [Shops]
  *     security:
  *       - bearerAuth: []
@@ -248,6 +250,45 @@ router.get(
   requireAdmin,
   validateRequest(listLocationsSchema),
   shopsController.listLocations
+);
+
+/**
+ * @swagger
+ * /api/shops/locations/{locationId}/staff:
+ *   get:
+ *     summary: Sellers and employees assigned to this location
+ *     description: |
+ *       Admin only. Returns SELLER and EMPLOYEE users with users.location_id
+ *       equal to this shop/warehouse.
+ *     tags: [Shops]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: locationId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Shop staff fetched
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ShopStaffResponse'
+ *       404:
+ *         description: Location not found
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Admin only
+ */
+router.get(
+  '/locations/:locationId/staff',
+  authenticate,
+  requireAdmin,
+  validateRequest(locationStaffSchema),
+  shopsController.getLocationStaff
 );
 
 router.post(

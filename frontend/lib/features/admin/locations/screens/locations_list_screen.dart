@@ -5,23 +5,51 @@ import 'package:go_router/go_router.dart';
 import '../../../../theme/app_theme.dart';
 import '../providers/locations_providers.dart';
 
-/// Admin list of shops (`SHOP`) or warehouses (`WAREHOUSE`).
-class LocationsListScreen extends ConsumerWidget {
-  const LocationsListScreen({super.key, required this.type});
-
-  /// `SHOP` or `WAREHOUSE`
-  final String type;
-
-  bool get _isShop => type == 'SHOP';
-
-  String get _title => _isShop ? 'Shops' : 'Warehouses';
-
-  String get _addRoute =>
-      _isShop ? '/admin/shops/add' : '/admin/warehouses/add';
+/// Admin list of shops + warehouses (same API, different `type`).
+class LocationsListScreen extends ConsumerStatefulWidget {
+  const LocationsListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final async = ref.watch(locationsByTypeProvider(type));
+  ConsumerState<LocationsListScreen> createState() =>
+      _LocationsListScreenState();
+}
+
+class _LocationsListScreenState extends ConsumerState<LocationsListScreen> {
+  final _searchController = TextEditingController();
+  String _query = '';
+  /// `null` = all, else `SHOP` / `WAREHOUSE`
+  String? _typeFilter;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<LocationItem> _filter(List<LocationItem> rows) {
+    var list = rows;
+    if (_typeFilter != null) {
+      list = list
+          .where((e) => e.type?.name == _typeFilter)
+          .toList(growable: false);
+    }
+    final q = _query.trim().toLowerCase();
+    if (q.isEmpty) return list;
+    return list.where((e) {
+      final hay = [
+        e.name,
+        e.code,
+        e.address,
+        e.phone,
+        e.type?.name,
+      ].whereType<String>().join(' ').toLowerCase();
+      return hay.contains(q);
+    }).toList(growable: false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final async = ref.watch(allLocationsProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FB),
@@ -38,9 +66,9 @@ class LocationsListScreen extends ConsumerWidget {
             }
           },
         ),
-        title: Text(
-          _title,
-          style: const TextStyle(
+        title: const Text(
+          'Locations',
+          style: TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.bold,
           ),
@@ -48,83 +76,203 @@ class LocationsListScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          final created = await context.push<bool>(_addRoute);
+          final created = await context.push<bool>('/admin/locations/add');
           if (created == true) {
-            ref.invalidate(locationsByTypeProvider(type));
+            ref.invalidate(allLocationsProvider);
+            ref.invalidate(locationsByTypeProvider);
           }
         },
         backgroundColor: AppTheme.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
-        label: Text(_isShop ? 'Add shop' : 'Add warehouse'),
+        label: const Text('Add location'),
       ),
-      body: async.when(
-        data: (rows) {
-          if (rows.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      _isShop
-                          ? Icons.storefront_outlined
-                          : Icons.warehouse_outlined,
-                      size: 56,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      _isShop ? 'No shops yet' : 'No warehouses yet',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            child: TextField(
+              controller: _searchController,
+              onChanged: (v) => setState(() => _query = v),
+              decoration: InputDecoration(
+                hintText: 'Search shop or warehouse…',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _query.isEmpty
+                    ? null
+                    : IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _query = '');
+                        },
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _isShop
-                          ? 'This is the only place to add shops. Then assign sellers to them.'
-                          : 'This is the only place to add warehouses.',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Color(0xFF64748B)),
-                    ),
-                  ],
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                 ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 12),
               ),
-            );
-          }
-          return RefreshIndicator(
-            onRefresh: () => ref.refresh(locationsByTypeProvider(type).future),
-            child: ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
-              itemCount: rows.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 10),
-              itemBuilder: (context, i) => _LocationCard(item: rows[i]),
             ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+          ),
+          const SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
               children: [
-                Text(
-                  e.toString().replaceFirst('Exception: ', ''),
-                  textAlign: TextAlign.center,
+                _TypeChip(
+                  label: 'All',
+                  selected: _typeFilter == null,
+                  onTap: () => setState(() => _typeFilter = null),
                 ),
-                const SizedBox(height: 12),
-                TextButton(
-                  onPressed: () =>
-                      ref.invalidate(locationsByTypeProvider(type)),
-                  child: const Text('Retry'),
+                const SizedBox(width: 8),
+                _TypeChip(
+                  label: 'Shops',
+                  selected: _typeFilter == 'SHOP',
+                  onTap: () => setState(() => _typeFilter = 'SHOP'),
+                ),
+                const SizedBox(width: 8),
+                _TypeChip(
+                  label: 'Warehouses',
+                  selected: _typeFilter == 'WAREHOUSE',
+                  onTap: () => setState(() => _typeFilter = 'WAREHOUSE'),
                 ),
               ],
             ),
           ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: async.when(
+              data: (rows) {
+                final filtered = _filter(rows);
+                if (rows.isEmpty) {
+                  return const _EmptyState(
+                    title: 'No locations yet',
+                    subtitle:
+                        'Add a shop or warehouse. Same form — pick the type.',
+                  );
+                }
+                if (filtered.isEmpty) {
+                  return const _EmptyState(
+                    title: 'No matches',
+                    subtitle: 'Try another search or filter.',
+                  );
+                }
+                return RefreshIndicator(
+                  onRefresh: () =>
+                      ref.refresh(allLocationsProvider.future),
+                  child: ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
+                    itemCount: filtered.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    itemBuilder: (context, i) =>
+                        _LocationCard(item: filtered[i]),
+                  ),
+                );
+              },
+              loading: () =>
+                  const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        e.toString().replaceFirst('Exception: ', ''),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
+                      TextButton(
+                        onPressed: () =>
+                            ref.invalidate(allLocationsProvider),
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TypeChip extends StatelessWidget {
+  const _TypeChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return FilterChip(
+      label: Text(label),
+      selected: selected,
+      onSelected: (_) => onTap(),
+      selectedColor: AppTheme.primary.withValues(alpha: 0.15),
+      checkmarkColor: AppTheme.primary,
+      labelStyle: TextStyle(
+        fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+        color: selected ? AppTheme.primary : const Color(0xFF64748B),
+        fontSize: 13,
+      ),
+      side: BorderSide(
+        color: selected ? AppTheme.primary : const Color(0xFFE2E8F0),
+      ),
+      backgroundColor: Colors.white,
+      showCheckmark: false,
+      visualDensity: VisualDensity.compact,
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.title, required this.subtitle});
+
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.location_city_outlined,
+              size: 56,
+              color: Colors.grey.shade400,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Color(0xFF64748B)),
+            ),
+          ],
         ),
       ),
     );
@@ -136,83 +284,121 @@ class _LocationCard extends StatelessWidget {
 
   final LocationItem item;
 
+  void _openDetail(BuildContext context) {
+    final id = item.id;
+    if (id == null) return;
+    final name = item.name;
+    context.push(
+      Uri(
+        path: '/admin/locations/$id',
+        queryParameters: {
+          if (name != null && name.isNotEmpty) 'name': name,
+        },
+      ).toString(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isShop = item.type == LocationItemTypeEnum.SHOP;
     final accent =
         isShop ? const Color(0xFF006B2C) : const Color(0xFF2563EB);
+    final typeLabel = isShop ? 'Shop' : 'Warehouse';
+    final hasGps = item.latitude != null && item.longitude != null;
+    final meta = [
+      if (item.code != null) item.code!,
+      if (item.address != null && item.address!.isNotEmpty) item.address!,
+      if (item.phone != null && item.phone!.isNotEmpty) item.phone!,
+    ].join(' · ');
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: () => _openDetail(context),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(14),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: accent.withValues(alpha: 0.12),
-            child: Icon(
-              isShop ? Icons.storefront_rounded : Icons.warehouse_rounded,
-              color: accent,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.name ?? 'Unnamed',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  [
-                    if (item.code != null) item.code!,
-                    if (item.address != null && item.address!.isNotEmpty)
-                      item.address!,
-                    if (item.phone != null && item.phone!.isNotEmpty)
-                      item.phone!,
-                  ].join(' · '),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF64748B),
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          if (item.isActive != false)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: accent.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                'Active',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              CircleAvatar(
+                backgroundColor: accent.withValues(alpha: 0.12),
+                child: Icon(
+                  isShop ? Icons.storefront_rounded : Icons.warehouse_rounded,
                   color: accent,
+                  size: 20,
                 ),
               ),
-            ),
-        ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            item.name ?? 'Unnamed',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: accent.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            typeLabel,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: accent,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (meta.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        meta,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF64748B),
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                    const SizedBox(height: 4),
+                    Text(
+                      hasGps
+                          ? 'GPS set · ${item.allowedRadius ?? 100}m radius'
+                          : 'GPS not set',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: hasGps
+                            ? const Color(0xFF006B2C)
+                            : const Color(0xFFB45309),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, color: Colors.grey.shade400),
+            ],
+          ),
+        ),
       ),
     );
   }

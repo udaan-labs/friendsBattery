@@ -90,6 +90,7 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
             userNumber: data.userNumber,
             isActive: data.isActive,
             isVerified: data.isVerified,
+            locationLabel: data.locationLabel,
           ),
           const SizedBox(height: 24),
           
