@@ -3,7 +3,7 @@ import 'dart:developer' as developer;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import '../../../../core/network/api_client_provider.dart';
-import '../../../../core/storage/local_storage.dart';
+import '../../../../core/storage/session_manager.dart';
 import '../../../admin/shipments/providers/shipment_provider.dart';
 import '../../../admin/shipments/repository/shipment_repository.dart';
 import '../../../shared/inventory/providers/inventory_provider.dart';
@@ -22,15 +22,12 @@ class SellerProfile {
 }
 
 final sellerProfileProvider = Provider<SellerProfile>((ref) {
-  final dynamic user = LocalStorage.get('user');
-  if (user is Map) {
-    final userNameStr = (user['username'] ?? user['userName'] ?? 'Seller').toString();
-    final shopNameStr = (user['shop_name'] ?? user['shopName'] ?? '').toString();
-    final roleStr = (user['role'] ?? 'seller').toString();
+  final user = SessionManager.user;
+  if (user != null) {
     return SellerProfile(
-      userName: userNameStr,
-      shopName: shopNameStr,
-      role: roleStr,
+      userName: (user['username'] ?? user['userName'] ?? 'Seller').toString(),
+      shopName: (user['shop_name'] ?? user['shopName'] ?? '').toString(),
+      role: (user['role'] ?? 'seller').toString(),
     );
   }
   return SellerProfile(

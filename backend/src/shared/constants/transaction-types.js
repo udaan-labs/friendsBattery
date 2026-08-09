@@ -1,5 +1,0 @@
-module.exports = {
-  TRANSFER: 'TRANSFER',
-  SALE: 'SALE',
-  RESTOCK_APPROVED: 'RESTOCK_APPROVED'
-};

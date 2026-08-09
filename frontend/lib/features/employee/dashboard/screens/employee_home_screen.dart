@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../shared/widgets/common_pull_to_refresh.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
+import '../../../../theme/app_theme.dart';
 import '../../providers/employee_providers.dart';
 import 'employee_shell_screen.dart';
 
@@ -37,8 +37,10 @@ class EmployeeHomeScreen extends ConsumerWidget {
         ),
       ),
       body: SafeArea(
-        child: CommonPullToRefresh(
+        child: RefreshIndicator(
           onRefresh: () => refreshEmployeeDashboard(ref),
+          color: AppTheme.primary,
+          backgroundColor: Colors.white,
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
             children: [

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../shared/widgets/common_pull_to_refresh.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
+import '../../../../theme/app_theme.dart';
 import '../providers/seller_dashboard_providers.dart';
 import '../widgets/seller_kpi_grid.dart';
 import '../widgets/seller_quick_actions.dart';
@@ -41,8 +41,10 @@ class SellerDashboardScreen extends ConsumerWidget {
         ),
       ),
       body: SafeArea(
-        child: CommonPullToRefresh(
+        child: RefreshIndicator(
           onRefresh: () => refreshSellerDashboard(ref),
+          color: AppTheme.primary,
+          backgroundColor: Colors.white,
           child: CustomScrollView(
           slivers: [
             SliverPadding(

@@ -177,22 +177,6 @@ module.exports = {
       },
     },
   },
-  Customer: {
-    type: 'object',
-    properties: {
-      id: { type: 'string' },
-      name: { type: 'string' },
-      phone: { type: 'string', nullable: true },
-      createdAt: { type: 'string', format: 'date-time' }
-    }
-  },
-  Category: {
-    type: 'object',
-    properties: {
-      id: { type: 'string' },
-      name: { type: 'string' }
-    }
-  },
   ProductName: {
     type: 'object',
     properties: {
@@ -986,7 +970,6 @@ module.exports = {
     type: 'object',
     properties: {
       id: { type: 'string' },
-      categoryId: { type: 'string' },
       productNameId: { type: 'string' },
       productModelId: { type: 'string' },
       minPrice: { type: 'number', format: 'double' },
@@ -995,7 +978,6 @@ module.exports = {
       minUnitCountAdmin: { type: 'integer' },
       minUnitCountSeller: { type: 'integer' },
       createdAt: { type: 'string', format: 'date-time' },
-      category: { $ref: '#/components/schemas/Category' },
       productName: { $ref: '#/components/schemas/ProductName' },
       productModel: { $ref: '#/components/schemas/ProductModel' }
     }
@@ -1021,30 +1003,6 @@ module.exports = {
       toUserId: { type: 'string' },
       action: { type: 'string', enum: ['RECEIVED', 'SHIPPED', 'SOLD', 'RETURNED', 'TRANSFERRED'] },
       timestamp: { type: 'string', format: 'date-time' }
-    }
-  },
-  StockRequest: {
-    type: 'object',
-    properties: {
-      id: { type: 'string' },
-      sellerId: { type: 'string' },
-      requestTo: { type: 'string' },
-      status: { type: 'string', enum: ['PENDING', 'APPROVED', 'REJECTED', 'SHIPPED', 'DELIVERED'] },
-      createdAt: { type: 'string', format: 'date-time' },
-      approvedAt: { type: 'string', format: 'date-time', nullable: true },
-      items: {
-        type: 'array',
-        items: { $ref: '#/components/schemas/StockRequestItem' }
-      }
-    }
-  },
-  StockRequestItem: {
-    type: 'object',
-    properties: {
-      id: { type: 'string' },
-      stockRequestId: { type: 'string' },
-      productId: { type: 'string' },
-      requestedQuantity: { type: 'integer' }
     }
   },
   Shipment: {

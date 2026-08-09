@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import '../../../core/network/api_client_provider.dart';
-import '../../../core/storage/local_storage.dart';
+import '../../../core/storage/session_manager.dart';
 import '../../shared/inventory/providers/inventory_provider.dart';
 import '../attendance/data/attendance_repository.dart';
 import '../repository/employee_shipments_repository.dart';
@@ -19,8 +19,8 @@ class EmployeeProfile {
 }
 
 final employeeProfileProvider = Provider<EmployeeProfile>((ref) {
-  final dynamic user = LocalStorage.get('user');
-  if (user is Map) {
+  final user = SessionManager.user;
+  if (user != null) {
     return EmployeeProfile(
       userName: (user['username'] ?? user['userName'] ?? 'Employee').toString(),
       shopName: (user['shop_name'] ?? user['shopName'] ?? '').toString(),

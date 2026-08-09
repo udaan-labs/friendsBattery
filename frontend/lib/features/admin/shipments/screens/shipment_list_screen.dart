@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
-import '../../../../shared/widgets/common_pull_to_refresh.dart';
 import '../providers/shipment_provider.dart';
 
 class ShipmentListScreen extends ConsumerWidget {
@@ -74,10 +73,12 @@ class ShipmentListScreen extends ConsumerWidget {
         ),
       ),
       body: SafeArea(
-        child: CommonPullToRefresh(
+        child: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(shipmentsListProvider);
         },
+        color: AppTheme.primary,
+        backgroundColor: Colors.white,
         child: shipmentsState.when(
           data: (shipments) {
             if (shipments.isEmpty) {

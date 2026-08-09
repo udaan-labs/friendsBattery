@@ -5,7 +5,7 @@ class AuthResponse {
   final String authId;
   final String authKey;
   final String role; // 'admin' | 'seller' | 'employee'
-  /// Hive-safe snapshot of [LoginUser] (local storage only, not an API DTO).
+  /// Profile snapshot for session storage (not an API DTO).
   final Map<String, dynamic> user;
 
   AuthResponse({

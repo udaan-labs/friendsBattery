@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../shared/widgets/common_pull_to_refresh.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
-import '../../../../core/storage/local_storage.dart';
+import '../../../../core/storage/session_manager.dart';
 import '../../../../shared/widgets/logout_dialog_helper.dart';
+import '../../../../theme/app_theme.dart';
 import '../providers/admin_stock_provider.dart';
 import '../providers/dashboard_providers.dart';
 import '../widgets/kpi_grid.dart';
@@ -75,19 +75,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   }
 
   String _getUserNameSafe() {
-    try {
-      final user = LocalStorage.get('user');
-      if (user != null) {
-        try {
-          return (user as dynamic).userName ?? (user as dynamic).username ?? 'Administrator';
-        } catch (_) {
-          if (user is Map) {
-            return (user['userName'] ?? user['username'] ?? 'Administrator').toString();
-          }
-        }
-      }
-    } catch (_) {}
-    return 'Administrator';
+    final user = SessionManager.user;
+    if (user == null) return 'Administrator';
+    return (user['userName'] ?? user['username'] ?? 'Administrator').toString();
   }
 
   @override
@@ -362,8 +352,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
   // --- Sub-View: Bento Grid Dashboard ---
   Widget _buildDashboardTabView(bool isDesktop, bool isTablet) {
-    return CommonPullToRefresh(
+    return RefreshIndicator(
       onRefresh: () => refreshAdminDashboard(ref),
+      color: AppTheme.primary,
+      backgroundColor: Colors.white,
       child: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(

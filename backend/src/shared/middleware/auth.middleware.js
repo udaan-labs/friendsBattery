@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../../config/env');
 const { errorResponse } = require('../utils/response');
-const { isAdmin, isSeller, isEmployee } = require('../utils/role.util');
 const { prisma } = require('../../config/db');
 const ROLES = require('../constants/roles');
 
@@ -117,10 +116,6 @@ const authenticate = async (req, res, next) => {
       jti: decoded.jti,
       sessionId: decoded.sessionId != null ? Number(decoded.sessionId) : null,
     };
-
-    req.user.isAdmin = () => isAdmin(req.user);
-    req.user.isSeller = () => isSeller(req.user);
-    req.user.isEmployee = () => isEmployee(req.user);
 
     next();
   } catch (err) {

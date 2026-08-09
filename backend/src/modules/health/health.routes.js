@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const healthController = require('./health.controller');
 
 /**
  * @swagger
@@ -17,6 +16,12 @@ const healthController = require('./health.controller');
  *             schema:
  *               $ref: '#/components/schemas/HealthStatus'
  */
-router.get('/', healthController.getHealth);
+router.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    message: 'API is up and running via Cloudflare Tunnel',
+    timestamp: new Date().toISOString(),
+  });
+});
 
 module.exports = router;

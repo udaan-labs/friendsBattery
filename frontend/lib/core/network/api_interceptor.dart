@@ -60,22 +60,20 @@ class ApiInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     String errorMessage = 'An unexpected error occurred';
-    ApiException? apiException;
+    int? statusCode;
     var forceLogout = false;
 
     switch (err.type) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-        apiException = TimeoutException();
-        errorMessage = apiException.message;
+        errorMessage = 'Connection timed out. Please try again later.';
         break;
       case DioExceptionType.connectionError:
-        apiException = NoInternetException();
-        errorMessage = apiException.message;
+        errorMessage = 'No internet connection. Please check your network.';
         break;
       case DioExceptionType.badResponse:
-        final statusCode = err.response?.statusCode;
+        statusCode = err.response?.statusCode;
         final responseData = err.response?.data;
         final path = err.requestOptions.path;
 
@@ -86,11 +84,9 @@ class ApiInterceptor extends Interceptor {
         } else if (responseData is Map && responseData['error'] != null) {
           errorMessage = responseData['error'].toString();
         } else if (statusCode == 401 || statusCode == 403) {
-          apiException = UnauthorizedException();
-          errorMessage = apiException.message;
+          errorMessage = 'Unauthorized access. Please login again.';
         } else if (statusCode != null && statusCode >= 500) {
-          apiException = ServerErrorException(statusCode: statusCode);
-          errorMessage = apiException.message;
+          errorMessage = 'A server error occurred. Please try again.';
         } else {
           errorMessage = err.message ?? 'A server error occurred.';
         }
@@ -99,7 +95,6 @@ class ApiInterceptor extends Interceptor {
         if (statusCode == 401 && !_isPublicAuthPath(path)) {
           forceLogout = true;
           errorMessage = 'Session expired. Please login again.';
-          apiException = UnauthorizedException();
         }
         break;
       default:
@@ -115,14 +110,11 @@ class ApiInterceptor extends Interceptor {
     // Show debounced error snackbar automatically using global navigator overlay
     _showDebouncedSnackBar(errorMessage);
 
-    if (apiException != null) {
-      handler.reject(DioException(
-        requestOptions: err.requestOptions,
-        error: apiException,
-        response: err.response,
-      ));
-    } else {
-      handler.next(err);
-    }
+    handler.reject(DioException(
+      requestOptions: err.requestOptions,
+      error: ApiException(errorMessage, statusCode: statusCode),
+      response: err.response,
+      type: err.type,
+    ));
   }
 }

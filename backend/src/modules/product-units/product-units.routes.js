@@ -33,9 +33,4 @@ const { authenticate } = require('../../shared/middleware/auth.middleware');
  */
 router.post('/verify', authenticate, verifyProduct);
 
-// Stub list — not public
-router.get('/', authenticate, (req, res) => {
-  res.status(200).json([]);
-});
-
 module.exports = router;
