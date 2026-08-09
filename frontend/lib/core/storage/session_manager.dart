@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'auth_token_cache.dart';
 
@@ -30,12 +29,8 @@ class SessionManager {
         _storage.write(key: 'is_logged_in', value: 'true'),
         _storage.write(key: _userKey, value: jsonEncode(user)),
       ]);
-    } catch (e) {
+    } catch (_) {
       // Login must not fail only because disk/Keystore write failed.
-      if (kDebugMode) {
-        // ignore: avoid_print
-        print('[session] secure storage write failed (memory session kept): $e');
-      }
     }
   }
 

@@ -115,10 +115,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         if (authState.role == UserRole.guest) {
           return '/login';
         }
-        if (path.startsWith('/super-admin') &&
-            authState.role != UserRole.superAdmin) {
-          return homePathForRole(authState.role);
-        }
         // Super Admin reuses admin shell until §1 dedicated tools
         if (path.startsWith('/admin') &&
             authState.role != UserRole.admin &&
@@ -151,14 +147,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const LoginScreen(),
       ),
 
-
-      // ── Super Admin: redirect to admin shell until §1 dedicated UI ───────────
-      GoRoute(
-        path: '/super-admin/dashboard',
-        redirect: (context, state) => '/admin/dashboard',
-      ),
-
-      // ── Admin shell ──────────────────────────────────────────────────────────
+      // ── Admin shell (Super Admin uses this shell until §1) ───────────────────
       ShellRoute(
         builder: (context, state, child) => AdminShellScreen(child: child),
         routes: [

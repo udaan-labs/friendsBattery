@@ -1,6 +1,7 @@
 const productsRepository = require('./products.repository');
 const { resolveUnitScope } = require('../inventory/inventory.scope');
 const { httpError } = require('../../shared/utils/http-error');
+const { isAdminLikeRole } = require('../../shared/utils/role.util');
 
 /**
  * Products Service
@@ -99,7 +100,7 @@ class ProductsService {
    */
   async getInventoryProducts(userId, role) {
     let products;
-    if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
+    if (isAdminLikeRole(role)) {
       products = await productsRepository.findAdminInventoryProducts();
     } else {
       const unitScope = await resolveUnitScope(userId, role);
@@ -121,7 +122,7 @@ class ProductsService {
         });
       }
 
-      const availableQuantity = (role === 'ADMIN' || role === 'SUPER_ADMIN')
+      const availableQuantity = isAdminLikeRole(role)
         ? Number(product.stockQuantity)
         : product._count.units;
 

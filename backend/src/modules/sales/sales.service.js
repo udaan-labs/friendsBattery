@@ -1,6 +1,7 @@
 const salesRepository = require('./sales.repository');
 const { httpError } = require('../../shared/utils/http-error');
 const { parsePagination } = require('../../shared/utils/pagination');
+const { isAdminLikeRole } = require('../../shared/utils/role.util');
 
 /**
  * Sales Service
@@ -96,7 +97,7 @@ class SalesService {
    */
   async getSales(user) {
     let sales;
-    if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
+    if (isAdminLikeRole(user.role)) {
       sales = await salesRepository.getAllSales();
     } else {
       sales = await salesRepository.getSalesBySeller(user.id);
@@ -113,7 +114,7 @@ class SalesService {
     if (!sale) {
       throw httpError(404, 'Transaction not found');
     }
-    if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
+    if (isAdminLikeRole(user?.role)) {
       return this._formatSale(sale);
     }
     if (user?.role === 'SELLER' && Number(sale.sellerId) === Number(user.id)) {

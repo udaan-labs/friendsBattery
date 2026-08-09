@@ -1,6 +1,7 @@
 const shipmentsRepository = require('./shipments.repository');
 const { prisma } = require('../../config/db');
 const { httpError } = require('../../shared/utils/http-error');
+const { isAdminLikeRole } = require('../../shared/utils/role.util');
 
 /**
  * Admin → Seller stock transfer (serial-based).
@@ -161,7 +162,7 @@ class ShipmentsService {
     }
 
     // Explicit allow-list (default deny) — no fall-through for unknown roles
-    if (userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') {
+    if (isAdminLikeRole(userRole)) {
       // ok
     } else if (userRole === 'SELLER') {
       if (Number(shipment.sellerId) !== Number(userId)) {

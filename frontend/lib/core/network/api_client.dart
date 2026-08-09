@@ -22,11 +22,10 @@ Dio createAppDio() {
     ApiInterceptor(),
     if (kDebugMode)
       LogInterceptor(
-        request: true,
+        request: false,
         requestHeader: false,
         requestBody: false,
-        // statusCode is under responseHeader — needed to debug login
-        responseHeader: true,
+        responseHeader: false,
         responseBody: false,
         error: true,
         logPrint: (obj) {

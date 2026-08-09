@@ -1,5 +1,6 @@
 const returnsRepository = require('./returns.repository');
 const { httpError } = require('../../shared/utils/http-error');
+const { isAdminLikeRole } = require('../../shared/utils/role.util');
 
 class ReturnsService {
   /**
@@ -66,7 +67,7 @@ class ReturnsService {
     const where = {};
     
     // If not Admin / Super Admin, filter by user's own returns
-    if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+    if (!isAdminLikeRole(user.role)) {
       where.returnById = user.id;
     }
     

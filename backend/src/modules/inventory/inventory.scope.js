@@ -1,5 +1,6 @@
 const { prisma } = require('../../config/db');
 const ROLES = require('../../shared/constants/roles');
+const { isAdminLikeRole } = require('../../shared/utils/role.util');
 
 /**
  * Prisma filter for which product_units a user may see as inventory.
@@ -15,7 +16,7 @@ const ROLES = require('../../shared/constants/roles');
  */
 async function resolveUnitScope(userId, role, locationId = undefined) {
   // SUPER_ADMIN shares global admin inventory view until §1 dedicated SA tools
-  if (role === ROLES.ADMIN || role === ROLES.SUPER_ADMIN) {
+  if (isAdminLikeRole(role)) {
     return { owner: { role: ROLES.ADMIN } };
   }
 

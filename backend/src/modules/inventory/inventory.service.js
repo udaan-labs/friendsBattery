@@ -4,6 +4,7 @@ const { resolveUnitScope } = require('./inventory.scope');
 const { getDefaultWarehouseId, getUserLocationId } = require('../../shared/utils/location.util');
 const { prisma } = require('../../config/db');
 const { httpError } = require('../../shared/utils/http-error');
+const { isAdminLikeRole } = require('../../shared/utils/role.util');
 
 /**
  * Inventory Service
@@ -57,7 +58,7 @@ class InventoryService {
         min_unit_count_seller: Number(p.minUnitCountSeller),
         min_unit_count_admin: Number(p.minUnitCountAdmin),
         on_sale: p.onSale,
-        is_low_stock: (role === 'ADMIN' || role === 'SUPER_ADMIN')
+        is_low_stock: isAdminLikeRole(role)
           ? p._count.units <= Number(p.minUnitCountAdmin)
           : p._count.units <= Number(p.minUnitCountSeller)
       })),
@@ -99,7 +100,7 @@ class InventoryService {
       min_unit_count_seller: Number(product.minUnitCountSeller),
       min_unit_count_admin: Number(product.minUnitCountAdmin),
       on_sale: product.onSale,
-      is_low_stock: (role === 'ADMIN' || role === 'SUPER_ADMIN')
+      is_low_stock: isAdminLikeRole(role)
         ? product._count.units <= Number(product.minUnitCountAdmin)
         : product._count.units <= Number(product.minUnitCountSeller),
       serial_numbers: product.units?.map(u => u.serialNumber) || []
@@ -285,7 +286,7 @@ class InventoryService {
         { fromUserId: userId },
         { toUserId: userId }
       ];
-    } else if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
+    } else if (isAdminLikeRole(role)) {
       if (seller_id) {
         filters.OR = [
           { fromUserId: seller_id },

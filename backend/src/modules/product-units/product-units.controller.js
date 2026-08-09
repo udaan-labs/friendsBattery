@@ -1,5 +1,6 @@
 const { prisma } = require('../../config/db');
 const { successResponse, errorResponse } = require('../../shared/utils/response');
+const { isAdminLikeRole } = require('../../shared/utils/role.util');
 
 const verifyProduct = async (req, res, next) => {
   try {
@@ -46,7 +47,7 @@ const verifyProduct = async (req, res, next) => {
     // Default deny. EMPLOYEE must not see customer/sale/ledger via verify.
     const role = req.user.role;
     let isAuthorized = false;
-    if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
+    if (isAdminLikeRole(role)) {
       isAuthorized = true;
     } else if (role === 'SELLER') {
       if (String(productUnit.ownerId) === String(req.user.id)) {

@@ -19,15 +19,8 @@ const requireRole = (...allowedRoles) => (req, res, next) => {
   next();
 };
 
-const requireSuperAdmin = (req, res, next) => {
-  if (!req.user || !isSuperAdmin(req.user)) {
-    return errorResponse(res, 403, 'Forbidden: Super Admin access required');
-  }
-  next();
-};
-
 /**
- * Management routes (current global admin tools).
+ * Management routes (global admin tools).
  * SUPER_ADMIN included until §1/§2 split own-shop vs all-WH APIs.
  */
 const requireAdmin = (req, res, next) => {
@@ -37,13 +30,8 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
-/** Super Admin or shop Admin (same as requireAdmin while SA shares admin APIs). */
-const requireSuperAdminOrAdmin = (req, res, next) => {
-  if (!req.user || !isSuperAdminOrAdmin(req.user)) {
-    return errorResponse(res, 403, 'Forbidden: Super Admin or Admin access required');
-  }
-  next();
-};
+/** Alias while some routes name “SA or Admin” explicitly — same as requireAdmin. */
+const requireSuperAdminOrAdmin = requireAdmin;
 
 const requireSeller = (req, res, next) => {
   if (!req.user || !isSeller(req.user)) {
@@ -66,14 +54,6 @@ const requireAdminOrSeller = (req, res, next) => {
   next();
 };
 
-/** Management + seller (SA, shop Admin, or Seller). */
-const requireSuperAdminOrAdminOrSeller = (req, res, next) => {
-  if (!req.user || (!isSuperAdminOrAdmin(req.user) && !isSeller(req.user))) {
-    return errorResponse(res, 403, 'Forbidden: Super Admin, Admin or Seller access required');
-  }
-  next();
-};
-
 /** Any of the four system roles. */
 const requireAdminOrSellerOrEmployee = (req, res, next) => {
   if (
@@ -90,12 +70,10 @@ const requireAdminOrSellerOrEmployee = (req, res, next) => {
 
 module.exports = {
   requireRole,
-  requireSuperAdmin,
   requireAdmin,
   requireSuperAdminOrAdmin,
   requireSeller,
   requireEmployee,
   requireAdminOrSeller,
-  requireSuperAdminOrAdminOrSeller,
   requireAdminOrSellerOrEmployee,
 };

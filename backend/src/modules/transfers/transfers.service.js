@@ -1,5 +1,6 @@
 const transfersRepository = require('./transfers.repository');
 const { httpError } = require('../../shared/utils/http-error');
+const { isAdminLikeRole } = require('../../shared/utils/role.util');
 
 /**
  * Transfers Service
@@ -94,7 +95,7 @@ class TransfersService {
   async getTransfers(user) {
     let shipments;
 
-    if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
+    if (isAdminLikeRole(user.role)) {
       shipments = await transfersRepository.getAllShipments();
     } else if (user.role === 'SELLER') {
       shipments = await transfersRepository.getShipmentsBySeller(user.id);
@@ -132,7 +133,7 @@ class TransfersService {
       throw httpError(404, 'Shipment not found');
     }
 
-    if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
+    if (isAdminLikeRole(user.role)) {
       // ok
     } else if (user.role === 'SELLER' && Number(shipment.toUserId) === Number(user.id)) {
       // ok
