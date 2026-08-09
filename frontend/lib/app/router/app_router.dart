@@ -38,6 +38,8 @@ import '../../features/employee/dashboard/screens/employee_home_screen.dart';
 import '../../features/employee/attendance/employee_attendance_screen.dart';
 import '../../features/employee/shipments/screens/employee_shipments_screen.dart';
 import '../../features/employee/shipments/screens/employee_shipment_detail_screen.dart';
+import '../../features/shared/app_gate/providers/app_gate_provider.dart';
+import '../../features/shared/app_gate/screens/app_gate_screen.dart';
 import '../../shared/providers/auth_provider.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -62,15 +64,40 @@ final routerProvider = Provider<GoRouter>((ref) {
   ref.listen<AuthState>(authProvider, (_, __) {
     refresh.value++;
   });
+  ref.listen<AppGateState>(appGateProvider, (_, __) {
+    refresh.value++;
+  });
 
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/splash',
     refreshListenable: refresh,
     redirect: (context, state) {
+      final path = state.uri.path;
+      final isSplash = path == '/splash';
+      final isAppGate = path == '/app-gate';
+      final isLoggingIn = path == '/login';
+
+      final gate = ref.read(appGateProvider);
+
+      // Splash owns the first status check — do not role-home redirect yet.
+      if (!gate.checked) {
+        if (isSplash || isLoggingIn || isAppGate) return null;
+        return '/splash';
+      }
+
+      // Highest priority: force-update / maintenance (all roles).
+      if (gate.isBlocked) {
+        return isAppGate ? null : '/app-gate';
+      }
+      // Gate cleared while user is on block screen → resume normal flow.
+      if (isAppGate) {
+        final auth = ref.read(authProvider);
+        if (auth.isAuthenticated) return homePathForRole(auth.role);
+        return '/login';
+      }
+
       final authState = ref.read(authProvider);
-      final isLoggingIn = state.uri.toString() == '/login';
-      final isSplash = state.uri.toString() == '/splash';
 
       // Public self-register closed (admin-only via /admin/add-seller)
       if (!authState.isAuthenticated) {
@@ -78,33 +105,32 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/login';
       }
 
-      if ((isLoggingIn || isSplash || state.uri.path == '/register') && authState.isAuthenticated) {
-        if (authState.role == UserRole.admin) return '/admin/dashboard';
-        if (authState.role == UserRole.seller) return '/seller/dashboard';
-        if (authState.role == UserRole.employee) return '/employee/home';
-        return '/login';
+      if ((isLoggingIn || isSplash || path == '/register') &&
+          authState.isAuthenticated) {
+        return homePathForRole(authState.role);
       }
 
       if (authState.isAuthenticated) {
-        final path = state.uri.path;
         // Guest / unknown role: never stay in app shell
         if (authState.role == UserRole.guest) {
           return '/login';
         }
-        if (path.startsWith('/admin') && authState.role != UserRole.admin) {
-          if (authState.role == UserRole.seller) return '/seller/dashboard';
-          if (authState.role == UserRole.employee) return '/employee/home';
-          return '/login';
+        if (path.startsWith('/super-admin') &&
+            authState.role != UserRole.superAdmin) {
+          return homePathForRole(authState.role);
+        }
+        // Super Admin reuses admin shell until §1 dedicated tools
+        if (path.startsWith('/admin') &&
+            authState.role != UserRole.admin &&
+            authState.role != UserRole.superAdmin) {
+          return homePathForRole(authState.role);
         }
         if (path.startsWith('/seller') && authState.role != UserRole.seller) {
-          if (authState.role == UserRole.admin) return '/admin/dashboard';
-          if (authState.role == UserRole.employee) return '/employee/home';
-          return '/login';
+          return homePathForRole(authState.role);
         }
-        if (path.startsWith('/employee') && authState.role != UserRole.employee) {
-          if (authState.role == UserRole.admin) return '/admin/dashboard';
-          if (authState.role == UserRole.seller) return '/seller/dashboard';
-          return '/login';
+        if (path.startsWith('/employee') &&
+            authState.role != UserRole.employee) {
+          return homePathForRole(authState.role);
         }
         // Shared inventory deep links: any real role OK; guest already redirected
       }
@@ -117,8 +143,19 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(
+        path: '/app-gate',
+        builder: (context, state) => const AppGateScreen(),
+      ),
+      GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+
+
+      // ── Super Admin: redirect to admin shell until §1 dedicated UI ───────────
+      GoRoute(
+        path: '/super-admin/dashboard',
+        redirect: (context, state) => '/admin/dashboard',
       ),
 
       // ── Admin shell ──────────────────────────────────────────────────────────

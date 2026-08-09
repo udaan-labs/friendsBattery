@@ -13,24 +13,46 @@ class ApiInterceptor extends Interceptor {
   }
 
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     // Prefer in-memory tokens (sync). Cold path loads secure storage once.
-    if (!AuthTokenCache.hasTokens) {
-      await AuthTokenCache.ensureLoaded();
+    // Login/register never need tokens — skip secure storage so Android
+    // cannot hang the first request waiting on FlutterSecureStorage.
+    final path = options.path;
+    final isPublicAuth = _isPublicAuthPath(path);
+
+    void attachAndContinue({bool withTokens = true}) {
+      if (withTokens) {
+        final token = AuthTokenCache.authKey;
+        final authId = AuthTokenCache.authId;
+        if (token != null && token.isNotEmpty) {
+          // Backend accepts auth-key or Authorization Bearer
+          options.headers['Authorization'] = 'Bearer $token';
+          options.headers['auth-key'] = token;
+        }
+        if (authId != null && authId.isNotEmpty) {
+          options.headers['auth-id'] = authId;
+        }
+      }
+      // Always skip ngrok free-tier HTML interstitial on phone browsers/clients
+      options.headers['ngrok-skip-browser-warning'] = '1';
+      handler.next(options);
     }
 
-    final token = AuthTokenCache.authKey;
-    final authId = AuthTokenCache.authId;
-    if (token != null && token.isNotEmpty) {
-      // Backend accepts auth-key or Authorization Bearer
-      options.headers['Authorization'] = 'Bearer $token';
-      options.headers['auth-key'] = token;
-    }
-    if (authId != null && authId.isNotEmpty) {
-      options.headers['auth-id'] = authId;
+    if (isPublicAuth) {
+      attachAndContinue(withTokens: false);
+      return;
     }
 
-    handler.next(options);
+    if (AuthTokenCache.hasTokens) {
+      attachAndContinue();
+      return;
+    }
+
+    AuthTokenCache.ensureLoaded().then((_) {
+      attachAndContinue();
+    }).catchError((Object e, StackTrace st) {
+      attachAndContinue();
+    });
   }
 
   static String? _lastErrorMessage;

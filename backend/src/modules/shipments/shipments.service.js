@@ -161,7 +161,7 @@ class ShipmentsService {
     }
 
     // Explicit allow-list (default deny) — no fall-through for unknown roles
-    if (userRole === 'ADMIN') {
+    if (userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') {
       // ok
     } else if (userRole === 'SELLER') {
       if (Number(shipment.sellerId) !== Number(userId)) {

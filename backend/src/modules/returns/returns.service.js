@@ -65,8 +65,8 @@ class ReturnsService {
   async getReturns(user) {
     const where = {};
     
-    // If not Admin, filter by user's own returns
-    if (user.role !== 'ADMIN') {
+    // If not Admin / Super Admin, filter by user's own returns
+    if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
       where.returnById = user.id;
     }
     

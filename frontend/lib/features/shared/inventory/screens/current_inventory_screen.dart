@@ -184,7 +184,8 @@ class _CurrentInventoryScreenState extends ConsumerState<CurrentInventoryScreen>
                               index: serialNumber,
                               showPricingMeta: role != UserRole.employee,
                               onTap: () {
-                                if (role == UserRole.admin) {
+                                if (role == UserRole.admin ||
+                                    role == UserRole.superAdmin) {
                                   showModalBottomSheet(
                                     context: context,
                                     isScrollControlled: true,

@@ -46,6 +46,9 @@ doc/ApiShipmentsIdGet200ResponseDataItemsInner.md
 doc/ApiShipmentsIdGet200ResponseDataSeller.md
 doc/ApiTransfersPostRequest.md
 doc/ApiTransfersPostRequestItemsInner.md
+doc/AppApi.md
+doc/AppStatus.md
+doc/AppStatusResponse.md
 doc/AssignedLocation.md
 doc/AttendanceApi.md
 doc/AttendanceGeoBody.md
@@ -53,7 +56,6 @@ doc/AttendanceRecord.md
 doc/AttendanceStatusData.md
 doc/AuthApi.md
 doc/AvailableSerialsResponse.md
-doc/Category.md
 doc/CreateEmployeeRequest.md
 doc/CreateEmployeeResponse.md
 doc/CreateLocationRequest.md
@@ -74,8 +76,6 @@ doc/CreateShipmentResponse.md
 doc/CreateShipmentResult.md
 doc/CreatedEmployee.md
 doc/CreatedEmployeeLocation.md
-doc/Customer.md
-doc/CustomersApi.md
 doc/DashboardApi.md
 doc/EmployeeAction.md
 doc/EmployeeActionLocation.md
@@ -156,8 +156,6 @@ doc/ShopStaffData.md
 doc/ShopStaffMember.md
 doc/ShopStaffResponse.md
 doc/ShopsApi.md
-doc/StockRequest.md
-doc/StockRequestItem.md
 doc/TransferInventoryCount.md
 doc/TransfersApi.md
 doc/UpdateStockRequest.md
@@ -171,9 +169,9 @@ doc/VerifyProductResponse.md
 doc/VerifyProductUnit.md
 lib/friends_battery_api.dart
 lib/src/api.dart
+lib/src/api/app_api.dart
 lib/src/api/attendance_api.dart
 lib/src/api/auth_api.dart
-lib/src/api/customers_api.dart
 lib/src/api/dashboard_api.dart
 lib/src/api/health_api.dart
 lib/src/api/inventory_api.dart
@@ -236,12 +234,13 @@ lib/src/model/api_shipments_id_get200_response_data_items_inner.dart
 lib/src/model/api_shipments_id_get200_response_data_seller.dart
 lib/src/model/api_transfers_post_request.dart
 lib/src/model/api_transfers_post_request_items_inner.dart
+lib/src/model/app_status.dart
+lib/src/model/app_status_response.dart
 lib/src/model/assigned_location.dart
 lib/src/model/attendance_geo_body.dart
 lib/src/model/attendance_record.dart
 lib/src/model/attendance_status_data.dart
 lib/src/model/available_serials_response.dart
-lib/src/model/category.dart
 lib/src/model/create_employee_request.dart
 lib/src/model/create_employee_response.dart
 lib/src/model/create_location_request.dart
@@ -262,7 +261,6 @@ lib/src/model/create_shipment_response.dart
 lib/src/model/create_shipment_result.dart
 lib/src/model/created_employee.dart
 lib/src/model/created_employee_location.dart
-lib/src/model/customer.dart
 lib/src/model/date.dart
 lib/src/model/employee_action.dart
 lib/src/model/employee_action_location.dart
@@ -335,8 +333,6 @@ lib/src/model/shipment_item.dart
 lib/src/model/shop_staff_data.dart
 lib/src/model/shop_staff_member.dart
 lib/src/model/shop_staff_response.dart
-lib/src/model/stock_request.dart
-lib/src/model/stock_request_item.dart
 lib/src/model/transfer_inventory_count.dart
 lib/src/model/update_stock_request.dart
 lib/src/model/update_stock_response.dart
@@ -349,3 +345,6 @@ lib/src/model/verify_product_response.dart
 lib/src/model/verify_product_unit.dart
 lib/src/serializers.dart
 pubspec.yaml
+test/app_api_test.dart
+test/app_status_response_test.dart
+test/app_status_test.dart

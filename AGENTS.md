@@ -163,10 +163,12 @@ FriendsBattery/
 2. **Immutable ledger**  
    `inventory_transactions` is append-only. Never UPDATE or DELETE ledger rows after insert. Ownership/status changes must insert a new transaction.
 
-3. **Roles**  
-   - `ADMIN`: all data, inventory, sellers, approvals  
-   - `SELLER`: only own inventory, sales, and requests  
-   - `EMPLOYEE`: staff at a location; inventory via `current_location_id = user.location_id` (seller still uses `owner_id`). Job title = `employee_roles` (`users.employee_role_id`), separate from system `Role`.  
+3. **Roles** (`SUPER_ADMIN → ADMIN → SELLER → EMPLOYEE`)  
+   - `SUPER_ADMIN`: org root (`parent_id` null); full multi-location tools in §1  
+   - `ADMIN`: shop admin under SA (`users.parent_id` → SA); global inventory scope until §2  
+   - `SELLER`: only own inventory, sales, and requests (`parent_id` → Admin)  
+   - `EMPLOYEE`: staff at a location; inventory via `current_location_id = user.location_id` (seller still uses `owner_id`). Job title = `employee_roles` (`users.employee_role_id`), separate from system `Role`. `parent_id` → Admin  
+   Middleware: `requireRole` / `requireSuperAdmin` / `requireAdmin` / `requireSuperAdminOrAdmin` / …  
    Never trust client-supplied seller/owner IDs for authorization; use `req.user` from auth middleware.
 
 4. **Layered backend**  

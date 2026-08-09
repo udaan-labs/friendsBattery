@@ -59,13 +59,14 @@ Serializers _$serializers =
           ..add(ApiShipmentsIdGet200ResponseDataSeller.serializer)
           ..add(ApiTransfersPostRequest.serializer)
           ..add(ApiTransfersPostRequestItemsInner.serializer)
+          ..add(AppStatus.serializer)
+          ..add(AppStatusResponse.serializer)
           ..add(AssignedLocation.serializer)
           ..add(AttendanceGeoBody.serializer)
           ..add(AttendanceRecord.serializer)
           ..add(AttendanceRecordStatusEnum.serializer)
           ..add(AttendanceStatusData.serializer)
           ..add(AvailableSerialsResponse.serializer)
-          ..add(Category.serializer)
           ..add(CreateEmployeeRequest.serializer)
           ..add(CreateEmployeeResponse.serializer)
           ..add(CreateLocationRequest.serializer)
@@ -90,7 +91,6 @@ Serializers _$serializers =
           ..add(CreatedEmployeeLocation.serializer)
           ..add(CreatedEmployeeLocationTypeEnum.serializer)
           ..add(CreatedEmployeeRoleEnum.serializer)
-          ..add(Customer.serializer)
           ..add(EmployeeAction.serializer)
           ..add(EmployeeActionActionEnum.serializer)
           ..add(EmployeeActionLocation.serializer)
@@ -170,9 +170,6 @@ Serializers _$serializers =
           ..add(ShopStaffMember.serializer)
           ..add(ShopStaffMemberRoleEnum.serializer)
           ..add(ShopStaffResponse.serializer)
-          ..add(StockRequest.serializer)
-          ..add(StockRequestItem.serializer)
-          ..add(StockRequestStatusEnum.serializer)
           ..add(TransferInventoryCount.serializer)
           ..add(UpdateStockRequest.serializer)
           ..add(UpdateStockResponse.serializer)
@@ -365,10 +362,6 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(ShopStaffMember)]),
             () => ListBuilder<ShopStaffMember>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [const FullType(StockRequestItem)]),
-            () => ListBuilder<StockRequestItem>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

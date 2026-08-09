@@ -97,7 +97,7 @@ class AuthApi {
   }
 
   /// Authenticate user and return token
-  /// Works for ADMIN, SELLER, and EMPLOYEE. EMPLOYEE login may include location / employee_role on user and session_id (employee_sessions). 
+  /// Works for SUPER_ADMIN, ADMIN, SELLER, and EMPLOYEE. EMPLOYEE login may include location / employee_role on user and session_id (employee_sessions). 
   ///
   /// Parameters:
   /// * [apiAuthLoginPostRequest] 

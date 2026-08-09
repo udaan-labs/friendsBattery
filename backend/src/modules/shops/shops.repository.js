@@ -168,6 +168,7 @@ class ShopsRepository {
         id: true,
         shopName: true,
         locationId: true,
+        parentId: true,
         role: true,
       },
     });

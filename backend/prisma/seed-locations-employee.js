@@ -2,8 +2,9 @@
  * Idempotent seed for employee+location slice.
  * Run: node prisma/seed-locations-employee.js
  *
- * Creates: WH001, SHOP001, ADMIN001, SELLER001, EMP001,
+ * Creates: WH001, SHOP001, superadmin1, admin1, seller1, employee1,
  * one product if missing, sample units at warehouse + shop.
+ * Hierarchy: SUPER_ADMIN → ADMIN → SELLER/EMPLOYEE (parent_id).
  */
 require('dotenv').config();
 const bcrypt = require('bcrypt');
@@ -12,7 +13,17 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const PASSWORD = process.env.SEED_EMP_PASSWORD || '123';
 
-async function upsertUser({ userId, userName, role, userNumber, shopName, locationId, employeeRoleId, passwordHash }) {
+async function upsertUser({
+  userId,
+  userName,
+  role,
+  userNumber,
+  shopName,
+  locationId,
+  employeeRoleId,
+  parentId,
+  passwordHash,
+}) {
   const existing = await prisma.user.findFirst({
     where: { OR: [{ userId }, { userNumber }] },
   });
@@ -24,6 +35,7 @@ async function upsertUser({ userId, userName, role, userNumber, shopName, locati
         role,
         locationId: locationId ?? null,
         employeeRoleId: employeeRoleId ?? null,
+        parentId: parentId ?? null,
         isActive: true,
         isVerified: true,
         passwordHash,
@@ -41,6 +53,7 @@ async function upsertUser({ userId, userName, role, userNumber, shopName, locati
       shopName: shopName ?? null,
       locationId: locationId ?? null,
       employeeRoleId: employeeRoleId ?? null,
+      parentId: parentId ?? null,
       passwordHash,
       isActive: true,
       isVerified: true,
@@ -104,13 +117,24 @@ async function main() {
     });
   }
 
+  const superAdmin = await upsertUser({
+    userId: 'superadmin1',
+    userName: 'Super Admin',
+    role: 'SUPER_ADMIN',
+    userNumber: '9000000009',
+    shopName: null,
+    locationId: null,
+    parentId: null,
+    passwordHash,
+  });
   const admin = await upsertUser({
     userId: 'admin1',
     userName: 'Admin',
     role: 'ADMIN',
     userNumber: '9000000000',
-    shopName: null,
-    locationId: warehouse.id,
+    shopName: 'Friends Battery Shop',
+    locationId: shop.id,
+    parentId: superAdmin.id,
     passwordHash,
   });
   const seller = await upsertUser({
@@ -120,6 +144,7 @@ async function main() {
     userNumber: '9000000002',
     shopName: 'Friends Battery Shop',
     locationId: shop.id,
+    parentId: admin.id,
     passwordHash,
   });
   const emp = await upsertUser({
@@ -130,10 +155,13 @@ async function main() {
     shopName: 'Friends Battery Shop',
     locationId: shop.id,
     employeeRoleId: cashier.id,
+    parentId: admin.id,
     passwordHash,
   });
   console.log(
-    '  users admin1=',
+    '  users superadmin1=',
+    Number(superAdmin.id),
+    'admin1=',
     Number(admin.id),
     'seller1=',
     Number(seller.id),
@@ -221,7 +249,7 @@ async function main() {
   });
   console.log('  AVAILABLE at SHOP001:', atShop);
   console.log('Done. Passwords:', PASSWORD);
-  console.log('  admin1 | seller1 | employee1');
+  console.log('  superadmin1 | admin1 | seller1 | employee1');
   console.log('  EMP inventory → units at shop; SELLER → owner_id; ADMIN → admin stock');
 }
 

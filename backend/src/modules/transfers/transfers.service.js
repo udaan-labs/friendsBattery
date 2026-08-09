@@ -94,7 +94,7 @@ class TransfersService {
   async getTransfers(user) {
     let shipments;
 
-    if (user.role === 'ADMIN') {
+    if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
       shipments = await transfersRepository.getAllShipments();
     } else if (user.role === 'SELLER') {
       shipments = await transfersRepository.getShipmentsBySeller(user.id);
@@ -132,7 +132,7 @@ class TransfersService {
       throw httpError(404, 'Shipment not found');
     }
 
-    if (user.role === 'ADMIN') {
+    if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
       // ok
     } else if (user.role === 'SELLER' && Number(shipment.toUserId) === Number(user.id)) {
       // ok

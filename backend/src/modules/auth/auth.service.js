@@ -7,7 +7,12 @@ const ROLES = require('../../shared/constants/roles');
 const { httpError } = require('../../shared/utils/http-error');
 
 class AuthService {
-  async registerUser({ user_id, username, user_number, shop_name, password, location_id }) {
+  /**
+   * Admin (or Super Admin) registers a SELLER.
+   * parent_id = shop Admin when actor is ADMIN; when SA creates seller, parent_id = SA
+   * (prefer linking under Admin once create-admin flow exists in §1).
+   */
+  async registerUser({ user_id, username, user_number, shop_name, password, location_id, actor }) {
     // Check constraints sequentially to return specific error messages
     const existingUserId = await authRepository.findUserByUserId(user_id);
     if (existingUserId) {
@@ -40,14 +45,19 @@ class AuthService {
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
+    // SELLER → Admin (or SA if created by SA)
+    const parentId =
+      actor?.id != null ? BigInt(actor.id) : null;
+
     const userData = {
       userId: user_id,
       userName: username,
       userNumber: user_number,
       shopName: resolvedShopName,
       passwordHash,
-      role: 'SELLER',
+      role: ROLES.SELLER,
       locationId: locationId != null ? BigInt(locationId) : null,
+      parentId,
       // Admin activates via PUT /auth/activate — never auto-login-ready
       isActive: false,
       isVerified: false,
@@ -63,6 +73,7 @@ class AuthService {
       user_number: newUser.userNumber,
       shop_name: newUser.shopName,
       location_id: newUser.locationId != null ? Number(newUser.locationId) : null,
+      parent_id: newUser.parentId != null ? Number(newUser.parentId) : null,
       role: 'seller',
       is_active: newUser.isActive,
       is_verified: newUser.isVerified,
@@ -71,7 +82,7 @@ class AuthService {
   }
 
   /**
-   * Login any system role (ADMIN / SELLER / EMPLOYEE).
+   * Login any system role (SUPER_ADMIN / ADMIN / SELLER / EMPLOYEE).
    * Employees get an employee_sessions row (security) and location / employee_role on user payload.
    */
   async loginUser({ user_id, password, device_id, ip_address, app_version, firebase_token }) {

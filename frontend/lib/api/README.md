@@ -47,14 +47,13 @@ Please follow the [installation procedure](#installation--usage) and then run th
 import 'package:friends_battery_api/friends_battery_api.dart';
 
 
-final api = FriendsBatteryApi().getAttendanceApi();
-final AttendanceGeoBody attendanceGeoBody = ; // AttendanceGeoBody | 
+final api = FriendsBatteryApi().getAppApi();
 
 try {
-    final response = await api.apiEmployeeAttendanceCheckInPost(attendanceGeoBody);
+    final response = await api.apiAppStatusGet();
     print(response);
 } on DioException catch (e) {
-    print("Exception when calling AttendanceApi->apiEmployeeAttendanceCheckInPost: $e\n");
+    print("Exception when calling AppApi->apiAppStatusGet: $e\n");
 }
 
 ```
@@ -65,6 +64,7 @@ All URIs are relative to *http://localhost:3000*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+[*AppApi*](doc/AppApi.md) | [**apiAppStatusGet**](doc/AppApi.md#apiappstatusget) | **GET** /api/app/status | App version + maintenance gate status
 [*AttendanceApi*](doc/AttendanceApi.md) | [**apiEmployeeAttendanceCheckInPost**](doc/AttendanceApi.md#apiemployeeattendancecheckinpost) | **POST** /api/employee/attendance/check-in | Check in at assigned shop location
 [*AttendanceApi*](doc/AttendanceApi.md) | [**apiEmployeeAttendanceCheckOutPost**](doc/AttendanceApi.md#apiemployeeattendancecheckoutpost) | **POST** /api/employee/attendance/check-out | Check out (close open attendance)
 [*AttendanceApi*](doc/AttendanceApi.md) | [**apiEmployeeAttendanceStatusGet**](doc/AttendanceApi.md#apiemployeeattendancestatusget) | **GET** /api/employee/attendance/status | Current check-in status for employee
@@ -72,7 +72,6 @@ Class | Method | HTTP request | Description
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthLoginPost**](doc/AuthApi.md#apiauthloginpost) | **POST** /api/auth/login | Authenticate user and return token
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthLogoutPost**](doc/AuthApi.md#apiauthlogoutpost) | **POST** /api/auth/logout | End session (closes employee_sessions for EMPLOYEE)
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthRegisterPost**](doc/AuthApi.md#apiauthregisterpost) | **POST** /api/auth/register | Register a new user
-[*CustomersApi*](doc/CustomersApi.md) | [**apiCustomersGet**](doc/CustomersApi.md#apicustomersget) | **GET** /api/customers | Retrieve a list of customers
 [*DashboardApi*](doc/DashboardApi.md) | [**apiDashboardActivityHistoryGet**](doc/DashboardApi.md#apidashboardactivityhistoryget) | **GET** /api/dashboard/activity-history | Get paginated activity history (Admin only)
 [*DashboardApi*](doc/DashboardApi.md) | [**apiDashboardRecentActivityGet**](doc/DashboardApi.md#apidashboardrecentactivityget) | **GET** /api/dashboard/recent-activity | Get recent activity feed (Admin only)
 [*DashboardApi*](doc/DashboardApi.md) | [**apiDashboardStatsGet**](doc/DashboardApi.md#apidashboardstatsget) | **GET** /api/dashboard/stats | Get dashboard statistics
@@ -174,12 +173,13 @@ Class | Method | HTTP request | Description
  - [ApiShipmentsIdGet200ResponseDataSeller](doc/ApiShipmentsIdGet200ResponseDataSeller.md)
  - [ApiTransfersPostRequest](doc/ApiTransfersPostRequest.md)
  - [ApiTransfersPostRequestItemsInner](doc/ApiTransfersPostRequestItemsInner.md)
+ - [AppStatus](doc/AppStatus.md)
+ - [AppStatusResponse](doc/AppStatusResponse.md)
  - [AssignedLocation](doc/AssignedLocation.md)
  - [AttendanceGeoBody](doc/AttendanceGeoBody.md)
  - [AttendanceRecord](doc/AttendanceRecord.md)
  - [AttendanceStatusData](doc/AttendanceStatusData.md)
  - [AvailableSerialsResponse](doc/AvailableSerialsResponse.md)
- - [Category](doc/Category.md)
  - [CreateEmployeeRequest](doc/CreateEmployeeRequest.md)
  - [CreateEmployeeResponse](doc/CreateEmployeeResponse.md)
  - [CreateLocationRequest](doc/CreateLocationRequest.md)
@@ -200,7 +200,6 @@ Class | Method | HTTP request | Description
  - [CreateShipmentResult](doc/CreateShipmentResult.md)
  - [CreatedEmployee](doc/CreatedEmployee.md)
  - [CreatedEmployeeLocation](doc/CreatedEmployeeLocation.md)
- - [Customer](doc/Customer.md)
  - [EmployeeAction](doc/EmployeeAction.md)
  - [EmployeeActionLocation](doc/EmployeeActionLocation.md)
  - [EmployeeRoleItem](doc/EmployeeRoleItem.md)
@@ -272,8 +271,6 @@ Class | Method | HTTP request | Description
  - [ShopStaffData](doc/ShopStaffData.md)
  - [ShopStaffMember](doc/ShopStaffMember.md)
  - [ShopStaffResponse](doc/ShopStaffResponse.md)
- - [StockRequest](doc/StockRequest.md)
- - [StockRequestItem](doc/StockRequestItem.md)
  - [TransferInventoryCount](doc/TransferInventoryCount.md)
  - [UpdateStockRequest](doc/UpdateStockRequest.md)
  - [UpdateStockResponse](doc/UpdateStockResponse.md)

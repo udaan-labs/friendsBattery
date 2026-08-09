@@ -16,7 +16,7 @@ module.exports = {
       id: { type: 'string', description: 'User ID in BigInt format converted to string' },
       userId: { type: 'string' },
       userName: { type: 'string' },
-      role: { type: 'string', enum: ['ADMIN', 'SELLER', 'EMPLOYEE'] },
+      role: { type: 'string', enum: ['SUPER_ADMIN', 'ADMIN', 'SELLER', 'EMPLOYEE'] },
       userNumber: { type: 'string', nullable: true },
       shopName: { type: 'string', nullable: true },
       isActive: { type: 'boolean' },
@@ -33,7 +33,7 @@ module.exports = {
       username: { type: 'string' },
       user_number: { type: 'string', nullable: true },
       shop_name: { type: 'string', nullable: true },
-      role: { type: 'string', enum: ['ADMIN', 'SELLER', 'EMPLOYEE'] },
+      role: { type: 'string', enum: ['SUPER_ADMIN', 'ADMIN', 'SELLER', 'EMPLOYEE'] },
       location_id: { type: 'integer', nullable: true },
       employee_role_id: { type: 'integer', nullable: true },
       location: {
@@ -900,6 +900,40 @@ module.exports = {
       timestamp: { type: 'string', format: 'date-time' }
     }
   },
+  AppStatus: {
+    type: 'object',
+    properties: {
+      latest_version: {
+        type: 'string',
+        description: 'Expected client app version (semver, e.g. 1.1.3)',
+        example: '1.1.3',
+      },
+      maintenance: {
+        type: 'boolean',
+        description: 'When true, clients must show maintenance screen',
+        example: false,
+      },
+      message: {
+        type: 'string',
+        nullable: true,
+        description: 'Optional message for update or maintenance UI',
+      },
+      android_update_url: {
+        type: 'string',
+        nullable: true,
+        description: 'Play Store / APK URL for force-update button',
+      },
+    },
+  },
+  AppStatusResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean' },
+      message: { type: 'string' },
+      data: { $ref: '#/components/schemas/AppStatus' },
+    },
+  },
+
   VerifyProductRequest: {
     type: 'object',
     required: ['identifier'],

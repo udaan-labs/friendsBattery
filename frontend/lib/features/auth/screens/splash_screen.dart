@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../theme/app_theme.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/widgets/responsive_helper.dart';
+import '../../shared/app_gate/providers/app_gate_provider.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -21,10 +22,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   Future<void> _initAuth() async {
     final authNotifier = ref.read(authProvider.notifier);
+    final appGateNotifier = ref.read(appGateProvider.notifier);
     final started = DateTime.now();
 
-    // Restore session + warm in-memory auth tokens before first API call.
-    await authNotifier.initSession();
+    // Session restore + app gate (version / maintenance) in parallel.
+    await Future.wait([
+      authNotifier.initSession(),
+      appGateNotifier.check(),
+    ]);
 
     // Keep splash visible only briefly for branding (was a hard-coded 2s delay).
     const minSplash = Duration(milliseconds: 400);
@@ -33,13 +38,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       await Future.delayed(minSplash - elapsed);
     }
 
-    if (mounted) {
-      final authState = ref.read(authProvider);
-      if (!authState.isAuthenticated) {
-        context.go('/login');
-      }
-      // If authenticated, GoRouter will handle the redirect to dashboard automatically
+    if (!mounted) return;
+
+    final gate = ref.read(appGateProvider);
+    if (gate.isBlocked) {
+      context.go('/app-gate');
+      return;
     }
+
+    final authState = ref.read(authProvider);
+    if (!authState.isAuthenticated) {
+      context.go('/login');
+    }
+    // If authenticated, GoRouter will handle the redirect to dashboard automatically
   }
 
   @override

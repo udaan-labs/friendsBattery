@@ -22,13 +22,21 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
   AuthController({required this.repository, required this.ref}) : super(const AsyncValue.data(null));
 
   Future<void> login(String username, String password) async {
+    // Ignore double-tap while a login is already in flight
+    if (state.isLoading) return;
+
     state = const AsyncValue.loading();
+    final userId = username.trim();
+    // ignore: avoid_print
+    print('[auth] login start userId=$userId');
     try {
-      final response = await repository.login(username, password);
-      
+      final response = await repository.login(userId, password);
+
       final role = parseUserRole(response.role);
+      // ignore: avoid_print
+      print('[auth] login API ok role=${response.role} parsed=$role');
       if (role == UserRole.guest) {
-        throw Exception('Unsupported account role');
+        throw Exception('Unsupported account role: ${response.role}');
       }
 
       await SessionManager.saveSession(
@@ -39,9 +47,13 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
       );
 
       ref.read(authProvider.notifier).setAuthenticated(role);
+      // ignore: avoid_print
+      print('[auth] login session saved → home for $role');
 
       state = const AsyncValue.data(null);
     } catch (e, stack) {
+      // ignore: avoid_print
+      print('[auth] login FAILED: $e');
       state = AsyncValue.error(e, stack);
     }
   }

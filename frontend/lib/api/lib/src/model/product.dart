@@ -4,7 +4,6 @@
 
 // ignore_for_file: unused_element
 import 'package:friends_battery_api/src/model/product_model.dart';
-import 'package:friends_battery_api/src/model/category.dart';
 import 'package:friends_battery_api/src/model/product_name.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -15,7 +14,6 @@ part 'product.g.dart';
 ///
 /// Properties:
 /// * [id] 
-/// * [categoryId] 
 /// * [productNameId] 
 /// * [productModelId] 
 /// * [minPrice] 
@@ -24,16 +22,12 @@ part 'product.g.dart';
 /// * [minUnitCountAdmin] 
 /// * [minUnitCountSeller] 
 /// * [createdAt] 
-/// * [category] 
 /// * [productName] 
 /// * [productModel] 
 @BuiltValue()
 abstract class Product implements Built<Product, ProductBuilder> {
   @BuiltValueField(wireName: r'id')
   String? get id;
-
-  @BuiltValueField(wireName: r'categoryId')
-  String? get categoryId;
 
   @BuiltValueField(wireName: r'productNameId')
   String? get productNameId;
@@ -58,9 +52,6 @@ abstract class Product implements Built<Product, ProductBuilder> {
 
   @BuiltValueField(wireName: r'createdAt')
   DateTime? get createdAt;
-
-  @BuiltValueField(wireName: r'category')
-  Category? get category;
 
   @BuiltValueField(wireName: r'productName')
   ProductName? get productName;
@@ -95,13 +86,6 @@ class _$ProductSerializer implements PrimitiveSerializer<Product> {
       yield r'id';
       yield serializers.serialize(
         object.id,
-        specifiedType: const FullType(String),
-      );
-    }
-    if (object.categoryId != null) {
-      yield r'categoryId';
-      yield serializers.serialize(
-        object.categoryId,
         specifiedType: const FullType(String),
       );
     }
@@ -161,13 +145,6 @@ class _$ProductSerializer implements PrimitiveSerializer<Product> {
         specifiedType: const FullType(DateTime),
       );
     }
-    if (object.category != null) {
-      yield r'category';
-      yield serializers.serialize(
-        object.category,
-        specifiedType: const FullType(Category),
-      );
-    }
     if (object.productName != null) {
       yield r'productName';
       yield serializers.serialize(
@@ -211,13 +188,6 @@ class _$ProductSerializer implements PrimitiveSerializer<Product> {
             specifiedType: const FullType(String),
           ) as String;
           result.id = valueDes;
-          break;
-        case r'categoryId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
-          result.categoryId = valueDes;
           break;
         case r'productNameId':
           final valueDes = serializers.deserialize(
@@ -275,13 +245,6 @@ class _$ProductSerializer implements PrimitiveSerializer<Product> {
             specifiedType: const FullType(DateTime),
           ) as DateTime;
           result.createdAt = valueDes;
-          break;
-        case r'category':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(Category),
-          ) as Category;
-          result.category.replace(valueDes);
           break;
         case r'productName':
           final valueDes = serializers.deserialize(

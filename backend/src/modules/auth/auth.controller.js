@@ -13,6 +13,7 @@ class AuthController {
         shop_name,
         password,
         location_id,
+        actor: req.user,
       });
       return successResponse(res, 201, 'User registered successfully', result);
     } catch (error) {

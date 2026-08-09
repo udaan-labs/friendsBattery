@@ -8,5 +8,13 @@ final dioProvider = Provider<Dio>((ref) => createAppDio());
 
 final apiClientProvider = Provider<FriendsBatteryApi>((ref) {
   final dio = ref.watch(dioProvider);
-  return FriendsBatteryApi(dio: dio, basePathOverride: ApiConfig.baseUrl);
+  // Pass empty interceptors so FriendsBatteryApi does NOT stack
+  // OAuth/Bearer/Basic interceptors onto the shared Dio on every rebuild
+  // (that duplicated request handling and made login flaky).
+  // Auth headers are owned by ApiInterceptor in createAppDio().
+  return FriendsBatteryApi(
+    dio: dio,
+    basePathOverride: ApiConfig.baseUrl,
+    interceptors: const [],
+  );
 });

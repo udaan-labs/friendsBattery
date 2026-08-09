@@ -3,7 +3,7 @@
 **Role chain:** `SUPER ADMIN → ADMIN → SELLER → EMPLOYEE`  
 One stream at a time. Work **down** the chain.  
 `- [ ]` todo · `- [x]` done.  
-**Next:** §0 Roles foundation → §1 Super Admin.
+**Next:** §1 Super Admin.
 
 ```text
 SUPER ADMIN     all WH + shops · stock any WH · adjust any shop · PDF/GPS all · sell/accept
@@ -29,9 +29,9 @@ Shared sell tools (§5) once anyone can sell. Obsidian: `obsidian/FriendsBattery
 
 ## 0. Roles foundation (do first)
 
-- [ ] Roles: `SUPER_ADMIN` → `ADMIN` → `SELLER` → `EMPLOYEE`  
-- [ ] Backend `requireRole` + Flutter route gates for all four  
-- [ ] Parent links: Admin → shops under Super Admin; Seller/Employee → Admin’s shop  
+- [x] Roles: `SUPER_ADMIN` → `ADMIN` → `SELLER` → `EMPLOYEE`  
+- [x] Backend `requireRole` + Flutter route gates for all four  
+- [x] Parent links: Admin → shops under Super Admin; Seller/Employee → Admin’s shop  
 
 | | Super Admin | Admin | Seller | Employee |
 |--|:-----------:|:-----:|:------:|:--------:|

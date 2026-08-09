@@ -264,8 +264,8 @@ class ShopsService {
 
   /**
    * Create EMPLOYEE at a location.
-   * - SELLER: always own location_id (client location_id ignored)
-   * - ADMIN: location_id required (warehouse or any shop)
+   * - SELLER: always own location_id (client location_id ignored); parent → Admin (seller.parentId) or seller
+   * - ADMIN / SUPER_ADMIN: location_id required; parent → Admin when actor is ADMIN, else actor
    *
    * @param {{ id: number, role: string }} actor - from req.user
    * @param {object} body - validated create body
@@ -282,6 +282,7 @@ class ShopsService {
 
     let locationId;
     let shopName;
+    let parentId;
 
     if (actor.role === ROLES.SELLER) {
       const seller = await shopsRepository.findUserById(actor.id);
@@ -295,7 +296,9 @@ class ShopsService {
       }
       locationId = Number(seller.locationId);
       shopName = seller.shopName || null;
-    } else if (actor.role === ROLES.ADMIN) {
+      // EMPLOYEE → Admin chain: prefer seller's parent Admin, else seller
+      parentId = seller.parentId != null ? Number(seller.parentId) : Number(seller.id);
+    } else if (actor.role === ROLES.ADMIN || actor.role === ROLES.SUPER_ADMIN) {
       if (location_id == null) {
         throw httpError(400, 'location_id is required');
       }
@@ -305,6 +308,8 @@ class ShopsService {
       }
       locationId = Number(location.id);
       shopName = location.name;
+      // EMPLOYEE → Admin (when SA creates, parent is SA until shop Admin exists)
+      parentId = Number(actor.id);
     } else {
       throw httpError(403, 'Forbidden');
     }
@@ -337,6 +342,7 @@ class ShopsService {
       passwordHash,
       role: ROLES.EMPLOYEE,
       locationId: BigInt(locationId),
+      parentId: parentId != null ? BigInt(parentId) : null,
       employeeRoleId: employeeRoleId != null ? BigInt(employeeRoleId) : null,
       // Ready to log in — managed staff, not open self-register
       isActive: true,

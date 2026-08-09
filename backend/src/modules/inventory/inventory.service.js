@@ -57,7 +57,7 @@ class InventoryService {
         min_unit_count_seller: Number(p.minUnitCountSeller),
         min_unit_count_admin: Number(p.minUnitCountAdmin),
         on_sale: p.onSale,
-        is_low_stock: role === 'ADMIN' 
+        is_low_stock: (role === 'ADMIN' || role === 'SUPER_ADMIN')
           ? p._count.units <= Number(p.minUnitCountAdmin)
           : p._count.units <= Number(p.minUnitCountSeller)
       })),
@@ -99,7 +99,7 @@ class InventoryService {
       min_unit_count_seller: Number(product.minUnitCountSeller),
       min_unit_count_admin: Number(product.minUnitCountAdmin),
       on_sale: product.onSale,
-      is_low_stock: role === 'ADMIN'
+      is_low_stock: (role === 'ADMIN' || role === 'SUPER_ADMIN')
         ? product._count.units <= Number(product.minUnitCountAdmin)
         : product._count.units <= Number(product.minUnitCountSeller),
       serial_numbers: product.units?.map(u => u.serialNumber) || []
@@ -285,7 +285,7 @@ class InventoryService {
         { fromUserId: userId },
         { toUserId: userId }
       ];
-    } else if (role === 'ADMIN') {
+    } else if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
       if (seller_id) {
         filters.OR = [
           { fromUserId: seller_id },

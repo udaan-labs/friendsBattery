@@ -3,7 +3,7 @@ const router = express.Router();
 const authController = require('./auth.controller');
 const { validateRegister, validateLogin, validateActivate } = require('./auth.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
-const { requireAdmin } = require('../../shared/middleware/role.middleware');
+const { requireSuperAdminOrAdmin } = require('../../shared/middleware/role.middleware');
 
 /**
  * @swagger
@@ -56,8 +56,8 @@ const { requireAdmin } = require('../../shared/middleware/role.middleware');
  *       409:
  *         description: Username already exists
  */
-// Admin-only: no open self-register of active sellers
-router.post('/register', authenticate, requireAdmin, validateRegister, authController.register);
+// Super Admin or Admin: no open self-register of active sellers
+router.post('/register', authenticate, requireSuperAdminOrAdmin, validateRegister, authController.register);
 
 /**
  * @swagger
@@ -65,7 +65,7 @@ router.post('/register', authenticate, requireAdmin, validateRegister, authContr
  *   post:
  *     summary: Authenticate user and return token
  *     description: |
- *       Works for ADMIN, SELLER, and EMPLOYEE.
+ *       Works for SUPER_ADMIN, ADMIN, SELLER, and EMPLOYEE.
  *       EMPLOYEE login may include location / employee_role on user and session_id (employee_sessions).
  *     tags: [Auth]
  *     requestBody:
@@ -176,6 +176,6 @@ router.post('/logout', authenticate, authController.logout);
  *       404:
  *         description: Invalid User ID
  */
-router.put('/activate', authenticate, requireAdmin, validateActivate, authController.activate);
+router.put('/activate', authenticate, requireSuperAdminOrAdmin, validateActivate, authController.activate);
 
 module.exports = router;

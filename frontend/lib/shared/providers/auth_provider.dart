@@ -2,11 +2,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/storage/auth_token_cache.dart';
 import '../../core/storage/session_manager.dart';
 
-enum UserRole { admin, seller, employee, guest }
+enum UserRole { superAdmin, admin, seller, employee, guest }
 
 /// Map API/session role string (case-insensitive) to [UserRole].
 UserRole parseUserRole(String? roleStr) {
   switch (roleStr?.toLowerCase()) {
+    case 'super_admin':
+    case 'superadmin':
+      return UserRole.superAdmin;
     case 'admin':
       return UserRole.admin;
     case 'employee':
@@ -14,8 +17,24 @@ UserRole parseUserRole(String? roleStr) {
     case 'seller':
       return UserRole.seller;
     default:
-      // Never invent seller rights for unknown/missing role
+      // Never invent rights for unknown/missing role
       return UserRole.guest;
+  }
+}
+
+/// Home path for an authenticated role (used by router redirects).
+/// Super Admin uses the existing admin shell until §1 dedicated SA UI.
+String homePathForRole(UserRole role) {
+  switch (role) {
+    case UserRole.superAdmin:
+    case UserRole.admin:
+      return '/admin/dashboard';
+    case UserRole.seller:
+      return '/seller/dashboard';
+    case UserRole.employee:
+      return '/employee/home';
+    case UserRole.guest:
+      return '/login';
   }
 }
 

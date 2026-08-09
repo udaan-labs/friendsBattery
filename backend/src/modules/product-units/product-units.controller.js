@@ -46,7 +46,7 @@ const verifyProduct = async (req, res, next) => {
     // Default deny. EMPLOYEE must not see customer/sale/ledger via verify.
     const role = req.user.role;
     let isAuthorized = false;
-    if (role === 'ADMIN') {
+    if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
       isAuthorized = true;
     } else if (role === 'SELLER') {
       if (String(productUnit.ownerId) === String(req.user.id)) {

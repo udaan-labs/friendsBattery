@@ -55,6 +55,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Module routes
+app.use('/api/app', require('./modules/app/app.routes'));
 app.use('/api/auth', require('./modules/auth/auth.routes'));
 app.use('/api/dashboard', require('./modules/dashboard/dashboard.routes'));
 app.use('/api/seller/dashboard', require('./modules/dashboard/seller-dashboard.routes'));

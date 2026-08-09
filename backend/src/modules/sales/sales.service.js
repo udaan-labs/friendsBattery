@@ -96,7 +96,7 @@ class SalesService {
    */
   async getSales(user) {
     let sales;
-    if (user.role === 'ADMIN') {
+    if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
       sales = await salesRepository.getAllSales();
     } else {
       sales = await salesRepository.getSalesBySeller(user.id);
@@ -113,7 +113,7 @@ class SalesService {
     if (!sale) {
       throw httpError(404, 'Transaction not found');
     }
-    if (user?.role === 'ADMIN') {
+    if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
       return this._formatSale(sale);
     }
     if (user?.role === 'SELLER' && Number(sale.sellerId) === Number(user.id)) {

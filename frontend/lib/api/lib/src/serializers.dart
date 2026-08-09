@@ -59,12 +59,13 @@ import 'package:friends_battery_api/src/model/api_shipments_id_get200_response_d
 import 'package:friends_battery_api/src/model/api_shipments_id_get200_response_data_seller.dart';
 import 'package:friends_battery_api/src/model/api_transfers_post_request.dart';
 import 'package:friends_battery_api/src/model/api_transfers_post_request_items_inner.dart';
+import 'package:friends_battery_api/src/model/app_status.dart';
+import 'package:friends_battery_api/src/model/app_status_response.dart';
 import 'package:friends_battery_api/src/model/assigned_location.dart';
 import 'package:friends_battery_api/src/model/attendance_geo_body.dart';
 import 'package:friends_battery_api/src/model/attendance_record.dart';
 import 'package:friends_battery_api/src/model/attendance_status_data.dart';
 import 'package:friends_battery_api/src/model/available_serials_response.dart';
-import 'package:friends_battery_api/src/model/category.dart';
 import 'package:friends_battery_api/src/model/create_employee_request.dart';
 import 'package:friends_battery_api/src/model/create_employee_response.dart';
 import 'package:friends_battery_api/src/model/create_location_request.dart';
@@ -85,7 +86,6 @@ import 'package:friends_battery_api/src/model/create_shipment_response.dart';
 import 'package:friends_battery_api/src/model/create_shipment_result.dart';
 import 'package:friends_battery_api/src/model/created_employee.dart';
 import 'package:friends_battery_api/src/model/created_employee_location.dart';
-import 'package:friends_battery_api/src/model/customer.dart';
 import 'package:friends_battery_api/src/model/employee_action.dart';
 import 'package:friends_battery_api/src/model/employee_action_location.dart';
 import 'package:friends_battery_api/src/model/employee_role_item.dart';
@@ -157,8 +157,6 @@ import 'package:friends_battery_api/src/model/shipment_item.dart';
 import 'package:friends_battery_api/src/model/shop_staff_data.dart';
 import 'package:friends_battery_api/src/model/shop_staff_member.dart';
 import 'package:friends_battery_api/src/model/shop_staff_response.dart';
-import 'package:friends_battery_api/src/model/stock_request.dart';
-import 'package:friends_battery_api/src/model/stock_request_item.dart';
 import 'package:friends_battery_api/src/model/transfer_inventory_count.dart';
 import 'package:friends_battery_api/src/model/update_stock_request.dart';
 import 'package:friends_battery_api/src/model/update_stock_response.dart';
@@ -218,12 +216,13 @@ part 'serializers.g.dart';
   ApiShipmentsIdGet200ResponseDataSeller,
   ApiTransfersPostRequest,
   ApiTransfersPostRequestItemsInner,
+  AppStatus,
+  AppStatusResponse,
   AssignedLocation,
   AttendanceGeoBody,
   AttendanceRecord,
   AttendanceStatusData,
   AvailableSerialsResponse,
-  Category,
   CreateEmployeeRequest,
   CreateEmployeeResponse,
   CreateLocationRequest,
@@ -244,7 +243,6 @@ part 'serializers.g.dart';
   CreateShipmentResult,
   CreatedEmployee,
   CreatedEmployeeLocation,
-  Customer,
   EmployeeAction,
   EmployeeActionLocation,
   EmployeeRoleItem,
@@ -316,8 +314,6 @@ part 'serializers.g.dart';
   ShopStaffData,
   ShopStaffMember,
   ShopStaffResponse,
-  StockRequest,
-  StockRequestItem,
   TransferInventoryCount,
   UpdateStockRequest,
   UpdateStockResponse,
@@ -330,10 +326,6 @@ part 'serializers.g.dart';
   VerifyProductUnit,
 ])
 Serializers serializers = (_$serializers.toBuilder()
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(Customer)]),
-        () => ListBuilder<Customer>(),
-      )
       ..add(const OneOfSerializer())
       ..add(const AnyOfSerializer())
       ..add(const DateSerializer())

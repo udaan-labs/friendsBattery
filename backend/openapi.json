@@ -51,6 +51,7 @@
           "role": {
             "type": "string",
             "enum": [
+              "SUPER_ADMIN",
               "ADMIN",
               "SELLER",
               "EMPLOYEE"
@@ -100,6 +101,7 @@
           "role": {
             "type": "string",
             "enum": [
+              "SUPER_ADMIN",
               "ADMIN",
               "SELLER",
               "EMPLOYEE"
@@ -414,36 +416,6 @@
             "items": {
               "$ref": "#/components/schemas/SellerShipmentListItem"
             }
-          }
-        }
-      },
-      "Customer": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "phone": {
-            "type": "string",
-            "nullable": true
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "Category": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
           }
         }
       },
@@ -1808,6 +1780,45 @@
           }
         }
       },
+      "AppStatus": {
+        "type": "object",
+        "properties": {
+          "latest_version": {
+            "type": "string",
+            "description": "Expected client app version (semver, e.g. 1.1.3)",
+            "example": "1.1.3"
+          },
+          "maintenance": {
+            "type": "boolean",
+            "description": "When true, clients must show maintenance screen",
+            "example": false
+          },
+          "message": {
+            "type": "string",
+            "nullable": true,
+            "description": "Optional message for update or maintenance UI"
+          },
+          "android_update_url": {
+            "type": "string",
+            "nullable": true,
+            "description": "Play Store / APK URL for force-update button"
+          }
+        }
+      },
+      "AppStatusResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AppStatus"
+          }
+        }
+      },
       "VerifyProductRequest": {
         "type": "object",
         "required": [
@@ -1937,9 +1948,6 @@
           "id": {
             "type": "string"
           },
-          "categoryId": {
-            "type": "string"
-          },
           "productNameId": {
             "type": "string"
           },
@@ -1967,9 +1975,6 @@
           "createdAt": {
             "type": "string",
             "format": "date-time"
-          },
-          "category": {
-            "$ref": "#/components/schemas/Category"
           },
           "productName": {
             "$ref": "#/components/schemas/ProductName"
@@ -2043,62 +2048,6 @@
           "timestamp": {
             "type": "string",
             "format": "date-time"
-          }
-        }
-      },
-      "StockRequest": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "sellerId": {
-            "type": "string"
-          },
-          "requestTo": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "PENDING",
-              "APPROVED",
-              "REJECTED",
-              "SHIPPED",
-              "DELIVERED"
-            ]
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "approvedAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/StockRequestItem"
-            }
-          }
-        }
-      },
-      "StockRequestItem": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "stockRequestId": {
-            "type": "string"
-          },
-          "productId": {
-            "type": "string"
-          },
-          "requestedQuantity": {
-            "type": "integer"
           }
         }
       },
@@ -5221,27 +5170,6 @@
         }
       }
     },
-    "/api/health": {
-      "get": {
-        "summary": "Health check",
-        "tags": [
-          "Health"
-        ],
-        "security": [],
-        "responses": {
-          "200": {
-            "description": "API is healthy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HealthStatus"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/seller/dashboard/stats": {
       "get": {
         "summary": "Get seller dashboard statistics",
@@ -5404,44 +5332,6 @@
         }
       }
     },
-    "/api/customers": {
-      "get": {
-        "summary": "Retrieve a list of customers",
-        "tags": [
-          "Customers"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "A list of customers",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Customer"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/auth/register": {
       "post": {
         "summary": "Register a new user",
@@ -5516,7 +5406,7 @@
     "/api/auth/login": {
       "post": {
         "summary": "Authenticate user and return token",
-        "description": "Works for ADMIN, SELLER, and EMPLOYEE.\nEMPLOYEE login may include location / employee_role on user and session_id (employee_sessions).\n",
+        "description": "Works for SUPER_ADMIN, ADMIN, SELLER, and EMPLOYEE.\nEMPLOYEE login may include location / employee_role on user and session_id (employee_sessions).\n",
         "tags": [
           "Auth"
         ],
@@ -5822,6 +5712,49 @@
           },
           "403": {
             "description": "Employee only"
+          }
+        }
+      }
+    },
+    "/api/app/status": {
+      "get": {
+        "summary": "App version + maintenance gate status",
+        "description": "Public endpoint for Flutter splash / app gate.\nClients compare local version to `latest_version` and block on `maintenance`.\n",
+        "tags": [
+          "App"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Current app gate status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppStatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "summary": "Health check",
+        "tags": [
+          "Health"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "API is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthStatus"
+                }
+              }
+            }
           }
         }
       }

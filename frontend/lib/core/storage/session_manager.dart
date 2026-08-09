@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'auth_token_cache.dart';
 
@@ -17,16 +18,25 @@ class SessionManager {
     required String role,
     required Map<String, dynamic> user,
   }) async {
+    // Always set memory first so router + Dio work even if secure storage fails.
     AuthTokenCache.set(authId: authId, authKey: authKey, role: role);
     SessionManager.user = user;
 
-    await Future.wait([
-      _storage.write(key: 'auth_id', value: authId),
-      _storage.write(key: 'auth_key', value: authKey),
-      _storage.write(key: 'role', value: role),
-      _storage.write(key: 'is_logged_in', value: 'true'),
-      _storage.write(key: _userKey, value: jsonEncode(user)),
-    ]);
+    try {
+      await Future.wait([
+        _storage.write(key: 'auth_id', value: authId),
+        _storage.write(key: 'auth_key', value: authKey),
+        _storage.write(key: 'role', value: role),
+        _storage.write(key: 'is_logged_in', value: 'true'),
+        _storage.write(key: _userKey, value: jsonEncode(user)),
+      ]);
+    } catch (e) {
+      // Login must not fail only because disk/Keystore write failed.
+      if (kDebugMode) {
+        // ignore: avoid_print
+        print('[session] secure storage write failed (memory session kept): $e');
+      }
+    }
   }
 
   static Future<Map<String, String?>> getSessionData() async {
@@ -50,6 +60,7 @@ class SessionManager {
   }
 
   static Future<bool> isLoggedIn() async {
+    if (AuthTokenCache.hasTokens) return true;
     final loggedIn = await _storage.read(key: 'is_logged_in');
     return loggedIn == 'true';
   }
@@ -57,6 +68,8 @@ class SessionManager {
   static Future<void> clearSession() async {
     AuthTokenCache.clear();
     user = null;
-    await _storage.deleteAll();
+    try {
+      await _storage.deleteAll();
+    } catch (_) {}
   }
 }

@@ -17,8 +17,42 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _obscurePassword = true;
 
   @override
+  void dispose() {
+    _userIdController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onLogin() async {
+    final userId = _userIdController.text.trim();
+    final password = _passwordController.text;
+    if (userId.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter User ID and password')),
+      );
+      return;
+    }
+    await ref.read(authControllerProvider.notifier).login(userId, password);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
+
+    // Surface login failures (API / role parse / network)
+    ref.listen<AsyncValue<void>>(authControllerProvider, (prev, next) {
+      next.whenOrNull(
+        error: (err, _) {
+          final msg = err.toString().replaceFirst('Exception: ', '');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(msg.isEmpty ? 'Login failed' : msg),
+              backgroundColor: AppTheme.error,
+            ),
+          );
+        },
+      );
+    });
 
     return Scaffold(
       body: Center(
@@ -73,16 +107,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   children: [
                     TextField(
                       controller: _userIdController,
+                      textInputAction: TextInputAction.next,
                       decoration: const InputDecoration(labelText: 'User ID'),
+                      enabled: !authState.isLoading,
                     ),
                     const SizedBox(height: 16),
                     TextField(
                       controller: _passwordController,
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: (_) {
+                        if (!authState.isLoading) _onLogin();
+                      },
                       decoration: InputDecoration(
                         labelText: 'Password',
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                            _obscurePassword
+                                ? Icons.visibility
+                                : Icons.visibility_off,
                           ),
                           onPressed: () {
                             setState(() {
@@ -92,18 +134,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ),
                       obscureText: _obscurePassword,
+                      enabled: !authState.isLoading,
                     ),
-                    SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 20 : 32),
+                    SizedBox(
+                      height: ResponsiveHelper.isSmallPhone(context) ? 20 : 32,
+                    ),
                     if (authState.isLoading)
                       const Center(child: CircularProgressIndicator())
                     else
                       ElevatedButton(
-                        onPressed: () {
-                          ref.read(authControllerProvider.notifier).login(
-                            _userIdController.text,
-                            _passwordController.text,
-                          );
-                        },
+                        onPressed: _onLogin,
                         child: const Text(
                           'Login',
                           style: TextStyle(

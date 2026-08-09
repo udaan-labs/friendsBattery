@@ -9,6 +9,7 @@ generator client {
 }
 
 enum Role {
+  SUPER_ADMIN
   ADMIN
   SELLER
   EMPLOYEE
@@ -88,6 +89,8 @@ model User {
   userNumber     String?  @unique @map("user_number") @db.VarChar(20)
   shopName       String?  @map("shop_name") @db.VarChar(150)
   locationId     BigInt?  @map("location_id")
+  /// Org parent: SUPER_ADMIN has null; ADMIN → SA; SELLER/EMPLOYEE → ADMIN
+  parentId       BigInt?  @map("parent_id")
   employeeRoleId BigInt?  @map("employee_role_id")
   passwordHash   String   @map("password_hash") @db.Text
   loginAttempt   Int      @default(0) @map("login_attempt")
@@ -98,6 +101,8 @@ model User {
 
   // Relations
   location               Location?              @relation(fields: [locationId], references: [id])
+  parent                 User?                  @relation("UserParent", fields: [parentId], references: [id])
+  children               User[]                 @relation("UserParent")
   employeeRole           EmployeeRole?          @relation(fields: [employeeRoleId], references: [id])
   ownedUnits             ProductUnit[]          @relation("UnitOwner")
   transactionsFrom       InventoryTransaction[] @relation("TransactionFromUser")
@@ -116,6 +121,7 @@ model User {
   sessions               EmployeeSession[]      @relation("SessionEmployee")
 
   @@index([locationId])
+  @@index([parentId])
   @@index([employeeRoleId])
   @@map("users")
 }

@@ -99,7 +99,7 @@ class ProductsService {
    */
   async getInventoryProducts(userId, role) {
     let products;
-    if (role === 'ADMIN') {
+    if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
       products = await productsRepository.findAdminInventoryProducts();
     } else {
       const unitScope = await resolveUnitScope(userId, role);
@@ -121,7 +121,7 @@ class ProductsService {
         });
       }
 
-      const availableQuantity = role === 'ADMIN'
+      const availableQuantity = (role === 'ADMIN' || role === 'SUPER_ADMIN')
         ? Number(product.stockQuantity)
         : product._count.units;
 

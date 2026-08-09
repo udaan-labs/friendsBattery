@@ -6,6 +6,8 @@ part of 'login_user.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const LoginUserRoleEnum _$loginUserRoleEnum_SUPER_ADMIN =
+    const LoginUserRoleEnum._('SUPER_ADMIN');
 const LoginUserRoleEnum _$loginUserRoleEnum_ADMIN = const LoginUserRoleEnum._(
   'ADMIN',
 );
@@ -17,6 +19,8 @@ const LoginUserRoleEnum _$loginUserRoleEnum_EMPLOYEE =
 
 LoginUserRoleEnum _$loginUserRoleEnumValueOf(String name) {
   switch (name) {
+    case 'SUPER_ADMIN':
+      return _$loginUserRoleEnum_SUPER_ADMIN;
     case 'ADMIN':
       return _$loginUserRoleEnum_ADMIN;
     case 'SELLER':
@@ -30,6 +34,7 @@ LoginUserRoleEnum _$loginUserRoleEnumValueOf(String name) {
 
 final BuiltSet<LoginUserRoleEnum> _$loginUserRoleEnumValues =
     BuiltSet<LoginUserRoleEnum>(const <LoginUserRoleEnum>[
+      _$loginUserRoleEnum_SUPER_ADMIN,
       _$loginUserRoleEnum_ADMIN,
       _$loginUserRoleEnum_SELLER,
       _$loginUserRoleEnum_EMPLOYEE,
@@ -41,11 +46,13 @@ Serializer<LoginUserRoleEnum> _$loginUserRoleEnumSerializer =
 class _$LoginUserRoleEnumSerializer
     implements PrimitiveSerializer<LoginUserRoleEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
+    'SUPER_ADMIN': 'SUPER_ADMIN',
     'ADMIN': 'ADMIN',
     'SELLER': 'SELLER',
     'EMPLOYEE': 'EMPLOYEE',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
+    'SUPER_ADMIN': 'SUPER_ADMIN',
     'ADMIN': 'ADMIN',
     'SELLER': 'SELLER',
     'EMPLOYEE': 'EMPLOYEE',

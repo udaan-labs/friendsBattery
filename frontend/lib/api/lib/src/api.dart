@@ -9,9 +9,9 @@ import 'package:friends_battery_api/src/auth/api_key_auth.dart';
 import 'package:friends_battery_api/src/auth/basic_auth.dart';
 import 'package:friends_battery_api/src/auth/bearer_auth.dart';
 import 'package:friends_battery_api/src/auth/oauth.dart';
+import 'package:friends_battery_api/src/api/app_api.dart';
 import 'package:friends_battery_api/src/api/attendance_api.dart';
 import 'package:friends_battery_api/src/api/auth_api.dart';
-import 'package:friends_battery_api/src/api/customers_api.dart';
 import 'package:friends_battery_api/src/api/dashboard_api.dart';
 import 'package:friends_battery_api/src/api/health_api.dart';
 import 'package:friends_battery_api/src/api/inventory_api.dart';
@@ -117,6 +117,12 @@ class FriendsBatteryApi {
     }
   }
 
+  /// Get AppApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  AppApi getAppApi() {
+    return AppApi(dio, serializers);
+  }
+
   /// Get AttendanceApi instance, base route and serializer can be overridden by a given but be careful,
   /// by doing that all interceptors will not be executed
   AttendanceApi getAttendanceApi() {
@@ -127,12 +133,6 @@ class FriendsBatteryApi {
   /// by doing that all interceptors will not be executed
   AuthApi getAuthApi() {
     return AuthApi(dio, serializers);
-  }
-
-  /// Get CustomersApi instance, base route and serializer can be overridden by a given but be careful,
-  /// by doing that all interceptors will not be executed
-  CustomersApi getCustomersApi() {
-    return CustomersApi(dio, serializers);
   }
 
   /// Get DashboardApi instance, base route and serializer can be overridden by a given but be careful,
