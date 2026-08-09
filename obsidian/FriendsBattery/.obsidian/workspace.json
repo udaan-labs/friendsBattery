@@ -13,15 +13,15 @@
             "state": {
               "type": "canvas",
               "state": {
-                "file": "Product and Shipment Flows.canvas",
+                "file": "Role Chain Workflow.canvas",
                 "viewState": {
-                  "x": 2.2483340567807772,
-                  "y": 314.03386991429863,
-                  "zoom": -0.899075076817921
+                  "x": 760.2030259452738,
+                  "y": 384.7704420626127,
+                  "zoom": -0.8888888888888891
                 }
               },
               "icon": "lucide-layout-dashboard",
-              "title": "Product and Shipment Flows"
+              "title": "Role Chain Workflow"
             }
           }
         ]
@@ -81,7 +81,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 200
   },
   "right": {
     "id": "dff4a2495f20b692",
@@ -188,8 +188,10 @@
   },
   "active": "7611fe0d9fec2637",
   "lastOpenFiles": [
-    "Login Flow.canvas",
+    "Role Chain Workflow.md",
+    "Role Chain Workflow.canvas",
     "Product and Shipment Flows.canvas",
+    "Login Flow.canvas",
     "Login Flow.md",
     "Untitled.md",
     "Untitled.canvas",
