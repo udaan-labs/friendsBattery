@@ -1,11 +1,9 @@
 const attendanceRepository = require('./attendance.repository');
 const { distanceMeters, normalizeGeoBody } = require('../../shared/utils/geo.util');
+const { httpError } = require('../../shared/utils/http-error');
 
 function fail(message, statusCode, meta) {
-  const error = new Error(message);
-  error.statusCode = statusCode;
-  if (meta) error.meta = meta;
-  throw error;
+  throw httpError(statusCode, message, meta);
 }
 
 function mapLocation(loc) {

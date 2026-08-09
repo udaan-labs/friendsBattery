@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+import '../../../../shared/utils/app_formatters.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 import '../providers/seller_sales_provider.dart';
 import '../models/seller_sale.dart';
@@ -76,7 +76,7 @@ class SellerSaleDetailsScreen extends ConsumerWidget {
   }
 
   Widget _buildSaleDetails(BuildContext context, SellerSale sale) {
-    final formattedDate = DateFormat('dd MMM yyyy, hh:mm a').format(sale.soldAt);
+    final formattedDate = formatAppDateTime(sale.soldAt);
 
     return SingleChildScrollView(
       padding: EdgeInsets.all(ResponsiveHelper.responsivePadding(context)),

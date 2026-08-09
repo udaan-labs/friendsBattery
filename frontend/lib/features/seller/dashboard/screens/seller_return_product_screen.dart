@@ -7,8 +7,8 @@ import '../../../../shared/widgets/responsive_helper.dart';
 import '../../../../core/network/api_client_provider.dart';
 import '../../../../core/state/data_sync.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
+import '../../../../shared/utils/app_formatters.dart';
 import '../../../../shared/widgets/scanner_screen.dart';
-import 'package:intl/intl.dart';
 import '../providers/seller_dashboard_providers.dart';
 
 class SellerReturnProductScreen extends ConsumerStatefulWidget {
@@ -664,7 +664,7 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
           final reason = record.reason ?? 'No reason provided';
           final dateParsed = record.createdAt;
           final formattedDate = dateParsed != null
-              ? DateFormat('dd MMM yyyy, hh:mm a').format(dateParsed.toLocal())
+              ? formatAppDateTime(dateParsed.toLocal())
               : 'Unknown Date';
 
           return Card(

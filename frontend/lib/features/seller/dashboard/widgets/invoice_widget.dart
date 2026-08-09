@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import '../../../../shared/utils/app_formatters.dart';
 
 class InvoiceWidget extends StatelessWidget {
   final String invoiceNumber;
@@ -94,7 +94,7 @@ class InvoiceWidget extends StatelessWidget {
                   children: [
                     const Text('Date:', style: TextStyle(fontSize: 12, color: Colors.grey)),
                     const SizedBox(height: 4),
-                    Text(DateFormat('dd MMM yyyy, hh:mm a').format(saleDate), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                    Text(formatAppDateTime(saleDate), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
                     const SizedBox(height: 8),
                     const Text('Seller:', style: TextStyle(fontSize: 12, color: Colors.grey)),
                     Text(sellerName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),

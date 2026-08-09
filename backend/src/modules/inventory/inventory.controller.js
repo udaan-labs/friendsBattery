@@ -1,5 +1,6 @@
 const inventoryService = require('./inventory.service');
 const { successResponse, errorResponse } = require('../../shared/utils/response');
+const { handleRouteError } = require('../../shared/utils/handle-route-error');
 
 /**
  * Inventory Controller
@@ -32,8 +33,7 @@ class InventoryController {
       // Return standardized success response
       return successResponse(res, 200, 'Inventory fetched successfully', inventory);
     } catch (error) {
-      console.error('Get Inventory Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Inventory Error:');
     }
   }
 
@@ -53,11 +53,7 @@ class InventoryController {
       // Return standardized success response
       return successResponse(res, 200, 'Inventory item fetched successfully', inventoryItem);
     } catch (error) {
-      if (error.statusCode === 404) {
-        return errorResponse(res, 404, error.message);
-      }
-      console.error('Get Inventory Item Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Inventory Item Error:');
     }
   }
 
@@ -75,11 +71,7 @@ class InventoryController {
       // Return standardized success response
       return successResponse(res, 200, 'Inventory adjusted successfully', result);
     } catch (error) {
-      if (error.statusCode === 400) {
-        return errorResponse(res, 400, error.message);
-      }
-      console.error('Adjust Inventory Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Adjust Inventory Error:');
     }
   }
 
@@ -98,11 +90,7 @@ class InventoryController {
       // Return standardized success response
       return successResponse(res, 200, 'Inventory transferred successfully', result);
     } catch (error) {
-      if (error.statusCode === 400) {
-        return errorResponse(res, 400, error.message);
-      }
-      console.error('Transfer Inventory Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Transfer Inventory Error:');
     }
   }
 
@@ -121,8 +109,7 @@ class InventoryController {
       // Return standardized success response
       return successResponse(res, 200, 'Inventory history fetched successfully', history);
     } catch (error) {
-      console.error('Get Inventory History Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Inventory History Error:');
     }
   }
 
@@ -148,11 +135,7 @@ class InventoryController {
       // Return standardized success response
       return successResponse(res, 200, 'Stock updated successfully', result);
     } catch (error) {
-      if (error.statusCode === 400 || error.statusCode === 404) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Update Stock Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Update Stock Error:');
     }
   }
 
@@ -174,8 +157,7 @@ class InventoryController {
 
       return successResponse(res, 200, 'Product details fetched successfully', details);
     } catch (error) {
-      console.error('Get Product Details Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Product Details Error:');
     }
   }
 
@@ -197,8 +179,7 @@ class InventoryController {
 
       return successResponse(res, 200, 'Available serials fetched successfully', serials);
     } catch (error) {
-      console.error('Get Available Serials Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Available Serials Error:');
     }
   }
 
@@ -224,8 +205,7 @@ class InventoryController {
       // Return standardized success response
       return successResponse(res, 200, 'Inventory details fetched successfully', details);
     } catch (error) {
-      console.error('Get Inventory Details Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Inventory Details Error:');
     }
   }
   /**
@@ -243,11 +223,7 @@ class InventoryController {
       const productDetails = await inventoryService.scanForSale(serial_number, sellerId);
       return successResponse(res, 200, 'Product found successfully', productDetails);
     } catch (error) {
-      if (error.message === 'Product not found in your available inventory') {
-        return errorResponse(res, 404, error.message);
-      }
-      console.error('Scan For Sale Error:', error);
-      return errorResponse(res, 500, 'Internal server error while scanning product');
+      return handleRouteError(res, error, 'Scan For Sale Error:');
     }
   }
 }

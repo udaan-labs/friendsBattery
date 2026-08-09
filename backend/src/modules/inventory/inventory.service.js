@@ -3,6 +3,7 @@ const inventoryRepository = require('./inventory.repository');
 const { resolveUnitScope } = require('./inventory.scope');
 const { getDefaultWarehouseId, getUserLocationId } = require('../../shared/utils/location.util');
 const { prisma } = require('../../config/db');
+const { httpError } = require('../../shared/utils/http-error');
 
 /**
  * Inventory Service
@@ -77,17 +78,13 @@ class InventoryService {
   async getInventoryItem(userId, role, productId, locationId) {
     const unitScope = await resolveUnitScope(userId, role, locationId);
     if (!unitScope) {
-      const error = new Error('Inventory item not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Inventory item not found');
     }
 
     const product = await inventoryRepository.findInventoryByProduct(unitScope, productId);
     
     if (!product) {
-      const error = new Error('Inventory item not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Inventory item not found');
     }
 
     return {
@@ -121,9 +118,7 @@ class InventoryService {
 
     // Hard cap — prevents accidental / abusive million-unit inserts
     if (Math.abs(Number(adjustment_quantity)) > 500) {
-      const error = new Error('Adjustment quantity cannot exceed 500 units per request');
-      error.statusCode = 400;
-      throw error;
+      throw httpError(400, 'Adjustment quantity cannot exceed 500 units per request');
     }
 
     const productIdBig = BigInt(product_id);
@@ -135,9 +130,7 @@ class InventoryService {
       select: { id: true, role: true },
     });
     if (!owner || (owner.role !== 'ADMIN' && owner.role !== 'SELLER')) {
-      const error = new Error('Adjustment target must be an ADMIN or SELLER user');
-      error.statusCode = 400;
-      throw error;
+      throw httpError(400, 'Adjustment target must be an ADMIN or SELLER user');
     }
 
     // Wrap in a transaction to ensure atomicity
@@ -168,9 +161,7 @@ class InventoryService {
         const availableUnits = await inventoryRepository.findAvailableUnits(userIdBig, productIdBig, decreaseAmount, tx);
 
         if (availableUnits.length < decreaseAmount) {
-          const error = new Error('Not enough stock to decrease');
-          error.statusCode = 400;
-          throw error;
+          throw httpError(400, 'Not enough stock to decrease');
         }
 
         const unitIds = availableUnits.map(u => u.id);
@@ -200,9 +191,7 @@ class InventoryService {
     // Validate seller existence
     const seller = await inventoryRepository.findSeller(sellerId);
     if (!seller || seller.role !== 'SELLER') {
-      const error = new Error('Invalid seller');
-      error.statusCode = 400;
-      throw error;
+      throw httpError(400, 'Invalid seller');
     }
 
     // Atomicity is required for inventory transfers to avoid partial stock updates
@@ -216,9 +205,7 @@ class InventoryService {
         const availableUnits = await inventoryRepository.findAvailableUnits(adminId, item.product_id, item.quantity, tx);
 
         if (availableUnits.length < item.quantity) {
-          const error = new Error(`Not enough stock for product ID: ${item.product_id}`);
-          error.statusCode = 400;
-          throw error;
+          throw httpError(400, `Not enough stock for product ID: ${item.product_id}`);
         }
 
         const ids = availableUnits.map(u => u.id);
@@ -347,9 +334,7 @@ class InventoryService {
       where: { id: BigInt(productNameId) }
     });
     if (!productName) {
-      const error = new Error('Product name not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Product name not found');
     }
 
     // 2. Validate product model existence and that it belongs to the product name
@@ -357,9 +342,7 @@ class InventoryService {
       where: { id: BigInt(productModelId) }
     });
     if (!productModel || Number(productModel.productNameId) !== productNameId) {
-      const error = new Error('Product model not found or does not belong to the selected product name');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Product model not found or does not belong to the selected product name');
     }
 
     return prisma.$transaction(async (tx) => {
@@ -621,7 +604,7 @@ class InventoryService {
     });
 
     if (!unit) {
-      throw new Error('Product not found in your available inventory');
+      throw httpError(404, 'Product not found in your available inventory');
     }
 
     return {

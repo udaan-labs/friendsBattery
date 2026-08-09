@@ -1,5 +1,6 @@
 const productsService = require('./products.service');
-const { successResponse, errorResponse } = require('../../shared/utils/response');
+const { successResponse } = require('../../shared/utils/response');
+const { handleRouteError } = require('../../shared/utils/handle-route-error');
 
 /**
  * Products Controller
@@ -16,11 +17,7 @@ class ProductsController {
       const productName = await productsService.createProductName(req.body);
       return successResponse(res, 201, 'Product name created successfully', productName);
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Create Product Name Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Create Product Name Error:');
     }
   }
 
@@ -32,8 +29,7 @@ class ProductsController {
       const productNames = await productsService.getProductNames();
       return successResponse(res, 200, 'Product names fetched successfully', productNames);
     } catch (error) {
-      console.error('Get Product Names Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Product Names Error:');
     }
   }
 
@@ -45,11 +41,7 @@ class ProductsController {
       const productModel = await productsService.createProductModel(req.body);
       return successResponse(res, 201, 'Product model created successfully', productModel);
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Create Product Model Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Create Product Model Error:');
     }
   }
 
@@ -62,11 +54,7 @@ class ProductsController {
       const productModels = await productsService.getProductModelsByProductName(product_name_id);
       return successResponse(res, 200, 'Product models fetched successfully', productModels);
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Get Product Models Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Product Models Error:');
     }
   }
 
@@ -78,11 +66,7 @@ class ProductsController {
       const product = await productsService.createProduct(req.body);
       return successResponse(res, 201, 'Product created successfully', product);
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Create Product Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Create Product Error:');
     }
   }
 
@@ -97,8 +81,7 @@ class ProductsController {
       const products = await productsService.getInventoryProducts(userId, role);
       return successResponse(res, 200, 'Inventory products fetched successfully', products);
     } catch (error) {
-      console.error('Get Inventory Products Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Inventory Products Error:');
     }
   }
 
@@ -111,11 +94,7 @@ class ProductsController {
       const products = await productsService.getProducts(product_name_id, product_model_id);
       return successResponse(res, 200, 'Products fetched successfully', products);
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Get Products Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Products Error:');
     }
   }
 }

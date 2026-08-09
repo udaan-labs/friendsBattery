@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import '../../../../shared/widgets/responsive_helper.dart';
+import 'package:frontend/shared/common.dart';
 import '../models/admin_sale_history.dart';
 
 class AdminSaleHistoryCard extends StatelessWidget {
@@ -10,8 +9,7 @@ class AdminSaleHistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateFormatter = DateFormat('dd MMM yyyy, hh:mm a');
-    final formattedDate = dateFormatter.format(sale.soldAt);
+    final formattedDate = formatAppDateTime(sale.soldAt);
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: 8, horizontal: ResponsiveHelper.responsiveHorizontalMargin(context)),
@@ -248,32 +246,6 @@ class _ShipmentRow extends StatelessWidget {
 
   const _ShipmentRow({this.shipment});
 
-  Color _statusColor(String status) {
-    switch (status.toUpperCase()) {
-      case 'ACCEPTED':
-        return const Color(0xFF16A34A);
-      case 'PENDING':
-        return const Color(0xFFC05600);
-      case 'REJECTED':
-        return const Color(0xFFBA1A1A);
-      default:
-        return const Color(0xFF586377);
-    }
-  }
-
-  Color _statusBg(String status) {
-    switch (status.toUpperCase()) {
-      case 'ACCEPTED':
-        return const Color(0xFFDCFCE7);
-      case 'PENDING':
-        return const Color(0xFFFFF7ED);
-      case 'REJECTED':
-        return const Color(0xFFFFEBEE);
-      default:
-        return const Color(0xFFECEEF0);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     if (shipment == null) {
@@ -297,9 +269,8 @@ class _ShipmentRow extends StatelessWidget {
       );
     }
 
-    final dateFormatter = DateFormat('dd MMM yyyy');
     final arrivalStr = shipment!.arrivalDate != null
-        ? dateFormatter.format(shipment!.arrivalDate!)
+        ? formatAppDate(shipment!.arrivalDate!)
         : '—';
 
     return Row(
@@ -339,21 +310,10 @@ class _ShipmentRow extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        Container(
-          padding:
-              EdgeInsets.symmetric(horizontal: ResponsiveHelper.isSmallPhone(context) ? 8 : 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: _statusBg(shipment!.status),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Text(
-            shipment!.status.toUpperCase(),
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              color: _statusColor(shipment!.status),
-            ),
-          ),
+        ShipmentStatusChip(
+          status: shipment!.status,
+          showIcon: false,
+          fontSize: 11,
         ),
       ],
     );

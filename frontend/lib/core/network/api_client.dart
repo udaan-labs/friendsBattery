@@ -2,9 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'api_config.dart';
 import 'api_interceptor.dart';
-import 'perf_interceptor.dart';
 
-/// Builds the shared Dio instance (auth + perf interceptors).
+/// Builds the shared Dio instance (auth + debug error logging).
 Dio createAppDio() {
   final dio = Dio(BaseOptions(
     baseUrl: ApiConfig.baseUrl,
@@ -20,7 +19,6 @@ Dio createAppDio() {
   ));
 
   dio.interceptors.addAll([
-    PerfInterceptor(),
     ApiInterceptor(),
     if (kDebugMode)
       LogInterceptor(

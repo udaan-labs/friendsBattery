@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:intl/intl.dart';
+import '../../../../shared/utils/app_formatters.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
 import '../models/sale_success_data.dart';
 import '../widgets/invoice_widget.dart';
@@ -23,7 +23,7 @@ class _SaleSuccessScreenState extends State<SaleSuccessScreen> {
   bool _isSharing = false;
 
   String _getWhatsAppMessage(SaleSuccessData data) {
-    final dateStr = DateFormat('dd MMM yyyy').format(data.saleDate);
+    final dateStr = formatAppDate(data.saleDate);
 
     return '''Hello ${data.customerName},
 

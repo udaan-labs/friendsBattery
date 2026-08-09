@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import 'api_exceptions.dart';
 import '../storage/auth_token_cache.dart';
 import '../storage/session_guard.dart';
-import 'perf_interceptor.dart';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
 import '../../app/router/app_router.dart';
@@ -31,7 +30,6 @@ class ApiInterceptor extends Interceptor {
       options.headers['auth-id'] = authId;
     }
 
-    PerfInterceptor.markAuthDone(options);
     handler.next(options);
   }
 

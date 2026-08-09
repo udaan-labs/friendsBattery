@@ -35,7 +35,7 @@ import '../../features/admin/locations/screens/add_location_screen.dart';
 import '../../features/admin/locations/screens/location_detail_screen.dart';
 import '../../features/employee/dashboard/screens/employee_shell_screen.dart';
 import '../../features/employee/dashboard/screens/employee_home_screen.dart';
-import '../../features/employee/attendance/presentation/employee_attendance_screen.dart';
+import '../../features/employee/attendance/employee_attendance_screen.dart';
 import '../../features/employee/shipments/screens/employee_shipments_screen.dart';
 import '../../features/employee/shipments/screens/employee_shipment_detail_screen.dart';
 import '../../shared/providers/auth_provider.dart';

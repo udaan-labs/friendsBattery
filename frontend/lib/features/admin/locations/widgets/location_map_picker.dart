@@ -4,8 +4,8 @@ import 'package:latlong2/latlong.dart';
 
 import '../../../../theme/app_theme.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
-import '../../../employee/attendance/data/location_service.dart';
-import '../../../employee/attendance/domain/location_exceptions.dart';
+import '../../../employee/attendance/location_service.dart';
+import '../../../employee/attendance/location_exceptions.dart';
 
 /// Pan map under a fixed pin, or seed from device GPS.
 class LocationMapPicker extends StatefulWidget {

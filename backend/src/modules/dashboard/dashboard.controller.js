@@ -1,60 +1,72 @@
-const dashboardService = require('./dashboard.service');
-const { successResponse, errorResponse } = require('../../shared/utils/response');
+const dashboardRepository = require('./dashboard.repository');
+const { successResponse } = require('../../shared/utils/response');
+const { handleRouteError } = require('../../shared/utils/handle-route-error');
+const { parsePagination } = require('../../shared/utils/pagination');
 
 class DashboardController {
-  /**
-   * Get all dashboard stats.
-   */
   async getStats(req, res) {
     try {
-      const stats = await dashboardService.getStats();
-      return successResponse(res, 200, 'Dashboard stats retrieved successfully', stats);
+      const [totalStock, todaySales, pendingRequests, totalSellers, pendingShipments] =
+        await Promise.all([
+          dashboardRepository.getTotalStock(),
+          dashboardRepository.getTodaySales(),
+          dashboardRepository.getPendingRequests(),
+          dashboardRepository.getTotalSellers(),
+          dashboardRepository.getPendingShipmentsAdmin(),
+        ]);
+
+      return successResponse(res, 200, 'Dashboard stats retrieved successfully', {
+        totalStock,
+        todaySales: todaySales.count,
+        todaySalesAmount: todaySales.amount,
+        pendingRequests,
+        totalSellers,
+        pendingShipments,
+      });
     } catch (error) {
-      console.error('Error in DashboardController.getStats:', error);
-      return errorResponse(res, 500, 'Internal server error while fetching dashboard stats');
+      return handleRouteError(res, error, 'Error in DashboardController.getStats:');
     }
   }
 
-  /**
-   * Get seller dashboard stats.
-   */
   async getSellerStats(req, res) {
     try {
-      const stats = await dashboardService.getSellerStats(req.user.id);
-      return successResponse(res, 200, 'Seller dashboard stats retrieved successfully', stats);
+      const sellerId = req.user.id;
+      const [totalStock, todaySales, pendingShipments, recentSales] = await Promise.all([
+        dashboardRepository.getSellerTotalStock(sellerId),
+        dashboardRepository.getSellerTodaySales(sellerId),
+        dashboardRepository.getSellerPendingShipmentsCount(sellerId),
+        dashboardRepository.getSellerRecentSales(sellerId),
+      ]);
+
+      return successResponse(res, 200, 'Seller dashboard stats retrieved successfully', {
+        totalStock,
+        todaySales: todaySales.count,
+        todaySalesAmount: todaySales.amount,
+        pendingShipments,
+        recentSales,
+      });
     } catch (error) {
-      console.error('Error in DashboardController.getSellerStats:', error);
-      return errorResponse(res, 500, 'Internal server error while fetching seller dashboard stats');
+      return handleRouteError(res, error, 'Error in DashboardController.getSellerStats:');
     }
   }
 
-  /**
-   * Get recent activity feed (Admin only).
-   */
   async getRecentActivity(req, res) {
     try {
-      const activity = await dashboardService.getRecentActivity();
+      const activity = await dashboardRepository.getRecentActivity();
       return successResponse(res, 200, 'Recent activity retrieved successfully', activity);
     } catch (error) {
-      console.error('Error in DashboardController.getRecentActivity:', error);
-      return errorResponse(res, 500, 'Internal server error while fetching recent activity');
+      return handleRouteError(res, error, 'Error in DashboardController.getRecentActivity:');
     }
   }
 
-  /**
-   * Get paginated activity history (Admin only).
-   */
   async getActivityHistory(req, res) {
     try {
-      const page = parseInt(req.query.page, 10) || 1;
-      const limit = parseInt(req.query.limit, 10) || 20;
+      const { page, limit } = parsePagination(req.query, { defaultLimit: 20 });
+      const { data, total } = await dashboardRepository.getActivityHistory(page, limit);
 
-      const { data, total } = await dashboardService.getActivityHistory(page, limit);
-      
       const totalPages = Math.ceil(total / limit);
       const hasNextPage = page < totalPages;
 
-      // Returning directly to match requested structure or nested under data depending on standard
       return res.status(200).json({
         success: true,
         data: data,
@@ -63,12 +75,11 @@ class DashboardController {
           limit,
           totalItems: total,
           totalPages,
-          hasNextPage
-        }
+          hasNextPage,
+        },
       });
     } catch (error) {
-      console.error('Error in DashboardController.getActivityHistory:', error);
-      return errorResponse(res, 500, 'Internal server error while fetching activity history');
+      return handleRouteError(res, error, 'Error in DashboardController.getActivityHistory:');
     }
   }
 }

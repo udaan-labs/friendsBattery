@@ -1,5 +1,6 @@
 const attendanceService = require('./attendance.service');
-const { successResponse, errorResponse } = require('../../shared/utils/response');
+const { successResponse } = require('../../shared/utils/response');
+const { handleRouteError } = require('../../shared/utils/handle-route-error');
 
 class AttendanceController {
   async getStatus(req, res) {
@@ -11,8 +12,7 @@ class AttendanceController {
       });
       return successResponse(res, 200, 'Attendance status retrieved', data);
     } catch (error) {
-      console.error('Attendance status error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Attendance status error:');
     }
   }
 
@@ -28,11 +28,7 @@ class AttendanceController {
       );
       return successResponse(res, 201, 'Checked in successfully', data);
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Check-in error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Check-in error:');
     }
   }
 
@@ -48,11 +44,7 @@ class AttendanceController {
       );
       return successResponse(res, 200, 'Checked out successfully', data);
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Check-out error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Check-out error:');
     }
   }
 }

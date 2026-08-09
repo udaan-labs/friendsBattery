@@ -1,5 +1,6 @@
 const returnsService = require('./returns.service');
-const { successResponse, errorResponse } = require('../../shared/utils/response');
+const { successResponse } = require('../../shared/utils/response');
+const { handleRouteError } = require('../../shared/utils/handle-route-error');
 
 class ReturnsController {
   /**
@@ -14,11 +15,7 @@ class ReturnsController {
       
       return successResponse(res, 201, 'Return processed successfully', result);
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Process Return Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Process Return Error:');
     }
   }
 
@@ -30,8 +27,7 @@ class ReturnsController {
       const returns = await returnsService.getReturns(req.user);
       return successResponse(res, 200, 'Returns fetched successfully', returns);
     } catch (error) {
-      console.error('Get Returns Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Returns Error:');
     }
   }
 }

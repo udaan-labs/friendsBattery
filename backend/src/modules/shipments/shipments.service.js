@@ -1,5 +1,6 @@
 const shipmentsRepository = require('./shipments.repository');
 const { prisma } = require('../../config/db');
+const { httpError } = require('../../shared/utils/http-error');
 
 /**
  * Admin → Seller stock transfer (serial-based).
@@ -15,9 +16,7 @@ class ShipmentsService {
   async createShipment(data, adminId) {
     const seller = await shipmentsRepository.findSellerById(data.sellerId);
     if (!seller) {
-      const error = new Error('Seller not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Seller not found');
     }
 
     // Flatten + normalize serials; reject duplicates in the request itself
@@ -26,9 +25,7 @@ class ShipmentsService {
       for (const raw of item.serial_numbers) {
         const serial = String(raw).trim();
         if (!serial) {
-          const error = new Error('Serial number cannot be empty');
-          error.statusCode = 400;
-          throw error;
+          throw httpError(400, 'Serial number cannot be empty');
         }
         allSerials.push(serial);
       }
@@ -36,9 +33,7 @@ class ShipmentsService {
 
     const uniqueSerials = new Set(allSerials);
     if (uniqueSerials.size !== allSerials.length) {
-      const error = new Error('Duplicate serial numbers in the transfer request');
-      error.statusCode = 400;
-      throw error;
+      throw httpError(400, 'Duplicate serial numbers in the transfer request');
     }
 
     // Resolve products and units for every line item
@@ -57,11 +52,9 @@ class ShipmentsService {
       });
 
       if (!product) {
-        const error = new Error(
+        throw httpError(400, 
           `Product not found for Name ID ${item.product_name_id} and Model ID ${item.product_model_id}`
         );
-        error.statusCode = 400;
-        throw error;
       }
 
       const serials = item.serial_numbers.map((s) => String(s).trim());
@@ -78,13 +71,11 @@ class ShipmentsService {
       if (units.length !== serials.length) {
         const found = new Set(units.map((u) => u.serialNumber));
         const missing = serials.filter((s) => !found.has(s));
-        const error = new Error(
+        throw httpError(400, 
           missing.length
             ? `Serial number(s) unavailable or not in admin inventory: ${missing.join(', ')}`
             : 'One or more serial numbers are unavailable'
         );
-        error.statusCode = 400;
-        throw error;
       }
 
       resolvedItems.push({
@@ -166,9 +157,7 @@ class ShipmentsService {
     const shipment = await shipmentsRepository.getShipmentById(shipmentId);
 
     if (!shipment) {
-      const error = new Error('Shipment not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Shipment not found');
     }
 
     // Explicit allow-list (default deny) — no fall-through for unknown roles
@@ -176,9 +165,7 @@ class ShipmentsService {
       // ok
     } else if (userRole === 'SELLER') {
       if (Number(shipment.sellerId) !== Number(userId)) {
-        const error = new Error('Forbidden: You can only view your own shipments');
-        error.statusCode = 403;
-        throw error;
+        throw httpError(403, 'Forbidden: You can only view your own shipments');
       }
     } else if (userRole === 'EMPLOYEE') {
       const allowed = await shipmentsRepository.sellerSharesLocation(
@@ -186,14 +173,10 @@ class ShipmentsService {
         locationId
       );
       if (!allowed) {
-        const error = new Error('Forbidden: Shipment is not for your shop location');
-        error.statusCode = 403;
-        throw error;
+        throw httpError(403, 'Forbidden: Shipment is not for your shop location');
       }
     } else {
-      const error = new Error('Forbidden: You do not have access to this shipment');
-      error.statusCode = 403;
-      throw error;
+      throw httpError(403, 'Forbidden: You do not have access to this shipment');
     }
 
     const totalQuantity = shipment.items.reduce((sum, item) => sum + item.quantity, 0);
@@ -233,15 +216,11 @@ class ShipmentsService {
   async acceptShipment(shipmentId, sellerId) {
     const shipment = await shipmentsRepository.findShipmentById(shipmentId);
     if (!shipment) {
-      const error = new Error('Shipment not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Shipment not found');
     }
 
     if (Number(shipment.sellerId) !== Number(sellerId)) {
-      const error = new Error('Forbidden: You can only accept your own shipments');
-      error.statusCode = 403;
-      throw error;
+      throw httpError(403, 'Forbidden: You can only accept your own shipments');
     }
 
     // Status claim + unit lock happen atomically in repository (race-safe)

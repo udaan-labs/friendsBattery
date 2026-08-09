@@ -31,8 +31,30 @@ app.get('/swagger.json', (req, res) => {
   res.send(swaggerSpec);
 });
 
+/**
+ * @swagger
+ * /api/health:
+ *   get:
+ *     summary: Health check
+ *     tags: [Health]
+ *     security: []
+ *     responses:
+ *       200:
+ *         description: API is healthy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HealthStatus'
+ */
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    message: 'API is up and running via Cloudflare Tunnel',
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // Module routes
-app.use('/api/health', require('./modules/health/health.routes'));
 app.use('/api/auth', require('./modules/auth/auth.routes'));
 app.use('/api/dashboard', require('./modules/dashboard/dashboard.routes'));
 app.use('/api/seller/dashboard', require('./modules/dashboard/seller-dashboard.routes'));

@@ -1,5 +1,6 @@
 const authService = require('./auth.service');
-const { successResponse, errorResponse } = require('../../shared/utils/response');
+const { successResponse } = require('../../shared/utils/response');
+const { handleRouteError } = require('../../shared/utils/handle-route-error');
 
 class AuthController {
   async register(req, res) {
@@ -15,11 +16,7 @@ class AuthController {
       });
       return successResponse(res, 201, 'User registered successfully', result);
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Registration Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Registration Error:');
     }
   }
 
@@ -42,11 +39,7 @@ class AuthController {
       });
       return successResponse(res, 200, 'Login successful', result);
     } catch (error) {
-      if (error.statusCode === 401 || error.statusCode === 403) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Login Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Login Error:');
     }
   }
 
@@ -59,8 +52,7 @@ class AuthController {
       });
       return successResponse(res, 200, 'Logout successful', result);
     } catch (error) {
-      console.error('Logout Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Logout Error:');
     }
   }
 
@@ -70,11 +62,7 @@ class AuthController {
       const result = await authService.activateUser({ user_id, is_active, is_verified });
       return successResponse(res, 200, 'User status updated successfully', result);
     } catch (error) {
-      if (error.statusCode === 404) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Activate Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Activate Error:');
     }
   }
 }

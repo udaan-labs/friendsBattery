@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../shared/widgets/responsive_helper.dart';
+import 'package:frontend/shared/common.dart';
 import '../providers/seller_dashboard_providers.dart';
 import 'seller_shell_screen.dart';
 
@@ -82,34 +82,14 @@ class SellerReceivedShipmentsScreen extends ConsumerWidget {
                 final itemCount = shipment.items?.length ?? 0;
                 final totalQty = shipment.items?.fold<int>(0, (sum, item) => sum + (item.quantity ?? 0)) ?? 0;
 
-                Color statusColor;
-                Color statusBg;
-                IconData statusIcon;
-                switch (status.toUpperCase()) {
-                  case 'RECEIVED':
-                    statusColor = const Color(0xFF16A34A);
-                    statusBg = const Color(0xFFDCFCE7);
-                    statusIcon = Icons.check_circle_rounded;
-                    break;
-                  case 'PENDING':
-                    statusColor = const Color(0xFFD97706);
-                    statusBg = const Color(0xFFFEF3C7);
-                    statusIcon = Icons.pending_rounded;
-                    break;
-                  default:
-                    statusColor = const Color(0xFF545F73);
-                    statusBg = const Color(0xFFECEEF0);
-                    statusIcon = Icons.info_outline_rounded;
-                }
-
                 return GestureDetector(
                   onTap: () {
                     if (shipment.shipmentId != null) {
                       context.push('/seller/shipments/${shipment.shipmentId}');
                     }
                   },
-                  child:                     Container(
-              padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
+                  child: Container(
+                    padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
@@ -123,15 +103,7 @@ class SellerReceivedShipmentsScreen extends ConsumerWidget {
                     ),
                     child: Row(
                       children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: statusBg,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(statusIcon, color: statusColor, size: 26),
-                        ),
+                        ShipmentStatusIconBox(status: status),
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(
@@ -157,21 +129,7 @@ class SellerReceivedShipmentsScreen extends ConsumerWidget {
                             ],
                           ),
                         ),
-                        Container(
-                          padding: EdgeInsets.symmetric(horizontal: ResponsiveHelper.isSmallPhone(context) ? 8 : 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: statusBg,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            status,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: statusColor,
-                            ),
-                          ),
-                        ),
+                        ShipmentStatusChip(status: status, showIcon: false),
                       ],
                     ),
                   ),

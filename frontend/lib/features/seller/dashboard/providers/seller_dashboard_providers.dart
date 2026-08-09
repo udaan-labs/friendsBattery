@@ -3,37 +3,19 @@ import 'dart:developer' as developer;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import '../../../../core/network/api_client_provider.dart';
-import '../../../../core/storage/session_manager.dart';
+import '../../../../shared/models/session_profile.dart';
 import '../../../admin/shipments/providers/shipment_provider.dart';
 import '../../../admin/shipments/repository/shipment_repository.dart';
 import '../../../shared/inventory/providers/inventory_provider.dart';
 import '../../sales/models/seller_sale.dart';
 
-class SellerProfile {
-  final String userName;
-  final String shopName;
-  final String role;
+/// Seller greeting profile (same shape as employee session profile).
+typedef SellerProfile = SessionProfile;
 
-  SellerProfile({
-    required this.userName,
-    required this.shopName,
-    required this.role,
-  });
-}
-
-final sellerProfileProvider = Provider<SellerProfile>((ref) {
-  final user = SessionManager.user;
-  if (user != null) {
-    return SellerProfile(
-      userName: (user['username'] ?? user['userName'] ?? 'Seller').toString(),
-      shopName: (user['shop_name'] ?? user['shopName'] ?? '').toString(),
-      role: (user['role'] ?? 'seller').toString(),
-    );
-  }
-  return SellerProfile(
-    userName: 'Seller',
-    shopName: '',
-    role: 'seller',
+final sellerProfileProvider = Provider<SessionProfile>((ref) {
+  return SessionProfile.fromSession(
+    fallbackName: 'Seller',
+    fallbackRole: 'seller',
   );
 });
 

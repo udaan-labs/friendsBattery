@@ -1,5 +1,6 @@
 const shopsService = require('./shops.service');
-const { successResponse, errorResponse } = require('../../shared/utils/response');
+const { successResponse } = require('../../shared/utils/response');
+const { handleRouteError } = require('../../shared/utils/handle-route-error');
 
 /**
  * Shops Controller
@@ -25,9 +26,7 @@ class ShopsController {
       // Return standardized success response
       return successResponse(res, 200, 'Sellers fetched successfully', sellers);
     } catch (error) {
-      // Handle unexpected errors
-      console.error('Get Sellers Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Sellers Error:');
     }
   }
 
@@ -50,12 +49,7 @@ class ShopsController {
       // Return standardized success response
       return successResponse(res, 200, 'Seller fetched successfully', seller);
     } catch (error) {
-      // Handle unexpected errors
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('View Seller Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'View Seller Error:');
     }
   }
 
@@ -69,11 +63,7 @@ class ShopsController {
       const data = await shopsService.getShopStaffBySellerId(Number(sellerId));
       return successResponse(res, 200, 'Shop staff fetched successfully', data);
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Get Shop Staff Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Shop Staff Error:');
     }
   }
 
@@ -88,11 +78,7 @@ class ShopsController {
       const data = await shopsService.viewEmployee(Number(employeeId), { limit });
       return successResponse(res, 200, 'Employee fetched successfully', data);
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('View Employee Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'View Employee Error:');
     }
   }
 
@@ -108,11 +94,7 @@ class ShopsController {
       );
       return successResponse(res, 201, 'Employee created successfully', data);
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Create Employee Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Create Employee Error:');
     }
   }
 
@@ -124,11 +106,7 @@ class ShopsController {
       const data = await shopsService.getMyStaff(req.user.id);
       return successResponse(res, 200, 'Shop staff fetched successfully', data);
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Get My Staff Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get My Staff Error:');
     }
   }
 
@@ -142,11 +120,7 @@ class ShopsController {
       const data = await shopsService.getStaffByLocationId(Number(locationId));
       return successResponse(res, 200, 'Shop staff fetched successfully', data);
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Get Location Staff Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Location Staff Error:');
     }
   }
 
@@ -158,8 +132,7 @@ class ShopsController {
       const data = await shopsService.listEmployeeRoles();
       return successResponse(res, 200, 'Employee roles fetched successfully', data);
     } catch (error) {
-      console.error('List Employee Roles Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'List Employee Roles Error:');
     }
   }
 
@@ -172,8 +145,7 @@ class ShopsController {
       const data = await shopsService.listLocations(type ? { type } : {});
       return successResponse(res, 200, 'Locations fetched successfully', data);
     } catch (error) {
-      console.error('List Locations Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'List Locations Error:');
     }
   }
 
@@ -185,11 +157,7 @@ class ShopsController {
       const data = await shopsService.createLocation(req.body);
       return successResponse(res, 201, 'Location created successfully', data);
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Create Location Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Create Location Error:');
     }
   }
 }

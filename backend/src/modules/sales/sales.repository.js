@@ -1,4 +1,5 @@
 const { prisma } = require('../../config/db');
+const { httpError } = require('../../shared/utils/http-error');
 
 /**
  * Sales Repository
@@ -86,11 +87,9 @@ class SalesRepository {
         },
       });
       if (claimed.count !== 1) {
-        const error = new Error(
+        throw httpError(409, 
           'The scanned serial number is not available in your inventory.'
         );
-        error.statusCode = 409;
-        throw error;
       }
 
       // 2. Create the SalesTransaction record

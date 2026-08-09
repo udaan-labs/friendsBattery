@@ -1,33 +1,19 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import '../../../core/network/api_client_provider.dart';
-import '../../../core/storage/session_manager.dart';
+import '../../../shared/models/session_profile.dart';
 import '../../shared/inventory/providers/inventory_provider.dart';
-import '../attendance/data/attendance_repository.dart';
+import '../attendance/attendance_repository.dart';
 import '../repository/employee_shipments_repository.dart';
 
-class EmployeeProfile {
-  final String userName;
-  final String shopName;
-  final String role;
+/// Employee greeting profile (same shape as seller session profile).
+typedef EmployeeProfile = SessionProfile;
 
-  EmployeeProfile({
-    required this.userName,
-    required this.shopName,
-    required this.role,
-  });
-}
-
-final employeeProfileProvider = Provider<EmployeeProfile>((ref) {
-  final user = SessionManager.user;
-  if (user != null) {
-    return EmployeeProfile(
-      userName: (user['username'] ?? user['userName'] ?? 'Employee').toString(),
-      shopName: (user['shop_name'] ?? user['shopName'] ?? '').toString(),
-      role: (user['role'] ?? 'employee').toString(),
-    );
-  }
-  return EmployeeProfile(userName: 'Employee', shopName: '', role: 'employee');
+final employeeProfileProvider = Provider<SessionProfile>((ref) {
+  return SessionProfile.fromSession(
+    fallbackName: 'Employee',
+    fallbackRole: 'employee',
+  );
 });
 
 final employeeAttendanceRepositoryProvider = Provider<AttendanceRepository>((ref) {

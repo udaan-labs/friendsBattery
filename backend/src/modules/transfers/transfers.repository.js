@@ -1,5 +1,6 @@
 const { prisma } = require('../../config/db');
 const { getDefaultWarehouseId, getUserLocationId } = require('../../shared/utils/location.util');
+const { httpError } = require('../../shared/utils/http-error');
 
 /**
  * Transfers Repository
@@ -149,11 +150,9 @@ class TransfersRepository {
         },
       });
       if (claimed.count !== 1) {
-        const error = new Error(
+        throw httpError(400, 
           'Shipment cannot be received. It may already be processed.'
         );
-        error.statusCode = 400;
-        throw error;
       }
 
       // Process each shipment item
@@ -169,11 +168,9 @@ class TransfersRepository {
         });
 
         if (availableUnits.length < item.quantity) {
-          const error = new Error(
+          throw httpError(400, 
             `Insufficient admin inventory for product ID ${Number(item.productId)}. Required: ${item.quantity}, Available: ${availableUnits.length}`
           );
-          error.statusCode = 400;
-          throw error;
         }
 
         const unitIds = availableUnits.map(u => u.id);
@@ -193,11 +190,9 @@ class TransfersRepository {
           },
         });
         if (moved.count !== unitIds.length) {
-          const error = new Error(
+          throw httpError(409, 
             'One or more units are no longer available. Contact admin.'
           );
-          error.statusCode = 409;
-          throw error;
         }
 
         // 3. Create immutable ledger entries in inventory_transactions

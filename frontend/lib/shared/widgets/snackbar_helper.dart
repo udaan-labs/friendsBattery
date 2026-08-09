@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
+import '../utils/app_formatters.dart';
 
 extension SnackbarExtension on BuildContext {
   /// Displays a floating success snackbar at the top of the screen.
@@ -31,5 +32,10 @@ extension SnackbarExtension on BuildContext {
         message: message,
       ),
     );
+  }
+
+  /// Error snackbar with `Exception: ` prefix stripped.
+  void showFriendlyError(Object error) {
+    showErrorSnackBar(friendlyError(error));
   }
 }

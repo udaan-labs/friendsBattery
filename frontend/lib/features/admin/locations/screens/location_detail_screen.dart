@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../shared/utils/app_formatters.dart';
 import '../../../shared/staff/providers/staff_providers.dart';
 import '../../../shared/staff/widgets/staff_member_group.dart';
 
@@ -69,7 +70,7 @@ class LocationDetailScreen extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  e.toString().replaceFirst('Exception: ', ''),
+                  friendlyError(e),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 12),

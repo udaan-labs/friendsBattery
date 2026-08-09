@@ -1,5 +1,6 @@
 const transfersService = require('./transfers.service');
-const { successResponse, errorResponse } = require('../../shared/utils/response');
+const { successResponse } = require('../../shared/utils/response');
+const { handleRouteError } = require('../../shared/utils/handle-route-error');
 
 /**
  * Transfers Controller
@@ -23,11 +24,7 @@ class TransfersController {
       const result = await transfersService.createTransfer(req.body, adminId);
       return successResponse(res, 201, 'Shipment created successfully', result);
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Create Transfer Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Create Transfer Error:');
     }
   }
 
@@ -43,8 +40,7 @@ class TransfersController {
       const transfers = await transfersService.getTransfers(req.user);
       return successResponse(res, 200, 'Shipments fetched successfully', transfers);
     } catch (error) {
-      console.error('Get Transfers Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Transfers Error:');
     }
   }
 
@@ -62,11 +58,7 @@ class TransfersController {
       const transfer = await transfersService.getTransferById(Number(shipmentId), req.user);
       return successResponse(res, 200, 'Shipment details fetched successfully', transfer);
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Get Transfer By ID Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Transfer By ID Error:');
     }
   }
 
@@ -85,11 +77,7 @@ class TransfersController {
       const result = await transfersService.receiveTransfer(Number(shipmentId), sellerId);
       return successResponse(res, 200, 'Shipment received successfully', result);
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Receive Transfer Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Receive Transfer Error:');
     }
   }
 
@@ -107,11 +95,7 @@ class TransfersController {
       const result = await transfersService.cancelTransfer(Number(shipmentId));
       return successResponse(res, 200, 'Shipment cancelled successfully', result);
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Cancel Transfer Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Cancel Transfer Error:');
     }
   }
 }

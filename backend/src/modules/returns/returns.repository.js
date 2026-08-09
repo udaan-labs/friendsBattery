@@ -1,4 +1,5 @@
 const { prisma } = require('../../config/db');
+const { httpError } = require('../../shared/utils/http-error');
 
 class ReturnsRepository {
   /**
@@ -43,11 +44,9 @@ class ReturnsRepository {
         },
       });
       if (claimed.count !== 1) {
-        const error = new Error(
+        throw httpError(409, 
           'Product is no longer in SOLD status (already returned or sold again).'
         );
-        error.statusCode = 409;
-        throw error;
       }
 
       const updatedUnit = await tx.productUnit.findUnique({

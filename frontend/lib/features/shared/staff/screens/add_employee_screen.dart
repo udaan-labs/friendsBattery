@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../shared/utils/app_formatters.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
 import '../../../../theme/app_theme.dart';
@@ -109,7 +110,7 @@ class _AddEmployeeScreenState extends ConsumerState<AddEmployeeScreen> {
       context.pop();
     } catch (e) {
       if (!mounted) return;
-      context.showErrorSnackBar(e.toString().replaceFirst('Exception: ', ''));
+      context.showFriendlyError(e);
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -207,7 +208,7 @@ class _AddEmployeeScreenState extends ConsumerState<AddEmployeeScreen> {
                         },
                         loading: () => const LinearProgressIndicator(),
                         error: (e, _) => Text(
-                          e.toString().replaceFirst('Exception: ', ''),
+                          friendlyError(e),
                           style: const TextStyle(color: AppTheme.error),
                         ),
                       ),

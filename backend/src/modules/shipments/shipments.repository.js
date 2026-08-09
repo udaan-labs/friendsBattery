@@ -1,5 +1,6 @@
 const { prisma } = require('../../config/db');
 const { getDefaultWarehouseId, getUserLocationId } = require('../../shared/utils/location.util');
+const { httpError } = require('../../shared/utils/http-error');
 
 const SHIPMENT_DETAIL_INCLUDE = {
   seller: {
@@ -56,11 +57,9 @@ class ShipmentsRepository {
       });
 
       if (locked.length !== unitIds.length) {
-        const error = new Error(
+        throw httpError(409, 
           'One or more serial numbers are no longer available. Refresh and try again.'
         );
-        error.statusCode = 409;
-        throw error;
       }
 
       // 2. Shipment record (completed immediately — ownership moves now)
@@ -313,11 +312,9 @@ class ShipmentsRepository {
         },
       });
       if (claimed.count !== 1) {
-        const error = new Error(
+        throw httpError(400, 
           'Shipment cannot be accepted. It may already be processed.'
         );
-        error.statusCode = 400;
-        throw error;
       }
 
       const updatedShipment = await tx.newShipment.findUnique({
@@ -341,11 +338,9 @@ class ShipmentsRepository {
             select: { id: true },
           });
           if (locked.length !== productUnitIds.length) {
-            const error = new Error(
+            throw httpError(409, 
               'One or more serials are no longer available for this shipment. Contact admin.'
             );
-            error.statusCode = 409;
-            throw error;
           }
 
           const fromLoc = await getDefaultWarehouseId(tx);

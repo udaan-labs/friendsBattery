@@ -1,5 +1,6 @@
 const shipmentsService = require('./shipments.service');
-const { successResponse, errorResponse } = require('../../shared/utils/response');
+const { successResponse } = require('../../shared/utils/response');
+const { handleRouteError } = require('../../shared/utils/handle-route-error');
 
 class ShipmentsController {
   async createShipment(req, res) {
@@ -13,11 +14,7 @@ class ShipmentsController {
         result
       );
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Create Shipment Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Create Shipment Error:');
     }
   }
 
@@ -27,8 +24,7 @@ class ShipmentsController {
       const result = await shipmentsService.getPendingShipmentsCount(sellerId);
       return successResponse(res, 200, 'Pending shipments count retrieved successfully', result);
     } catch (error) {
-      console.error('Get Pending Shipments Count Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Pending Shipments Count Error:');
     }
   }
 
@@ -38,8 +34,7 @@ class ShipmentsController {
       const result = await shipmentsService.getShipments(sellerId);
       return successResponse(res, 200, 'Seller shipments retrieved successfully', result);
     } catch (error) {
-      console.error('Get Shipments Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Shipments Error:');
     }
   }
 
@@ -52,8 +47,7 @@ class ShipmentsController {
       const result = await shipmentsService.getShipmentsForEmployeeLocation(locationId);
       return successResponse(res, 200, 'Shop shipments retrieved successfully', result);
     } catch (error) {
-      console.error('Get Employee Shipments Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Employee Shipments Error:');
     }
   }
 
@@ -65,8 +59,7 @@ class ShipmentsController {
       const result = await shipmentsService.getAllShipments();
       return successResponse(res, 200, 'All shipments retrieved successfully', result);
     } catch (error) {
-      console.error('Get All Shipments Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get All Shipments Error:');
     }
   }
 
@@ -88,11 +81,7 @@ class ShipmentsController {
       );
       return successResponse(res, 200, 'Shipment retrieved successfully', result);
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Get Shipment By ID Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Shipment By ID Error:');
     }
   }
 
@@ -103,11 +92,7 @@ class ShipmentsController {
       const result = await shipmentsService.acceptShipment(shipmentId, sellerId);
       return successResponse(res, 200, 'Shipment accepted successfully', result);
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Accept Shipment Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Accept Shipment Error:');
     }
   }
 }

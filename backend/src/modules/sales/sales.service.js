@@ -1,4 +1,6 @@
 const salesRepository = require('./sales.repository');
+const { httpError } = require('../../shared/utils/http-error');
+const { parsePagination } = require('../../shared/utils/pagination');
 
 /**
  * Sales Service
@@ -56,9 +58,7 @@ class SalesService {
     const productUnit = await salesRepository.findAvailableProductUnit(data.serial_number, sellerId);
     
     if (!productUnit) {
-      const error = new Error('The scanned serial number is not available in your inventory.');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'The scanned serial number is not available in your inventory.');
     }
 
     // 4. Validate that it matches the selected product name and model
@@ -66,16 +66,12 @@ class SalesService {
       Number(productUnit.product.productNameId) !== Number(data.product_name_id) ||
       Number(productUnit.product.productModelId) !== Number(data.product_model_id)
     ) {
-      const error = new Error('The scanned serial number does not match the selected Product Name or Model.');
-      error.statusCode = 400;
-      throw error;
+      throw httpError(400, 'The scanned serial number does not match the selected Product Name or Model.');
     }
 
     // 4.5 Validate that selling price is not below minimum price limit
     if (productUnit.product && productUnit.product.minPrice && Number(data.sell_price) < Number(productUnit.product.minPrice)) {
-      const error = new Error(`Selling price (₹${data.sell_price}) cannot be less than minimum allowed price (₹${productUnit.product.minPrice}).`);
-      error.statusCode = 400;
-      throw error;
+      throw httpError(400, `Selling price (₹${data.sell_price}) cannot be less than minimum allowed price (₹${productUnit.product.minPrice}).`);
     }
 
     // 4. Create sale transaction & update inventory (Atomically handled in repository)
@@ -115,9 +111,7 @@ class SalesService {
   async getSaleById(transactionId, user) {
     const sale = await salesRepository.findSaleById(transactionId);
     if (!sale) {
-      const error = new Error('Transaction not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Transaction not found');
     }
     if (user?.role === 'ADMIN') {
       return this._formatSale(sale);
@@ -125,9 +119,7 @@ class SalesService {
     if (user?.role === 'SELLER' && Number(sale.sellerId) === Number(user.id)) {
       return this._formatSale(sale);
     }
-    const error = new Error('Forbidden: You cannot view this sale');
-    error.statusCode = 403;
-    throw error;
+    throw httpError(403, 'Forbidden: You cannot view this sale');
   }
 
   /**
@@ -135,8 +127,7 @@ class SalesService {
    */
 
   async getSalesHistory(sellerId, query) {
-    const page = parseInt(query.page, 10) || 1;
-    const limit = parseInt(query.limit, 10) || 10;
+    const { page, limit, skip, take } = parsePagination(query, { defaultLimit: 10 });
     let { searchCustomer, searchSerial, fromDate, toDate, filter, date } = query;
 
     if (filter === 'today') {
@@ -165,10 +156,7 @@ class SalesService {
       toDate,
     };
 
-    const pagination = {
-      skip: (page - 1) * limit,
-      take: limit,
-    };
+    const pagination = { skip, take };
 
     const sales = await salesRepository.getSalesHistoryBySeller(
       sellerId,
@@ -249,16 +237,12 @@ class SalesService {
    * Get paginated sales history for Admin — all sellers, with shipment tracing
    */
   async getAdminSalesHistory(query) {
-    const page = parseInt(query.page, 10) || 1;
-    const limit = parseInt(query.limit, 10) || 10;
+    const { page, limit, skip, take } = parsePagination(query, { defaultLimit: 10 });
     const { search, sellerId, fromDate, toDate, shipmentStatus } = query;
 
     const filters = { search, sellerId, fromDate, toDate, shipmentStatus };
 
-    const pagination = {
-      skip: (page - 1) * limit,
-      take: limit,
-    };
+    const pagination = { skip, take };
 
     const [sales, total] = await Promise.all([
       salesRepository.getAdminSalesHistory(filters, pagination),

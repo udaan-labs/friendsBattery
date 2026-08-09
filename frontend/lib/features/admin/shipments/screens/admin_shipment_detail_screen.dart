@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import '../providers/shipment_provider.dart';
 import '../repository/shipment_repository.dart';
 import '../widgets/shipment_detail_widgets.dart';
-import '../../../../shared/widgets/responsive_helper.dart';
+import 'package:frontend/shared/common.dart';
 import '../../../../theme/app_theme.dart';
 
 // ─── Screen ────────────────────────────────────────────────────────────────
@@ -64,13 +63,11 @@ class _ShipmentDetailBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateFmt = DateFormat('dd MMM yyyy, hh:mm a');
-
     return ListView(
       padding: EdgeInsets.all(ResponsiveHelper.responsivePadding(context)),
       children: [
         // ── Status Banner ───────────────────────────────────────────────
-        _StatusBanner(status: detail.status),
+        ShipmentStatusBanner(status: detail.status),
         const SizedBox(height: 20),
 
         // ── Shipment Info Card ──────────────────────────────────────────
@@ -87,14 +84,14 @@ class _ShipmentDetailBody extends StatelessWidget {
             ShipmentInfoRow(
               icon: Icons.calendar_today_outlined,
               label: 'Created On',
-              value: dateFmt.format(detail.createdAt),
+              value: formatAppDateTime(detail.createdAt),
             ),
             if (detail.acceptedAt != null) ...[
               const ShipmentRowDivider(),
               ShipmentInfoRow(
                 icon: Icons.done_all_rounded,
                 label: 'Accepted On',
-                value: dateFmt.format(detail.acceptedAt!),
+                value: formatAppDateTime(detail.acceptedAt!),
               ),
             ],
           ],
@@ -197,93 +194,6 @@ class _ShipmentDetailBody extends StatelessWidget {
 }
 
 // ─── Status Banner ─────────────────────────────────────────────────────────
-
-class _StatusBanner extends StatelessWidget {
-  final String status;
-  const _StatusBanner({required this.status});
-
-  Color get _bg {
-    switch (status.toUpperCase()) {
-      case 'ACCEPTED':
-        return const Color(0xFFE8F5E9);
-      case 'PENDING':
-        return const Color(0xFFFFF3E0);
-      case 'REJECTED':
-        return const Color(0xFFFFEBEE);
-      default:
-        return const Color(0xFFECEEF0);
-    }
-  }
-
-  Color get _fg {
-    switch (status.toUpperCase()) {
-      case 'ACCEPTED':
-        return const Color(0xFF00873A);
-      case 'PENDING':
-        return const Color(0xFFC05600);
-      case 'REJECTED':
-        return const Color(0xFFBA1A1A);
-      default:
-        return const Color(0xFF586377);
-    }
-  }
-
-  IconData get _icon {
-    switch (status.toUpperCase()) {
-      case 'ACCEPTED':
-        return Icons.check_circle_rounded;
-      case 'PENDING':
-        return Icons.schedule_rounded;
-      case 'REJECTED':
-        return Icons.cancel_rounded;
-      default:
-        return Icons.info_rounded;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(
-        vertical: ResponsiveHelper.isSmallPhone(context) ? 12 : 16,
-        horizontal: ResponsiveHelper.isSmallPhone(context) ? 16 : 20,
-      ),
-      decoration: BoxDecoration(
-        color: _bg,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _fg.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          Icon(_icon, color: _fg, size: 24),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Shipment Status',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF586377)),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  status.toUpperCase(),
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: _fg,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 // ─── Error View ────────────────────────────────────────────────────────────
 

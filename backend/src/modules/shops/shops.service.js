@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const shopsRepository = require('./shops.repository');
 const authRepository = require('../auth/auth.repository');
 const ROLES = require('../../shared/constants/roles');
+const { httpError } = require('../../shared/utils/http-error');
 
 /**
  * Shops Service
@@ -120,9 +121,7 @@ class ShopsService {
     ]);
 
     if (!user) {
-      const error = new Error('Seller not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Seller not found');
     }
 
     return {
@@ -160,9 +159,7 @@ class ShopsService {
   async getShopStaffBySellerId(sellerId) {
     const seller = await shopsRepository.findSellerById(sellerId);
     if (!seller) {
-      const error = new Error('Seller not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Seller not found');
     }
 
     if (seller.locationId == null) {
@@ -183,9 +180,7 @@ class ShopsService {
   async getMyStaff(sellerUserId) {
     const seller = await shopsRepository.findUserById(sellerUserId);
     if (!seller || seller.role !== ROLES.SELLER) {
-      const error = new Error('Seller not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Seller not found');
     }
     if (seller.locationId == null) {
       return {
@@ -201,9 +196,7 @@ class ShopsService {
   async getStaffByLocationId(locationId) {
     const data = await this._staffAtLocation(Number(locationId));
     if (!data.location) {
-      const error = new Error('Location not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Location not found');
     }
     return data;
   }
@@ -246,9 +239,7 @@ class ShopsService {
     const code = body.code;
     const existing = await shopsRepository.findLocationByCode(code);
     if (existing) {
-      const error = new Error(`Location code already exists: ${code}`);
-      error.statusCode = 409;
-      throw error;
+      throw httpError(409, `Location code already exists: ${code}`);
     }
 
     const lat = body.latitude != null ? Number(body.latitude) : null;
@@ -295,64 +286,46 @@ class ShopsService {
     if (actor.role === ROLES.SELLER) {
       const seller = await shopsRepository.findUserById(actor.id);
       if (!seller || seller.role !== ROLES.SELLER) {
-        const error = new Error('Seller not found');
-        error.statusCode = 404;
-        throw error;
+        throw httpError(404, 'Seller not found');
       }
       if (seller.locationId == null) {
-        const error = new Error(
+        throw httpError(400, 
           'Your account has no shop location. Contact admin before adding employees.'
         );
-        error.statusCode = 400;
-        throw error;
       }
       locationId = Number(seller.locationId);
       shopName = seller.shopName || null;
     } else if (actor.role === ROLES.ADMIN) {
       if (location_id == null) {
-        const error = new Error('location_id is required');
-        error.statusCode = 400;
-        throw error;
+        throw httpError(400, 'location_id is required');
       }
       const location = await shopsRepository.findLocationById(location_id);
       if (!location || location.isActive === false) {
-        const error = new Error('Location not found or inactive');
-        error.statusCode = 400;
-        throw error;
+        throw httpError(400, 'Location not found or inactive');
       }
       locationId = Number(location.id);
       shopName = location.name;
     } else {
-      const error = new Error('Forbidden');
-      error.statusCode = 403;
-      throw error;
+      throw httpError(403, 'Forbidden');
     }
 
     let employeeRoleId = null;
     if (employee_role_id != null) {
       const er = await shopsRepository.findEmployeeRoleById(employee_role_id);
       if (!er) {
-        const error = new Error('Invalid employee_role_id');
-        error.statusCode = 400;
-        throw error;
+        throw httpError(400, 'Invalid employee_role_id');
       }
       employeeRoleId = Number(er.id);
     }
 
     if (await authRepository.findUserByUserId(user_id)) {
-      const error = new Error('User ID already exists');
-      error.statusCode = 409;
-      throw error;
+      throw httpError(409, 'User ID already exists');
     }
     if (await authRepository.findUserByUsername(username)) {
-      const error = new Error('Username already exists');
-      error.statusCode = 409;
-      throw error;
+      throw httpError(409, 'Username already exists');
     }
     if (await authRepository.findUserByNumber(user_number)) {
-      const error = new Error('Mobile number already exists');
-      error.statusCode = 409;
-      throw error;
+      throw httpError(409, 'Mobile number already exists');
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -387,9 +360,7 @@ class ShopsService {
     const attendanceRepository = require('../attendance/attendance.repository');
     const user = await shopsRepository.findEmployeeById(employeeId);
     if (!user) {
-      const error = new Error('Employee not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Employee not found');
     }
 
     const [open, history] = await Promise.all([

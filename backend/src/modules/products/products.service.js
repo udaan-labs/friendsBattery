@@ -1,5 +1,6 @@
 const productsRepository = require('./products.repository');
 const { resolveUnitScope } = require('../inventory/inventory.scope');
+const { httpError } = require('../../shared/utils/http-error');
 
 /**
  * Products Service
@@ -15,9 +16,7 @@ class ProductsService {
   async createProductName(data) {
     const existing = await productsRepository.findProductNameByName(data.name);
     if (existing) {
-      const error = new Error('Product name already exists');
-      error.statusCode = 409;
-      throw error;
+      throw httpError(409, 'Product name already exists');
     }
     const productName = await productsRepository.createProductName(data);
     return {
@@ -44,9 +43,7 @@ class ProductsService {
   async createProductModel(data) {
     const existing = await productsRepository.findProductModelByNameAndProductName(data.product_name_id, data.name);
     if (existing) {
-      const error = new Error('Product model already exists under this product name');
-      error.statusCode = 409;
-      throw error;
+      throw httpError(409, 'Product model already exists under this product name');
     }
     const model = await productsRepository.createProductModel(data);
     return {
@@ -68,9 +65,7 @@ class ProductsService {
   async getProductModelsByProductName(productNameId) {
     const productName = await productsRepository.findProductNameById(productNameId);
     if (!productName) {
-      const error = new Error('Product name not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Product name not found');
     }
 
     const models = await productsRepository.getProductModelsByProductName(productNameId);
@@ -154,16 +149,12 @@ class ProductsService {
   async getProducts(productNameId, productModelId) {
     const productName = await productsRepository.findProductNameById(productNameId);
     if (!productName) {
-      const error = new Error('Product name not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Product name not found');
     }
 
     const productModel = await productsRepository.findProductModelById(productModelId);
     if (!productModel || Number(productModel.productNameId) !== productNameId) {
-      const error = new Error('Product model not found or does not belong to the selected product name');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Product model not found or does not belong to the selected product name');
     }
 
     const products = await productsRepository.getProductsByFilters(productNameId, productModelId);

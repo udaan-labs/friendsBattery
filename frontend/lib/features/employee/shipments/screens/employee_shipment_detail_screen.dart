@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+import 'package:frontend/shared/common.dart';
 import '../../../seller/dashboard/providers/seller_dashboard_providers.dart';
-import '../../../../shared/widgets/responsive_helper.dart';
 
 /// Read-only shipment detail for employees (no accept action).
 class EmployeeShipmentDetailScreen extends ConsumerWidget {
@@ -14,7 +13,6 @@ class EmployeeShipmentDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final detailState = ref.watch(sellerShipmentDetailProvider(shipmentId));
-    final dateFmt = DateFormat('dd MMM yyyy, hh:mm a');
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FB),
@@ -37,15 +35,15 @@ class EmployeeShipmentDetailScreen extends ConsumerWidget {
         data: (data) => ListView(
           padding: EdgeInsets.all(ResponsiveHelper.responsivePadding(context)),
           children: [
+            ShipmentStatusBanner(status: data.status),
+            const SizedBox(height: 16),
             Text(
               data.shipmentNumber,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF191C1E)),
             ),
             const SizedBox(height: 8),
-            Text('Status: ${data.status}', style: const TextStyle(color: Color(0xFF545F73))),
-            const SizedBox(height: 4),
             Text(
-              'Created: ${dateFmt.format(data.createdAt)}',
+              'Created: ${formatAppDateTime(data.createdAt)}',
               style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
             ),
             if (data.sellerShopName.isNotEmpty) ...[
@@ -102,7 +100,7 @@ class EmployeeShipmentDetailScreen extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(e.toString()),
+              Text(friendlyError(e), textAlign: TextAlign.center),
               TextButton(
                 onPressed: () => ref.invalidate(sellerShipmentDetailProvider(shipmentId)),
                 child: const Text('Retry'),

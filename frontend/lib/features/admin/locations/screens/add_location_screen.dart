@@ -97,7 +97,7 @@ class _AddLocationScreenState extends ConsumerState<AddLocationScreen> {
       context.pop(true);
     } catch (e) {
       if (!mounted) return;
-      context.showErrorSnackBar(e.toString().replaceFirst('Exception: ', ''));
+      context.showFriendlyError(e);
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

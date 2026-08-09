@@ -4,29 +4,24 @@ const jwt = require('jsonwebtoken');
 const { JWT_SECRET, JWT_EXPIRES_IN } = require('../../config/env');
 const authRepository = require('./auth.repository');
 const ROLES = require('../../shared/constants/roles');
+const { httpError } = require('../../shared/utils/http-error');
 
 class AuthService {
   async registerUser({ user_id, username, user_number, shop_name, password, location_id }) {
     // Check constraints sequentially to return specific error messages
     const existingUserId = await authRepository.findUserByUserId(user_id);
     if (existingUserId) {
-      const error = new Error('User ID already exists');
-      error.statusCode = 409;
-      throw error;
+      throw httpError(409, 'User ID already exists');
     }
 
     const existingUsername = await authRepository.findUserByUsername(username);
     if (existingUsername) {
-      const error = new Error('Username already exists');
-      error.statusCode = 409;
-      throw error;
+      throw httpError(409, 'Username already exists');
     }
 
     const existingUserNumber = await authRepository.findUserByNumber(user_number);
     if (existingUserNumber) {
-      const error = new Error('Mobile number already exists');
-      error.statusCode = 409;
-      throw error;
+      throw httpError(409, 'Mobile number already exists');
     }
 
     let locationId = null;
@@ -34,9 +29,7 @@ class AuthService {
     if (location_id != null) {
       const location = await authRepository.findActiveShopLocation(location_id);
       if (!location) {
-        const error = new Error('Shop location not found or inactive (must be type SHOP)');
-        error.statusCode = 400;
-        throw error;
+        throw httpError(400, 'Shop location not found or inactive (must be type SHOP)');
       }
       locationId = Number(location.id);
       if (!resolvedShopName || !String(resolvedShopName).trim()) {
@@ -84,36 +77,26 @@ class AuthService {
   async loginUser({ user_id, password, device_id, ip_address, app_version, firebase_token }) {
     const user = await authRepository.findUserByUserId(user_id);
     if (!user) {
-      const error = new Error('Invalid User ID');
-      error.statusCode = 401;
-      throw error;
+      throw httpError(401, 'Invalid User ID');
     }
 
     // loginAttempt is real lockout (admin clears via activate / successful login reset)
     if (Number(user.loginAttempt) >= 10) {
-      const error = new Error('Too many failed logins. Contact admin.');
-      error.statusCode = 403;
-      throw error;
+      throw httpError(403, 'Too many failed logins. Contact admin.');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
       await authRepository.updateLoginAttempt(user_id, user.loginAttempt + 1);
-      const error = new Error('Invalid Password');
-      error.statusCode = 401;
-      throw error;
+      throw httpError(401, 'Invalid Password');
     }
 
     if (!user.isActive) {
-      const error = new Error('cant not login');
-      error.statusCode = 403;
-      throw error;
+      throw httpError(403, 'cant not login');
     }
 
     if (!user.isVerified) {
-      const error = new Error('login after some time');
-      error.statusCode = 403;
-      throw error;
+      throw httpError(403, 'login after some time');
     }
 
     if (user.loginAttempt > 0) {
@@ -204,9 +187,7 @@ class AuthService {
   async activateUser({ user_id, is_active, is_verified }) {
     const user = await authRepository.findUserByUserId(user_id);
     if (!user) {
-      const error = new Error('Invalid User ID');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Invalid User ID');
     }
 
     const updatedUser = await authRepository.updateUserStatus(user_id, is_active, is_verified);

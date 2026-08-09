@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frontend/features/employee/attendance/data/location_service.dart';
-import 'package:frontend/features/employee/attendance/domain/device_location.dart';
+import 'package:frontend/features/employee/attendance/device_location.dart';
+import 'package:frontend/features/employee/attendance/location_service.dart';
 
 /// Pure distance / radius checks — no device GPS, no permissions.
 /// Manual device check-in still needed later.

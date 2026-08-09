@@ -1,4 +1,5 @@
 const transfersRepository = require('./transfers.repository');
+const { httpError } = require('../../shared/utils/http-error');
 
 /**
  * Transfers Service
@@ -25,9 +26,7 @@ class TransfersService {
     // 1. Validate seller exists
     const seller = await transfersRepository.findSellerById(data.seller_id);
     if (!seller) {
-      const error = new Error('Seller not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Seller not found');
     }
 
     // 2. Validate each product and check admin inventory
@@ -40,19 +39,15 @@ class TransfersService {
         // Validate product exists
         const product = await transfersRepository.findProductById(item.product_id);
         if (!product) {
-          const error = new Error(`Product with ID ${item.product_id} not found`);
-          error.statusCode = 404;
-          throw error;
+          throw httpError(404, `Product with ID ${item.product_id} not found`);
         }
 
         // Validate admin has sufficient inventory
         const availableCount = await transfersRepository.countAvailableUnits(adminId, item.product_id);
         if (availableCount < item.quantity) {
-          const error = new Error(
+          throw httpError(400, 
             `Insufficient inventory for product ID ${item.product_id}. Available: ${availableCount}, Requested: ${item.quantity}`
           );
-          error.statusCode = 400;
-          throw error;
         }
       })
     );
@@ -134,9 +129,7 @@ class TransfersService {
     const shipment = await transfersRepository.findShipmentById(shipmentId);
 
     if (!shipment) {
-      const error = new Error('Shipment not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Shipment not found');
     }
 
     if (user.role === 'ADMIN') {
@@ -144,9 +137,7 @@ class TransfersService {
     } else if (user.role === 'SELLER' && Number(shipment.toUserId) === Number(user.id)) {
       // ok
     } else {
-      const error = new Error('Forbidden: You do not have access to this shipment');
-      error.statusCode = 403;
-      throw error;
+      throw httpError(403, 'Forbidden: You do not have access to this shipment');
     }
 
     return {
@@ -199,23 +190,17 @@ class TransfersService {
     const shipment = await transfersRepository.findShipmentById(shipmentId);
 
     if (!shipment) {
-      const error = new Error('Shipment not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Shipment not found');
     }
 
     // 2. Verify shipment is PENDING
     if (shipment.status !== 'PENDING') {
-      const error = new Error(`Shipment cannot be received. Current status: ${shipment.status}`);
-      error.statusCode = 400;
-      throw error;
+      throw httpError(400, `Shipment cannot be received. Current status: ${shipment.status}`);
     }
 
     // 3. Verify authenticated seller is the intended receiver
     if (Number(shipment.toUserId) !== Number(sellerId)) {
-      const error = new Error('Forbidden: This shipment is not assigned to you');
-      error.statusCode = 403;
-      throw error;
+      throw httpError(403, 'Forbidden: This shipment is not assigned to you');
     }
 
     // 4. Execute atomic inventory transfer in repository
@@ -244,16 +229,12 @@ class TransfersService {
     const shipment = await transfersRepository.findShipmentById(shipmentId);
 
     if (!shipment) {
-      const error = new Error('Shipment not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Shipment not found');
     }
 
     // 2. Only PENDING shipments can be cancelled
     if (shipment.status !== 'PENDING') {
-      const error = new Error(`Shipment cannot be cancelled. Current status: ${shipment.status}`);
-      error.statusCode = 400;
-      throw error;
+      throw httpError(400, `Shipment cannot be cancelled. Current status: ${shipment.status}`);
     }
 
     // 3. Cancel — no inventory changes

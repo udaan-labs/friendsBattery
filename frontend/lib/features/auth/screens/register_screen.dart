@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import 'package:go_router/go_router.dart';
 import '../../../theme/app_theme.dart';
+import '../../../shared/utils/app_formatters.dart';
 import '../../../shared/widgets/responsive_helper.dart';
 import '../providers/auth_controller.dart';
 import '../../../core/state/data_sync.dart';
@@ -225,7 +226,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Could not load shops: ${e.toString().replaceFirst('Exception: ', '')}',
+                  'Could not load shops: ${friendlyError(e)}',
                   style: const TextStyle(color: AppTheme.error),
                 ),
                 const SizedBox(height: 8),
