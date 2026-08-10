@@ -59,6 +59,7 @@ class SalesController {
       const result = await salesService.returnRent(req.body, {
         id: req.user.id,
         role: req.user.role,
+        locationId: req.user.locationId ?? null,
       });
       return successResponse(res, 200, 'Battery rent returned successfully', result);
     } catch (error) {

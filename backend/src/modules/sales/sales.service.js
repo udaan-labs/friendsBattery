@@ -5,6 +5,7 @@ const ROLES = require('../../shared/constants/roles');
 const {
   resolveAdminShopScope,
   resolveShopSellerIds,
+  isUserInShopScope,
 } = require('../../shared/utils/shop-scope.util');
 const { prisma } = require('../../config/db');
 
@@ -14,6 +15,54 @@ const { prisma } = require('../../config/db');
  * Contains all business logic for the sales module.
  */
 class SalesService {
+  async _ensureCustomer(name, phone) {
+    let customer = await salesRepository.findCustomerByMobile(phone);
+    if (!customer) {
+      customer = await salesRepository.createCustomer({ name, phone });
+    }
+    return customer;
+  }
+
+  /**
+   * Who may close an open rent for this unit.
+   * SA any · Admin shop staff/owner · Seller own unit or own rent · Employee same location or own rent
+   */
+  async _assertCanReturnRent(actor, rent, unit) {
+    if (actor.role === ROLES.SUPER_ADMIN) return;
+
+    if (actor.role === ROLES.ADMIN) {
+      if (Number(unit.ownerId) === Number(actor.id)) return;
+      if (Number(rent.sellerId) === Number(actor.id)) return;
+      const scope = resolveAdminShopScope(actor);
+      const renter = await prisma.user.findUnique({
+        where: { id: BigInt(rent.sellerId) },
+        select: { id: true, parentId: true, locationId: true },
+      });
+      if (renter && isUserInShopScope(renter, scope)) return;
+      throw httpError(403, 'This rent is outside your shop.');
+    }
+
+    if (actor.role === ROLES.SELLER) {
+      if (Number(unit.ownerId) === Number(actor.id)) return;
+      if (Number(rent.sellerId) === Number(actor.id)) return;
+      throw httpError(403, 'This rent was created by another user.');
+    }
+
+    if (actor.role === ROLES.EMPLOYEE) {
+      if (Number(rent.sellerId) === Number(actor.id)) return;
+      if (
+        actor.locationId != null &&
+        unit.currentLocationId != null &&
+        Number(unit.currentLocationId) === Number(actor.locationId)
+      ) {
+        return;
+      }
+      throw httpError(403, 'This rent is not at your shop location.');
+    }
+
+    throw httpError(403, 'Forbidden: You cannot return this rent');
+  }
+
   /**
    * Format sale object for consistent API response
    */
@@ -59,13 +108,10 @@ class SalesService {
     const isEmployee = actor.role === ROLES.EMPLOYEE;
     const sellPrice = Number(data.sell_price);
 
-    let customer = await salesRepository.findCustomerByMobile(data.customer_number);
-    if (!customer) {
-      customer = await salesRepository.createCustomer({
-        name: data.customer_name,
-        phone: data.customer_number,
-      });
-    }
+    const customer = await this._ensureCustomer(
+      data.customer_name,
+      data.customer_number
+    );
 
     if (isEmployee && actor.locationId == null) {
       throw httpError(400, 'Your account has no shop location. Contact admin.');
@@ -123,13 +169,10 @@ class SalesService {
    * @param {{ id: number|bigint }} actor
    */
   async createServiceBill(data, actor) {
-    let customer = await salesRepository.findCustomerByMobile(data.customer_number);
-    if (!customer) {
-      customer = await salesRepository.createCustomer({
-        name: data.customer_name,
-        phone: data.customer_number,
-      });
-    }
+    const customer = await this._ensureCustomer(
+      data.customer_name,
+      data.customer_number
+    );
 
     const bill = await salesRepository.createServiceBill({
       sellerId: actor.id,
@@ -157,13 +200,10 @@ class SalesService {
       throw httpError(400, 'Your account has no shop location. Contact admin.');
     }
 
-    let customer = await salesRepository.findCustomerByMobile(data.customer_number);
-    if (!customer) {
-      customer = await salesRepository.createCustomer({
-        name: data.customer_name,
-        phone: data.customer_number,
-      });
-    }
+    const customer = await this._ensureCustomer(
+      data.customer_name,
+      data.customer_number
+    );
 
     const productUnit = await salesRepository.findAvailableProductUnit(
       data.serial_number,
@@ -193,7 +233,7 @@ class SalesService {
   /**
    * Return rented unit: fee from deposit, refund rest. Unit → AVAILABLE + ledger.
    * @param {Object} data Request body
-   * @param {{ id: number|bigint, role: string }} actor
+   * @param {{ id: number|bigint, role: string, locationId?: number|null }} actor
    */
   async returnRent(data, actor) {
     const rentFee = Number(data.rent_fee);
@@ -202,28 +242,18 @@ class SalesService {
       throw httpError(404, 'No open rent found for this serial.');
     }
 
-    // Seller/employee: only own rents; SA/Admin can return any (shop ops)
-    if (
-      actor.role === ROLES.SELLER ||
-      actor.role === ROLES.EMPLOYEE
-    ) {
-      if (Number(open.sellerId) !== Number(actor.id)) {
-        throw httpError(403, 'This rent was created by another user.');
-      }
+    const rentedUnit = await salesRepository.findProductUnitById(open.productUnitId);
+    if (!rentedUnit) {
+      throw httpError(404, 'Product unit not found.');
     }
+
+    await this._assertCanReturnRent(actor, open, rentedUnit);
 
     const deposit = Number(open.deposit);
     if (rentFee > deposit) {
       throw httpError(400, `Rent fee (₹${rentFee}) cannot exceed deposit (₹${deposit}).`);
     }
     const refundAmount = Math.round((deposit - rentFee) * 100) / 100;
-
-    const rentedUnit = await prisma.productUnit.findUnique({
-      where: { id: open.productUnitId },
-    });
-    if (!rentedUnit) {
-      throw httpError(404, 'Product unit not found.');
-    }
 
     const result = await salesRepository.returnRent({
       rentId: open.id,

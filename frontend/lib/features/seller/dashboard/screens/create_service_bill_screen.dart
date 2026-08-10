@@ -69,6 +69,7 @@ class _CreateServiceBillScreenState
   }
 
   Future<void> _submit() async {
+    if (_isSubmitting) return;
     if (!_formKey.currentState!.validate()) return;
     final amount = num.tryParse(_amountController.text.trim());
     if (amount == null || amount <= 0) {
@@ -91,15 +92,11 @@ class _CreateServiceBillScreenState
       if (!mounted) return;
       context.showSuccessSnackBar('Service bill created');
       context.pop();
-    } on DioException catch (e) {
-      if (!mounted) return;
-      final msg = e.response?.data is Map
-          ? (e.response!.data['message']?.toString() ?? e.message)
-          : e.message;
-      context.showErrorSnackBar(msg ?? 'Failed to create service bill');
     } catch (e) {
-      if (!mounted) return;
-      context.showErrorSnackBar(e.toString());
+      // DioExceptions handled by ApiInterceptor (same as CreateBillScreen)
+      if (mounted && e is! DioException) {
+        context.showErrorSnackBar(e.toString());
+      }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }

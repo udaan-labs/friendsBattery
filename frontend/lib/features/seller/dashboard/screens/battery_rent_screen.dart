@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/state/data_sync.dart';
 import '../../../../shared/widgets/scanner_screen.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
 import '../../sales/providers/seller_sales_provider.dart';
@@ -48,6 +49,7 @@ class _BatteryRentScreenState extends ConsumerState<BatteryRentScreen> {
   }
 
   Future<void> _submit() async {
+    if (_isSubmitting) return;
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSubmitting = true);
     try {
@@ -61,8 +63,9 @@ class _BatteryRentScreenState extends ConsumerState<BatteryRentScreen> {
           deposit: deposit,
         );
         if (!mounted) return;
+        DataSync.afterSaleMutation(ref);
         context.showSuccessSnackBar(
-          'Rented out · deposit ₹${r['deposit'] ?? deposit}',
+          'Rented out · deposit ₹${r.deposit ?? deposit}',
         );
         context.pop();
       } else {
@@ -72,20 +75,17 @@ class _BatteryRentScreenState extends ConsumerState<BatteryRentScreen> {
           rentFee: fee,
         );
         if (!mounted) return;
+        DataSync.afterSaleMutation(ref);
         context.showSuccessSnackBar(
-          'Returned · fee ₹${r['rent_fee'] ?? fee} · refund ₹${r['refund_amount'] ?? 0}',
+          'Returned · fee ₹${r.rentFee ?? fee} · refund ₹${r.refundAmount ?? 0}',
         );
         context.pop();
       }
-    } on DioException catch (e) {
-      if (!mounted) return;
-      final msg = e.response?.data is Map
-          ? (e.response!.data['message']?.toString() ?? e.message)
-          : e.message;
-      context.showErrorSnackBar(msg ?? 'Request failed');
     } catch (e) {
-      if (!mounted) return;
-      context.showErrorSnackBar(e.toString());
+      // DioExceptions handled by ApiInterceptor (same as CreateBillScreen)
+      if (mounted && e is! DioException) {
+        context.showErrorSnackBar(e.toString());
+      }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }

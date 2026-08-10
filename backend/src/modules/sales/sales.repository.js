@@ -100,6 +100,10 @@ class SalesRepository {
     });
   }
 
+  async findProductUnitById(id) {
+    return prisma.productUnit.findUnique({ where: { id: BigInt(id) } });
+  }
+
   /** Service bill row — no unit / ledger write. */
   async createServiceBill(data) {
     return prisma.serviceBill.create({

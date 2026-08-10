@@ -125,7 +125,7 @@ class SellerSalesRepository {
     return response.data?.data?.serviceBillId ?? 0;
   }
 
-  Future<Map<String, num?>> createRent({
+  Future<CreateRentResult> createRent({
     required String serialNumber,
     required String customerName,
     required String customerNumber,
@@ -139,13 +139,13 @@ class SellerSalesRepository {
     });
     final response = await _sales.apiSalesRentPost(createRentRequest: body);
     final d = response.data?.data;
-    return {
-      'rent_id': d?.rentId?.toDouble(),
-      'deposit': d?.deposit,
-    };
+    if (d == null) {
+      throw Exception(response.data?.message ?? 'Failed to rent battery');
+    }
+    return d;
   }
 
-  Future<Map<String, num?>> returnRent({
+  Future<ReturnRentResult> returnRent({
     required String serialNumber,
     required num rentFee,
   }) async {
@@ -156,11 +156,9 @@ class SellerSalesRepository {
     final response =
         await _sales.apiSalesRentReturnPost(returnRentRequest: body);
     final d = response.data?.data;
-    return {
-      'rent_id': d?.rentId?.toDouble(),
-      'deposit': d?.deposit,
-      'rent_fee': d?.rentFee,
-      'refund_amount': d?.refundAmount,
-    };
+    if (d == null) {
+      throw Exception(response.data?.message ?? 'Failed to return rent');
+    }
+    return d;
   }
 }
