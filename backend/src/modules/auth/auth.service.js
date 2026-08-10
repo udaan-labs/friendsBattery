@@ -5,6 +5,8 @@ const { JWT_SECRET, JWT_EXPIRES_IN } = require('../../config/env');
 const authRepository = require('./auth.repository');
 const ROLES = require('../../shared/constants/roles');
 const { httpError } = require('../../shared/utils/http-error');
+const otpService = require('../otp/otp.service');
+const { sendOtpSms } = require('../otp/sms.service');
 
 class AuthService {
   /**
@@ -167,8 +169,7 @@ class AuthService {
   }
 
   /**
-   * Login any system role (SUPER_ADMIN / ADMIN / SELLER / EMPLOYEE).
-   * Employees get an employee_sessions row (security) and location / employee_role on user payload.
+   * Step 1 — validate password, issue OTP challenge (no JWT yet).
    */
   async loginUser({ user_id, password, device_id, ip_address, app_version, firebase_token }) {
     const user = await authRepository.findUserByUserId(user_id);
@@ -176,7 +177,6 @@ class AuthService {
       throw httpError(401, 'Invalid User ID');
     }
 
-    // loginAttempt is real lockout (admin clears via activate / successful login reset)
     if (Number(user.loginAttempt) >= 10) {
       throw httpError(403, 'Too many failed logins. Contact admin.');
     }
@@ -195,24 +195,80 @@ class AuthService {
       throw httpError(403, 'login after some time');
     }
 
+    const { challengeId, code, expiresIn } = otpService.createChallenge({
+      purpose: 'login',
+      subject: `user:${Number(user.id)}`,
+      meta: {
+        userDbId: Number(user.id),
+        user_id: user.userId,
+        device_id: device_id || null,
+        ip_address: ip_address || null,
+        app_version: app_version || null,
+        firebase_token: firebase_token || null,
+      },
+    });
+
+    // Real SMS to user's registered mobile — user must type code from message
+    await sendOtpSms({
+      phone: user.userNumber,
+      code,
+      purpose: 'login',
+    });
+
+    const data = {
+      requires_otp: true,
+      challenge_id: challengeId,
+      expires_in: expiresIn,
+      phone_masked: otpService.maskPhone(user.userNumber),
+    };
+    if (otpService.shouldEchoOtp()) data.otp = code; // debug only
+    return data;
+  }
+
+  /**
+   * Step 2 — verify login OTP, issue JWT (+ employee session when needed).
+   */
+  async verifyLoginOtp({ challenge_id, otp }) {
+    const verified = otpService.verifyChallenge({
+      challengeId: challenge_id,
+      code: otp,
+      purpose: 'login',
+    });
+
+    const meta = verified.meta || {};
+    const user = await authRepository.findUserByUserId(meta.user_id);
+    if (!user || Number(user.id) !== Number(meta.userDbId)) {
+      throw httpError(401, 'OTP session invalid. Login again.');
+    }
+
+    if (!user.isActive) {
+      throw httpError(403, 'cant not login');
+    }
+    if (!user.isVerified) {
+      throw httpError(403, 'login after some time');
+    }
+
     if (user.loginAttempt > 0) {
-      await authRepository.updateLoginAttempt(user_id, 0);
+      await authRepository.updateLoginAttempt(user.userId, 0);
     }
 
     let sessionId = null;
     if (user.role === ROLES.EMPLOYEE) {
-      // Single active session: re-login kills old JWTs (middleware checks open session)
       await authRepository.closeAllOpenEmployeeSessions(user.id);
       const session = await authRepository.createEmployeeSession({
         employeeId: user.id,
-        deviceId: device_id,
-        ipAddress: ip_address,
-        appVersion: app_version,
-        firebaseToken: firebase_token,
+        deviceId: meta.device_id,
+        ipAddress: meta.ip_address,
+        appVersion: meta.app_version,
+        firebaseToken: meta.firebase_token,
       });
       sessionId = Number(session.id);
     }
 
+    return this._buildLoginTokenResponse(user, sessionId);
+  }
+
+  _buildLoginTokenResponse(user, sessionId) {
     const payload = {
       id: Number(user.id),
       userId: user.userId,
@@ -223,7 +279,6 @@ class AuthService {
     };
 
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
-
     const randomSalt = crypto.randomBytes(8).toString('hex');
     const dynamicAuthId = Buffer.from(`${user.id}:${randomSalt}`).toString('base64');
 

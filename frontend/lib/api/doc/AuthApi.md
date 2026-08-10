@@ -10,10 +10,11 @@ All URIs are relative to *http://localhost:3000*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**apiAuthActivatePut**](AuthApi.md#apiauthactivateput) | **PUT** /api/auth/activate | Activate and verify a user account
-[**apiAuthLoginPost**](AuthApi.md#apiauthloginpost) | **POST** /api/auth/login | Authenticate user and return token
+[**apiAuthLoginPost**](AuthApi.md#apiauthloginpost) | **POST** /api/auth/login | Start login (password → OTP challenge)
 [**apiAuthLogoutPost**](AuthApi.md#apiauthlogoutpost) | **POST** /api/auth/logout | End session (closes employee_sessions for EMPLOYEE)
 [**apiAuthRegisterAdminPost**](AuthApi.md#apiauthregisteradminpost) | **POST** /api/auth/register-admin | Super Admin creates a shop Admin
 [**apiAuthRegisterPost**](AuthApi.md#apiauthregisterpost) | **POST** /api/auth/register | Register a new seller
+[**apiAuthVerifyOtpPost**](AuthApi.md#apiauthverifyotppost) | **POST** /api/auth/verify-otp | Complete login with OTP
 
 
 # **apiAuthActivatePut**
@@ -57,11 +58,11 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiAuthLoginPost**
-> LoginResponse apiAuthLoginPost(apiAuthLoginPostRequest)
+> LoginOtpChallengeResponse apiAuthLoginPost(apiAuthLoginPostRequest)
 
-Authenticate user and return token
+Start login (password → OTP challenge)
 
-Works for SUPER_ADMIN, ADMIN, SELLER, and EMPLOYEE. EMPLOYEE login may include location / employee_role on user and session_id (employee_sessions). 
+Step 1 of login for SUPER_ADMIN, ADMIN, SELLER, EMPLOYEE. On success returns challenge_id (and otp in non-production). Complete with POST /api/auth/verify-otp. 
 
 ### Example
 ```dart
@@ -86,7 +87,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**LoginResponse**](LoginResponse.md)
+[**LoginOtpChallengeResponse**](LoginOtpChallengeResponse.md)
 
 ### Authorization
 
@@ -207,6 +208,49 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**RegisterResponse**](RegisterResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiAuthVerifyOtpPost**
+> LoginResponse apiAuthVerifyOtpPost(apiAuthVerifyOtpPostRequest)
+
+Complete login with OTP
+
+Exchange login OTP challenge for auth_id / auth_key.
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getAuthApi();
+final ApiAuthVerifyOtpPostRequest apiAuthVerifyOtpPostRequest = ; // ApiAuthVerifyOtpPostRequest | 
+
+try {
+    final response = api.apiAuthVerifyOtpPost(apiAuthVerifyOtpPostRequest);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling AuthApi->apiAuthVerifyOtpPost: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **apiAuthVerifyOtpPostRequest** | [**ApiAuthVerifyOtpPostRequest**](ApiAuthVerifyOtpPostRequest.md)|  | 
+
+### Return type
+
+[**LoginResponse**](LoginResponse.md)
 
 ### Authorization
 

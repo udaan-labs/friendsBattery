@@ -70,10 +70,11 @@ Class | Method | HTTP request | Description
 [*AttendanceApi*](doc/AttendanceApi.md) | [**apiEmployeeAttendanceCheckedInGet**](doc/AttendanceApi.md#apiemployeeattendancecheckedinget) | **GET** /api/employee/attendance/checked-in | List all currently checked-in employees (Admin / Super Admin)
 [*AttendanceApi*](doc/AttendanceApi.md) | [**apiEmployeeAttendanceStatusGet**](doc/AttendanceApi.md#apiemployeeattendancestatusget) | **GET** /api/employee/attendance/status | Current check-in status for employee
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthActivatePut**](doc/AuthApi.md#apiauthactivateput) | **PUT** /api/auth/activate | Activate and verify a user account
-[*AuthApi*](doc/AuthApi.md) | [**apiAuthLoginPost**](doc/AuthApi.md#apiauthloginpost) | **POST** /api/auth/login | Authenticate user and return token
+[*AuthApi*](doc/AuthApi.md) | [**apiAuthLoginPost**](doc/AuthApi.md#apiauthloginpost) | **POST** /api/auth/login | Start login (password → OTP challenge)
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthLogoutPost**](doc/AuthApi.md#apiauthlogoutpost) | **POST** /api/auth/logout | End session (closes employee_sessions for EMPLOYEE)
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthRegisterAdminPost**](doc/AuthApi.md#apiauthregisteradminpost) | **POST** /api/auth/register-admin | Super Admin creates a shop Admin
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthRegisterPost**](doc/AuthApi.md#apiauthregisterpost) | **POST** /api/auth/register | Register a new seller
+[*AuthApi*](doc/AuthApi.md) | [**apiAuthVerifyOtpPost**](doc/AuthApi.md#apiauthverifyotppost) | **POST** /api/auth/verify-otp | Complete login with OTP
 [*DashboardApi*](doc/DashboardApi.md) | [**apiDashboardActivityHistoryGet**](doc/DashboardApi.md#apidashboardactivityhistoryget) | **GET** /api/dashboard/activity-history | Get paginated activity history (Admin only)
 [*DashboardApi*](doc/DashboardApi.md) | [**apiDashboardRecentActivityGet**](doc/DashboardApi.md#apidashboardrecentactivityget) | **GET** /api/dashboard/recent-activity | Get recent activity feed (Admin only)
 [*DashboardApi*](doc/DashboardApi.md) | [**apiDashboardStatsGet**](doc/DashboardApi.md#apidashboardstatsget) | **GET** /api/dashboard/stats | Get dashboard statistics
@@ -86,9 +87,11 @@ Class | Method | HTTP request | Description
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryHistoryGet**](doc/InventoryApi.md#apiinventoryhistoryget) | **GET** /api/inventory/history | Return inventory movement history
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryProductDetailsGet**](doc/InventoryApi.md#apiinventoryproductdetailsget) | **GET** /api/inventory/product-details | Fetch details of a product (stock count &amp; min sell price) by product name and model IDs
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryProductIdGet**](doc/InventoryApi.md#apiinventoryproductidget) | **GET** /api/inventory/{productId} | Return one inventory item
-[*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryScanForSaleGet**](doc/InventoryApi.md#apiinventoryscanforsaleget) | **GET** /api/inventory/scan-for-sale | Scan a serial number to fetch product details for a sale
+[*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryScanForSaleGet**](doc/InventoryApi.md#apiinventoryscanforsaleget) | **GET** /api/inventory/scan-for-sale | Scan serial for sale (owner stock; EMPLOYEE &#x3D; location stock)
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryTransferPost**](doc/InventoryApi.md#apiinventorytransferpost) | **POST** /api/inventory/transfer | Transfer inventory from admin to seller
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryUpdateStockPost**](doc/InventoryApi.md#apiinventoryupdatestockpost) | **POST** /api/inventory/update-stock | Update admin&#39;s own inventory stock (Admin only)
+[*OTPApi*](doc/OTPApi.md) | [**apiOtpSendPost**](doc/OTPApi.md#apiotpsendpost) | **POST** /api/otp/send | Send OTP for current user (reusable purposes)
+[*OTPApi*](doc/OTPApi.md) | [**apiOtpVerifyPost**](doc/OTPApi.md#apiotpverifypost) | **POST** /api/otp/verify | Verify OTP for current user
 [*ProductUnitsApi*](doc/ProductUnitsApi.md) | [**apiProductUnitsVerifyPost**](doc/ProductUnitsApi.md#apiproductunitsverifypost) | **POST** /api/product-units/verify | Verify a product unit by serial or QR
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsInventoryProductsGet**](doc/ProductsApi.md#apiproductsinventoryproductsget) | **GET** /api/products/inventory-products | Get products in the authenticated user&#39;s inventory
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsListPost**](doc/ProductsApi.md#apiproductslistpost) | **POST** /api/products/list | Return all products matching filters
@@ -102,7 +105,7 @@ Class | Method | HTTP request | Description
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesAdminHistoryGet**](doc/SalesApi.md#apisalesadminhistoryget) | **GET** /api/sales/admin/history | Return all sales across all sellers with pagination, search, filters, and shipment tracing (Admin only)
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesGet**](doc/SalesApi.md#apisalesget) | **GET** /api/sales | Return all sales based on role (Admin sees all, Seller sees own)
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesHistoryGet**](doc/SalesApi.md#apisaleshistoryget) | **GET** /api/sales/history | Return seller&#39;s own sales history with pagination, search, and date filtering
-[*SalesApi*](doc/SalesApi.md) | [**apiSalesPost**](doc/SalesApi.md#apisalespost) | **POST** /api/sales | Create a new sale transaction
+[*SalesApi*](doc/SalesApi.md) | [**apiSalesPost**](doc/SalesApi.md#apisalespost) | **POST** /api/sales | Create a sale (SA/Admin/Seller own units; EMPLOYEE location stock)
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesTransactionIdGet**](doc/SalesApi.md#apisalestransactionidget) | **GET** /api/sales/{transactionId} | Return a single sale&#39;s details by ID
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiEmployeeShipmentsGet**](doc/ShipmentsApi.md#apiemployeeshipmentsget) | **GET** /api/employee/shipments | List shipments for sellers at the employee&#39;s shop location (read-only)
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiSellerDashboardPendingShipmentsGet**](doc/ShipmentsApi.md#apisellerdashboardpendingshipmentsget) | **GET** /api/seller/dashboard/pending-shipments | Get pending shipments count (Seller only)
@@ -148,6 +151,7 @@ Class | Method | HTTP request | Description
  - [ApiAuthActivatePutRequest](doc/ApiAuthActivatePutRequest.md)
  - [ApiAuthLoginPostRequest](doc/ApiAuthLoginPostRequest.md)
  - [ApiAuthRegisterPostRequest](doc/ApiAuthRegisterPostRequest.md)
+ - [ApiAuthVerifyOtpPostRequest](doc/ApiAuthVerifyOtpPostRequest.md)
  - [ApiDashboardStatsGet200Response](doc/ApiDashboardStatsGet200Response.md)
  - [ApiEmployeeAttendanceCheckInPost201Response](doc/ApiEmployeeAttendanceCheckInPost201Response.md)
  - [ApiEmployeeAttendanceCheckedInGet200Response](doc/ApiEmployeeAttendanceCheckedInGet200Response.md)
@@ -161,6 +165,8 @@ Class | Method | HTTP request | Description
  - [ApiInventoryDetailsGet200ResponseDataPagination](doc/ApiInventoryDetailsGet200ResponseDataPagination.md)
  - [ApiInventoryTransferPostRequest](doc/ApiInventoryTransferPostRequest.md)
  - [ApiInventoryTransferPostRequestProductsInner](doc/ApiInventoryTransferPostRequestProductsInner.md)
+ - [ApiOtpSendPostRequest](doc/ApiOtpSendPostRequest.md)
+ - [ApiOtpVerifyPostRequest](doc/ApiOtpVerifyPostRequest.md)
  - [ApiProductsListPostRequest](doc/ApiProductsListPostRequest.md)
  - [ApiSellerDashboardPendingShipmentsGet200Response](doc/ApiSellerDashboardPendingShipmentsGet200Response.md)
  - [ApiSellerDashboardPendingShipmentsGet200ResponseData](doc/ApiSellerDashboardPendingShipmentsGet200ResponseData.md)
@@ -224,10 +230,16 @@ Class | Method | HTTP request | Description
  - [LocationItem](doc/LocationItem.md)
  - [LocationsListResponse](doc/LocationsListResponse.md)
  - [LoginData](doc/LoginData.md)
+ - [LoginOtpChallengeData](doc/LoginOtpChallengeData.md)
+ - [LoginOtpChallengeResponse](doc/LoginOtpChallengeResponse.md)
  - [LoginResponse](doc/LoginResponse.md)
  - [LoginUser](doc/LoginUser.md)
  - [LoginUserEmployeeRole](doc/LoginUserEmployeeRole.md)
  - [LoginUserLocation](doc/LoginUserLocation.md)
+ - [OtpSendData](doc/OtpSendData.md)
+ - [OtpSendResponse](doc/OtpSendResponse.md)
+ - [OtpVerifyData](doc/OtpVerifyData.md)
+ - [OtpVerifyResponse](doc/OtpVerifyResponse.md)
  - [Product](doc/Product.md)
  - [ProductCreated](doc/ProductCreated.md)
  - [ProductModel](doc/ProductModel.md)

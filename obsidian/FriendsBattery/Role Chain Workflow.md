@@ -3,7 +3,7 @@
 **Canvas (open this in Obsidian):** [[Role Chain Workflow]]  
 **Todos:** `docs/ROADMAP.md` · commands: `/todo` · `/todo-done` · `/todo-undone` · `/todo-sync`
 
-**Next:** §5.3 OTP
+**Next:** §5.4 Sale variants
 
 ## Chain
 

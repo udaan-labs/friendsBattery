@@ -74,6 +74,29 @@ module.exports = {
       data: { $ref: '#/components/schemas/LoginData' }
     }
   },
+  LoginOtpChallengeData: {
+    type: 'object',
+    properties: {
+      requires_otp: { type: 'boolean' },
+      challenge_id: { type: 'string' },
+      expires_in: { type: 'integer', description: 'Seconds until OTP expires' },
+      phone_masked: { type: 'string', nullable: true },
+      otp: {
+        type: 'string',
+        nullable: true,
+        description: 'Only when OTP_ECHO=1 (debug)',
+      },
+    },
+  },
+  LoginOtpChallengeResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean' },
+      message: { type: 'string' },
+      data: { $ref: '#/components/schemas/LoginOtpChallengeData' },
+    },
+  },
+
   RegisterData: {
     type: 'object',
     properties: {

@@ -188,6 +188,98 @@
           }
         }
       },
+      "LoginOtpChallengeData": {
+        "type": "object",
+        "properties": {
+          "requires_otp": {
+            "type": "boolean"
+          },
+          "challenge_id": {
+            "type": "string"
+          },
+          "expires_in": {
+            "type": "integer",
+            "description": "Seconds until OTP expires"
+          },
+          "phone_masked": {
+            "type": "string",
+            "nullable": true
+          },
+          "otp": {
+            "type": "string",
+            "nullable": true,
+            "description": "Dev only — present when OTP_ECHO / non-production"
+          }
+        }
+      },
+      "LoginOtpChallengeResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/LoginOtpChallengeData"
+          }
+        }
+      },
+      "OtpSendData": {
+        "type": "object",
+        "properties": {
+          "challenge_id": {
+            "type": "string"
+          },
+          "expires_in": {
+            "type": "integer"
+          },
+          "otp": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "OtpSendResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/OtpSendData"
+          }
+        }
+      },
+      "OtpVerifyData": {
+        "type": "object",
+        "properties": {
+          "purpose": {
+            "type": "string"
+          },
+          "verified": {
+            "type": "boolean"
+          }
+        }
+      },
+      "OtpVerifyResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/OtpVerifyData"
+          }
+        }
+      },
       "RegisterData": {
         "type": "object",
         "properties": {
@@ -3913,7 +4005,7 @@
     },
     "/api/sales": {
       "post": {
-        "summary": "Create a new sale transaction",
+        "summary": "Create a sale (SA/Admin/Seller own units; EMPLOYEE location stock)",
         "tags": [
           "Sales"
         ],
@@ -3942,6 +4034,15 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Serial not available in actor inventory/location"
+          },
+          "409": {
+            "description": "Concurrent claim lost (already sold)"
           }
         }
       },
@@ -4564,6 +4665,106 @@
         }
       }
     },
+    "/api/otp/send": {
+      "post": {
+        "summary": "Send OTP for current user (reusable purposes)",
+        "tags": [
+          "OTP"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "purpose"
+                ],
+                "properties": {
+                  "purpose": {
+                    "type": "string",
+                    "example": "confirm_action"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpSendResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/otp/verify": {
+      "post": {
+        "summary": "Verify OTP for current user",
+        "tags": [
+          "OTP"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "challenge_id",
+                  "otp"
+                ],
+                "properties": {
+                  "challenge_id": {
+                    "type": "string"
+                  },
+                  "otp": {
+                    "type": "string"
+                  },
+                  "purpose": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpVerifyResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid / expired OTP"
+          }
+        }
+      }
+    },
     "/api/inventory": {
       "get": {
         "summary": "Return logged-in user's inventory",
@@ -4929,7 +5130,7 @@
     },
     "/api/inventory/scan-for-sale": {
       "get": {
-        "summary": "Scan a serial number to fetch product details for a sale",
+        "summary": "Scan serial for sale (owner stock; EMPLOYEE = location stock)",
         "tags": [
           "Inventory"
         ],
@@ -4958,6 +5159,9 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Employee has no shop location"
           },
           "404": {
             "description": "Product not found in available inventory"
@@ -5495,8 +5699,8 @@
     },
     "/api/auth/login": {
       "post": {
-        "summary": "Authenticate user and return token",
-        "description": "Works for SUPER_ADMIN, ADMIN, SELLER, and EMPLOYEE.\nEMPLOYEE login may include location / employee_role on user and session_id (employee_sessions).\n",
+        "summary": "Start login (password → OTP challenge)",
+        "description": "Step 1 of login for SUPER_ADMIN, ADMIN, SELLER, EMPLOYEE.\nOn success returns challenge_id (and otp in non-production). Complete with POST /api/auth/verify-otp.\n",
         "tags": [
           "Auth"
         ],
@@ -5540,11 +5744,11 @@
         },
         "responses": {
           "200": {
-            "description": "Login successful",
+            "description": "Password OK — OTP challenge issued (no token yet)",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/LoginResponse"
+                  "$ref": "#/components/schemas/LoginOtpChallengeResponse"
                 }
               }
             }
@@ -5571,6 +5775,60 @@
           },
           "403": {
             "description": "Inactive / Unverified Account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/verify-otp": {
+      "post": {
+        "summary": "Complete login with OTP",
+        "description": "Exchange login OTP challenge for auth_id / auth_key.",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "challenge_id",
+                  "otp"
+                ],
+                "properties": {
+                  "challenge_id": {
+                    "type": "string"
+                  },
+                  "otp": {
+                    "type": "string",
+                    "example": "123456"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid / expired OTP",
             "content": {
               "application/json": {
                 "schema": {

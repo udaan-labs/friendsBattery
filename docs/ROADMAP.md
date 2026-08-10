@@ -3,7 +3,7 @@
 **Role chain:** `SUPER ADMIN → ADMIN → SELLER → EMPLOYEE`  
 One stream at a time. Work **down** the chain.  
 `- [ ]` todo · `- [x]` done.  
-**Next:** §5.3 OTP (reusable).
+**Next:** §5.4 Sale variants (scrap / mechanic).
 
 ```text
 SUPER ADMIN     all WH + shops · stock any WH · adjust any shop · PDF/GPS all · sell/accept
@@ -109,10 +109,10 @@ Shared sell tools (§5) once anyone can sell. Obsidian: `obsidian/FriendsBattery
 - [x] Print bill after successful sale (same path all roles — `SaleSuccessScreen`)  
 
 ### 5.3 OTP (reusable)
-- [ ] Send OTP + verify OTP (backend)  
-- [ ] Flutter helper reusable on many screens  
-- [ ] Wire **login** first  
-- [ ] Ready to reuse on other sensitive screens (same helper)  
+- [x] Send OTP + verify OTP (backend)  
+- [x] Flutter helper reusable on many screens  
+- [x] Wire **login** first  
+- [x] Ready to reuse on other sensitive screens (same helper)  
 
 ### 5.4 Sale variants (unit + price)
 - [ ] **Scrap battery:** take old battery + sell new at **reduced** price  

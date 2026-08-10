@@ -16,7 +16,7 @@ Method | HTTP request | Description
 [**apiInventoryHistoryGet**](InventoryApi.md#apiinventoryhistoryget) | **GET** /api/inventory/history | Return inventory movement history
 [**apiInventoryProductDetailsGet**](InventoryApi.md#apiinventoryproductdetailsget) | **GET** /api/inventory/product-details | Fetch details of a product (stock count &amp; min sell price) by product name and model IDs
 [**apiInventoryProductIdGet**](InventoryApi.md#apiinventoryproductidget) | **GET** /api/inventory/{productId} | Return one inventory item
-[**apiInventoryScanForSaleGet**](InventoryApi.md#apiinventoryscanforsaleget) | **GET** /api/inventory/scan-for-sale | Scan a serial number to fetch product details for a sale
+[**apiInventoryScanForSaleGet**](InventoryApi.md#apiinventoryscanforsaleget) | **GET** /api/inventory/scan-for-sale | Scan serial for sale (owner stock; EMPLOYEE &#x3D; location stock)
 [**apiInventoryTransferPost**](InventoryApi.md#apiinventorytransferpost) | **POST** /api/inventory/transfer | Transfer inventory from admin to seller
 [**apiInventoryUpdateStockPost**](InventoryApi.md#apiinventoryupdatestockpost) | **POST** /api/inventory/update-stock | Update admin&#39;s own inventory stock (Admin only)
 
@@ -338,7 +338,7 @@ Name | Type | Description  | Notes
 # **apiInventoryScanForSaleGet**
 > ScanForSaleResponse apiInventoryScanForSaleGet(serialNumber)
 
-Scan a serial number to fetch product details for a sale
+Scan serial for sale (owner stock; EMPLOYEE = location stock)
 
 ### Example
 ```dart

@@ -16,12 +16,25 @@ class AuthResponse {
   });
 }
 
+/// Password OK → OTP challenge (no JWT yet).
+class LoginOtpChallenge {
+  final String challengeId;
+  final int? expiresIn;
+  final String? phoneMasked;
+
+  LoginOtpChallenge({
+    required this.challengeId,
+    this.expiresIn,
+    this.phoneMasked,
+  });
+}
+
 class AuthRepository {
   final AuthApi api;
 
   AuthRepository({required this.api});
 
-  Future<AuthResponse> login(String username, String password) async {
+  Future<LoginOtpChallenge> login(String username, String password) async {
     final request = (ApiAuthLoginPostRequestBuilder()
           ..userId = username
           ..password = password)
@@ -30,6 +43,36 @@ class AuthRepository {
     try {
       final response =
           await api.apiAuthLoginPost(apiAuthLoginPostRequest: request);
+      final data = response.data?.data;
+      final challengeId = data?.challengeId;
+      if (challengeId == null || challengeId.isEmpty) {
+        throw Exception(
+          response.data?.message ?? 'Login did not return OTP challenge',
+        );
+      }
+      return LoginOtpChallenge(
+        challengeId: challengeId,
+        expiresIn: data?.expiresIn,
+        phoneMasked: data?.phoneMasked,
+      );
+    } catch (e) {
+      throw Exception(_authError(e, 'Login failed'));
+    }
+  }
+
+  Future<AuthResponse> verifyLoginOtp({
+    required String challengeId,
+    required String otp,
+  }) async {
+    final request = (ApiAuthVerifyOtpPostRequestBuilder()
+          ..challengeId = challengeId
+          ..otp = otp)
+        .build();
+
+    try {
+      final response = await api.apiAuthVerifyOtpPost(
+        apiAuthVerifyOtpPostRequest: request,
+      );
       final data = response.data?.data;
       final authId = data?.authId;
       final authKey = data?.authKey;
@@ -67,7 +110,7 @@ class AuthRepository {
         },
       );
     } catch (e) {
-      throw Exception(_authError(e, 'Login failed'));
+      throw Exception(_authError(e, 'OTP verification failed'));
     }
   }
 

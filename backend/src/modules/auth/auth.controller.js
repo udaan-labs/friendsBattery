@@ -56,9 +56,19 @@ class AuthController {
         app_version,
         firebase_token,
       });
-      return successResponse(res, 200, 'Login successful', result);
+      return successResponse(res, 200, 'OTP required', result);
     } catch (error) {
       return handleRouteError(res, error, 'Login Error:');
+    }
+  }
+
+  async verifyLoginOtp(req, res) {
+    try {
+      const { challenge_id, otp } = req.body;
+      const result = await authService.verifyLoginOtp({ challenge_id, otp });
+      return successResponse(res, 200, 'Login successful', result);
+    } catch (error) {
+      return handleRouteError(res, error, 'Login OTP Error:');
     }
   }
 

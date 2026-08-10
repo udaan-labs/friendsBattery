@@ -12,7 +12,7 @@ Method | HTTP request | Description
 [**apiSalesAdminHistoryGet**](SalesApi.md#apisalesadminhistoryget) | **GET** /api/sales/admin/history | Return all sales across all sellers with pagination, search, filters, and shipment tracing (Admin only)
 [**apiSalesGet**](SalesApi.md#apisalesget) | **GET** /api/sales | Return all sales based on role (Admin sees all, Seller sees own)
 [**apiSalesHistoryGet**](SalesApi.md#apisaleshistoryget) | **GET** /api/sales/history | Return seller&#39;s own sales history with pagination, search, and date filtering
-[**apiSalesPost**](SalesApi.md#apisalespost) | **POST** /api/sales | Create a new sale transaction
+[**apiSalesPost**](SalesApi.md#apisalespost) | **POST** /api/sales | Create a sale (SA/Admin/Seller own units; EMPLOYEE location stock)
 [**apiSalesTransactionIdGet**](SalesApi.md#apisalestransactionidget) | **GET** /api/sales/{transactionId} | Return a single sale&#39;s details by ID
 
 
@@ -163,7 +163,7 @@ Name | Type | Description  | Notes
 # **apiSalesPost**
 > CreateSaleResponse apiSalesPost(createSaleRequest)
 
-Create a new sale transaction
+Create a sale (SA/Admin/Seller own units; EMPLOYEE location stock)
 
 ### Example
 ```dart

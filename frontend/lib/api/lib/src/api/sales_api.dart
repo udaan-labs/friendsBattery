@@ -285,7 +285,7 @@ class SalesApi {
     );
   }
 
-  /// Create a new sale transaction
+  /// Create a sale (SA/Admin/Seller own units; EMPLOYEE location stock)
   /// 
   ///
   /// Parameters:

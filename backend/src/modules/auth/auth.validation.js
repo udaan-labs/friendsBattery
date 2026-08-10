@@ -27,6 +27,11 @@ const activateSchema = z.object({
   is_verified: z.boolean()
 });
 
+const verifyLoginOtpSchema = z.object({
+  challenge_id: z.string().min(1),
+  otp: z.string().min(4).max(8),
+});
+
 const validateRegister = (req, res, next) => {
   try {
     registerSchema.parse(req.body);
@@ -54,8 +59,18 @@ const validateActivate = (req, res, next) => {
   }
 };
 
+const validateVerifyLoginOtp = (req, res, next) => {
+  try {
+    req.body = verifyLoginOtpSchema.parse(req.body);
+    next();
+  } catch {
+    return errorResponse(res, 400, 'challenge_id and otp are required');
+  }
+};
+
 module.exports = {
   validateRegister,
   validateLogin,
-  validateActivate
+  validateActivate,
+  validateVerifyLoginOtp,
 };

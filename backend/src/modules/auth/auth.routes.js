@@ -1,7 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('./auth.controller');
-const { validateRegister, validateLogin, validateActivate } = require('./auth.validation');
+const {
+  validateRegister,
+  validateLogin,
+  validateActivate,
+  validateVerifyLoginOtp,
+} = require('./auth.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
 const {
   requireSuperAdminOrAdmin,
@@ -133,10 +138,10 @@ router.post(
  * @swagger
  * /api/auth/login:
  *   post:
- *     summary: Authenticate user and return token
+ *     summary: Start login (password → OTP challenge)
  *     description: |
- *       Works for SUPER_ADMIN, ADMIN, SELLER, and EMPLOYEE.
- *       EMPLOYEE login may include location / employee_role on user and session_id (employee_sessions).
+ *       Step 1 of login for SUPER_ADMIN, ADMIN, SELLER, EMPLOYEE.
+ *       On success returns challenge_id after SMS. Complete with POST /api/auth/verify-otp.
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -166,11 +171,11 @@ router.post(
  *                 type: string
  *     responses:
  *       200:
- *         description: Login successful
+ *         description: Password OK — OTP challenge issued (no token yet)
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/LoginResponse'
+ *               $ref: '#/components/schemas/LoginOtpChallengeResponse'
  *       400:
  *         description: Validation Error
  *         content:
@@ -191,6 +196,42 @@ router.post(
  *               $ref: '#/components/schemas/Error'
  */
 router.post('/login', validateLogin, authController.login);
+
+/**
+ * @swagger
+ * /api/auth/verify-otp:
+ *   post:
+ *     summary: Complete login with OTP
+ *     description: Exchange login OTP challenge for auth_id / auth_key.
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [challenge_id, otp]
+ *             properties:
+ *               challenge_id:
+ *                 type: string
+ *               otp:
+ *                 type: string
+ *                 example: "123456"
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/LoginResponse'
+ *       401:
+ *         description: Invalid / expired OTP
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.post('/verify-otp', validateVerifyLoginOtp, authController.verifyLoginOtp);
 
 /**
  * @swagger

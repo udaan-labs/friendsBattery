@@ -15,6 +15,7 @@ import 'package:friends_battery_api/src/api/auth_api.dart';
 import 'package:friends_battery_api/src/api/dashboard_api.dart';
 import 'package:friends_battery_api/src/api/health_api.dart';
 import 'package:friends_battery_api/src/api/inventory_api.dart';
+import 'package:friends_battery_api/src/api/otp_api.dart';
 import 'package:friends_battery_api/src/api/product_units_api.dart';
 import 'package:friends_battery_api/src/api/products_api.dart';
 import 'package:friends_battery_api/src/api/returns_api.dart';
@@ -151,6 +152,12 @@ class FriendsBatteryApi {
   /// by doing that all interceptors will not be executed
   InventoryApi getInventoryApi() {
     return InventoryApi(dio, serializers);
+  }
+
+  /// Get OTPApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  OTPApi getOTPApi() {
+    return OTPApi(dio, serializers);
   }
 
   /// Get ProductUnitsApi instance, base route and serializer can be overridden by a given but be careful,

@@ -654,7 +654,7 @@ class InventoryApi {
     );
   }
 
-  /// Scan a serial number to fetch product details for a sale
+  /// Scan serial for sale (owner stock; EMPLOYEE &#x3D; location stock)
   /// 
   ///
   /// Parameters:
