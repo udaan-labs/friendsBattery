@@ -63,24 +63,28 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> initSession() async {
     try {
-      final isLoggedIn = await SessionManager.isLoggedIn();
-      if (!isLoggedIn) {
-        AuthTokenCache.clear();
-        return;
-      }
-
-      // Parallel secure reads + populate memory cache for Dio.
-      final sessionData = await SessionManager.getSessionData();
-      final authId = sessionData['auth_id'];
-      final authKey = sessionData['auth_key'];
-      final roleStr = sessionData['role'];
-
-      if (authId != null && authKey != null && roleStr != null) {
-        AuthTokenCache.set(authId: authId, authKey: authKey, role: roleStr);
-        setAuthenticated(parseUserRole(roleStr));
-      }
+      await _restoreSession().timeout(const Duration(seconds: 8));
     } catch (e) {
-      // If error occurs during restore, stay as guest
+      // Timeout / Keystore hang / storage error → stay guest; user can log in.
+    }
+  }
+
+  Future<void> _restoreSession() async {
+    final isLoggedIn = await SessionManager.isLoggedIn();
+    if (!isLoggedIn) {
+      AuthTokenCache.clear();
+      return;
+    }
+
+    // Parallel secure reads + populate memory cache for Dio.
+    final sessionData = await SessionManager.getSessionData();
+    final authId = sessionData['auth_id'];
+    final authKey = sessionData['auth_key'];
+    final roleStr = sessionData['role'];
+
+    if (authId != null && authKey != null && roleStr != null) {
+      AuthTokenCache.set(authId: authId, authKey: authKey, role: roleStr);
+      setAuthenticated(parseUserRole(roleStr));
     }
   }
 

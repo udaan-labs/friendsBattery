@@ -14,25 +14,38 @@ class SplashScreen extends ConsumerStatefulWidget {
 }
 
 class _SplashScreenState extends ConsumerState<SplashScreen> {
+  bool _started = false;
+
   @override
   void initState() {
     super.initState();
-    _initAuth();
+    // CRITICAL: do not touch Riverpod/GoRouter state during mount.
+    // AppGate.check() used to set isLoading synchronously from initState,
+    // which refreshed GoRouter mid-mount → remount splash → stack overflow.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_started && mounted) {
+        _started = true;
+        _boot();
+      }
+    });
   }
 
-  Future<void> _initAuth() async {
+  Future<void> _boot() async {
     final authNotifier = ref.read(authProvider.notifier);
     final appGateNotifier = ref.read(appGateProvider.notifier);
     final started = DateTime.now();
 
-    // Session restore + app gate (version / maintenance) in parallel.
-    await Future.wait([
-      authNotifier.initSession(),
-      appGateNotifier.check(),
-    ]);
+    try {
+      await Future.wait([
+        authNotifier.initSession(),
+        appGateNotifier.check(),
+      ]).timeout(const Duration(seconds: 8));
+    } catch (_) {
+      ref.read(appGateProvider.notifier).markFailOpen();
+    }
 
-    // Keep splash visible only briefly for branding (was a hard-coded 2s delay).
-    const minSplash = Duration(milliseconds: 400);
+    // Brief brand moment only if boot was fast.
+    const minSplash = Duration(milliseconds: 300);
     final elapsed = DateTime.now().difference(started);
     if (elapsed < minSplash) {
       await Future.delayed(minSplash - elapsed);
@@ -40,17 +53,22 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
     if (!mounted) return;
 
+    if (!ref.read(appGateProvider).checked) {
+      ref.read(appGateProvider.notifier).markFailOpen();
+    }
+
     final gate = ref.read(appGateProvider);
     if (gate.isBlocked) {
       context.go('/app-gate');
       return;
     }
 
-    final authState = ref.read(authProvider);
-    if (!authState.isAuthenticated) {
+    final auth = ref.read(authProvider);
+    if (auth.isAuthenticated && auth.role != UserRole.guest) {
+      context.go(homePathForRole(auth.role));
+    } else {
       context.go('/login');
     }
-    // If authenticated, GoRouter will handle the redirect to dashboard automatically
   }
 
   @override

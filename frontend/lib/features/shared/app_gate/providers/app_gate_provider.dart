@@ -57,15 +57,34 @@ class AppGateNotifier extends StateNotifier<AppGateState> {
 
   AppGateNotifier(this._repository) : super(const AppGateState());
 
+  /// Fail-open without a network round-trip (timeout / storage hang / dispose).
+  /// No-ops if a real check already finished (does not clear update/maintenance).
+  void markFailOpen() {
+    if (!mounted || state.checked) return;
+    state = AppGateState(
+      mode: AppGateMode.none,
+      localVersion: state.localVersion,
+      latestVersion: state.latestVersion,
+      checked: true,
+      isLoading: false,
+    );
+  }
+
   /// Fetch remote status, compare to local package version.
   /// Network/API errors → fail-open ([AppGateMode.none]).
+  ///
+  /// Does **not** set state before the first await — sync state updates from
+  /// Splash [initState] remounted the whole router and overflowed the stack.
   Future<void> check() async {
-    state = state.copyWith(isLoading: true);
+    if (!mounted) return;
     try {
       final info = await PackageInfo.fromPlatform();
+      if (!mounted) return;
       final localVersion = info.version.trim();
 
       final remote = await _repository.fetchStatus();
+      if (!mounted) return;
+
       final latest = (remote.latestVersion ?? '').trim();
       final maintenance = remote.maintenance == true;
       final message = remote.message;
@@ -88,6 +107,7 @@ class AppGateNotifier extends StateNotifier<AppGateState> {
         isLoading: false,
       );
     } catch (_) {
+      if (!mounted) return;
       // Fail-open: do not lock users out if status API is unreachable.
       state = AppGateState(
         mode: AppGateMode.none,
@@ -101,5 +121,6 @@ class AppGateNotifier extends StateNotifier<AppGateState> {
 
 final appGateProvider =
     StateNotifierProvider<AppGateNotifier, AppGateState>((ref) {
-  return AppGateNotifier(ref.watch(appGateRepositoryProvider));
+  // read (not watch): recreating this notifier resets checked → splash loop.
+  return AppGateNotifier(ref.read(appGateRepositoryProvider));
 });

@@ -42,8 +42,9 @@ import '../../features/employee/shipments/screens/employee_shipment_detail_scree
 import '../../features/shared/app_gate/providers/app_gate_provider.dart';
 import '../../features/shared/app_gate/screens/app_gate_screen.dart';
 import '../../shared/providers/auth_provider.dart';
+import '../../core/navigation/root_navigator_key.dart';
 
-final rootNavigatorKey = GlobalKey<NavigatorState>();
+export '../../core/navigation/root_navigator_key.dart' show rootNavigatorKey;
 
 /// Old `/admin/shops|:id` and `/admin/warehouses|:id` → unified locations detail.
 String _legacyLocationDetailRedirect(GoRouterState state) {
@@ -62,11 +63,19 @@ String _legacyLocationDetailRedirect(GoRouterState state) {
 final routerProvider = Provider<GoRouter>((ref) {
   final refresh = ValueNotifier<int>(0);
   ref.onDispose(refresh.dispose);
-  ref.listen<AuthState>(authProvider, (_, __) {
-    refresh.value++;
+  ref.listen<AuthState>(authProvider, (prev, next) {
+    if (prev?.isAuthenticated != next.isAuthenticated ||
+        prev?.role != next.role) {
+      refresh.value++;
+    }
   });
-  ref.listen<AppGateState>(appGateProvider, (_, __) {
-    refresh.value++;
+  // Only re-route on real gate outcomes — ignore isLoading noise.
+  ref.listen<AppGateState>(appGateProvider, (prev, next) {
+    if (prev?.checked != next.checked ||
+        prev?.mode != next.mode ||
+        prev?.isBlocked != next.isBlocked) {
+      refresh.value++;
+    }
   });
 
   return GoRouter(
@@ -81,10 +90,10 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       final gate = ref.read(appGateProvider);
 
-      // Splash owns the first status check — do not role-home redirect yet.
+      // Splash owns first boot. Stay wherever we are until check finishes —
+      // never force-navigate to /splash (mid-mount refresh caused stack overflow).
       if (!gate.checked) {
-        if (isSplash || isLoggingIn || isAppGate) return null;
-        return '/splash';
+        return null;
       }
 
       // Highest priority: force-update / maintenance (all roles).

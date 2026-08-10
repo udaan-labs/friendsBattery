@@ -4,21 +4,27 @@ import '../storage/auth_token_cache.dart';
 import '../storage/session_guard.dart';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
-import '../../app/router/app_router.dart';
+import '../navigation/root_navigator_key.dart';
 
 class ApiInterceptor extends Interceptor {
+  /// Login/register: no force-logout on 401 (bad credentials).
   static bool _isPublicAuthPath(String path) {
-    // Don't force-logout on failed login / register
     return path.contains('/auth/login') || path.contains('/auth/register');
+  }
+
+  /// Public endpoints that must not wait on FlutterSecureStorage.
+  /// Splash hits /app/status in parallel with session restore; concurrent
+  /// Keystore reads on Android can hang and pin the UI on splash.
+  static bool _isPublicNoTokenPath(String path) {
+    return _isPublicAuthPath(path) || path.contains('/app/status');
   }
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     // Prefer in-memory tokens (sync). Cold path loads secure storage once.
-    // Login/register never need tokens — skip secure storage so Android
-    // cannot hang the first request waiting on FlutterSecureStorage.
+    // Public paths skip secure storage so Android cannot hang the first request.
     final path = options.path;
-    final isPublicAuth = _isPublicAuthPath(path);
+    final isPublicNoToken = _isPublicNoTokenPath(path);
 
     void attachAndContinue({bool withTokens = true}) {
       if (withTokens) {
@@ -38,7 +44,7 @@ class ApiInterceptor extends Interceptor {
       handler.next(options);
     }
 
-    if (isPublicAuth) {
+    if (isPublicNoToken) {
       attachAndContinue(withTokens: false);
       return;
     }
