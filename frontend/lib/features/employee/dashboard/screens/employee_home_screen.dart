@@ -152,6 +152,13 @@ class EmployeeHomeScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 10),
               _ActionTile(
+                icon: Icons.build_circle_outlined,
+                title: 'Service bill',
+                subtitle: 'Check, charge, jumpstart, inverter',
+                onTap: () => context.push('/employee/service-bill'),
+              ),
+              const SizedBox(height: 10),
+              _ActionTile(
                 icon: Icons.inventory_2_outlined,
                 title: 'View stock',
                 subtitle: 'Batteries at your shop location',

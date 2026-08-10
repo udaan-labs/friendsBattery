@@ -3,6 +3,7 @@ const router = express.Router();
 const salesController = require('./sales.controller');
 const {
   createSaleSchema,
+  createServiceBillSchema,
   viewSaleSchema,
   salesHistorySchema,
   adminSalesHistorySchema,
@@ -58,6 +59,38 @@ router.post(
   requireAdminOrSellerOrEmployee,
   validateRequest(createSaleSchema),
   salesController.createSale
+);
+
+/**
+ * @swagger
+ * /api/sales/service:
+ *   post:
+ *     summary: Create a service bill (no stock move)
+ *     tags: [Sales]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateServiceBillRequest'
+ *     responses:
+ *       201:
+ *         description: Service bill created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CreateServiceBillResponse'
+ *       400:
+ *         description: Validation error
+ */
+router.post(
+  '/service',
+  authenticate,
+  requireAdminOrSellerOrEmployee,
+  validateRequest(createServiceBillSchema),
+  salesController.createServiceBill
 );
 
 /**

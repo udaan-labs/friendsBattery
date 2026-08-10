@@ -28,6 +28,20 @@ class SalesController {
   }
 
   /**
+   * Create a service bill (no stock move)
+   */
+  async createServiceBill(req, res) {
+    try {
+      const result = await salesService.createServiceBill(req.body, {
+        id: req.user.id,
+      });
+      return successResponse(res, 201, 'Service bill created successfully', result);
+    } catch (error) {
+      return handleRouteError(res, error, 'Create Service Bill Error:');
+    }
+  }
+
+  /**
    * Get all sales
    * Filters automatically based on authenticated user role (Admin vs Seller)
    */

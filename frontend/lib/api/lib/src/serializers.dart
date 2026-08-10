@@ -83,6 +83,9 @@ import 'package:friends_battery_api/src/model/create_return_result.dart';
 import 'package:friends_battery_api/src/model/create_sale_request.dart';
 import 'package:friends_battery_api/src/model/create_sale_response.dart';
 import 'package:friends_battery_api/src/model/create_sale_result.dart';
+import 'package:friends_battery_api/src/model/create_service_bill_request.dart';
+import 'package:friends_battery_api/src/model/create_service_bill_response.dart';
+import 'package:friends_battery_api/src/model/create_service_bill_result.dart';
 import 'package:friends_battery_api/src/model/create_shipment_item.dart';
 import 'package:friends_battery_api/src/model/create_shipment_request.dart';
 import 'package:friends_battery_api/src/model/create_shipment_response.dart';
@@ -245,6 +248,9 @@ part 'serializers.g.dart';
   CreateSaleRequest,
   CreateSaleResponse,
   CreateSaleResult,
+  CreateServiceBillRequest,
+  CreateServiceBillResponse,
+  CreateServiceBillResult,
   CreateShipmentItem,
   CreateShipmentRequest,
   CreateShipmentResponse,

@@ -97,4 +97,31 @@ class SellerSalesRepository {
     final response = await _sales.apiSalesPost(createSaleRequest: body);
     return response.data?.data?.transactionId ?? 0;
   }
+
+  Future<int> createServiceBill({
+    required String serviceType,
+    required num amount,
+    required String customerName,
+    required String customerNumber,
+    String? vehicleNumber,
+    String? place,
+  }) async {
+    final body = CreateServiceBillRequest((b) {
+      b.serviceType =
+          CreateServiceBillRequestServiceTypeEnum.valueOf(serviceType);
+      b.amount = amount;
+      b.customerName = customerName;
+      b.customerNumber = customerNumber;
+      if (vehicleNumber != null && vehicleNumber.isNotEmpty) {
+        b.vehicleNumber = vehicleNumber;
+      }
+      if (place != null && place.isNotEmpty) {
+        b.place = place;
+      }
+    });
+
+    final response =
+        await _sales.apiSalesServicePost(createServiceBillRequest: body);
+    return response.data?.data?.serviceBillId ?? 0;
+  }
 }

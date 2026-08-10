@@ -55,6 +55,56 @@ const createSaleSchema = z.object({
     }),
 });
 
+/** Service bill — no stock move. Defaults: 2W ₹30 · 4W ₹70 · inverter ₹1000 (UI prefills). */
+const createServiceBillSchema = z.object({
+  body: z
+    .object({
+      service_type: z.enum([
+        'BATTERY_CHECK_2W',
+        'BATTERY_CHECK_4W',
+        'BATTERY_CHARGING',
+        'JUMPSTART',
+        'INVERTER_SERVICE',
+      ]),
+      amount: z
+        .number()
+        .positive('Amount must be a positive number')
+        .max(9_999_999_999.99, 'Amount is too large'),
+      customer_name: z
+        .string()
+        .trim()
+        .min(1, 'Customer name is required')
+        .max(100, 'Customer name is too long'),
+      customer_number: z
+        .string()
+        .trim()
+        .regex(/^\d{10}$/, 'Customer mobile number must be exactly 10 digits'),
+      vehicle_number: z
+        .string()
+        .trim()
+        .max(50)
+        .optional()
+        .nullable()
+        .transform((v) => (v == null || v === '' ? null : v)),
+      place: z
+        .string()
+        .trim()
+        .max(200)
+        .optional()
+        .nullable()
+        .transform((v) => (v == null || v === '' ? null : v)),
+    })
+    .superRefine((body, ctx) => {
+      if (body.service_type === 'JUMPSTART' && !body.place) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Place is required for jumpstart',
+          path: ['place'],
+        });
+      }
+    }),
+});
+
 /**
  * Validation schema for viewing a single sale
  */
@@ -96,6 +146,7 @@ const adminSalesHistorySchema = z.object({
 
 module.exports = {
   createSaleSchema,
+  createServiceBillSchema,
   viewSaleSchema,
   salesHistorySchema,
   adminSalesHistorySchema,

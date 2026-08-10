@@ -100,6 +100,20 @@ class SalesRepository {
     });
   }
 
+  /** Service bill row — no unit / ledger write. */
+  async createServiceBill(data) {
+    return prisma.serviceBill.create({
+      data: {
+        sellerId: BigInt(data.sellerId),
+        customerId: data.customerId != null ? BigInt(data.customerId) : null,
+        serviceType: data.serviceType,
+        amount: data.amount,
+        vehicleNumber: data.vehicleNumber ?? null,
+        place: data.place ?? null,
+      },
+    });
+  }
+
   /**
    * Fetch all sales (for Admin)
    */

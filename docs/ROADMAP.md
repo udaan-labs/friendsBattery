@@ -3,7 +3,7 @@
 **Role chain:** `SUPER ADMIN → ADMIN → SELLER → EMPLOYEE`  
 One stream at a time. Work **down** the chain.  
 `- [ ]` todo · `- [x]` done.  
-**Next:** §5.5 Service bills.
+**Next:** §5.6 Battery rent.
 
 ```text
 SUPER ADMIN     all WH + shops · stock any WH · adjust any shop · PDF/GPS all · sell/accept
@@ -68,7 +68,7 @@ Shared sell tools (§5) once anyone can sell. Obsidian: `obsidian/FriendsBattery
 - [x] View **own** employees + inventory  
 - [x] Sell battery + accept shipment (shop)  
 - [x] Manage sellers / employees under this shop  
-- [ ] Other bill screens for shop (uses §5 types when built)  
+- [x] Other bill screens for shop (uses §5 types when built)  
 - [x] Sales PDF — **own shop only**: today / this week / this month  
 - [x] GPS — own shop employees **when checked in** only  
 
@@ -80,7 +80,7 @@ Shared sell tools (§5) once anyone can sell. Obsidian: `obsidian/FriendsBattery
 - [x] Accept shipment  
 - [x] Re-scope: only **own** inventory / own shop (after §0)  
 - [x] Staff under seller/shop consistent with Admin chain  
-- [ ] Use shared bill upgrades (§5): validation, WhatsApp, print, variants  
+- [x] Use shared bill upgrades (§5): validation, WhatsApp, print, variants  
 
 ---
 
@@ -92,7 +92,7 @@ Shared sell tools (§5) once anyone can sell. Obsidian: `obsidian/FriendsBattery
 - [x] **Create bill** (reuse seller flow; stock = employee location)  
 - [x] Same serial / unit rules as seller  
 - [x] No Super Admin / Admin-only screens  
-- [ ] Can use service bills when off-site (jumpstart etc. via §5)  
+- [x] Can use service bills when off-site (jumpstart etc. via §5)  
 
 ---
 
@@ -119,10 +119,10 @@ Shared sell tools (§5) once anyone can sell. Obsidian: `obsidian/FriendsBattery
 - [x] **Mechanic / trade:** battery to mechanic at **lower** price (B2B tier)  
 
 ### 5.5 Service bills (little/no stock move)
-- [ ] **Battery check** — 2-wheeler ₹30 · 4-wheeler ₹70  
-- [ ] **Battery charging** bill  
-- [ ] **Jumpstart** — employee goes to other location; customer + place + charge  
-- [ ] **Inverter service** — fixed charge (~₹1000)  
+- [x] **Battery check** — 2-wheeler ₹30 · 4-wheeler ₹70  
+- [x] **Battery charging** bill  
+- [x] **Jumpstart** — employee goes to other location; customer + place + charge  
+- [x] **Inverter service** — fixed charge (~₹1000)  
 
 ### 5.6 Battery rent
 - [ ] Out on rent with **deposit** (e.g. ₹1000)  

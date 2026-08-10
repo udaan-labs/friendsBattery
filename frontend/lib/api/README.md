@@ -104,6 +104,7 @@ Class | Method | HTTP request | Description
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesGet**](doc/SalesApi.md#apisalesget) | **GET** /api/sales | Return all sales based on role (Admin sees all, Seller sees own)
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesHistoryGet**](doc/SalesApi.md#apisaleshistoryget) | **GET** /api/sales/history | Return seller&#39;s own sales history with pagination, search, and date filtering
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesPost**](doc/SalesApi.md#apisalespost) | **POST** /api/sales | Create a sale (SA/Admin/Seller own units; EMPLOYEE location stock)
+[*SalesApi*](doc/SalesApi.md) | [**apiSalesServicePost**](doc/SalesApi.md#apisalesservicepost) | **POST** /api/sales/service | Create a service bill (no stock move)
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesTransactionIdGet**](doc/SalesApi.md#apisalestransactionidget) | **GET** /api/sales/{transactionId} | Return a single sale&#39;s details by ID
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiEmployeeShipmentsGet**](doc/ShipmentsApi.md#apiemployeeshipmentsget) | **GET** /api/employee/shipments | List shipments for sellers at the employee&#39;s shop location (read-only)
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiSellerDashboardPendingShipmentsGet**](doc/ShipmentsApi.md#apisellerdashboardpendingshipmentsget) | **GET** /api/seller/dashboard/pending-shipments | Get pending shipments count (Seller only)
@@ -200,6 +201,9 @@ Class | Method | HTTP request | Description
  - [CreateSaleRequest](doc/CreateSaleRequest.md)
  - [CreateSaleResponse](doc/CreateSaleResponse.md)
  - [CreateSaleResult](doc/CreateSaleResult.md)
+ - [CreateServiceBillRequest](doc/CreateServiceBillRequest.md)
+ - [CreateServiceBillResponse](doc/CreateServiceBillResponse.md)
+ - [CreateServiceBillResult](doc/CreateServiceBillResult.md)
  - [CreateShipmentItem](doc/CreateShipmentItem.md)
  - [CreateShipmentRequest](doc/CreateShipmentRequest.md)
  - [CreateShipmentResponse](doc/CreateShipmentResponse.md)

@@ -13,6 +13,7 @@ Method | HTTP request | Description
 [**apiSalesGet**](SalesApi.md#apisalesget) | **GET** /api/sales | Return all sales based on role (Admin sees all, Seller sees own)
 [**apiSalesHistoryGet**](SalesApi.md#apisaleshistoryget) | **GET** /api/sales/history | Return seller&#39;s own sales history with pagination, search, and date filtering
 [**apiSalesPost**](SalesApi.md#apisalespost) | **POST** /api/sales | Create a sale (SA/Admin/Seller own units; EMPLOYEE location stock)
+[**apiSalesServicePost**](SalesApi.md#apisalesservicepost) | **POST** /api/sales/service | Create a service bill (no stock move)
 [**apiSalesTransactionIdGet**](SalesApi.md#apisalestransactionidget) | **GET** /api/sales/{transactionId} | Return a single sale&#39;s details by ID
 
 
@@ -189,6 +190,47 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**CreateSaleResponse**](CreateSaleResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiSalesServicePost**
+> CreateServiceBillResponse apiSalesServicePost(createServiceBillRequest)
+
+Create a service bill (no stock move)
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getSalesApi();
+final CreateServiceBillRequest createServiceBillRequest = ; // CreateServiceBillRequest | 
+
+try {
+    final response = api.apiSalesServicePost(createServiceBillRequest);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling SalesApi->apiSalesServicePost: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **createServiceBillRequest** | [**CreateServiceBillRequest**](CreateServiceBillRequest.md)|  | 
+
+### Return type
+
+[**CreateServiceBillResponse**](CreateServiceBillResponse.md)
 
 ### Authorization
 

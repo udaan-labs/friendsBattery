@@ -47,6 +47,15 @@ enum SaleType {
   MECHANIC
 }
 
+/// Service bills — no unit / inventory move.
+enum ServiceBillType {
+  BATTERY_CHECK_2W
+  BATTERY_CHECK_4W
+  BATTERY_CHARGING
+  JUMPSTART
+  INVERTER_SERVICE
+}
+
 enum LocationType {
   WAREHOUSE
   SHOP
@@ -121,6 +130,7 @@ model User {
   adminShipmentsSent     NewShipment[]          @relation("AdminShipmentSent")
   adminShipmentsReceived NewShipment[]          @relation("AdminShipmentReceived")
   sales                  SalesTransaction[]     @relation("SalesSeller")
+  serviceBills           ServiceBill[]          @relation("ServiceBillSeller")
   returnsBy              ReturnProduct[]        @relation("ReturnByUser")
   returnsTo              ReturnProduct[]        @relation("ReturnToUser")
   attendances            EmployeeAttendance[]   @relation("AttendanceEmployee")
@@ -203,7 +213,8 @@ model Customer {
   phone     String?  @db.VarChar(20)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamp()
 
-  sales SalesTransaction[]
+  sales        SalesTransaction[]
+  serviceBills ServiceBill[]
 
   @@map("customers")
 }
@@ -447,6 +458,26 @@ model SalesTransaction {
   @@index([sellerId, soldAt])
   @@index([saleType])
   @@map("sales_transactions")
+}
+
+/// Non-stock service bill (check / charge / jumpstart / inverter).
+model ServiceBill {
+  id            BigInt          @id @default(autoincrement())
+  sellerId      BigInt          @map("seller_id")
+  customerId    BigInt?         @map("customer_id")
+  serviceType   ServiceBillType @map("service_type")
+  amount        Decimal         @db.Decimal(12, 2)
+  vehicleNumber String?         @map("vehicle_number") @db.VarChar(50)
+  /// Customer place / site (required for JUMPSTART)
+  place         String?         @db.VarChar(200)
+  createdAt     DateTime        @default(now()) @map("created_at") @db.Timestamp()
+
+  seller   User      @relation("ServiceBillSeller", fields: [sellerId], references: [id])
+  customer Customer? @relation(fields: [customerId], references: [id])
+
+  @@index([sellerId, createdAt])
+  @@index([serviceType])
+  @@map("service_bills")
 }
 
 model ReturnProduct {

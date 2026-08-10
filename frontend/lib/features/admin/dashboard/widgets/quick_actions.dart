@@ -55,6 +55,12 @@ class QuickActions extends ConsumerWidget {
         route: '/admin/create-bill',
       ),
       _ActionItemData(
+        title: 'Service Bill',
+        subtitle: 'Check, charge, jumpstart…',
+        icon: Icons.build_circle_outlined,
+        route: '/admin/service-bill',
+      ),
+      _ActionItemData(
         title: 'View Sales',
         subtitle: 'Browse all sales transactions',
         icon: Icons.point_of_sale_outlined,

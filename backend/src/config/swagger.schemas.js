@@ -463,6 +463,45 @@ module.exports = {
       data: { $ref: '#/components/schemas/CreateSaleResult' }
     }
   },
+  CreateServiceBillRequest: {
+    type: 'object',
+    required: ['service_type', 'amount', 'customer_name', 'customer_number'],
+    properties: {
+      service_type: {
+        type: 'string',
+        enum: [
+          'BATTERY_CHECK_2W',
+          'BATTERY_CHECK_4W',
+          'BATTERY_CHARGING',
+          'JUMPSTART',
+          'INVERTER_SERVICE',
+        ],
+      },
+      amount: { type: 'number' },
+      customer_name: { type: 'string' },
+      customer_number: { type: 'string' },
+      vehicle_number: { type: 'string', nullable: true },
+      place: {
+        type: 'string',
+        nullable: true,
+        description: 'Required when service_type is JUMPSTART',
+      },
+    },
+  },
+  CreateServiceBillResult: {
+    type: 'object',
+    properties: {
+      service_bill_id: { type: 'integer' },
+    },
+  },
+  CreateServiceBillResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean' },
+      message: { type: 'string' },
+      data: { $ref: '#/components/schemas/CreateServiceBillResult' },
+    },
+  },
   SaleCustomer: {
     type: 'object',
     properties: {

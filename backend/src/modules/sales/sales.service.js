@@ -118,6 +118,32 @@ class SalesService {
   }
 
   /**
+   * Service bill (check / charge / jumpstart / inverter) — no inventory move.
+   * @param {Object} data Request body
+   * @param {{ id: number|bigint }} actor
+   */
+  async createServiceBill(data, actor) {
+    let customer = await salesRepository.findCustomerByMobile(data.customer_number);
+    if (!customer) {
+      customer = await salesRepository.createCustomer({
+        name: data.customer_name,
+        phone: data.customer_number,
+      });
+    }
+
+    const bill = await salesRepository.createServiceBill({
+      sellerId: actor.id,
+      customerId: customer.id,
+      serviceType: data.service_type,
+      amount: Number(data.amount),
+      vehicleNumber: data.vehicle_number,
+      place: data.place,
+    });
+
+    return { service_bill_id: Number(bill.id) };
+  }
+
+  /**
    * Get all sales based on user role
    * @param {Object} user Authenticated user
    */

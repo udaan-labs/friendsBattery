@@ -73,6 +73,9 @@ doc/CreateReturnResult.md
 doc/CreateSaleRequest.md
 doc/CreateSaleResponse.md
 doc/CreateSaleResult.md
+doc/CreateServiceBillRequest.md
+doc/CreateServiceBillResponse.md
+doc/CreateServiceBillResult.md
 doc/CreateShipmentItem.md
 doc/CreateShipmentRequest.md
 doc/CreateShipmentResponse.md
@@ -263,6 +266,9 @@ lib/src/model/create_return_result.dart
 lib/src/model/create_sale_request.dart
 lib/src/model/create_sale_response.dart
 lib/src/model/create_sale_result.dart
+lib/src/model/create_service_bill_request.dart
+lib/src/model/create_service_bill_response.dart
+lib/src/model/create_service_bill_result.dart
 lib/src/model/create_shipment_item.dart
 lib/src/model/create_shipment_request.dart
 lib/src/model/create_shipment_response.dart
@@ -355,3 +361,6 @@ lib/src/model/verify_product_response.dart
 lib/src/model/verify_product_unit.dart
 lib/src/serializers.dart
 pubspec.yaml
+test/create_service_bill_request_test.dart
+test/create_service_bill_response_test.dart
+test/create_service_bill_result_test.dart
