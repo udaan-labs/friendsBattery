@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -18,6 +19,8 @@ part 'create_sale_request.g.dart';
 /// * [customerNumber] 
 /// * [vehicleNumber] 
 /// * [sellPrice] 
+/// * [saleType] - SCRAP/MECHANIC waive product min price; SCRAP requires scrap_serial
+/// * [scrapSerial] - Old battery serial when sale_type=SCRAP
 @BuiltValue()
 abstract class CreateSaleRequest implements Built<CreateSaleRequest, CreateSaleRequestBuilder> {
   @BuiltValueField(wireName: r'product_name_id')
@@ -41,12 +44,22 @@ abstract class CreateSaleRequest implements Built<CreateSaleRequest, CreateSaleR
   @BuiltValueField(wireName: r'sell_price')
   num get sellPrice;
 
+  /// SCRAP/MECHANIC waive product min price; SCRAP requires scrap_serial
+  @BuiltValueField(wireName: r'sale_type')
+  CreateSaleRequestSaleTypeEnum? get saleType;
+  // enum saleTypeEnum {  NORMAL,  SCRAP,  MECHANIC,  };
+
+  /// Old battery serial when sale_type=SCRAP
+  @BuiltValueField(wireName: r'scrap_serial')
+  String? get scrapSerial;
+
   CreateSaleRequest._();
 
   factory CreateSaleRequest([void updates(CreateSaleRequestBuilder b)]) = _$CreateSaleRequest;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CreateSaleRequestBuilder b) => b;
+  static void _defaults(CreateSaleRequestBuilder b) => b
+      ..saleType = CreateSaleRequestSaleTypeEnum.valueOf('NORMAL');
 
   @BuiltValueSerializer(custom: true)
   static Serializer<CreateSaleRequest> get serializer => _$CreateSaleRequestSerializer();
@@ -101,6 +114,20 @@ class _$CreateSaleRequestSerializer implements PrimitiveSerializer<CreateSaleReq
       object.sellPrice,
       specifiedType: const FullType(num),
     );
+    if (object.saleType != null) {
+      yield r'sale_type';
+      yield serializers.serialize(
+        object.saleType,
+        specifiedType: const FullType(CreateSaleRequestSaleTypeEnum),
+      );
+    }
+    if (object.scrapSerial != null) {
+      yield r'scrap_serial';
+      yield serializers.serialize(
+        object.scrapSerial,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
   }
 
   @override
@@ -174,6 +201,21 @@ class _$CreateSaleRequestSerializer implements PrimitiveSerializer<CreateSaleReq
           ) as num;
           result.sellPrice = valueDes;
           break;
+        case r'sale_type':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CreateSaleRequestSaleTypeEnum),
+          ) as CreateSaleRequestSaleTypeEnum;
+          result.saleType = valueDes;
+          break;
+        case r'scrap_serial':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.scrapSerial = valueDes;
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -201,5 +243,25 @@ class _$CreateSaleRequestSerializer implements PrimitiveSerializer<CreateSaleReq
     );
     return result.build();
   }
+}
+
+class CreateSaleRequestSaleTypeEnum extends EnumClass {
+
+  /// SCRAP/MECHANIC waive product min price; SCRAP requires scrap_serial
+  @BuiltValueEnumConst(wireName: r'NORMAL')
+  static const CreateSaleRequestSaleTypeEnum NORMAL = _$createSaleRequestSaleTypeEnum_NORMAL;
+  /// SCRAP/MECHANIC waive product min price; SCRAP requires scrap_serial
+  @BuiltValueEnumConst(wireName: r'SCRAP')
+  static const CreateSaleRequestSaleTypeEnum SCRAP = _$createSaleRequestSaleTypeEnum_SCRAP;
+  /// SCRAP/MECHANIC waive product min price; SCRAP requires scrap_serial
+  @BuiltValueEnumConst(wireName: r'MECHANIC')
+  static const CreateSaleRequestSaleTypeEnum MECHANIC = _$createSaleRequestSaleTypeEnum_MECHANIC;
+
+  static Serializer<CreateSaleRequestSaleTypeEnum> get serializer => _$createSaleRequestSaleTypeEnumSerializer;
+
+  const CreateSaleRequestSaleTypeEnum._(String name): super(name);
+
+  static BuiltSet<CreateSaleRequestSaleTypeEnum> get values => _$createSaleRequestSaleTypeEnumValues;
+  static CreateSaleRequestSaleTypeEnum valueOf(String name) => _$createSaleRequestSaleTypeEnumValueOf(name);
 }
 

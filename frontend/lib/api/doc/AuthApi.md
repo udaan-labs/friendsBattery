@@ -62,7 +62,7 @@ void (empty response body)
 
 Start login (password → OTP challenge)
 
-Step 1 of login for SUPER_ADMIN, ADMIN, SELLER, EMPLOYEE. On success returns challenge_id (and otp in non-production). Complete with POST /api/auth/verify-otp. 
+Step 1 of login for SUPER_ADMIN, ADMIN, SELLER, EMPLOYEE. On success returns challenge_id after SMS. Complete with POST /api/auth/verify-otp. 
 
 ### Example
 ```dart

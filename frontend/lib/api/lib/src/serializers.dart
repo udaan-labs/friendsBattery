@@ -46,8 +46,6 @@ import 'package:friends_battery_api/src/model/api_inventory_details_get200_respo
 import 'package:friends_battery_api/src/model/api_inventory_details_get200_response_data_pagination.dart';
 import 'package:friends_battery_api/src/model/api_inventory_transfer_post_request.dart';
 import 'package:friends_battery_api/src/model/api_inventory_transfer_post_request_products_inner.dart';
-import 'package:friends_battery_api/src/model/api_otp_send_post_request.dart';
-import 'package:friends_battery_api/src/model/api_otp_verify_post_request.dart';
 import 'package:friends_battery_api/src/model/api_products_list_post_request.dart';
 import 'package:friends_battery_api/src/model/api_seller_dashboard_pending_shipments_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_seller_dashboard_pending_shipments_get200_response_data.dart';
@@ -117,10 +115,6 @@ import 'package:friends_battery_api/src/model/login_response.dart';
 import 'package:friends_battery_api/src/model/login_user.dart';
 import 'package:friends_battery_api/src/model/login_user_employee_role.dart';
 import 'package:friends_battery_api/src/model/login_user_location.dart';
-import 'package:friends_battery_api/src/model/otp_send_data.dart';
-import 'package:friends_battery_api/src/model/otp_send_response.dart';
-import 'package:friends_battery_api/src/model/otp_verify_data.dart';
-import 'package:friends_battery_api/src/model/otp_verify_response.dart';
 import 'package:friends_battery_api/src/model/product.dart';
 import 'package:friends_battery_api/src/model/product_created.dart';
 import 'package:friends_battery_api/src/model/product_model.dart';
@@ -214,8 +208,6 @@ part 'serializers.g.dart';
   ApiInventoryDetailsGet200ResponseDataPagination,
   ApiInventoryTransferPostRequest,
   ApiInventoryTransferPostRequestProductsInner,
-  ApiOtpSendPostRequest,
-  ApiOtpVerifyPostRequest,
   ApiProductsListPostRequest,
   ApiSellerDashboardPendingShipmentsGet200Response,
   ApiSellerDashboardPendingShipmentsGet200ResponseData,
@@ -285,10 +277,6 @@ part 'serializers.g.dart';
   LoginUser,
   LoginUserEmployeeRole,
   LoginUserLocation,
-  OtpSendData,
-  OtpSendResponse,
-  OtpVerifyData,
-  OtpVerifyResponse,
   Product,
   ProductCreated,
   ProductModel,

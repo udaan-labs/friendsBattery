@@ -26,9 +26,16 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
   final _customerMobileController = TextEditingController();
   final _vehicleNumberController = TextEditingController();
   final _sellPriceController = TextEditingController();
+  final _scrapSerialController = TextEditingController();
+
+  /// NORMAL | SCRAP | MECHANIC
+  String _saleType = 'NORMAL';
 
   bool _isFetchingDetails = false;
   bool _isSubmitting = false;
+
+  bool get _waiveMinPrice =>
+      _saleType == 'SCRAP' || _saleType == 'MECHANIC';
 
   String? _selectedProductNameId;
   String? _selectedProductModelId;
@@ -58,6 +65,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
     _customerMobileController.dispose();
     _vehicleNumberController.dispose();
     _sellPriceController.dispose();
+    _scrapSerialController.dispose();
     super.dispose();
   }
 
@@ -148,6 +156,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
       final customerNumber = _customerMobileController.text.trim();
       final vehicleRaw = _vehicleNumberController.text.trim();
 
+      final scrapRaw = _scrapSerialController.text.trim();
       await ref.read(sellerSalesRepositoryProvider).createSale(
             productNameId: int.parse(_selectedProductNameId!),
             productModelId: int.parse(_selectedProductModelId!),
@@ -156,6 +165,8 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
             customerNumber: customerNumber,
             vehicleNumber: vehicleRaw.isNotEmpty ? vehicleRaw.toUpperCase() : null,
             sellPrice: sellPrice,
+            saleType: _saleType,
+            scrapSerial: _saleType == 'SCRAP' ? scrapRaw : null,
           );
 
       if (mounted) {
@@ -409,6 +420,49 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                               const SizedBox(height: 20),
                             ],
 
+                            // Sale type: normal / scrap trade-in / mechanic B2B
+                            const Text(
+                              'Sale type',
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
+                            ),
+                            const SizedBox(height: 8),
+                            SegmentedButton<String>(
+                              segments: const [
+                                ButtonSegment(value: 'NORMAL', label: Text('Normal')),
+                                ButtonSegment(value: 'SCRAP', label: Text('Scrap')),
+                                ButtonSegment(value: 'MECHANIC', label: Text('Mechanic')),
+                              ],
+                              selected: {_saleType},
+                              onSelectionChanged: (s) {
+                                setState(() => _saleType = s.first);
+                              },
+                            ),
+                            if (_saleType == 'SCRAP') ...[
+                              const SizedBox(height: 12),
+                              TextFormField(
+                                controller: _scrapSerialController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Old battery serial (trade-in)',
+                                  hintText: 'Scrap battery serial',
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'Scrap serial required';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ],
+                            if (_waiveMinPrice)
+                              const Padding(
+                                padding: EdgeInsets.only(top: 8),
+                                child: Text(
+                                  'Min sell price not enforced for this sale type.',
+                                  style: TextStyle(fontSize: 12, color: Color(0xFF545F73)),
+                                ),
+                              ),
+                            const SizedBox(height: 20),
+
                             // Customer Name
                             const Text(
                               'Customer Name',
@@ -502,7 +556,9 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                                 if (parsed == null || parsed <= 0) {
                                   return 'Sell price must be greater than 0';
                                 }
-                                if (_minPrice != null && parsed < _minPrice!) {
+                                if (!_waiveMinPrice &&
+                                    _minPrice != null &&
+                                    parsed < _minPrice!) {
                                   return 'Price cannot be below minimum ₹$_minPrice';
                                 }
                                 return null;
@@ -510,8 +566,9 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                             ),
                             const SizedBox(height: 12),
 
-                            // Below min — blocked by validator; surface while typing
-                            if (_minPrice != null &&
+                            // Below min — blocked for NORMAL only
+                            if (!_waiveMinPrice &&
+                                _minPrice != null &&
                                 _userSellPrice != null &&
                                 _userSellPrice! < _minPrice!) ...[
                               Container(

@@ -15,6 +15,8 @@ Name | Type | Description | Notes
 **customerNumber** | **String** |  | 
 **vehicleNumber** | **String** |  | [optional] 
 **sellPrice** | **num** |  | 
+**saleType** | **String** | SCRAP/MECHANIC waive product min price; SCRAP requires scrap_serial | [optional] [default to 'NORMAL']
+**scrapSerial** | **String** | Old battery serial when sale_type=SCRAP | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

@@ -90,8 +90,6 @@ Class | Method | HTTP request | Description
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryScanForSaleGet**](doc/InventoryApi.md#apiinventoryscanforsaleget) | **GET** /api/inventory/scan-for-sale | Scan serial for sale (owner stock; EMPLOYEE &#x3D; location stock)
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryTransferPost**](doc/InventoryApi.md#apiinventorytransferpost) | **POST** /api/inventory/transfer | Transfer inventory from admin to seller
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryUpdateStockPost**](doc/InventoryApi.md#apiinventoryupdatestockpost) | **POST** /api/inventory/update-stock | Update admin&#39;s own inventory stock (Admin only)
-[*OTPApi*](doc/OTPApi.md) | [**apiOtpSendPost**](doc/OTPApi.md#apiotpsendpost) | **POST** /api/otp/send | Send OTP for current user (reusable purposes)
-[*OTPApi*](doc/OTPApi.md) | [**apiOtpVerifyPost**](doc/OTPApi.md#apiotpverifypost) | **POST** /api/otp/verify | Verify OTP for current user
 [*ProductUnitsApi*](doc/ProductUnitsApi.md) | [**apiProductUnitsVerifyPost**](doc/ProductUnitsApi.md#apiproductunitsverifypost) | **POST** /api/product-units/verify | Verify a product unit by serial or QR
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsInventoryProductsGet**](doc/ProductsApi.md#apiproductsinventoryproductsget) | **GET** /api/products/inventory-products | Get products in the authenticated user&#39;s inventory
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsListPost**](doc/ProductsApi.md#apiproductslistpost) | **POST** /api/products/list | Return all products matching filters
@@ -165,8 +163,6 @@ Class | Method | HTTP request | Description
  - [ApiInventoryDetailsGet200ResponseDataPagination](doc/ApiInventoryDetailsGet200ResponseDataPagination.md)
  - [ApiInventoryTransferPostRequest](doc/ApiInventoryTransferPostRequest.md)
  - [ApiInventoryTransferPostRequestProductsInner](doc/ApiInventoryTransferPostRequestProductsInner.md)
- - [ApiOtpSendPostRequest](doc/ApiOtpSendPostRequest.md)
- - [ApiOtpVerifyPostRequest](doc/ApiOtpVerifyPostRequest.md)
  - [ApiProductsListPostRequest](doc/ApiProductsListPostRequest.md)
  - [ApiSellerDashboardPendingShipmentsGet200Response](doc/ApiSellerDashboardPendingShipmentsGet200Response.md)
  - [ApiSellerDashboardPendingShipmentsGet200ResponseData](doc/ApiSellerDashboardPendingShipmentsGet200ResponseData.md)
@@ -236,10 +232,6 @@ Class | Method | HTTP request | Description
  - [LoginUser](doc/LoginUser.md)
  - [LoginUserEmployeeRole](doc/LoginUserEmployeeRole.md)
  - [LoginUserLocation](doc/LoginUserLocation.md)
- - [OtpSendData](doc/OtpSendData.md)
- - [OtpSendResponse](doc/OtpSendResponse.md)
- - [OtpVerifyData](doc/OtpVerifyData.md)
- - [OtpVerifyResponse](doc/OtpVerifyResponse.md)
  - [Product](doc/Product.md)
  - [ProductCreated](doc/ProductCreated.md)
  - [ProductModel](doc/ProductModel.md)

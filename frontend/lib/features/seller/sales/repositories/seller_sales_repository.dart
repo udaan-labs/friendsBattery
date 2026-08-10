@@ -75,6 +75,8 @@ class SellerSalesRepository {
     required String customerNumber,
     String? vehicleNumber,
     required num sellPrice,
+    String saleType = 'NORMAL',
+    String? scrapSerial,
   }) async {
     final body = CreateSaleRequest((b) {
       b.productNameId = productNameId;
@@ -86,6 +88,10 @@ class SellerSalesRepository {
         b.vehicleNumber = vehicleNumber;
       }
       b.sellPrice = sellPrice;
+      b.saleType = CreateSaleRequestSaleTypeEnum.valueOf(saleType);
+      if (scrapSerial != null && scrapSerial.isNotEmpty) {
+        b.scrapSerial = scrapSerial;
+      }
     });
 
     final response = await _sales.apiSalesPost(createSaleRequest: body);

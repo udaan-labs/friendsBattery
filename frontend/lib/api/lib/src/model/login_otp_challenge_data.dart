@@ -15,7 +15,7 @@ part 'login_otp_challenge_data.g.dart';
 /// * [challengeId] 
 /// * [expiresIn] - Seconds until OTP expires
 /// * [phoneMasked] 
-/// * [otp] - Dev only — present when OTP_ECHO / non-production
+/// * [otp] - Only when OTP_ECHO=1 (debug)
 @BuiltValue()
 abstract class LoginOtpChallengeData implements Built<LoginOtpChallengeData, LoginOtpChallengeDataBuilder> {
   @BuiltValueField(wireName: r'requires_otp')
@@ -31,7 +31,7 @@ abstract class LoginOtpChallengeData implements Built<LoginOtpChallengeData, Log
   @BuiltValueField(wireName: r'phone_masked')
   String? get phoneMasked;
 
-  /// Dev only — present when OTP_ECHO / non-production
+  /// Only when OTP_ECHO=1 (debug)
   @BuiltValueField(wireName: r'otp')
   String? get otp;
 

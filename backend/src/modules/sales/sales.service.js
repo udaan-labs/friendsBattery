@@ -25,8 +25,10 @@ class SalesService {
       sell_price: sale.sellPrice,
       serial_number: sale.serialNumber,
       vehicle_number: sale.vehicleNumber,
+      sale_type: sale.saleType || 'NORMAL',
+      scrap_serial: sale.scrapSerial || null,
       sold_at: sale.soldAt,
-      quantity: 1, // As confirmed, each transaction represents a quantity of 1
+      quantity: 1,
       customer: sale.customer ? {
         id: Number(sale.customer.id),
         name: sale.customer.name,
@@ -84,8 +86,14 @@ class SalesService {
       throw httpError(400, 'The scanned serial number does not match the selected Product Name or Model.');
     }
 
+    // NORMAL enforces min price; SCRAP/MECHANIC allow reduced (scrap_serial required in Zod)
+    const saleType = data.sale_type || 'NORMAL';
     const minPrice = Number(productUnit.product?.minPrice);
-    if (Number.isFinite(minPrice) && sellPrice < minPrice) {
+    if (
+      saleType === 'NORMAL' &&
+      Number.isFinite(minPrice) &&
+      sellPrice < minPrice
+    ) {
       throw httpError(
         400,
         `Selling price (₹${sellPrice}) cannot be less than minimum allowed price (₹${minPrice}).`
@@ -101,6 +109,8 @@ class SalesService {
       sellPrice,
       serialNumber: productUnit.serialNumber,
       vehicleNumber: data.vehicle_number,
+      saleType,
+      scrapSerial: saleType === 'SCRAP' ? data.scrap_serial || null : null,
       claimByLocationId: isEmployee ? actor.locationId : null,
     });
 

@@ -5,36 +5,54 @@ const { z } = require('zod');
  * Ownership/location enforced in service (actor from JWT, not body).
  */
 const createSaleSchema = z.object({
-  body: z.object({
-    product_name_id: z.number().int().positive('Product Name ID must be a valid positive integer'),
-    product_model_id: z.number().int().positive('Product Model ID must be a valid positive integer'),
-    serial_number: z
-      .string()
-      .trim()
-      .min(1, 'Serial number is required')
-      .max(100, 'Serial number is too long'),
-    customer_name: z
-      .string()
-      .trim()
-      .min(1, 'Customer name is required')
-      .max(100, 'Customer name is too long'),
-    customer_number: z
-      .string()
-      .trim()
-      .regex(/^\d{10}$/, 'Customer mobile number must be exactly 10 digits'),
-    vehicle_number: z
-      .string()
-      .trim()
-      .max(50, 'Vehicle number is too long')
-      .optional()
-      .nullable()
-      .transform((v) => (v == null || v === '' ? null : v)),
-    // Decimal(12, 2) — reject overflow before Prisma
-    sell_price: z
-      .number()
-      .positive('Sell price must be a positive number')
-      .max(9_999_999_999.99, 'Sell price is too large'),
-  }),
+  body: z
+    .object({
+      product_name_id: z.number().int().positive('Product Name ID must be a valid positive integer'),
+      product_model_id: z.number().int().positive('Product Model ID must be a valid positive integer'),
+      serial_number: z
+        .string()
+        .trim()
+        .min(1, 'Serial number is required')
+        .max(100, 'Serial number is too long'),
+      customer_name: z
+        .string()
+        .trim()
+        .min(1, 'Customer name is required')
+        .max(100, 'Customer name is too long'),
+      customer_number: z
+        .string()
+        .trim()
+        .regex(/^\d{10}$/, 'Customer mobile number must be exactly 10 digits'),
+      vehicle_number: z
+        .string()
+        .trim()
+        .max(50, 'Vehicle number is too long')
+        .optional()
+        .nullable()
+        .transform((v) => (v == null || v === '' ? null : v)),
+      sell_price: z
+        .number()
+        .positive('Sell price must be a positive number')
+        .max(9_999_999_999.99, 'Sell price is too large'),
+      /** NORMAL (default) | SCRAP | MECHANIC */
+      sale_type: z.enum(['NORMAL', 'SCRAP', 'MECHANIC']).optional().default('NORMAL'),
+      scrap_serial: z
+        .string()
+        .trim()
+        .max(100)
+        .optional()
+        .nullable()
+        .transform((v) => (v == null || v === '' ? null : v)),
+    })
+    .superRefine((body, ctx) => {
+      if (body.sale_type === 'SCRAP' && !body.scrap_serial) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Scrap serial is required for scrap battery sales',
+          path: ['scrap_serial'],
+        });
+      }
+    }),
 });
 
 /**

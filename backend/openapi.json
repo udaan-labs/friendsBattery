@@ -208,7 +208,7 @@
           "otp": {
             "type": "string",
             "nullable": true,
-            "description": "Dev only — present when OTP_ECHO / non-production"
+            "description": "Only when OTP_ECHO=1 (debug)"
           }
         }
       },
@@ -223,60 +223,6 @@
           },
           "data": {
             "$ref": "#/components/schemas/LoginOtpChallengeData"
-          }
-        }
-      },
-      "OtpSendData": {
-        "type": "object",
-        "properties": {
-          "challenge_id": {
-            "type": "string"
-          },
-          "expires_in": {
-            "type": "integer"
-          },
-          "otp": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "OtpSendResponse": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean"
-          },
-          "message": {
-            "type": "string"
-          },
-          "data": {
-            "$ref": "#/components/schemas/OtpSendData"
-          }
-        }
-      },
-      "OtpVerifyData": {
-        "type": "object",
-        "properties": {
-          "purpose": {
-            "type": "string"
-          },
-          "verified": {
-            "type": "boolean"
-          }
-        }
-      },
-      "OtpVerifyResponse": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean"
-          },
-          "message": {
-            "type": "string"
-          },
-          "data": {
-            "$ref": "#/components/schemas/OtpVerifyData"
           }
         }
       },
@@ -944,6 +890,21 @@
           },
           "sell_price": {
             "type": "number"
+          },
+          "sale_type": {
+            "type": "string",
+            "enum": [
+              "NORMAL",
+              "SCRAP",
+              "MECHANIC"
+            ],
+            "default": "NORMAL",
+            "description": "SCRAP/MECHANIC waive product min price; SCRAP requires scrap_serial"
+          },
+          "scrap_serial": {
+            "type": "string",
+            "nullable": true,
+            "description": "Old battery serial when sale_type=SCRAP"
           }
         }
       },
@@ -4665,106 +4626,6 @@
         }
       }
     },
-    "/api/otp/send": {
-      "post": {
-        "summary": "Send OTP for current user (reusable purposes)",
-        "tags": [
-          "OTP"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "purpose"
-                ],
-                "properties": {
-                  "purpose": {
-                    "type": "string",
-                    "example": "confirm_action"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OTP created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OtpSendResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        }
-      }
-    },
-    "/api/otp/verify": {
-      "post": {
-        "summary": "Verify OTP for current user",
-        "tags": [
-          "OTP"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "challenge_id",
-                  "otp"
-                ],
-                "properties": {
-                  "challenge_id": {
-                    "type": "string"
-                  },
-                  "otp": {
-                    "type": "string"
-                  },
-                  "purpose": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OTP verified",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OtpVerifyResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Invalid / expired OTP"
-          }
-        }
-      }
-    },
     "/api/inventory": {
       "get": {
         "summary": "Return logged-in user's inventory",
@@ -5700,7 +5561,7 @@
     "/api/auth/login": {
       "post": {
         "summary": "Start login (password → OTP challenge)",
-        "description": "Step 1 of login for SUPER_ADMIN, ADMIN, SELLER, EMPLOYEE.\nOn success returns challenge_id (and otp in non-production). Complete with POST /api/auth/verify-otp.\n",
+        "description": "Step 1 of login for SUPER_ADMIN, ADMIN, SELLER, EMPLOYEE.\nOn success returns challenge_id after SMS. Complete with POST /api/auth/verify-otp.\n",
         "tags": [
           "Auth"
         ],

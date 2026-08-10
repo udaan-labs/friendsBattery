@@ -3,7 +3,7 @@
 **Role chain:** `SUPER ADMIN → ADMIN → SELLER → EMPLOYEE`  
 One stream at a time. Work **down** the chain.  
 `- [ ]` todo · `- [x]` done.  
-**Next:** §5.4 Sale variants (scrap / mechanic).
+**Next:** §5.5 Service bills.
 
 ```text
 SUPER ADMIN     all WH + shops · stock any WH · adjust any shop · PDF/GPS all · sell/accept
@@ -115,8 +115,8 @@ Shared sell tools (§5) once anyone can sell. Obsidian: `obsidian/FriendsBattery
 - [x] Ready to reuse on other sensitive screens (same helper)  
 
 ### 5.4 Sale variants (unit + price)
-- [ ] **Scrap battery:** take old battery + sell new at **reduced** price  
-- [ ] **Mechanic / trade:** battery to mechanic at **lower** price (B2B tier)  
+- [x] **Scrap battery:** take old battery + sell new at **reduced** price  
+- [x] **Mechanic / trade:** battery to mechanic at **lower** price (B2B tier)  
 
 ### 5.5 Service bills (little/no stock move)
 - [ ] **Battery check** — 2-wheeler ₹30 · 4-wheeler ₹70  

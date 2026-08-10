@@ -6,6 +6,76 @@ part of 'create_sale_request.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const CreateSaleRequestSaleTypeEnum _$createSaleRequestSaleTypeEnum_NORMAL =
+    const CreateSaleRequestSaleTypeEnum._('NORMAL');
+const CreateSaleRequestSaleTypeEnum _$createSaleRequestSaleTypeEnum_SCRAP =
+    const CreateSaleRequestSaleTypeEnum._('SCRAP');
+const CreateSaleRequestSaleTypeEnum _$createSaleRequestSaleTypeEnum_MECHANIC =
+    const CreateSaleRequestSaleTypeEnum._('MECHANIC');
+
+CreateSaleRequestSaleTypeEnum _$createSaleRequestSaleTypeEnumValueOf(
+  String name,
+) {
+  switch (name) {
+    case 'NORMAL':
+      return _$createSaleRequestSaleTypeEnum_NORMAL;
+    case 'SCRAP':
+      return _$createSaleRequestSaleTypeEnum_SCRAP;
+    case 'MECHANIC':
+      return _$createSaleRequestSaleTypeEnum_MECHANIC;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<CreateSaleRequestSaleTypeEnum>
+_$createSaleRequestSaleTypeEnumValues = BuiltSet<CreateSaleRequestSaleTypeEnum>(
+  const <CreateSaleRequestSaleTypeEnum>[
+    _$createSaleRequestSaleTypeEnum_NORMAL,
+    _$createSaleRequestSaleTypeEnum_SCRAP,
+    _$createSaleRequestSaleTypeEnum_MECHANIC,
+  ],
+);
+
+Serializer<CreateSaleRequestSaleTypeEnum>
+_$createSaleRequestSaleTypeEnumSerializer =
+    _$CreateSaleRequestSaleTypeEnumSerializer();
+
+class _$CreateSaleRequestSaleTypeEnumSerializer
+    implements PrimitiveSerializer<CreateSaleRequestSaleTypeEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'NORMAL': 'NORMAL',
+    'SCRAP': 'SCRAP',
+    'MECHANIC': 'MECHANIC',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'NORMAL': 'NORMAL',
+    'SCRAP': 'SCRAP',
+    'MECHANIC': 'MECHANIC',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[CreateSaleRequestSaleTypeEnum];
+  @override
+  final String wireName = 'CreateSaleRequestSaleTypeEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    CreateSaleRequestSaleTypeEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  CreateSaleRequestSaleTypeEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => CreateSaleRequestSaleTypeEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$CreateSaleRequest extends CreateSaleRequest {
   @override
   final int productNameId;
@@ -21,6 +91,10 @@ class _$CreateSaleRequest extends CreateSaleRequest {
   final String? vehicleNumber;
   @override
   final num sellPrice;
+  @override
+  final CreateSaleRequestSaleTypeEnum? saleType;
+  @override
+  final String? scrapSerial;
 
   factory _$CreateSaleRequest([
     void Function(CreateSaleRequestBuilder)? updates,
@@ -34,6 +108,8 @@ class _$CreateSaleRequest extends CreateSaleRequest {
     required this.customerNumber,
     this.vehicleNumber,
     required this.sellPrice,
+    this.saleType,
+    this.scrapSerial,
   }) : super._();
   @override
   CreateSaleRequest rebuild(void Function(CreateSaleRequestBuilder) updates) =>
@@ -53,7 +129,9 @@ class _$CreateSaleRequest extends CreateSaleRequest {
         customerName == other.customerName &&
         customerNumber == other.customerNumber &&
         vehicleNumber == other.vehicleNumber &&
-        sellPrice == other.sellPrice;
+        sellPrice == other.sellPrice &&
+        saleType == other.saleType &&
+        scrapSerial == other.scrapSerial;
   }
 
   @override
@@ -66,6 +144,8 @@ class _$CreateSaleRequest extends CreateSaleRequest {
     _$hash = $jc(_$hash, customerNumber.hashCode);
     _$hash = $jc(_$hash, vehicleNumber.hashCode);
     _$hash = $jc(_$hash, sellPrice.hashCode);
+    _$hash = $jc(_$hash, saleType.hashCode);
+    _$hash = $jc(_$hash, scrapSerial.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -79,7 +159,9 @@ class _$CreateSaleRequest extends CreateSaleRequest {
           ..add('customerName', customerName)
           ..add('customerNumber', customerNumber)
           ..add('vehicleNumber', vehicleNumber)
-          ..add('sellPrice', sellPrice))
+          ..add('sellPrice', sellPrice)
+          ..add('saleType', saleType)
+          ..add('scrapSerial', scrapSerial))
         .toString();
   }
 }
@@ -120,6 +202,15 @@ class CreateSaleRequestBuilder
   num? get sellPrice => _$this._sellPrice;
   set sellPrice(num? sellPrice) => _$this._sellPrice = sellPrice;
 
+  CreateSaleRequestSaleTypeEnum? _saleType;
+  CreateSaleRequestSaleTypeEnum? get saleType => _$this._saleType;
+  set saleType(CreateSaleRequestSaleTypeEnum? saleType) =>
+      _$this._saleType = saleType;
+
+  String? _scrapSerial;
+  String? get scrapSerial => _$this._scrapSerial;
+  set scrapSerial(String? scrapSerial) => _$this._scrapSerial = scrapSerial;
+
   CreateSaleRequestBuilder() {
     CreateSaleRequest._defaults(this);
   }
@@ -134,6 +225,8 @@ class CreateSaleRequestBuilder
       _customerNumber = $v.customerNumber;
       _vehicleNumber = $v.vehicleNumber;
       _sellPrice = $v.sellPrice;
+      _saleType = $v.saleType;
+      _scrapSerial = $v.scrapSerial;
       _$v = null;
     }
     return this;
@@ -187,6 +280,8 @@ class CreateSaleRequestBuilder
             r'CreateSaleRequest',
             'sellPrice',
           ),
+          saleType: saleType,
+          scrapSerial: scrapSerial,
         );
     replace(_$result);
     return _$result;

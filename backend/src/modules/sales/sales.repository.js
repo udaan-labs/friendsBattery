@@ -81,6 +81,8 @@ class SalesRepository {
           sellPrice: saleData.sellPrice,
           serialNumber: saleData.serialNumber,
           vehicleNumber: saleData.vehicleNumber,
+          saleType: saleData.saleType,
+          scrapSerial: saleData.scrapSerial ?? null,
         },
       });
 

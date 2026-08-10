@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 **challengeId** | **String** |  | [optional] 
 **expiresIn** | **int** | Seconds until OTP expires | [optional] 
 **phoneMasked** | **String** |  | [optional] 
-**otp** | **String** | Dev only — present when OTP_ECHO / non-production | [optional] 
+**otp** | **String** | Only when OTP_ECHO=1 (debug) | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

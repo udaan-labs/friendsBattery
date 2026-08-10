@@ -435,7 +435,18 @@ module.exports = {
       customer_name: { type: 'string' },
       customer_number: { type: 'string' },
       vehicle_number: { type: 'string', nullable: true },
-      sell_price: { type: 'number' }
+      sell_price: { type: 'number' },
+      sale_type: {
+        type: 'string',
+        enum: ['NORMAL', 'SCRAP', 'MECHANIC'],
+        default: 'NORMAL',
+        description: 'SCRAP/MECHANIC waive product min price; SCRAP requires scrap_serial',
+      },
+      scrap_serial: {
+        type: 'string',
+        nullable: true,
+        description: 'Old battery serial when sale_type=SCRAP',
+      },
     }
   },
   CreateSaleResult: {
