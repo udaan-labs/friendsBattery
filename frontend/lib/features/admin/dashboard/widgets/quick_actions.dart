@@ -61,6 +61,12 @@ class QuickActions extends ConsumerWidget {
         route: '/admin/service-bill',
       ),
       _ActionItemData(
+        title: 'Battery Rent',
+        subtitle: 'Deposit out · fee + refund in',
+        icon: Icons.battery_charging_full,
+        route: '/admin/battery-rent',
+      ),
+      _ActionItemData(
         title: 'View Sales',
         subtitle: 'Browse all sales transactions',
         icon: Icons.point_of_sale_outlined,

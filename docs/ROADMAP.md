@@ -3,7 +3,7 @@
 **Role chain:** `SUPER ADMIN → ADMIN → SELLER → EMPLOYEE`  
 One stream at a time. Work **down** the chain.  
 `- [ ]` todo · `- [x]` done.  
-**Next:** §5.6 Battery rent.
+**Next:** §6 Hardening / ops.
 
 ```text
 SUPER ADMIN     all WH + shops · stock any WH · adjust any shop · PDF/GPS all · sell/accept
@@ -125,8 +125,8 @@ Shared sell tools (§5) once anyone can sell. Obsidian: `obsidian/FriendsBattery
 - [x] **Inverter service** — fixed charge (~₹1000)  
 
 ### 5.6 Battery rent
-- [ ] Out on rent with **deposit** (e.g. ₹1000)  
-- [ ] On return: take fee from deposit (e.g. ₹100), **refund rest**; unit back via ledger  
+- [x] Out on rent with **deposit** (e.g. ₹1000)  
+- [x] On return: take fee from deposit (e.g. ₹100), **refund rest**; unit back via ledger  
 
 ---
 

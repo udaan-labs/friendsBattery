@@ -124,4 +124,43 @@ class SellerSalesRepository {
         await _sales.apiSalesServicePost(createServiceBillRequest: body);
     return response.data?.data?.serviceBillId ?? 0;
   }
+
+  Future<Map<String, num?>> createRent({
+    required String serialNumber,
+    required String customerName,
+    required String customerNumber,
+    required num deposit,
+  }) async {
+    final body = CreateRentRequest((b) {
+      b.serialNumber = serialNumber;
+      b.customerName = customerName;
+      b.customerNumber = customerNumber;
+      b.deposit = deposit;
+    });
+    final response = await _sales.apiSalesRentPost(createRentRequest: body);
+    final d = response.data?.data;
+    return {
+      'rent_id': d?.rentId?.toDouble(),
+      'deposit': d?.deposit,
+    };
+  }
+
+  Future<Map<String, num?>> returnRent({
+    required String serialNumber,
+    required num rentFee,
+  }) async {
+    final body = ReturnRentRequest((b) {
+      b.serialNumber = serialNumber;
+      b.rentFee = rentFee;
+    });
+    final response =
+        await _sales.apiSalesRentReturnPost(returnRentRequest: body);
+    final d = response.data?.data;
+    return {
+      'rent_id': d?.rentId?.toDouble(),
+      'deposit': d?.deposit,
+      'rent_fee': d?.rentFee,
+      'refund_amount': d?.refundAmount,
+    };
+  }
 }

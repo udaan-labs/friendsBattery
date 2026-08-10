@@ -55,6 +55,45 @@ const createSaleSchema = z.object({
     }),
 });
 
+/** Rent unit out with deposit. */
+const createRentSchema = z.object({
+  body: z.object({
+    serial_number: z
+      .string()
+      .trim()
+      .min(1, 'Serial number is required')
+      .max(100),
+    customer_name: z
+      .string()
+      .trim()
+      .min(1, 'Customer name is required')
+      .max(100),
+    customer_number: z
+      .string()
+      .trim()
+      .regex(/^\d{10}$/, 'Customer mobile number must be exactly 10 digits'),
+    deposit: z
+      .number()
+      .positive('Deposit must be a positive number')
+      .max(9_999_999_999.99),
+  }),
+});
+
+/** Return rented unit: fee from deposit, refund rest. */
+const returnRentSchema = z.object({
+  body: z.object({
+    serial_number: z
+      .string()
+      .trim()
+      .min(1, 'Serial number is required')
+      .max(100),
+    rent_fee: z
+      .number()
+      .min(0, 'Rent fee cannot be negative')
+      .max(9_999_999_999.99),
+  }),
+});
+
 /** Service bill — no stock move. Defaults: 2W ₹30 · 4W ₹70 · inverter ₹1000 (UI prefills). */
 const createServiceBillSchema = z.object({
   body: z
@@ -147,6 +186,8 @@ const adminSalesHistorySchema = z.object({
 module.exports = {
   createSaleSchema,
   createServiceBillSchema,
+  createRentSchema,
+  returnRentSchema,
   viewSaleSchema,
   salesHistorySchema,
   adminSalesHistorySchema,

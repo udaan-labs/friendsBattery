@@ -159,6 +159,13 @@ class EmployeeHomeScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 10),
               _ActionTile(
+                icon: Icons.battery_charging_full,
+                title: 'Battery rent',
+                subtitle: 'Rent out with deposit · return fee',
+                onTap: () => context.push('/employee/battery-rent'),
+              ),
+              const SizedBox(height: 10),
+              _ActionTile(
                 icon: Icons.inventory_2_outlined,
                 title: 'View stock',
                 subtitle: 'Batteries at your shop location',

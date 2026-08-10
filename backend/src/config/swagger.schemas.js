@@ -502,6 +502,62 @@ module.exports = {
       data: { $ref: '#/components/schemas/CreateServiceBillResult' },
     },
   },
+  CreateRentRequest: {
+    type: 'object',
+    required: ['serial_number', 'customer_name', 'customer_number', 'deposit'],
+    properties: {
+      serial_number: { type: 'string' },
+      customer_name: { type: 'string' },
+      customer_number: { type: 'string' },
+      deposit: { type: 'number', example: 1000 },
+    },
+  },
+  CreateRentResult: {
+    type: 'object',
+    properties: {
+      rent_id: { type: 'integer' },
+      serial_number: { type: 'string' },
+      deposit: { type: 'number' },
+    },
+  },
+  CreateRentResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean' },
+      message: { type: 'string' },
+      data: { $ref: '#/components/schemas/CreateRentResult' },
+    },
+  },
+  ReturnRentRequest: {
+    type: 'object',
+    required: ['serial_number', 'rent_fee'],
+    properties: {
+      serial_number: { type: 'string' },
+      rent_fee: {
+        type: 'number',
+        example: 100,
+        description: 'Fee taken from deposit; refund = deposit - fee',
+      },
+    },
+  },
+  ReturnRentResult: {
+    type: 'object',
+    properties: {
+      rent_id: { type: 'integer' },
+      serial_number: { type: 'string' },
+      deposit: { type: 'number' },
+      rent_fee: { type: 'number' },
+      refund_amount: { type: 'number' },
+    },
+  },
+  ReturnRentResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean' },
+      message: { type: 'string' },
+      data: { $ref: '#/components/schemas/ReturnRentResult' },
+    },
+  },
   SaleCustomer: {
     type: 'object',
     properties: {

@@ -77,6 +77,9 @@ import 'package:friends_battery_api/src/model/create_product_model_request.dart'
 import 'package:friends_battery_api/src/model/create_product_name_request.dart';
 import 'package:friends_battery_api/src/model/create_product_request.dart';
 import 'package:friends_battery_api/src/model/create_product_response.dart';
+import 'package:friends_battery_api/src/model/create_rent_request.dart';
+import 'package:friends_battery_api/src/model/create_rent_response.dart';
+import 'package:friends_battery_api/src/model/create_rent_result.dart';
 import 'package:friends_battery_api/src/model/create_return_request.dart';
 import 'package:friends_battery_api/src/model/create_return_response.dart';
 import 'package:friends_battery_api/src/model/create_return_result.dart';
@@ -137,6 +140,9 @@ import 'package:friends_battery_api/src/model/return_list_product.dart';
 import 'package:friends_battery_api/src/model/return_list_product_model.dart';
 import 'package:friends_battery_api/src/model/return_list_product_name.dart';
 import 'package:friends_battery_api/src/model/return_product.dart';
+import 'package:friends_battery_api/src/model/return_rent_request.dart';
+import 'package:friends_battery_api/src/model/return_rent_response.dart';
+import 'package:friends_battery_api/src/model/return_rent_result.dart';
 import 'package:friends_battery_api/src/model/returns_list_response.dart';
 import 'package:friends_battery_api/src/model/sale_customer.dart';
 import 'package:friends_battery_api/src/model/sale_detail_response.dart';
@@ -242,6 +248,9 @@ part 'serializers.g.dart';
   CreateProductNameRequest,
   CreateProductRequest,
   CreateProductResponse,
+  CreateRentRequest,
+  CreateRentResponse,
+  CreateRentResult,
   CreateReturnRequest,
   CreateReturnResponse,
   CreateReturnResult,
@@ -302,6 +311,9 @@ part 'serializers.g.dart';
   ReturnListProductModel,
   ReturnListProductName,
   ReturnProduct,
+  ReturnRentRequest,
+  ReturnRentResponse,
+  ReturnRentResult,
   ReturnsListResponse,
   SaleCustomer,
   SaleDetailResponse,

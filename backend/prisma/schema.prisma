@@ -30,6 +30,7 @@ enum UnitStatus {
   SOLD
   RETURNED
   DEFECTIVE
+  RENTED
 }
 
 enum TransactionAction {
@@ -38,6 +39,13 @@ enum TransactionAction {
   SOLD
   RETURNED
   TRANSFERRED
+  RENTED
+  RENT_RETURNED
+}
+
+enum RentStatus {
+  OUT
+  RETURNED
 }
 
 /// Bill kind on unit sales (normal retail vs scrap trade-in vs mechanic B2B).
@@ -131,6 +139,7 @@ model User {
   adminShipmentsReceived NewShipment[]          @relation("AdminShipmentReceived")
   sales                  SalesTransaction[]     @relation("SalesSeller")
   serviceBills           ServiceBill[]          @relation("ServiceBillSeller")
+  batteryRents           BatteryRent[]          @relation("BatteryRentSeller")
   returnsBy              ReturnProduct[]        @relation("ReturnByUser")
   returnsTo              ReturnProduct[]        @relation("ReturnToUser")
   attendances            EmployeeAttendance[]   @relation("AttendanceEmployee")
@@ -215,6 +224,7 @@ model Customer {
 
   sales        SalesTransaction[]
   serviceBills ServiceBill[]
+  batteryRents BatteryRent[]
 
   @@map("customers")
 }
@@ -289,6 +299,7 @@ model ProductUnit {
 
   transactions     InventoryTransaction[]
   sales            SalesTransaction[]
+  batteryRents     BatteryRent[]
   newShipmentItems NewShipmentItem[]
 
   @@index([ownerId])
@@ -478,6 +489,31 @@ model ServiceBill {
   @@index([sellerId, createdAt])
   @@index([serviceType])
   @@map("service_bills")
+}
+
+/// Battery out on rent with deposit; return takes fee and refunds rest.
+model BatteryRent {
+  id            BigInt     @id @default(autoincrement())
+  productUnitId BigInt     @map("product_unit_id")
+  sellerId      BigInt     @map("seller_id")
+  customerId    BigInt?    @map("customer_id")
+  serialNumber  String     @map("serial_number") @db.VarChar(100)
+  deposit       Decimal    @db.Decimal(12, 2)
+  /// Fee charged on return (from deposit)
+  rentFee       Decimal?   @map("rent_fee") @db.Decimal(12, 2)
+  refundAmount  Decimal?   @map("refund_amount") @db.Decimal(12, 2)
+  status        RentStatus @default(OUT)
+  rentedAt      DateTime   @default(now()) @map("rented_at") @db.Timestamp()
+  returnedAt    DateTime?  @map("returned_at") @db.Timestamp()
+
+  productUnit ProductUnit @relation(fields: [productUnitId], references: [id])
+  seller      User        @relation("BatteryRentSeller", fields: [sellerId], references: [id])
+  customer    Customer?   @relation(fields: [customerId], references: [id])
+
+  @@index([sellerId, status])
+  @@index([serialNumber])
+  @@index([status])
+  @@map("battery_rents")
 }
 
 model ReturnProduct {

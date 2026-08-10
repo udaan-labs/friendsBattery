@@ -3,7 +3,7 @@
 **Canvas (open this in Obsidian):** [[Role Chain Workflow]]  
 **Todos:** `docs/ROADMAP.md` · commands: `/todo` · `/todo-done` · `/todo-undone` · `/todo-sync`
 
-**Next:** §5.6 Battery rent
+**Next:** §6 Hardening / ops
 
 ## Chain
 

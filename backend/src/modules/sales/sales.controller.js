@@ -41,6 +41,31 @@ class SalesController {
     }
   }
 
+  async createRent(req, res) {
+    try {
+      const result = await salesService.createRent(req.body, {
+        id: req.user.id,
+        role: req.user.role,
+        locationId: req.user.locationId ?? null,
+      });
+      return successResponse(res, 201, 'Battery rented out successfully', result);
+    } catch (error) {
+      return handleRouteError(res, error, 'Create Rent Error:');
+    }
+  }
+
+  async returnRent(req, res) {
+    try {
+      const result = await salesService.returnRent(req.body, {
+        id: req.user.id,
+        role: req.user.role,
+      });
+      return successResponse(res, 200, 'Battery rent returned successfully', result);
+    } catch (error) {
+      return handleRouteError(res, error, 'Return Rent Error:');
+    }
+  }
+
   /**
    * Get all sales
    * Filters automatically based on authenticated user role (Admin vs Seller)

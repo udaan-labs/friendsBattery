@@ -144,6 +144,105 @@ class SalesService {
   }
 
   /**
+   * Rent unit out with deposit. Unit → RENTED + ledger RENTED.
+   * @param {Object} data Request body
+   * @param {{ id: number|bigint, role: string, locationId?: number|null }} actor
+   */
+  async createRent(data, actor) {
+    const sellerId = actor.id;
+    const isEmployee = actor.role === ROLES.EMPLOYEE;
+    const deposit = Number(data.deposit);
+
+    if (isEmployee && actor.locationId == null) {
+      throw httpError(400, 'Your account has no shop location. Contact admin.');
+    }
+
+    let customer = await salesRepository.findCustomerByMobile(data.customer_number);
+    if (!customer) {
+      customer = await salesRepository.createCustomer({
+        name: data.customer_name,
+        phone: data.customer_number,
+      });
+    }
+
+    const productUnit = await salesRepository.findAvailableProductUnit(
+      data.serial_number,
+      isEmployee ? { locationId: actor.locationId } : { ownerId: sellerId }
+    );
+    if (!productUnit) {
+      throw httpError(404, 'Serial is not available in your inventory.');
+    }
+
+    const rent = await salesRepository.createRentOut({
+      productUnitId: productUnit.id,
+      sellerId,
+      ownerId: productUnit.ownerId,
+      customerId: customer.id,
+      serialNumber: productUnit.serialNumber,
+      deposit,
+      claimByLocationId: isEmployee ? actor.locationId : null,
+    });
+
+    return {
+      rent_id: Number(rent.id),
+      serial_number: productUnit.serialNumber,
+      deposit,
+    };
+  }
+
+  /**
+   * Return rented unit: fee from deposit, refund rest. Unit → AVAILABLE + ledger.
+   * @param {Object} data Request body
+   * @param {{ id: number|bigint, role: string }} actor
+   */
+  async returnRent(data, actor) {
+    const rentFee = Number(data.rent_fee);
+    const open = await salesRepository.findOpenRentBySerial(data.serial_number);
+    if (!open) {
+      throw httpError(404, 'No open rent found for this serial.');
+    }
+
+    // Seller/employee: only own rents; SA/Admin can return any (shop ops)
+    if (
+      actor.role === ROLES.SELLER ||
+      actor.role === ROLES.EMPLOYEE
+    ) {
+      if (Number(open.sellerId) !== Number(actor.id)) {
+        throw httpError(403, 'This rent was created by another user.');
+      }
+    }
+
+    const deposit = Number(open.deposit);
+    if (rentFee > deposit) {
+      throw httpError(400, `Rent fee (₹${rentFee}) cannot exceed deposit (₹${deposit}).`);
+    }
+    const refundAmount = Math.round((deposit - rentFee) * 100) / 100;
+
+    const rentedUnit = await prisma.productUnit.findUnique({
+      where: { id: open.productUnitId },
+    });
+    if (!rentedUnit) {
+      throw httpError(404, 'Product unit not found.');
+    }
+
+    const result = await salesRepository.returnRent({
+      rentId: open.id,
+      productUnitId: open.productUnitId,
+      ownerId: rentedUnit.ownerId,
+      rentFee,
+      refundAmount,
+    });
+
+    return {
+      rent_id: Number(result.id),
+      serial_number: result.serialNumber,
+      deposit,
+      rent_fee: rentFee,
+      refund_amount: refundAmount,
+    };
+  }
+
+  /**
    * Get all sales based on user role
    * @param {Object} user Authenticated user
    */

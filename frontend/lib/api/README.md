@@ -104,6 +104,8 @@ Class | Method | HTTP request | Description
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesGet**](doc/SalesApi.md#apisalesget) | **GET** /api/sales | Return all sales based on role (Admin sees all, Seller sees own)
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesHistoryGet**](doc/SalesApi.md#apisaleshistoryget) | **GET** /api/sales/history | Return seller&#39;s own sales history with pagination, search, and date filtering
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesPost**](doc/SalesApi.md#apisalespost) | **POST** /api/sales | Create a sale (SA/Admin/Seller own units; EMPLOYEE location stock)
+[*SalesApi*](doc/SalesApi.md) | [**apiSalesRentPost**](doc/SalesApi.md#apisalesrentpost) | **POST** /api/sales/rent | Rent battery out with deposit (unit → RENTED)
+[*SalesApi*](doc/SalesApi.md) | [**apiSalesRentReturnPost**](doc/SalesApi.md#apisalesrentreturnpost) | **POST** /api/sales/rent/return | Return rented battery — fee from deposit, refund rest
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesServicePost**](doc/SalesApi.md#apisalesservicepost) | **POST** /api/sales/service | Create a service bill (no stock move)
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesTransactionIdGet**](doc/SalesApi.md#apisalestransactionidget) | **GET** /api/sales/{transactionId} | Return a single sale&#39;s details by ID
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiEmployeeShipmentsGet**](doc/ShipmentsApi.md#apiemployeeshipmentsget) | **GET** /api/employee/shipments | List shipments for sellers at the employee&#39;s shop location (read-only)
@@ -195,6 +197,9 @@ Class | Method | HTTP request | Description
  - [CreateProductNameRequest](doc/CreateProductNameRequest.md)
  - [CreateProductRequest](doc/CreateProductRequest.md)
  - [CreateProductResponse](doc/CreateProductResponse.md)
+ - [CreateRentRequest](doc/CreateRentRequest.md)
+ - [CreateRentResponse](doc/CreateRentResponse.md)
+ - [CreateRentResult](doc/CreateRentResult.md)
  - [CreateReturnRequest](doc/CreateReturnRequest.md)
  - [CreateReturnResponse](doc/CreateReturnResponse.md)
  - [CreateReturnResult](doc/CreateReturnResult.md)
@@ -255,6 +260,9 @@ Class | Method | HTTP request | Description
  - [ReturnListProductModel](doc/ReturnListProductModel.md)
  - [ReturnListProductName](doc/ReturnListProductName.md)
  - [ReturnProduct](doc/ReturnProduct.md)
+ - [ReturnRentRequest](doc/ReturnRentRequest.md)
+ - [ReturnRentResponse](doc/ReturnRentResponse.md)
+ - [ReturnRentResult](doc/ReturnRentResult.md)
  - [ReturnsListResponse](doc/ReturnsListResponse.md)
  - [SaleCustomer](doc/SaleCustomer.md)
  - [SaleDetailResponse](doc/SaleDetailResponse.md)

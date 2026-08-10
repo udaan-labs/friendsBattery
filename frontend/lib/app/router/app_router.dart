@@ -18,6 +18,7 @@ import '../../features/seller/dashboard/screens/seller_dashboard_screen.dart';
 import '../../features/seller/dashboard/screens/seller_shell_screen.dart';
 import '../../features/seller/dashboard/screens/create_bill_screen.dart';
 import '../../features/seller/dashboard/screens/create_service_bill_screen.dart';
+import '../../features/seller/dashboard/screens/battery_rent_screen.dart';
 import '../../features/seller/dashboard/screens/shipment_details_screen.dart';
 import '../../features/seller/dashboard/screens/seller_received_shipments_screen.dart';
 import '../../features/seller/dashboard/screens/sale_success_screen.dart';
@@ -293,6 +294,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const CreateServiceBillScreen(),
           ),
           GoRoute(
+            path: '/admin/battery-rent',
+            builder: (context, state) => const BatteryRentScreen(),
+          ),
+          GoRoute(
             path: '/admin/sale-success',
             builder: (context, state) {
               final saleData = state.extra as SaleSuccessData?;
@@ -348,6 +353,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/seller/service-bill',
             builder: (context, state) => const CreateServiceBillScreen(),
+          ),
+          GoRoute(
+            path: '/seller/battery-rent',
+            builder: (context, state) => const BatteryRentScreen(),
           ),
           GoRoute(
             path: '/seller/sale-success',
@@ -423,6 +432,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/employee/service-bill',
             builder: (context, state) => const CreateServiceBillScreen(),
+          ),
+          GoRoute(
+            path: '/employee/battery-rent',
+            builder: (context, state) => const BatteryRentScreen(),
           ),
           GoRoute(
             path: '/employee/sale-success',

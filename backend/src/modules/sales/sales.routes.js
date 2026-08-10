@@ -4,6 +4,8 @@ const salesController = require('./sales.controller');
 const {
   createSaleSchema,
   createServiceBillSchema,
+  createRentSchema,
+  returnRentSchema,
   viewSaleSchema,
   salesHistorySchema,
   adminSalesHistorySchema,
@@ -91,6 +93,66 @@ router.post(
   requireAdminOrSellerOrEmployee,
   validateRequest(createServiceBillSchema),
   salesController.createServiceBill
+);
+
+/**
+ * @swagger
+ * /api/sales/rent:
+ *   post:
+ *     summary: Rent battery out with deposit (unit → RENTED)
+ *     tags: [Sales]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateRentRequest'
+ *     responses:
+ *       201:
+ *         description: Battery rented
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CreateRentResponse'
+ */
+router.post(
+  '/rent',
+  authenticate,
+  requireAdminOrSellerOrEmployee,
+  validateRequest(createRentSchema),
+  salesController.createRent
+);
+
+/**
+ * @swagger
+ * /api/sales/rent/return:
+ *   post:
+ *     summary: Return rented battery — fee from deposit, refund rest
+ *     tags: [Sales]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ReturnRentRequest'
+ *     responses:
+ *       200:
+ *         description: Rent returned
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ReturnRentResponse'
+ */
+router.post(
+  '/rent/return',
+  authenticate,
+  requireAdminOrSellerOrEmployee,
+  validateRequest(returnRentSchema),
+  salesController.returnRent
 );
 
 /**
