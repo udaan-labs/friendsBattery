@@ -5,16 +5,31 @@ const { authenticate } = require('../../shared/middleware/auth.middleware');
 const { requireAdmin } = require('../../shared/middleware/role.middleware');
 const { successResponse } = require('../../shared/utils/response');
 const { handleRouteError } = require('../../shared/utils/handle-route-error');
+const {
+  resolveAdminShopScope,
+  staffUserWhereForShopScope,
+} = require('../../shared/utils/shop-scope.util');
 
 /**
  * GET /api/users
- * Retrieve list of users. Protected: admin only.
+ * SA: all users. Shop Admin: staff under parent/location only.
  * Optional ?role=ADMIN|SELLER|EMPLOYEE
  */
 router.get('/', authenticate, requireAdmin, async (req, res) => {
   try {
     const where = {};
     if (req.query.role) where.role = req.query.role;
+
+    const scope = resolveAdminShopScope(req.user);
+    if (scope?.kind === 'shop') {
+      const staffWhere = staffUserWhereForShopScope(scope);
+      if (req.query.role) {
+        where.role = req.query.role;
+        where.OR = staffWhere.OR;
+      } else {
+        Object.assign(where, staffWhere);
+      }
+    }
 
     const users = await prisma.user.findMany({
       where,

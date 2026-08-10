@@ -131,16 +131,20 @@ class InventoryController {
       } = req.body;
 
       // Call business layer
-      const result = await inventoryService.updateStock(adminId, {
-        productNameId,
-        productModelId,
-        quantity,
-        minSellPrice,
-        minUnitCountAdmin,
-        minUnitCountSeller,
-        onSale,
-        location_id,
-      });
+      const result = await inventoryService.updateStock(
+        adminId,
+        {
+          productNameId,
+          productModelId,
+          quantity,
+          minSellPrice,
+          minUnitCountAdmin,
+          minUnitCountSeller,
+          onSale,
+          location_id,
+        },
+        { role: req.user.role, locationId: req.user.locationId ?? null }
+      );
 
       // Return standardized success response
       return successResponse(res, 200, 'Stock updated successfully', result);

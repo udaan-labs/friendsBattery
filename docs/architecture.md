@@ -51,8 +51,8 @@ Doc: repo root `docs/architecture.md`. One domain = one module folder. Reuse exi
 2. **Immutable ledger** — `inventory_transactions` is **append-only**. Never UPDATE/DELETE history. Ownership/status change = new row.
 3. **Roles** (`SUPER_ADMIN → ADMIN → SELLER → EMPLOYEE`)
    - `SUPER_ADMIN` — org root; full multi-WH/shop tools in §1. `parent_id` null. Inventory scope: units owned by `ADMIN` **or** `SUPER_ADMIN`. Stock may target any active `location_id` (warehouse).
-   - `ADMIN` — shop admin under a Super Admin (`users.parent_id` → SA). Today many APIs still use global admin scope until §2 re-scopes to own shop.
-   - `SELLER` — own inventory, sales, requests; `parent_id` → Admin.
+   - `ADMIN` — shop admin under a Super Admin (`users.parent_id` → SA). **Own shop** = `users.location_id` (SHOP); staff tree = `parent_id` = admin. Inventory = units with `ownerId` = admin (not shared SA pool). Scope helper: `shared/utils/shop-scope.util.js`.
+   - `SELLER` — own inventory only (`ownerId` = self); sales/returns/shipments own only; `parent_id` → Admin; staff via `GET /shops/my-staff` = same shop location **and** Admin parent chain.
    - `EMPLOYEE` — staff at a location; inventory by `current_location_id = user.location_id` (not owner_id). Job title is `employee_roles` via `users.employee_role_id` (Manager, Cashier, …) — separate from system `Role`. `parent_id` → Admin (or seller’s parent Admin).
    - **Parent links:** `users.parent_id` self-FK. Create seller (`POST /api/auth/register`) sets parent to actor; create employee sets parent to Admin chain.
    - Middleware: `requireRole(...)`, `requireSuperAdmin`, `requireAdmin` (shop Admin only), `requireSuperAdminOrAdmin`, `requireSeller`, `requireEmployee`, combos. Prefer generic `requireRole` for new routes.

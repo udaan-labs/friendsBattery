@@ -6,7 +6,7 @@ class ShipmentsController {
   async createShipment(req, res) {
     try {
       const adminId = Number(req.user.id);
-      const result = await shipmentsService.createShipment(req.body, adminId);
+      const result = await shipmentsService.createShipment(req.body, adminId, req.user);
       return successResponse(
         res,
         201,
@@ -56,7 +56,7 @@ class ShipmentsController {
    */
   async getAllShipments(req, res) {
     try {
-      const result = await shipmentsService.getAllShipments();
+      const result = await shipmentsService.getAllShipments(req.user);
       return successResponse(res, 200, 'All shipments retrieved successfully', result);
     } catch (error) {
       return handleRouteError(res, error, 'Get All Shipments Error:');

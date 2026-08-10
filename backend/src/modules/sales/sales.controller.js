@@ -72,7 +72,7 @@ class SalesController {
   async getAdminSalesHistory(req, res) {
     try {
       const query = req.query;
-      const history = await salesService.getAdminSalesHistory(query);
+      const history = await salesService.getAdminSalesHistory(query, req.user);
       return successResponse(res, 200, 'Admin sales history fetched successfully', history);
     } catch (error) {
       return handleRouteError(res, error, 'Get Admin Sales History Error:');

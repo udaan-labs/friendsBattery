@@ -21,7 +21,7 @@ class TransfersController {
   async createTransfer(req, res) {
     try {
       const adminId = req.user.id;
-      const result = await transfersService.createTransfer(req.body, adminId);
+      const result = await transfersService.createTransfer(req.body, adminId, req.user);
       return successResponse(res, 201, 'Shipment created successfully', result);
     } catch (error) {
       return handleRouteError(res, error, 'Create Transfer Error:');

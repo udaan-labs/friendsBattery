@@ -1,7 +1,12 @@
 const shipmentsRepository = require('./shipments.repository');
 const { prisma } = require('../../config/db');
 const { httpError } = require('../../shared/utils/http-error');
-const { isAdminLikeRole } = require('../../shared/utils/role.util');
+const ROLES = require('../../shared/constants/roles');
+const {
+  resolveAdminShopScope,
+  resolveShopSellerIds,
+  isUserInShopScope,
+} = require('../../shared/utils/shop-scope.util');
 
 /**
  * Admin → Seller stock transfer (serial-based).
@@ -9,15 +14,19 @@ const { isAdminLikeRole } = require('../../shared/utils/role.util');
  */
 class ShipmentsService {
   /**
-   * Admin confirms transfer:
-   * - Validates seller + each serial (exists, AVAILABLE, admin-owned, matches product)
-   * - Atomically moves ownership to seller, writes inventory_transactions, shipment record
-   * - Returns transferred count + remaining admin / seller inventory counts per product
+   * Transfer serials owned by adminId → seller. SA: any seller; shop Admin: own sellers only.
    */
-  async createShipment(data, adminId) {
+  async createShipment(data, adminId, actor = null) {
     const seller = await shipmentsRepository.findSellerById(data.sellerId);
     if (!seller) {
       throw httpError(404, 'Seller not found');
+    }
+
+    if (actor?.role === ROLES.ADMIN) {
+      const scope = resolveAdminShopScope(actor);
+      if (!isUserInShopScope(seller, scope)) {
+        throw httpError(403, 'Forbidden: seller is not under your shop');
+      }
     }
 
     // Flatten + normalize serials; reject duplicates in the request itself
@@ -60,12 +69,13 @@ class ShipmentsService {
 
       const serials = item.serial_numbers.map((s) => String(s).trim());
 
+      // Units owned by this admin (SA or shop Admin) — not any ADMIN role pool
       const units = await prisma.productUnit.findMany({
         where: {
           serialNumber: { in: serials },
           productId: product.id,
           status: 'AVAILABLE',
-          owner: { role: 'ADMIN' },
+          ownerId: BigInt(adminId),
         },
       });
 
@@ -131,8 +141,24 @@ class ShipmentsService {
     };
   }
 
-  async getAllShipments() {
-    const shipments = await shipmentsRepository.getAllShipments();
+  /**
+   * @param {{ id: number, role: string, locationId?: number|null }} [user]
+   */
+  async getAllShipments(user) {
+    const scope = resolveAdminShopScope(user || {});
+    let shipments;
+    if (scope?.kind === 'shop') {
+      const sellerIds = await resolveShopSellerIds(prisma, scope);
+      const pureSellers = (sellerIds || []).filter(
+        (id) => Number(id) !== Number(scope.adminId)
+      );
+      shipments = await shipmentsRepository.getShipmentsForShopAdmin(
+        scope.adminId,
+        pureSellers
+      );
+    } else {
+      shipments = await shipmentsRepository.getAllShipments();
+    }
     return shipments.map((s) => ({
       shipmentId: Number(s.id),
       shipmentNumber: s.shipmentNumber,
@@ -162,8 +188,25 @@ class ShipmentsService {
     }
 
     // Explicit allow-list (default deny) — no fall-through for unknown roles
-    if (isAdminLikeRole(userRole)) {
+    if (userRole === ROLES.SUPER_ADMIN) {
       // ok
+    } else if (userRole === ROLES.ADMIN) {
+      if (Number(shipment.createdByAdminId) === Number(userId)) {
+        // ok — this admin sent it
+      } else {
+        const seller = await prisma.user.findUnique({
+          where: { id: BigInt(shipment.sellerId) },
+          select: { id: true, parentId: true, locationId: true },
+        });
+        const scope = resolveAdminShopScope({
+          id: userId,
+          role: userRole,
+          locationId,
+        });
+        if (!seller || !isUserInShopScope(seller, scope)) {
+          throw httpError(403, 'Forbidden: You do not have access to this shipment');
+        }
+      }
     } else if (userRole === 'SELLER') {
       if (Number(shipment.sellerId) !== Number(userId)) {
         throw httpError(403, 'Forbidden: You can only view your own shipments');

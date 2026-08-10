@@ -9,15 +9,26 @@ const { prisma } = require('../../config/db');
  */
 class ShopsRepository {
   /**
-   * Fetch all active sellers.
-   * Output: Array of User objects with role 'SELLER' and isActive true
+   * Fetch active sellers.
+   * @param {{ OR?: object[] }|null} [scopeFilter] - e.g. { OR: [{ parentId }, { locationId }] }
    */
-  async findSellers() {
-    return prisma.user.findMany({
-      where: {
-        role: 'SELLER',
-        isActive: true
-      }
+  async findSellers(scopeFilter = null) {
+    const where = {
+      role: 'SELLER',
+      isActive: true,
+    };
+    if (scopeFilter?.OR) {
+      where.OR = scopeFilter.OR;
+    }
+    return prisma.user.findMany({ where });
+  }
+
+  /** Set user's primary location (shop Admin first shop). */
+  async updateUserLocationId(userId, locationId) {
+    return prisma.user.update({
+      where: { id: BigInt(userId) },
+      data: { locationId: BigInt(locationId) },
+      select: { id: true, locationId: true },
     });
   }
 
@@ -57,6 +68,8 @@ class ShopsRepository {
         userNumber: true,
         shopName: true,
         role: true,
+        parentId: true,
+        locationId: true,
         isActive: true,
         isVerified: true,
         employeeRole: {
@@ -78,6 +91,9 @@ class ShopsRepository {
         isActive: true,
         address: true,
         phone: true,
+        latitude: true,
+        longitude: true,
+        allowedRadius: true,
       },
     });
   }

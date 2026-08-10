@@ -77,8 +77,8 @@ class AuthService {
 
   /**
    * Admin (or Super Admin) registers a SELLER.
-   * parent_id = shop Admin when actor is ADMIN; when SA creates seller, parent_id = SA
-   * (prefer linking under Admin once create-admin flow exists in §1).
+   * parent_id = shop Admin when actor is ADMIN; when SA creates seller, parent_id = SA.
+   * Shop Admin: force seller location_id = admin's shop (client location ignored).
    */
   async registerUser({ user_id, username, user_number, shop_name, password, location_id, actor }) {
     // Check constraints sequentially to return specific error messages
@@ -99,7 +99,24 @@ class AuthService {
 
     let locationId = null;
     let resolvedShopName = shop_name;
-    if (location_id != null) {
+
+    // Shop Admin: always own shop (client location_id ignored; location from auth middleware)
+    if (actor?.role === ROLES.ADMIN) {
+      if (actor.locationId == null) {
+        throw httpError(
+          400,
+          'Your account has no shop location. Create or assign a shop before adding sellers.'
+        );
+      }
+      const location = await authRepository.findActiveShopLocation(actor.locationId);
+      if (!location) {
+        throw httpError(400, 'Shop location not found or inactive (must be type SHOP)');
+      }
+      locationId = Number(location.id);
+      if (!resolvedShopName || !String(resolvedShopName).trim()) {
+        resolvedShopName = location.name;
+      }
+    } else if (location_id != null) {
       const location = await authRepository.findActiveShopLocation(location_id);
       if (!location) {
         throw httpError(400, 'Shop location not found or inactive (must be type SHOP)');

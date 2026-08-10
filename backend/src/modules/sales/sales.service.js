@@ -1,7 +1,12 @@
 const salesRepository = require('./sales.repository');
 const { httpError } = require('../../shared/utils/http-error');
 const { parsePagination } = require('../../shared/utils/pagination');
-const { isAdminLikeRole } = require('../../shared/utils/role.util');
+const ROLES = require('../../shared/constants/roles');
+const {
+  resolveAdminShopScope,
+  resolveShopSellerIds,
+} = require('../../shared/utils/shop-scope.util');
+const { prisma } = require('../../config/db');
 
 /**
  * Sales Service
@@ -97,8 +102,12 @@ class SalesService {
    */
   async getSales(user) {
     let sales;
-    if (isAdminLikeRole(user.role)) {
+    if (user.role === ROLES.SUPER_ADMIN) {
       sales = await salesRepository.getAllSales();
+    } else if (user.role === ROLES.ADMIN) {
+      const scope = resolveAdminShopScope(user);
+      const sellerIds = await resolveShopSellerIds(prisma, scope);
+      sales = await salesRepository.getSalesBySellerIds(sellerIds || []);
     } else {
       sales = await salesRepository.getSalesBySeller(user.id);
     }
@@ -107,15 +116,24 @@ class SalesService {
 
   /**
    * Get sale details by transaction ID.
-   * Admin: any. Seller: own only. Employee/others: forbidden.
+   * SA: any. Shop Admin: shop sellers + self. Seller: own only.
    */
   async getSaleById(transactionId, user) {
     const sale = await salesRepository.findSaleById(transactionId);
     if (!sale) {
       throw httpError(404, 'Transaction not found');
     }
-    if (isAdminLikeRole(user?.role)) {
+    if (user?.role === ROLES.SUPER_ADMIN) {
       return this._formatSale(sale);
+    }
+    if (user?.role === ROLES.ADMIN) {
+      const scope = resolveAdminShopScope(user);
+      const sellerIds = await resolveShopSellerIds(prisma, scope);
+      const allowed = new Set((sellerIds || []).map((id) => Number(id)));
+      if (allowed.has(Number(sale.sellerId))) {
+        return this._formatSale(sale);
+      }
+      throw httpError(403, 'Forbidden: You cannot view this sale');
     }
     if (user?.role === 'SELLER' && Number(sale.sellerId) === Number(user.id)) {
       return this._formatSale(sale);
@@ -235,13 +253,21 @@ class SalesService {
   }
 
   /**
-   * Get paginated sales history for Admin — all sellers, with shipment tracing
+   * Get paginated sales history for Admin — SA all shops; shop Admin own shop.
+   * @param {object} query
+   * @param {{ id: number, role: string, locationId?: number|null }} [user]
    */
-  async getAdminSalesHistory(query) {
+  async getAdminSalesHistory(query, user) {
     const { page, limit, skip, take } = parsePagination(query, { defaultLimit: 10 });
     const { search, sellerId, fromDate, toDate, shipmentStatus } = query;
 
     const filters = { search, sellerId, fromDate, toDate, shipmentStatus };
+
+    const scope = resolveAdminShopScope(user || {});
+    if (scope?.kind === 'shop') {
+      const sellerIds = await resolveShopSellerIds(prisma, scope);
+      filters.sellerIds = sellerIds || [];
+    }
 
     const pagination = { skip, take };
 

@@ -3,7 +3,7 @@
 **Role chain:** `SUPER ADMIN → ADMIN → SELLER → EMPLOYEE`  
 One stream at a time. Work **down** the chain.  
 `- [ ]` todo · `- [x]` done.  
-**Next:** §2 Admin (shop).
+**Next:** §4 Employee (create bill).
 
 ```text
 SUPER ADMIN     all WH + shops · stock any WH · adjust any shop · PDF/GPS all · sell/accept
@@ -63,14 +63,14 @@ Shared sell tools (§5) once anyone can sell. Obsidian: `obsidian/FriendsBattery
 
 ## 2. Admin (shop)
 
-- [ ] Scope UI/API: **own shop only** (not all warehouses)  
-- [ ] Add **shop only** — block warehouse create  
-- [ ] View **own** employees + inventory  
-- [ ] Sell battery + accept shipment (shop)  
-- [ ] Manage sellers / employees under this shop  
+- [x] Scope UI/API: **own shop only** (not all warehouses)  
+- [x] Add **shop only** — block warehouse create  
+- [x] View **own** employees + inventory  
+- [x] Sell battery + accept shipment (shop)  
+- [x] Manage sellers / employees under this shop  
 - [ ] Other bill screens for shop (uses §5 types when built)  
-- [ ] Sales PDF — **own shop only**: today / this week / this month  
-- [ ] GPS — own shop employees **when checked in** only  
+- [x] Sales PDF — **own shop only**: today / this week / this month  
+- [x] GPS — own shop employees **when checked in** only  
 
 ---
 
@@ -78,8 +78,8 @@ Shared sell tools (§5) once anyone can sell. Obsidian: `obsidian/FriendsBattery
 
 - [x] Create bill, sales history, returns  
 - [x] Accept shipment  
-- [ ] Re-scope: only **own** inventory / own shop (after §0)  
-- [ ] Staff under seller/shop consistent with Admin chain  
+- [x] Re-scope: only **own** inventory / own shop (after §0)  
+- [x] Staff under seller/shop consistent with Admin chain  
 - [ ] Use shared bill upgrades (§5): validation, WhatsApp, print, variants  
 
 ---

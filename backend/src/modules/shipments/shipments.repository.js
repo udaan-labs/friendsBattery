@@ -48,11 +48,12 @@ class ShipmentsRepository {
     return prisma.$transaction(async (tx) => {
       // 1. Lock units: re-check status inside TX to prevent race
       const unitIds = allUnits.map((u) => u.id);
+      // Must match createShipment lookup: units owned by this actor (SA or shop Admin)
       const locked = await tx.productUnit.findMany({
         where: {
           id: { in: unitIds },
           status: 'AVAILABLE',
-          owner: { role: 'ADMIN' },
+          ownerId: BigInt(adminId),
         },
       });
 
@@ -135,7 +136,7 @@ class ShipmentsRepository {
             where: {
               productId: BigInt(productId),
               status: 'AVAILABLE',
-              owner: { role: 'ADMIN' },
+              ownerId: BigInt(adminId),
             },
           }),
           tx.productUnit.count({
@@ -277,6 +278,45 @@ class ShipmentsRepository {
     });
   }
 
+  /**
+   * Shop Admin: shipments they sent or to their sellers.
+   * @param {number|bigint} adminId
+   * @param {bigint[]} sellerIds
+   */
+  async getShipmentsForShopAdmin(adminId, sellerIds) {
+    const toIds = (sellerIds || []).map((id) => BigInt(id));
+    return prisma.newShipment.findMany({
+      where: {
+        OR: [
+          { createdByAdminId: BigInt(adminId) },
+          ...(toIds.length ? [{ sellerId: { in: toIds } }] : []),
+        ],
+      },
+      include: {
+        seller: {
+          select: {
+            id: true,
+            userName: true,
+            shopName: true,
+          },
+        },
+        items: {
+          include: {
+            product: {
+              include: {
+                productModel: true,
+                productName: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
   async getShipmentById(shipmentId) {
     return prisma.newShipment.findUnique({
       where: {
@@ -329,11 +369,12 @@ class ShipmentsRepository {
 
         if (productUnitIds.length > 0) {
           // Never force SOLD/transferred units back to AVAILABLE under seller
+          const adminOwnerId = updatedShipment.createdByAdminId;
           const locked = await tx.productUnit.findMany({
             where: {
               id: { in: productUnitIds },
               status: 'AVAILABLE',
-              owner: { role: 'ADMIN' },
+              ownerId: adminOwnerId,
             },
             select: { id: true },
           });
@@ -351,7 +392,7 @@ class ShipmentsRepository {
             where: {
               id: { in: lockedIds },
               status: 'AVAILABLE',
-              owner: { role: 'ADMIN' },
+              ownerId: adminOwnerId,
             },
             data: {
               ownerId: BigInt(sellerId),

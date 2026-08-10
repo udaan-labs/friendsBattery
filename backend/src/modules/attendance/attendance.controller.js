@@ -50,7 +50,7 @@ class AttendanceController {
 
   async listCheckedIn(req, res) {
     try {
-      const data = await attendanceService.listCheckedInStaff();
+      const data = await attendanceService.listCheckedInStaff(req.user);
       return successResponse(res, 200, 'Checked-in staff retrieved', data);
     } catch (error) {
       return handleRouteError(res, error, 'Checked-in staff error:');

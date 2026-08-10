@@ -330,11 +330,18 @@ class InventoryService {
   }
 
   /**
-   * Update stock (Admin only).
-   * Input: adminId, payload
-   * Output: updated stock details
+   * Update stock (Admin / Super Admin).
+   * SA: optional location_id (any active location / warehouse).
+   * Shop Admin: always own users.location_id (client location_id ignored).
+   *
+   * @param {number} adminId
+   * @param {object} payload
+   * @param {{ role?: string, locationId?: number|null }} [actor]
    */
-  async updateStock(adminId, { productNameId, productModelId, quantity, minSellPrice, minUnitCountAdmin, minUnitCountSeller, onSale, location_id }) {
+  async updateStock(adminId, { productNameId, productModelId, quantity, minSellPrice, minUnitCountAdmin, minUnitCountSeller, onSale, location_id }, actor = {}) {
+    const role = actor.role;
+    const actorLocationId = actor.locationId != null ? Number(actor.locationId) : null;
+
     // 1. Validate product name existence
     const productName = await prisma.productName.findUnique({
       where: { id: BigInt(productNameId) }
@@ -351,9 +358,21 @@ class InventoryService {
       throw httpError(404, 'Product model not found or does not belong to the selected product name');
     }
 
-    // Optional target location (warehouse preferred for SA “stock any WH”)
+    // Resolve target location (req.user.locationId is DB-fresh each request)
     let resolvedLocationId = null;
-    if (location_id != null) {
+    if (role === 'ADMIN') {
+      if (actorLocationId == null) {
+        throw httpError(400, 'Your account has no shop location. Contact Super Admin before adding stock.');
+      }
+      const loc = await prisma.location.findFirst({
+        where: { id: BigInt(actorLocationId), isActive: true },
+        select: { id: true },
+      });
+      if (!loc) {
+        throw httpError(400, 'Shop location not found or inactive');
+      }
+      resolvedLocationId = loc.id;
+    } else if (location_id != null) {
       const loc = await prisma.location.findFirst({
         where: { id: BigInt(location_id), isActive: true },
         select: { id: true },

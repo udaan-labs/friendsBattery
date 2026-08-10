@@ -4,13 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
 import '../../../../theme/app_theme.dart';
 import '../providers/locations_providers.dart';
 import '../widgets/location_map_picker.dart';
 
-/// Admin create shop or warehouse — same form, type is chosen here.
+/// Create shop or warehouse. Super Admin: either. Shop Admin: shop only.
 class AddLocationScreen extends ConsumerStatefulWidget {
   const AddLocationScreen({super.key, this.initialType = 'SHOP'});
 
@@ -42,6 +43,7 @@ class _AddLocationScreenState extends ConsumerState<AddLocationScreen> {
   @override
   void initState() {
     super.initState();
+    // Default SHOP; SA can switch in UI. Shop Admin always submits SHOP (backend enforces).
     _type = widget.initialType == 'WAREHOUSE' ? 'WAREHOUSE' : 'SHOP';
   }
 
@@ -78,10 +80,13 @@ class _AddLocationScreenState extends ConsumerState<AddLocationScreen> {
 
     setState(() => _submitting = true);
     try {
+      final isSuperAdmin =
+          ref.read(authProvider).role == UserRole.superAdmin;
+      final type = isSuperAdmin ? _type : 'SHOP';
       await ref.read(locationsRepositoryProvider).create(
             code: code,
             name: name,
-            type: _type,
+            type: type,
             address: _addressController.text.trim(),
             phone: _phoneController.text.trim(),
             latitude: _latitude,
@@ -156,33 +161,56 @@ class _AddLocationScreenState extends ConsumerState<AddLocationScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Text(
-                      'Type',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
+                    Builder(
+                      builder: (context) {
+                        final isSuperAdmin =
+                            ref.watch(authProvider).role == UserRole.superAdmin;
+                        if (!isSuperAdmin) {
+                          return const Padding(
+                            padding: EdgeInsets.only(bottom: 20),
+                            child: Text(
+                              'Creating a shop (warehouses are Super Admin only)',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF586377),
+                              ),
+                            ),
+                          );
+                        }
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            const Text(
+                              'Type',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            SegmentedButton<String>(
+                              segments: const [
+                                ButtonSegment(
+                                  value: 'SHOP',
+                                  label: Text('Shop'),
+                                  icon: Icon(Icons.storefront_outlined, size: 18),
+                                ),
+                                ButtonSegment(
+                                  value: 'WAREHOUSE',
+                                  label: Text('Warehouse'),
+                                  icon: Icon(Icons.warehouse_outlined, size: 18),
+                                ),
+                              ],
+                              selected: {_type},
+                              onSelectionChanged: _submitting
+                                  ? null
+                                  : (s) => setState(() => _type = s.first),
+                            ),
+                            const SizedBox(height: 20),
+                          ],
+                        );
+                      },
                     ),
-                    const SizedBox(height: 8),
-                    SegmentedButton<String>(
-                      segments: const [
-                        ButtonSegment(
-                          value: 'SHOP',
-                          label: Text('Shop'),
-                          icon: Icon(Icons.storefront_outlined, size: 18),
-                        ),
-                        ButtonSegment(
-                          value: 'WAREHOUSE',
-                          label: Text('Warehouse'),
-                          icon: Icon(Icons.warehouse_outlined, size: 18),
-                        ),
-                      ],
-                      selected: {_type},
-                      onSelectionChanged: _submitting
-                          ? null
-                          : (s) => setState(() => _type = s.first),
-                    ),
-                    const SizedBox(height: 20),
                     TextField(
                       controller: _codeController,
                       enabled: !_submitting,

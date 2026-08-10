@@ -1,6 +1,11 @@
 const returnsRepository = require('./returns.repository');
 const { httpError } = require('../../shared/utils/http-error');
-const { isAdminLikeRole } = require('../../shared/utils/role.util');
+const ROLES = require('../../shared/constants/roles');
+const {
+  resolveAdminShopScope,
+  resolveShopSellerIds,
+} = require('../../shared/utils/shop-scope.util');
+const { prisma } = require('../../config/db');
 
 class ReturnsService {
   /**
@@ -61,16 +66,24 @@ class ReturnsService {
   }
 
   /**
-   * Get return history based on user role
+   * Get return history based on user role.
+   * SA: all · shop Admin: own shop sellers · Seller: own only
    */
   async getReturns(user) {
     const where = {};
-    
-    // If not Admin / Super Admin, filter by user's own returns
-    if (!isAdminLikeRole(user.role)) {
+
+    if (user.role === ROLES.SUPER_ADMIN) {
+      // all
+    } else if (user.role === ROLES.ADMIN) {
+      const scope = resolveAdminShopScope(user);
+      const sellerIds = await resolveShopSellerIds(prisma, scope);
+      where.returnById = {
+        in: (sellerIds || []).map((id) => BigInt(id)),
+      };
+    } else {
       where.returnById = user.id;
     }
-    
+
     const returns = await returnsRepository.getReturns(where);
     
     // Serialize BigInt to string

@@ -3,6 +3,11 @@ const shopsRepository = require('./shops.repository');
 const authRepository = require('../auth/auth.repository');
 const ROLES = require('../../shared/constants/roles');
 const { httpError } = require('../../shared/utils/http-error');
+const {
+  resolveAdminShopScope,
+  sellerWhereForShopScope,
+  isUserInShopScope,
+} = require('../../shared/utils/shop-scope.util');
 
 /**
  * Shops Service
@@ -56,11 +61,15 @@ class ShopsService {
     };
   }
   /**
-   * Fetch all active sellers.
-   * Output: Array of sellers mapped to response format
+   * Fetch active sellers (SA: all · shop Admin: parent or same location).
+   * @param {{ id: number, role: string, locationId?: number|null }} [actor]
    */
-  async getSellers() {
-    const sellers = await shopsRepository.findSellers();
+  async getSellers(actor) {
+    const scope = resolveAdminShopScope(actor || {});
+    const sellerWhere = sellerWhereForShopScope(scope);
+    const sellers = await shopsRepository.findSellers(
+      sellerWhere?.OR ? { OR: sellerWhere.OR } : null
+    );
     const dashboardRepository = require('../dashboard/dashboard.repository');
 
     // Fetch low stock sellers efficiently
@@ -97,10 +106,11 @@ class ShopsService {
 
   /**
    * Fetch details of a single seller.
-   * Input: sellerId
-   * Output: Seller details mapped to response format
+   * @param {number} sellerId
+   * @param {boolean} includeOutOfStock
+   * @param {{ id: number, role: string, locationId?: number|null }} [actor]
    */
-  async viewSeller(sellerId, includeOutOfStock = false) {
+  async viewSeller(sellerId, includeOutOfStock = false, actor) {
     const inventoryService = require('../inventory/inventory.service');
     // We use Promise.all() to execute independent database queries in parallel.
     // This reduces the total response time instead of waiting for each query sequentially.
@@ -122,6 +132,11 @@ class ShopsService {
 
     if (!user) {
       throw httpError(404, 'Seller not found');
+    }
+
+    const scope = resolveAdminShopScope(actor || {});
+    if (scope?.kind === 'shop' && !isUserInShopScope(user, scope)) {
+      throw httpError(403, 'Forbidden: seller is not under your shop');
     }
 
     return {
@@ -155,11 +170,18 @@ class ShopsService {
   /**
    * Sellers + employees at the same shop location as this seller.
    * Admin: see who works at this shop.
+   * @param {number} sellerId
+   * @param {{ id: number, role: string, locationId?: number|null }} [actor]
    */
-  async getShopStaffBySellerId(sellerId) {
+  async getShopStaffBySellerId(sellerId, actor) {
     const seller = await shopsRepository.findSellerById(sellerId);
     if (!seller) {
       throw httpError(404, 'Seller not found');
+    }
+
+    const scope = resolveAdminShopScope(actor || {});
+    if (scope?.kind === 'shop' && !isUserInShopScope(seller, scope)) {
+      throw httpError(403, 'Forbidden: seller is not under your shop');
     }
 
     if (seller.locationId == null) {
@@ -174,7 +196,8 @@ class ShopsService {
   }
 
   /**
-   * Seller: staff at own assigned shop location.
+   * Seller: staff at own shop location, Admin-chain only.
+   * Employees/sellers under same parent Admin (or seller if no parent).
    * @param {number} sellerUserId - numeric users.id from JWT/auth
    */
   async getMyStaff(sellerUserId) {
@@ -189,11 +212,49 @@ class ShopsService {
         employees: [],
       };
     }
-    return this._staffAtLocation(Number(seller.locationId));
+
+    const locationId = Number(seller.locationId);
+    const chainRootId =
+      seller.parentId != null ? Number(seller.parentId) : Number(seller.id);
+
+    const [location, users] = await Promise.all([
+      shopsRepository.findLocationById(locationId),
+      shopsRepository.findUsersByLocationId(locationId),
+    ]);
+
+    const inChain = (u) => {
+      const parentId = u.parentId != null ? Number(u.parentId) : null;
+      if (Number(u.id) === Number(seller.id)) return true;
+      if (parentId === chainRootId) return true;
+      if (parentId === Number(seller.id)) return true;
+      return false;
+    };
+    const scoped = users.filter(inChain);
+
+    return {
+      location: this._mapLocationBrief(location),
+      sellers: scoped
+        .filter((u) => u.role === 'SELLER')
+        .map((u) => this._mapStaffUser(u)),
+      employees: scoped
+        .filter((u) => u.role === 'EMPLOYEE')
+        .map((u) => this._mapStaffUser(u)),
+    };
   }
 
-  /** Admin: sellers + employees assigned to a shop/warehouse. */
-  async getStaffByLocationId(locationId) {
+  /**
+   * Admin: sellers + employees assigned to a shop/warehouse.
+   * Shop Admin: only own shop location.
+   * @param {number} locationId
+   * @param {{ id: number, role: string, locationId?: number|null }} [actor]
+   */
+  async getStaffByLocationId(locationId, actor) {
+    const scope = resolveAdminShopScope(actor || {});
+    if (scope?.kind === 'shop') {
+      if (scope.locationId == null || Number(locationId) !== Number(scope.locationId)) {
+        throw httpError(403, 'Forbidden: not your shop location');
+      }
+    }
     const data = await this._staffAtLocation(Number(locationId));
     if (!data.location) {
       throw httpError(404, 'Location not found');
@@ -211,9 +272,20 @@ class ShopsService {
   }
 
   /**
+   * SA: all active locations. Shop Admin: own SHOP only.
    * @param {{ type?: 'SHOP'|'WAREHOUSE' }} [filter]
+   * @param {{ id: number, role: string, locationId?: number|null }} [actor]
    */
-  async listLocations(filter = {}) {
+  async listLocations(filter = {}, actor) {
+    const scope = resolveAdminShopScope(actor || {});
+    if (scope?.kind === 'shop') {
+      if (scope.locationId == null) return [];
+      if (filter.type === 'WAREHOUSE') return [];
+      const loc = await shopsRepository.findLocationById(scope.locationId);
+      if (!loc || loc.isActive === false) return [];
+      if (loc.type !== 'SHOP') return [];
+      return [this._mapLocationItem(loc)];
+    }
     const rows = await shopsRepository.findActiveLocations(filter);
     return rows.map((loc) => this._mapLocationItem(loc));
   }
@@ -234,8 +306,29 @@ class ShopsService {
     };
   }
 
-  /** Admin create SHOP/WAREHOUSE. Optional lat/lng = attendance geofence. */
-  async createLocation(body) {
+  /**
+   * Create location.
+   * SA: SHOP or WAREHOUSE. Shop Admin: SHOP only; one primary shop via location_id.
+   * @param {object} body
+   * @param {{ id: number, role: string, locationId?: number|null }} [actor]
+   */
+  async createLocation(body, actor) {
+    const scope = resolveAdminShopScope(actor || {});
+    let type = body.type;
+
+    if (scope?.kind === 'shop') {
+      if (type === 'WAREHOUSE') {
+        throw httpError(403, 'Shop Admin can only create shops, not warehouses');
+      }
+      type = 'SHOP';
+      if (scope.locationId != null) {
+        throw httpError(
+          400,
+          'You already have a shop. Super Admin can create additional shops.'
+        );
+      }
+    }
+
     const code = body.code;
     const existing = await shopsRepository.findLocationByCode(code);
     if (existing) {
@@ -250,7 +343,7 @@ class ShopsService {
     const created = await shopsRepository.createLocation({
       code,
       name: body.name,
-      type: body.type,
+      type,
       address: body.address ?? null,
       phone: body.phone ?? null,
       latitude: hasGeo ? lat : null,
@@ -258,6 +351,11 @@ class ShopsService {
       allowedRadius:
         body.allowed_radius != null ? Number(body.allowed_radius) : undefined,
     });
+
+    // First shop for Admin → bind users.location_id
+    if (scope?.kind === 'shop' && scope.locationId == null && actor?.id != null) {
+      await shopsRepository.updateUserLocationId(actor.id, created.id);
+    }
 
     return this._mapLocationItem(created);
   }
@@ -299,17 +397,32 @@ class ShopsService {
       // EMPLOYEE → Admin chain: prefer seller's parent Admin, else seller
       parentId = seller.parentId != null ? Number(seller.parentId) : Number(seller.id);
     } else if (actor.role === ROLES.ADMIN || actor.role === ROLES.SUPER_ADMIN) {
-      if (location_id == null) {
-        throw httpError(400, 'location_id is required');
+      // Shop Admin: force own shop location (client location_id ignored)
+      if (actor.role === ROLES.ADMIN) {
+        const admin = await shopsRepository.findUserById(actor.id);
+        if (!admin || admin.locationId == null) {
+          throw httpError(
+            400,
+            'Your account has no shop location. Create or assign a shop before adding employees.'
+          );
+        }
+        locationId = Number(admin.locationId);
+        const location = await shopsRepository.findLocationById(locationId);
+        shopName = location?.name || admin.shopName || null;
+        parentId = Number(actor.id);
+      } else {
+        if (location_id == null) {
+          throw httpError(400, 'location_id is required');
+        }
+        const location = await shopsRepository.findLocationById(location_id);
+        if (!location || location.isActive === false) {
+          throw httpError(400, 'Location not found or inactive');
+        }
+        locationId = Number(location.id);
+        shopName = location.name;
+        // EMPLOYEE → SA (until under a shop Admin)
+        parentId = Number(actor.id);
       }
-      const location = await shopsRepository.findLocationById(location_id);
-      if (!location || location.isActive === false) {
-        throw httpError(400, 'Location not found or inactive');
-      }
-      locationId = Number(location.id);
-      shopName = location.name;
-      // EMPLOYEE → Admin (when SA creates, parent is SA until shop Admin exists)
-      parentId = Number(actor.id);
     } else {
       throw httpError(403, 'Forbidden');
     }
@@ -361,12 +474,20 @@ class ShopsService {
   /**
    * Admin: view one employee + only employee actions (check-in / check-out).
    * No sales, shipments, inventory, seller stats.
+   * @param {number} employeeId
+   * @param {{ limit?: number }} [opts]
+   * @param {{ id: number, role: string, locationId?: number|null }} [actor]
    */
-  async viewEmployee(employeeId, { limit = 50 } = {}) {
+  async viewEmployee(employeeId, { limit = 50 } = {}, actor) {
     const attendanceRepository = require('../attendance/attendance.repository');
     const user = await shopsRepository.findEmployeeById(employeeId);
     if (!user) {
       throw httpError(404, 'Employee not found');
+    }
+
+    const scope = resolveAdminShopScope(actor || {});
+    if (scope?.kind === 'shop' && !isUserInShopScope(user, scope)) {
+      throw httpError(403, 'Forbidden: employee is not under your shop');
     }
 
     const [open, history] = await Promise.all([

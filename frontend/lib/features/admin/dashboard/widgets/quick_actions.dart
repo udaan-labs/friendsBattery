@@ -41,8 +41,10 @@ class QuickActions extends ConsumerWidget {
         route: '/admin/sellers',
       ),
       _ActionItemData(
-        title: 'Locations',
-        subtitle: 'Shops & warehouses · add / search',
+        title: isSuperAdmin ? 'Locations' : 'My shop',
+        subtitle: isSuperAdmin
+            ? 'Shops & warehouses · add / search'
+            : 'View or add your shop',
         icon: Icons.location_city_outlined,
         route: '/admin/locations',
       ),

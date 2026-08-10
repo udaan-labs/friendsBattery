@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../theme/app_theme.dart';
+import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 import '../../../../core/state/data_sync.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
@@ -60,12 +61,15 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
           ? num.parse(_minPriceController.text)
           : null;
 
+      final isSuperAdmin =
+          ref.read(authProvider).role == UserRole.superAdmin;
       await repo.updateStock(
         productNameId: int.parse(_selectedProductNameId!),
         productModelId: int.parse(_selectedProductModelId!),
         quantity: quantity,
         minSellPrice: minPrice,
-        locationId: _selectedWarehouseId,
+        // Shop Admin: omit — backend forces own shop location
+        locationId: isSuperAdmin ? _selectedWarehouseId : null,
       );
 
       if (mounted) {
@@ -90,8 +94,11 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isSuperAdmin = ref.watch(authProvider).role == UserRole.superAdmin;
     final namesAsync = ref.watch(productNamesProvider);
-    final warehousesAsync = ref.watch(locationsByTypeProvider('WAREHOUSE'));
+    final warehousesAsync = isSuperAdmin
+        ? ref.watch(locationsByTypeProvider('WAREHOUSE'))
+        : null;
     final selectedNameId = int.tryParse(_selectedProductNameId ?? '');
     final modelsAsync = selectedNameId == null
         ? null
@@ -314,93 +321,96 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
                             const SizedBox(height: 20),
                           ],
 
-                          const Text(
-                            'Warehouse',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                          ),
-                          const SizedBox(height: 8),
-                          warehousesAsync.when(
-                            loading: () => const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 12),
-                              child: Center(
-                                child: SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                          // Super Admin: pick any warehouse. Shop Admin: API uses own shop.
+                          if (isSuperAdmin && warehousesAsync != null) ...[
+                            const Text(
+                              'Warehouse',
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
+                            ),
+                            const SizedBox(height: 8),
+                            warehousesAsync.when(
+                              loading: () => const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 12),
+                                child: Center(
+                                  child: SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  ),
                                 ),
                               ),
-                            ),
-                            error: (_, __) => TextButton(
-                              onPressed: () =>
-                                  ref.invalidate(locationsByTypeProvider('WAREHOUSE')),
-                              child: const Text('Failed to load warehouses. Retry'),
-                            ),
-                            data: (warehouses) {
-                              if (warehouses.isEmpty) {
-                                return TextFormField(
-                                  enabled: false,
+                              error: (_, __) => TextButton(
+                                onPressed: () =>
+                                    ref.invalidate(locationsByTypeProvider('WAREHOUSE')),
+                                child: const Text('Failed to load warehouses. Retry'),
+                              ),
+                              data: (warehouses) {
+                                if (warehouses.isEmpty) {
+                                  return TextFormField(
+                                    enabled: false,
+                                    decoration: InputDecoration(
+                                      contentPadding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 12),
+                                      hintText:
+                                          'No warehouses yet — default WH used if configured',
+                                      border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8)),
+                                      filled: true,
+                                      fillColor: Colors.grey.shade100,
+                                    ),
+                                  );
+                                }
+                                // Auto-select single warehouse once
+                                if (_selectedWarehouseId == null &&
+                                    warehouses.length == 1 &&
+                                    warehouses.first.id != null) {
+                                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                                    if (mounted && _selectedWarehouseId == null) {
+                                      setState(() =>
+                                          _selectedWarehouseId = warehouses.first.id);
+                                    }
+                                  });
+                                }
+                                return DropdownButtonFormField<int>(
+                                  isExpanded: true,
+                                  value: _selectedWarehouseId != null &&
+                                          warehouses.any((w) => w.id == _selectedWarehouseId)
+                                      ? _selectedWarehouseId
+                                      : null,
                                   decoration: InputDecoration(
                                     contentPadding: const EdgeInsets.symmetric(
                                         horizontal: 16, vertical: 12),
-                                    hintText:
-                                        'No warehouses yet — default WH used if configured',
                                     border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8)),
                                     filled: true,
-                                    fillColor: Colors.grey.shade100,
+                                    fillColor: Colors.white,
                                   ),
-                                );
-                              }
-                              // Auto-select single warehouse once
-                              if (_selectedWarehouseId == null &&
-                                  warehouses.length == 1 &&
-                                  warehouses.first.id != null) {
-                                WidgetsBinding.instance.addPostFrameCallback((_) {
-                                  if (mounted && _selectedWarehouseId == null) {
-                                    setState(() =>
-                                        _selectedWarehouseId = warehouses.first.id);
-                                  }
-                                });
-                              }
-                              return DropdownButtonFormField<int>(
-                                isExpanded: true,
-                                value: _selectedWarehouseId != null &&
-                                        warehouses.any((w) => w.id == _selectedWarehouseId)
-                                    ? _selectedWarehouseId
-                                    : null,
-                                decoration: InputDecoration(
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 12),
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8)),
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                ),
-                                hint: const Text('Select warehouse'),
-                                items: warehouses
-                                    .where((w) => w.id != null)
-                                    .map(
-                                      (w) => DropdownMenuItem(
-                                        value: w.id,
-                                        child: Text(
-                                          '${w.name ?? w.code ?? 'WH'} (${w.code ?? w.id})',
-                                          overflow: TextOverflow.ellipsis,
+                                  hint: const Text('Select warehouse'),
+                                  items: warehouses
+                                      .where((w) => w.id != null)
+                                      .map(
+                                        (w) => DropdownMenuItem(
+                                          value: w.id,
+                                          child: Text(
+                                            '${w.name ?? w.code ?? 'WH'} (${w.code ?? w.id})',
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                         ),
-                                      ),
-                                    )
-                                    .toList(),
-                                onChanged: (id) =>
-                                    setState(() => _selectedWarehouseId = id),
-                                validator: (value) {
-                                  if (warehouses.isNotEmpty && value == null) {
-                                    return 'Please select a warehouse';
-                                  }
-                                  return null;
-                                },
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 20),
+                                      )
+                                      .toList(),
+                                  onChanged: (id) =>
+                                      setState(() => _selectedWarehouseId = id),
+                                  validator: (value) {
+                                    if (warehouses.isNotEmpty && value == null) {
+                                      return 'Please select a warehouse';
+                                    }
+                                    return null;
+                                  },
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 20),
+                          ],
 
                           const Text(
                             'Quantity',

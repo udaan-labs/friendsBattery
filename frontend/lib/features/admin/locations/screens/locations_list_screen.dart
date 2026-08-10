@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/utils/app_formatters.dart';
 import '../../../../theme/app_theme.dart';
 import '../providers/locations_providers.dart';
 
-/// Admin list of shops + warehouses (same API, different `type`).
+/// Locations list. SA: shops + warehouses. Shop Admin: own shop only (API-scoped).
 class LocationsListScreen extends ConsumerStatefulWidget {
   const LocationsListScreen({super.key});
 
@@ -50,6 +51,7 @@ class _LocationsListScreenState extends ConsumerState<LocationsListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isSuperAdmin = ref.watch(authProvider).role == UserRole.superAdmin;
     final async = ref.watch(allLocationsProvider);
 
     return Scaffold(
@@ -67,9 +69,9 @@ class _LocationsListScreenState extends ConsumerState<LocationsListScreen> {
             }
           },
         ),
-        title: const Text(
-          'Locations',
-          style: TextStyle(
+        title: Text(
+          isSuperAdmin ? 'Locations' : 'My shop',
+          style: const TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.bold,
           ),
@@ -121,41 +123,44 @@ class _LocationsListScreenState extends ConsumerState<LocationsListScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                _TypeChip(
-                  label: 'All',
-                  selected: _typeFilter == null,
-                  onTap: () => setState(() => _typeFilter = null),
-                ),
-                const SizedBox(width: 8),
-                _TypeChip(
-                  label: 'Shops',
-                  selected: _typeFilter == 'SHOP',
-                  onTap: () => setState(() => _typeFilter = 'SHOP'),
-                ),
-                const SizedBox(width: 8),
-                _TypeChip(
-                  label: 'Warehouses',
-                  selected: _typeFilter == 'WAREHOUSE',
-                  onTap: () => setState(() => _typeFilter = 'WAREHOUSE'),
-                ),
-              ],
+          if (isSuperAdmin) ...[
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  _TypeChip(
+                    label: 'All',
+                    selected: _typeFilter == null,
+                    onTap: () => setState(() => _typeFilter = null),
+                  ),
+                  const SizedBox(width: 8),
+                  _TypeChip(
+                    label: 'Shops',
+                    selected: _typeFilter == 'SHOP',
+                    onTap: () => setState(() => _typeFilter = 'SHOP'),
+                  ),
+                  const SizedBox(width: 8),
+                  _TypeChip(
+                    label: 'Warehouses',
+                    selected: _typeFilter == 'WAREHOUSE',
+                    onTap: () => setState(() => _typeFilter = 'WAREHOUSE'),
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
           const SizedBox(height: 8),
           Expanded(
             child: async.when(
               data: (rows) {
                 final filtered = _filter(rows);
                 if (rows.isEmpty) {
-                  return const _EmptyState(
-                    title: 'No locations yet',
-                    subtitle:
-                        'Add a shop or warehouse. Same form — pick the type.',
+                  return _EmptyState(
+                    title: isSuperAdmin ? 'No locations yet' : 'No shop yet',
+                    subtitle: isSuperAdmin
+                        ? 'Add a shop or warehouse. Same form — pick the type.'
+                        : 'Add your shop to get started.',
                   );
                 }
                 if (filtered.isEmpty) {

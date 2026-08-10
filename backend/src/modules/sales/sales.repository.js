@@ -159,6 +159,28 @@ class SalesRepository {
   }
 
   /**
+   * Fetch sales for multiple sellers (shop Admin scope).
+   * @param {bigint[]|number[]} sellerIds
+   */
+  async getSalesBySellerIds(sellerIds) {
+    if (!sellerIds || sellerIds.length === 0) return [];
+    return prisma.salesTransaction.findMany({
+      where: { sellerId: { in: sellerIds.map((id) => BigInt(id)) } },
+      include: {
+        customer: true,
+        seller: { select: { id: true, userName: true, shopName: true } },
+        product: {
+          include: {
+            productName: true,
+            productModel: true
+          }
+        }
+      },
+      orderBy: { soldAt: 'desc' }
+    });
+  }
+
+  /**
    * Fetch a single sale by its ID
    */
   async findSaleById(transactionId) {
@@ -269,12 +291,19 @@ class SalesRepository {
    * Build WHERE clause for admin sales history queries
    */
   _buildAdminWhereClause(filters) {
-    const { search, sellerId, fromDate, toDate, shipmentStatus } = filters;
+    const { search, sellerId, sellerIds, fromDate, toDate, shipmentStatus } = filters;
 
     const where = {};
 
     if (sellerId) {
       where.sellerId = BigInt(sellerId);
+    } else if (sellerIds && Array.isArray(sellerIds)) {
+      if (sellerIds.length === 0) {
+        // No sellers in shop → empty result
+        where.sellerId = { in: [] };
+      } else {
+        where.sellerId = { in: sellerIds.map((id) => BigInt(id)) };
+      }
     }
 
     if (fromDate && toDate) {

@@ -87,6 +87,28 @@ class TransfersRepository {
   }
 
   /**
+   * Shipments for shop Admin: sent by admin or received by shop sellers.
+   * @param {number|bigint} adminId
+   * @param {bigint[]} sellerIds
+   */
+  async getShipmentsForShopAdmin(adminId, sellerIds) {
+    const toIds = (sellerIds || []).map((id) => BigInt(id));
+    return prisma.shipment.findMany({
+      where: {
+        OR: [
+          { fromUserId: BigInt(adminId) },
+          ...(toIds.length ? [{ toUserId: { in: toIds } }] : []),
+        ],
+      },
+      include: {
+        fromUser: { select: { id: true, userName: true, shopName: true } },
+        toUser: { select: { id: true, userName: true, shopName: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
    * Fetch shipments for a specific seller (where they are the receiver)
    * Input: sellerId
    * Output: Array of shipments assigned to the seller

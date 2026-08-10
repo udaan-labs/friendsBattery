@@ -1,6 +1,12 @@
 const transfersRepository = require('./transfers.repository');
 const { httpError } = require('../../shared/utils/http-error');
-const { isAdminLikeRole } = require('../../shared/utils/role.util');
+const ROLES = require('../../shared/constants/roles');
+const {
+  resolveAdminShopScope,
+  resolveShopSellerIds,
+  isUserInShopScope,
+} = require('../../shared/utils/shop-scope.util');
+const { prisma } = require('../../config/db');
 
 /**
  * Transfers Service
@@ -23,11 +29,19 @@ class TransfersService {
    * Input: data (request body), adminId (authenticated admin user ID)
    * Output: Created shipment summary
    */
-  async createTransfer(data, adminId) {
+  async createTransfer(data, adminId, actor = null) {
     // 1. Validate seller exists
     const seller = await transfersRepository.findSellerById(data.seller_id);
     if (!seller) {
       throw httpError(404, 'Seller not found');
+    }
+
+    // Shop Admin: only ship to own sellers
+    if (actor?.role === ROLES.ADMIN) {
+      const scope = resolveAdminShopScope(actor);
+      if (!isUserInShopScope(seller, scope)) {
+        throw httpError(403, 'Forbidden: seller is not under your shop');
+      }
     }
 
     // 2. Validate each product and check admin inventory
@@ -95,8 +109,19 @@ class TransfersService {
   async getTransfers(user) {
     let shipments;
 
-    if (isAdminLikeRole(user.role)) {
+    if (user.role === ROLES.SUPER_ADMIN) {
       shipments = await transfersRepository.getAllShipments();
+    } else if (user.role === ROLES.ADMIN) {
+      const scope = resolveAdminShopScope(user);
+      const sellerIds = await resolveShopSellerIds(prisma, scope);
+      // exclude admin self-id from "to" sellers for filter (still in list for fromUser)
+      const pureSellers = (sellerIds || []).filter(
+        (id) => Number(id) !== Number(user.id)
+      );
+      shipments = await transfersRepository.getShipmentsForShopAdmin(
+        user.id,
+        pureSellers
+      );
     } else if (user.role === 'SELLER') {
       shipments = await transfersRepository.getShipmentsBySeller(user.id);
     } else {
@@ -133,8 +158,21 @@ class TransfersService {
       throw httpError(404, 'Shipment not found');
     }
 
-    if (isAdminLikeRole(user.role)) {
+    if (user.role === ROLES.SUPER_ADMIN) {
       // ok
+    } else if (user.role === ROLES.ADMIN) {
+      if (Number(shipment.fromUserId) === Number(user.id)) {
+        // ok — sent by this admin
+      } else {
+        const toUser = await prisma.user.findUnique({
+          where: { id: BigInt(shipment.toUserId) },
+          select: { id: true, parentId: true, locationId: true },
+        });
+        const scope = resolveAdminShopScope(user);
+        if (!toUser || !isUserInShopScope(toUser, scope)) {
+          throw httpError(403, 'Forbidden: You do not have access to this shipment');
+        }
+      }
     } else if (user.role === 'SELLER' && Number(shipment.toUserId) === Number(user.id)) {
       // ok
     } else {

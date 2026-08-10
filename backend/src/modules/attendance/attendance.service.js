@@ -1,6 +1,11 @@
 const attendanceRepository = require('./attendance.repository');
+const { prisma } = require('../../config/db');
 const { distanceMeters, normalizeGeoBody } = require('../../shared/utils/geo.util');
 const { httpError } = require('../../shared/utils/http-error');
+const {
+  resolveAdminShopScope,
+  staffUserWhereForShopScope,
+} = require('../../shared/utils/shop-scope.util');
 
 function fail(message, statusCode, meta) {
   throw httpError(statusCode, message, meta);
@@ -198,9 +203,24 @@ class AttendanceService {
     return mapAttendance(row);
   }
 
-  /** Admin / Super Admin: all currently checked-in staff with last check-in GPS. */
-  async listCheckedInStaff() {
-    const rows = await attendanceRepository.findAllOpenAttendances();
+  /**
+   * Admin / Super Admin: currently checked-in staff with last check-in GPS.
+   * SA: all. Shop Admin: employees under parent_id or same location_id.
+   * @param {{ id: number, role: string, locationId?: number|null }} [user]
+   */
+  async listCheckedInStaff(user) {
+    const scope = resolveAdminShopScope(user || {});
+    let scopeFilter = null;
+    if (scope?.kind === 'shop') {
+      const staffWhere = staffUserWhereForShopScope(scope);
+      const staff = await prisma.user.findMany({
+        where: staffWhere,
+        select: { id: true },
+      });
+      scopeFilter = { employeeIds: staff.map((s) => s.id) };
+    }
+
+    const rows = await attendanceRepository.findAllOpenAttendances(scopeFilter);
     return rows.map(mapCheckedInStaff).filter(Boolean);
   }
 }

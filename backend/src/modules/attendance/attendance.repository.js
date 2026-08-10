@@ -33,13 +33,23 @@ class AttendanceRepository {
     });
   }
 
-  /** All open check-ins (SA / Admin live staff view). */
-  async findAllOpenAttendances() {
+  /**
+   * Open check-ins (SA: all · shop Admin: filter by employee parent/location).
+   * @param {{ employeeIds?: bigint[] }|null} [scopeFilter]
+   */
+  async findAllOpenAttendances(scopeFilter = null) {
+    const where = {
+      status: 'CHECKED_IN',
+      checkOutTime: null,
+    };
+    if (scopeFilter?.employeeIds) {
+      if (scopeFilter.employeeIds.length === 0) {
+        return [];
+      }
+      where.employeeId = { in: scopeFilter.employeeIds };
+    }
     return prisma.employeeAttendance.findMany({
-      where: {
-        status: 'CHECKED_IN',
-        checkOutTime: null,
-      },
+      where,
       include: {
         assignedLocation: { select: LOCATION_SELECT },
         employee: {
@@ -50,6 +60,7 @@ class AttendanceRepository {
             shopName: true,
             role: true,
             locationId: true,
+            parentId: true,
           },
         },
       },
