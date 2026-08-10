@@ -18,6 +18,7 @@ part 'update_stock_result.g.dart';
 /// * [minUnitCountAdmin] 
 /// * [minUnitCountSeller] 
 /// * [onSale] 
+/// * [locationId] 
 @BuiltValue()
 abstract class UpdateStockResult implements Built<UpdateStockResult, UpdateStockResultBuilder> {
   @BuiltValueField(wireName: r'productNameId')
@@ -40,6 +41,9 @@ abstract class UpdateStockResult implements Built<UpdateStockResult, UpdateStock
 
   @BuiltValueField(wireName: r'onSale')
   bool? get onSale;
+
+  @BuiltValueField(wireName: r'location_id')
+  int? get locationId;
 
   UpdateStockResult._();
 
@@ -113,6 +117,13 @@ class _$UpdateStockResultSerializer implements PrimitiveSerializer<UpdateStockRe
         specifiedType: const FullType(bool),
       );
     }
+    if (object.locationId != null) {
+      yield r'location_id';
+      yield serializers.serialize(
+        object.locationId,
+        specifiedType: const FullType.nullable(int),
+      );
+    }
   }
 
   @override
@@ -184,6 +195,14 @@ class _$UpdateStockResultSerializer implements PrimitiveSerializer<UpdateStockRe
             specifiedType: const FullType(bool),
           ) as bool;
           result.onSale = valueDes;
+          break;
+        case r'location_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
+          if (valueDes == null) continue;
+          result.locationId = valueDes;
           break;
         default:
           unhandled.add(key);

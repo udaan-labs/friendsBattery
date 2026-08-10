@@ -108,6 +108,36 @@ class AuthRepository {
     }
   }
 
+  /// Super Admin creates a shop Admin (active + verified).
+  Future<void> registerAdmin({
+    required String userId,
+    required String username,
+    required String userNumber,
+    required String shopName,
+    required String password,
+    int? locationId,
+  }) async {
+    final request = (ApiAuthRegisterPostRequestBuilder()
+          ..userId = userId
+          ..username = username
+          ..userNumber = userNumber
+          ..shopName = shopName
+          ..password = password
+          ..locationId = locationId)
+        .build();
+
+    try {
+      final response = await api.apiAuthRegisterAdminPost(
+        apiAuthRegisterPostRequest: request,
+      );
+      if (response.data?.success == false) {
+        throw Exception(response.data?.message ?? 'Create admin failed');
+      }
+    } catch (e) {
+      throw Exception(_authError(e, 'Create admin failed'));
+    }
+  }
+
   static String _authError(Object e, String fallback) {
     if (e is DioException) {
       final data = e.response?.data;

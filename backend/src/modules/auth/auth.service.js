@@ -8,6 +8,74 @@ const { httpError } = require('../../shared/utils/http-error');
 
 class AuthService {
   /**
+   * Super Admin only: create a shop ADMIN under this SA.
+   * parent_id = SA; optional SHOP location; active + verified (ready to log in).
+   */
+  async registerAdmin({ user_id, username, user_number, shop_name, password, location_id, actor }) {
+    if (!actor || actor.role !== ROLES.SUPER_ADMIN) {
+      throw httpError(403, 'Only Super Admin can create shop Admins');
+    }
+
+    const existingUserId = await authRepository.findUserByUserId(user_id);
+    if (existingUserId) {
+      throw httpError(409, 'User ID already exists');
+    }
+
+    const existingUsername = await authRepository.findUserByUsername(username);
+    if (existingUsername) {
+      throw httpError(409, 'Username already exists');
+    }
+
+    const existingUserNumber = await authRepository.findUserByNumber(user_number);
+    if (existingUserNumber) {
+      throw httpError(409, 'Mobile number already exists');
+    }
+
+    let locationId = null;
+    let resolvedShopName = shop_name;
+    if (location_id != null) {
+      const location = await authRepository.findActiveShopLocation(location_id);
+      if (!location) {
+        throw httpError(400, 'Shop location not found or inactive (must be type SHOP)');
+      }
+      locationId = Number(location.id);
+      if (!resolvedShopName || !String(resolvedShopName).trim()) {
+        resolvedShopName = location.name;
+      }
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const newUser = await authRepository.createUser({
+      userId: user_id,
+      userName: username,
+      userNumber: user_number,
+      shopName: resolvedShopName,
+      passwordHash,
+      role: ROLES.ADMIN,
+      locationId: locationId != null ? BigInt(locationId) : null,
+      parentId: actor.id != null ? BigInt(actor.id) : null,
+      isActive: true,
+      isVerified: true,
+      loginAttempt: 0,
+    });
+
+    return {
+      id: Number(newUser.id),
+      user_id: newUser.userId,
+      username: newUser.userName,
+      user_number: newUser.userNumber,
+      shop_name: newUser.shopName,
+      location_id: newUser.locationId != null ? Number(newUser.locationId) : null,
+      parent_id: newUser.parentId != null ? Number(newUser.parentId) : null,
+      role: 'admin',
+      is_active: newUser.isActive,
+      is_verified: newUser.isVerified,
+      created_at: newUser.createdAt,
+    };
+  }
+
+  /**
    * Admin (or Super Admin) registers a SELLER.
    * parent_id = shop Admin when actor is ADMIN; when SA creates seller, parent_id = SA
    * (prefer linking under Admin once create-admin flow exists in §1).

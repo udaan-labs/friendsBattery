@@ -33,6 +33,30 @@ class AttendanceRepository {
     });
   }
 
+  /** All open check-ins (SA / Admin live staff view). */
+  async findAllOpenAttendances() {
+    return prisma.employeeAttendance.findMany({
+      where: {
+        status: 'CHECKED_IN',
+        checkOutTime: null,
+      },
+      include: {
+        assignedLocation: { select: LOCATION_SELECT },
+        employee: {
+          select: {
+            id: true,
+            userName: true,
+            userNumber: true,
+            shopName: true,
+            role: true,
+            locationId: true,
+          },
+        },
+      },
+      orderBy: { checkInTime: 'desc' },
+    });
+  }
+
   async createCheckIn({ employeeId, assignedLocationId, lat, lng, address }) {
     return prisma.employeeAttendance.create({
       data: {

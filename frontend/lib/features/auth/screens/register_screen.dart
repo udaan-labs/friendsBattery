@@ -10,13 +10,19 @@ import '../../../core/state/data_sync.dart';
 import '../../../shared/widgets/snackbar_helper.dart';
 import '../../admin/locations/providers/locations_providers.dart';
 
-/// Admin Add Seller (`isAdminFlow: true`).
+/// Admin Add Seller (`isAdminFlow: true`) or Super Admin Add Admin (`isCreateAdmin: true`).
 /// Shop list: GET /api/shops/locations?type=SHOP
-/// Create seller: POST /api/auth/register with location_id (many sellers per shop OK).
+/// Seller: POST /api/auth/register · Admin: POST /api/auth/register-admin
 class RegisterScreen extends ConsumerStatefulWidget {
   final bool isAdminFlow;
+  /// Super Admin creates shop Admin (mutually exclusive with seller flow).
+  final bool isCreateAdmin;
 
-  const RegisterScreen({super.key, this.isAdminFlow = false});
+  const RegisterScreen({
+    super.key,
+    this.isAdminFlow = false,
+    this.isCreateAdmin = false,
+  });
 
   @override
   ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
@@ -56,31 +62,50 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
 
-    if (widget.isAdminFlow && _selectedShopLocationId == null) {
-      context.showErrorSnackBar('Select a shop for this seller');
+    final needsShop = widget.isAdminFlow || widget.isCreateAdmin;
+    if (needsShop && _selectedShopLocationId == null) {
+      context.showErrorSnackBar(
+        widget.isCreateAdmin
+            ? 'Select a shop for this admin'
+            : 'Select a shop for this seller',
+      );
       return;
     }
 
-    if (widget.isAdminFlow && _shopNameController.text.trim().isEmpty) {
+    if (needsShop && _shopNameController.text.trim().isEmpty) {
       context.showErrorSnackBar('Shop name is required');
       return;
     }
 
     try {
-      await ref.read(authControllerProvider.notifier).register(
-            userId: _userIdController.text.trim(),
-            username: _usernameController.text.trim(),
-            userNumber: number,
-            shopName: _shopNameController.text.trim(),
-            password: _passwordController.text,
-            locationId: widget.isAdminFlow ? _selectedShopLocationId : null,
-          );
+      final notifier = ref.read(authControllerProvider.notifier);
+      if (widget.isCreateAdmin) {
+        await notifier.registerAdmin(
+          userId: _userIdController.text.trim(),
+          username: _usernameController.text.trim(),
+          userNumber: number,
+          shopName: _shopNameController.text.trim(),
+          password: _passwordController.text,
+          locationId: _selectedShopLocationId,
+        );
+      } else {
+        await notifier.register(
+          userId: _userIdController.text.trim(),
+          username: _usernameController.text.trim(),
+          userNumber: number,
+          shopName: _shopNameController.text.trim(),
+          password: _passwordController.text,
+          locationId: widget.isAdminFlow ? _selectedShopLocationId : null,
+        );
+      }
 
       if (mounted) {
         context.showSuccessSnackBar(
-          widget.isAdminFlow
-              ? 'Seller created at selected shop (inactive until activated).'
-              : 'Registration successful.',
+          widget.isCreateAdmin
+              ? 'Admin created and can log in immediately.'
+              : widget.isAdminFlow
+                  ? 'Seller created at selected shop (inactive until activated).'
+                  : 'Registration successful.',
         );
         if (widget.isAdminFlow) {
           DataSync.afterSellerMutation(ref);
@@ -118,9 +143,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     ref.invalidate(allLocationsProvider);
   }
 
-  /// Always-visible shop block (admin only).
+  /// Shop picker for seller or create-admin flows.
   Widget _buildShopSection(bool formLoading) {
     final shopsAsync = ref.watch(locationsByTypeProvider('SHOP'));
+    final shopTitle = widget.isCreateAdmin
+        ? 'Select shop for this admin'
+        : 'Select shop for this seller';
+    final shopHint = widget.isCreateAdmin
+        ? 'Required. Admin is linked to this shop.'
+        : 'Required. Multiple sellers can use the same shop.';
 
     return Container(
       width: double.infinity,
@@ -133,14 +164,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.storefront, color: AppTheme.primary, size: 22),
-              SizedBox(width: 8),
+              const Icon(Icons.storefront, color: AppTheme.primary, size: 22),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Select shop for this seller',
-                  style: TextStyle(
+                  shopTitle,
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 15,
                     color: AppTheme.primary,
@@ -150,9 +181,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             ],
           ),
           const SizedBox(height: 4),
-          const Text(
-            'Required. Multiple sellers can use the same shop.',
-            style: TextStyle(fontSize: 12, color: Color(0xFF545F73)),
+          Text(
+            shopHint,
+            style: const TextStyle(fontSize: 12, color: Color(0xFF545F73)),
           ),
           const SizedBox(height: 12),
           shopsAsync.when(
@@ -255,14 +286,24 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(widget.isAdminFlow ? 'Add Seller' : 'Sign Up'),
+        title: Text(
+          widget.isCreateAdmin
+              ? 'Add Admin'
+              : widget.isAdminFlow
+                  ? 'Add Seller'
+                  : 'Sign Up',
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
             } else {
-              context.go(widget.isAdminFlow ? '/admin/dashboard' : '/login');
+              context.go(
+                (widget.isAdminFlow || widget.isCreateAdmin)
+                    ? '/admin/dashboard'
+                    : '/login',
+              );
             }
           },
         ),
@@ -281,7 +322,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                widget.isAdminFlow ? 'Create Seller Account' : 'Create Account',
+                widget.isCreateAdmin
+                    ? 'Create Shop Admin'
+                    : widget.isAdminFlow
+                        ? 'Create Seller Account'
+                        : 'Create Account',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: 'Inter',
@@ -293,7 +338,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 20 : 28),
 
               // Shop first — cannot miss this block
-              if (widget.isAdminFlow) ...[
+              if (widget.isAdminFlow || widget.isCreateAdmin) ...[
                 _buildShopSection(isLoading),
                 const SizedBox(height: 16),
               ],
@@ -398,7 +443,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : Text(
-                              widget.isAdminFlow ? 'Add Seller' : 'Sign Up',
+                              widget.isCreateAdmin
+                                  ? 'Add Admin'
+                                  : widget.isAdminFlow
+                                      ? 'Add Seller'
+                                      : 'Sign Up',
                               style: const TextStyle(
                                 fontFamily: 'Inter',
                                 fontSize: 16,

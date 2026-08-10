@@ -130,8 +130,13 @@ class InventoryService {
       where: { id: userIdBig },
       select: { id: true, role: true },
     });
-    if (!owner || (owner.role !== 'ADMIN' && owner.role !== 'SELLER')) {
-      throw httpError(400, 'Adjustment target must be an ADMIN or SELLER user');
+    if (
+      !owner ||
+      (owner.role !== 'ADMIN' &&
+        owner.role !== 'SUPER_ADMIN' &&
+        owner.role !== 'SELLER')
+    ) {
+      throw httpError(400, 'Adjustment target must be an ADMIN, SUPER_ADMIN, or SELLER user');
     }
 
     // Wrap in a transaction to ensure atomicity
@@ -329,7 +334,7 @@ class InventoryService {
    * Input: adminId, payload
    * Output: updated stock details
    */
-  async updateStock(adminId, { productNameId, productModelId, quantity, minSellPrice, minUnitCountAdmin, minUnitCountSeller, onSale }) {
+  async updateStock(adminId, { productNameId, productModelId, quantity, minSellPrice, minUnitCountAdmin, minUnitCountSeller, onSale, location_id }) {
     // 1. Validate product name existence
     const productName = await prisma.productName.findUnique({
       where: { id: BigInt(productNameId) }
@@ -344,6 +349,19 @@ class InventoryService {
     });
     if (!productModel || Number(productModel.productNameId) !== productNameId) {
       throw httpError(404, 'Product model not found or does not belong to the selected product name');
+    }
+
+    // Optional target location (warehouse preferred for SA “stock any WH”)
+    let resolvedLocationId = null;
+    if (location_id != null) {
+      const loc = await prisma.location.findFirst({
+        where: { id: BigInt(location_id), isActive: true },
+        select: { id: true },
+      });
+      if (!loc) {
+        throw httpError(400, 'Location not found or inactive');
+      }
+      resolvedLocationId = loc.id;
     }
 
     return prisma.$transaction(async (tx) => {
@@ -382,15 +400,18 @@ class InventoryService {
         });
       }
 
+      let placedLocationId = resolvedLocationId;
       if (quantity && quantity > 0) {
-        const locationId =
-          (await getUserLocationId(adminId, tx)) || (await getDefaultWarehouseId(tx));
+        if (!placedLocationId) {
+          placedLocationId =
+            (await getUserLocationId(adminId, tx)) || (await getDefaultWarehouseId(tx));
+        }
         const unitsData = Array.from({ length: quantity }).map(() => ({
           productId: product.id,
           ownerId: adminId,
           serialNumber: `STK-${Date.now()}-${crypto.randomUUID()}`,
           status: 'AVAILABLE',
-          ...(locationId ? { currentLocationId: locationId } : {}),
+          ...(placedLocationId ? { currentLocationId: placedLocationId } : {}),
         }));
         await inventoryRepository.createInventory(unitsData, tx);
       }
@@ -402,7 +423,8 @@ class InventoryService {
         minSellPrice: Number(product.minPrice),
         minUnitCountAdmin: Number(product.minUnitCountAdmin),
         minUnitCountSeller: Number(product.minUnitCountSeller),
-        onSale: product.onSale
+        onSale: product.onSale,
+        location_id: placedLocationId != null ? Number(placedLocationId) : null,
       };
     });
   }

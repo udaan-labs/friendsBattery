@@ -9,6 +9,7 @@ import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
 import 'package:friends_battery_api/src/model/api_employee_attendance_check_in_post201_response.dart';
+import 'package:friends_battery_api/src/model/api_employee_attendance_checked_in_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_employee_attendance_status_get200_response.dart';
 import 'package:friends_battery_api/src/model/attendance_geo_body.dart';
 
@@ -211,6 +212,85 @@ class AttendanceApi {
     }
 
     return Response<ApiEmployeeAttendanceCheckInPost201Response>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// List all currently checked-in employees (Admin / Super Admin)
+  /// Returns open attendance rows with check-in GPS and employee profile. §2 may re-scope Admin to own shop; Super Admin sees all. 
+  ///
+  /// Parameters:
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [ApiEmployeeAttendanceCheckedInGet200Response] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<ApiEmployeeAttendanceCheckedInGet200Response>> apiEmployeeAttendanceCheckedInGet({ 
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/api/employee/attendance/checked-in';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    ApiEmployeeAttendanceCheckedInGet200Response? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(ApiEmployeeAttendanceCheckedInGet200Response),
+      ) as ApiEmployeeAttendanceCheckedInGet200Response;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<ApiEmployeeAttendanceCheckedInGet200Response>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

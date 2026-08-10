@@ -13,6 +13,7 @@ import '../../features/admin/shipments/screens/shipment_list_screen.dart';
 import '../../features/admin/shipments/screens/create_shipment_screen.dart';
 import '../../features/admin/shipments/screens/admin_shipment_detail_screen.dart';
 import '../../features/admin/sales/screens/admin_sales_screen.dart';
+import '../../features/admin/attendance/screens/checked_in_staff_screen.dart';
 import '../../features/seller/dashboard/screens/seller_dashboard_screen.dart';
 import '../../features/seller/dashboard/screens/seller_shell_screen.dart';
 import '../../features/seller/dashboard/screens/create_bill_screen.dart';
@@ -160,6 +161,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const RegisterScreen(isAdminFlow: true),
           ),
           GoRoute(
+            path: '/admin/add-admin',
+            builder: (context, state) =>
+                const RegisterScreen(isCreateAdmin: true),
+          ),
+          GoRoute(
             path: '/admin/add-stock',
             builder: (context, state) => const AddStockScreen(),
           ),
@@ -269,6 +275,22 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const AdminSalesScreen(),
           ),
           GoRoute(
+            path: '/admin/create-bill',
+            builder: (context, state) => const CreateBillScreen(),
+          ),
+          GoRoute(
+            path: '/admin/sale-success',
+            builder: (context, state) {
+              final saleData = state.extra as SaleSuccessData?;
+              if (saleData == null) {
+                return const Scaffold(
+                  body: Center(child: Text('Missing sale data')),
+                );
+              }
+              return SaleSuccessScreen(saleData: saleData);
+            },
+          ),
+          GoRoute(
             path: '/admin/shipments/:id',
             builder: (context, state) {
               final id = int.tryParse(state.pathParameters['id'] ?? '');
@@ -277,6 +299,10 @@ final routerProvider = Provider<GoRouter>((ref) {
               }
               return AdminShipmentDetailScreen(shipmentId: id);
             },
+          ),
+          GoRoute(
+            path: '/admin/checked-in',
+            builder: (context, state) => const CheckedInStaffScreen(),
           ),
           GoRoute(
             path: '/admin/activity-history',

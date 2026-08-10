@@ -1363,7 +1363,12 @@ module.exports = {
       minSellPrice: { type: 'number' },
       minUnitCountAdmin: { type: 'integer' },
       minUnitCountSeller: { type: 'integer' },
-      onSale: { type: 'boolean' }
+      onSale: { type: 'boolean' },
+      location_id: {
+        type: 'integer',
+        nullable: true,
+        description: 'Target warehouse/location for new units. Omit for actor location or default WH.',
+      },
     }
   },
   UpdateStockResult: {
@@ -1375,7 +1380,8 @@ module.exports = {
       minSellPrice: { type: 'number' },
       minUnitCountAdmin: { type: 'integer' },
       minUnitCountSeller: { type: 'integer' },
-      onSale: { type: 'boolean' }
+      onSale: { type: 'boolean' },
+      location_id: { type: 'integer', nullable: true },
     }
   },
   UpdateStockResponse: {

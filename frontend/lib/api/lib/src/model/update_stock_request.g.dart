@@ -21,6 +21,8 @@ class _$UpdateStockRequest extends UpdateStockRequest {
   final int? minUnitCountSeller;
   @override
   final bool? onSale;
+  @override
+  final int? locationId;
 
   factory _$UpdateStockRequest([
     void Function(UpdateStockRequestBuilder)? updates,
@@ -34,6 +36,7 @@ class _$UpdateStockRequest extends UpdateStockRequest {
     this.minUnitCountAdmin,
     this.minUnitCountSeller,
     this.onSale,
+    this.locationId,
   }) : super._();
   @override
   UpdateStockRequest rebuild(
@@ -54,7 +57,8 @@ class _$UpdateStockRequest extends UpdateStockRequest {
         minSellPrice == other.minSellPrice &&
         minUnitCountAdmin == other.minUnitCountAdmin &&
         minUnitCountSeller == other.minUnitCountSeller &&
-        onSale == other.onSale;
+        onSale == other.onSale &&
+        locationId == other.locationId;
   }
 
   @override
@@ -67,6 +71,7 @@ class _$UpdateStockRequest extends UpdateStockRequest {
     _$hash = $jc(_$hash, minUnitCountAdmin.hashCode);
     _$hash = $jc(_$hash, minUnitCountSeller.hashCode);
     _$hash = $jc(_$hash, onSale.hashCode);
+    _$hash = $jc(_$hash, locationId.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -80,7 +85,8 @@ class _$UpdateStockRequest extends UpdateStockRequest {
           ..add('minSellPrice', minSellPrice)
           ..add('minUnitCountAdmin', minUnitCountAdmin)
           ..add('minUnitCountSeller', minUnitCountSeller)
-          ..add('onSale', onSale))
+          ..add('onSale', onSale)
+          ..add('locationId', locationId))
         .toString();
   }
 }
@@ -121,6 +127,10 @@ class UpdateStockRequestBuilder
   bool? get onSale => _$this._onSale;
   set onSale(bool? onSale) => _$this._onSale = onSale;
 
+  int? _locationId;
+  int? get locationId => _$this._locationId;
+  set locationId(int? locationId) => _$this._locationId = locationId;
+
   UpdateStockRequestBuilder() {
     UpdateStockRequest._defaults(this);
   }
@@ -135,6 +145,7 @@ class UpdateStockRequestBuilder
       _minUnitCountAdmin = $v.minUnitCountAdmin;
       _minUnitCountSeller = $v.minUnitCountSeller;
       _onSale = $v.onSale;
+      _locationId = $v.locationId;
       _$v = null;
     }
     return this;
@@ -172,6 +183,7 @@ class UpdateStockRequestBuilder
           minUnitCountAdmin: minUnitCountAdmin,
           minUnitCountSeller: minUnitCountSeller,
           onSale: onSale,
+          locationId: locationId,
         );
     replace(_$result);
     return _$result;

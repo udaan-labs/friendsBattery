@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
+import '../../../../shared/widgets/snackbar_helper.dart';
 import '../providers/admin_sales_history_provider.dart';
 import '../widgets/admin_sale_history_card.dart';
 
@@ -47,6 +49,40 @@ class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
         .fetchSales(isRefresh: true);
   }
 
+  String _periodLabel(AdminSalesPeriod p) {
+    switch (p) {
+      case AdminSalesPeriod.all:
+        return 'All';
+      case AdminSalesPeriod.today:
+        return 'Today';
+      case AdminSalesPeriod.week:
+        return 'This week';
+      case AdminSalesPeriod.month:
+        return 'This month';
+    }
+  }
+
+  Future<void> _shareReport(AdminSalesHistoryState state) async {
+    final period = _periodLabel(state.period);
+    final buf = StringBuffer()
+      ..writeln('Friends Battery — Sales report ($period)')
+      ..writeln('Total sales: ${state.total}')
+      ..writeln(
+          'Revenue (loaded page sample): ₹${state.totalRevenue.toStringAsFixed(0)}')
+      ..writeln('---');
+    for (final s in state.sales.take(50)) {
+      buf.writeln(
+        '${s.soldAt.toIso8601String().substring(0, 10)} · ${s.shopName} · '
+        '${s.productName} ${s.productModel} · ₹${s.sellPrice.toStringAsFixed(0)} · ${s.serialNumber}',
+      );
+    }
+    if (state.total > state.sales.length) {
+      buf.writeln('… and ${state.total - state.sales.length} more (not listed)');
+    }
+    await Share.share(buf.toString(), subject: 'Sales report — $period');
+    if (mounted) context.showSuccessSnackBar('Report shared');
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(adminSalesHistoryProvider);
@@ -70,7 +106,7 @@ class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
               ),
               if (!state.isLoading && state.total > 0)
                 Text(
-                  '${state.total} total sales',
+                  '${state.total} total · ₹${state.totalRevenue.toStringAsFixed(0)} (shown)',
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.normal,
@@ -93,10 +129,60 @@ class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
               }
             },
           ),
+          actions: [
+            IconButton(
+              tooltip: 'Share report',
+              icon: const Icon(Icons.ios_share_rounded),
+              onPressed: state.isLoading || state.sales.isEmpty
+                  ? null
+                  : () => _shareReport(state),
+            ),
+          ],
         ),
         body: SafeArea(
         child: Column(
           children: [
+          // ── Period chips (today / week / month / all) ───────────────
+          Container(
+            color: Colors.white,
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (final p in AdminSalesPeriod.values) ...[
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        label: Text(_periodLabel(p)),
+                        selected: state.period == p,
+                        onSelected: (_) => ref
+                            .read(adminSalesHistoryProvider.notifier)
+                            .setPeriod(p),
+                        selectedColor: const Color(0xFFE8F5E9),
+                        labelStyle: TextStyle(
+                          color: state.period == p
+                              ? AppTheme.primary
+                              : const Color(0xFF586377),
+                          fontWeight: state.period == p
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                          fontSize: 13,
+                        ),
+                        side: BorderSide(
+                          color: state.period == p
+                              ? AppTheme.primary
+                              : const Color(0xFFECEEF0),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+
           // ── Search bar ──────────────────────────────────────────────
           Container(
             color: Colors.white,

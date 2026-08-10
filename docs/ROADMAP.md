@@ -3,7 +3,7 @@
 **Role chain:** `SUPER ADMIN → ADMIN → SELLER → EMPLOYEE`  
 One stream at a time. Work **down** the chain.  
 `- [ ]` todo · `- [x]` done.  
-**Next:** §1 Super Admin.
+**Next:** §2 Admin (shop).
 
 ```text
 SUPER ADMIN     all WH + shops · stock any WH · adjust any shop · PDF/GPS all · sell/accept
@@ -50,14 +50,14 @@ Shared sell tools (§5) once anyone can sell. Obsidian: `obsidian/FriendsBattery
 
 ## 1. Super Admin
 
-- [ ] View **all** warehouses, shops, and employees (WH + shop)  
-- [ ] Add / manage warehouses  
-- [ ] Add stock to **any** warehouse  
-- [ ] Manually update stock of **any** shop  
-- [ ] Create / oversee Admins and shops  
-- [ ] Sell + accept shipment (full access)  
-- [ ] Sales PDF — **all** shops: today / this week / this month  
-- [ ] GPS — **all** checked-in warehouse + shop employees + last/current location  
+- [x] View **all** warehouses, shops, and employees (WH + shop)  
+- [x] Add / manage warehouses  
+- [x] Add stock to **any** warehouse  
+- [x] Manually update stock of **any** shop  
+- [x] Create / oversee Admins and shops  
+- [x] Sell + accept shipment (full access)  
+- [x] Sales PDF — **all** shops: today / this week / this month  
+- [x] GPS — **all** checked-in warehouse + shop employees + last/current location  
 
 ---
 

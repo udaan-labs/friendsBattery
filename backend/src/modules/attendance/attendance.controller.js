@@ -47,6 +47,15 @@ class AttendanceController {
       return handleRouteError(res, error, 'Check-out error:');
     }
   }
+
+  async listCheckedIn(req, res) {
+    try {
+      const data = await attendanceService.listCheckedInStaff();
+      return successResponse(res, 200, 'Checked-in staff retrieved', data);
+    } catch (error) {
+      return handleRouteError(res, error, 'Checked-in staff error:');
+    }
+  }
 }
 
 module.exports = new AttendanceController();

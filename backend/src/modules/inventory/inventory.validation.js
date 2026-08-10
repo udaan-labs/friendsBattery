@@ -66,7 +66,9 @@ const updateStockSchema = z.object({
     minSellPrice: z.number().nonnegative({ message: 'minSellPrice must be greater than or equal to 0' }).optional(),
     minUnitCountAdmin: z.number().int().nonnegative().optional(),
     minUnitCountSeller: z.number().int().nonnegative().optional(),
-    onSale: z.boolean().optional()
+    onSale: z.boolean().optional(),
+    /** Target warehouse (or any active location). Omit → actor location / default WH. */
+    location_id: z.number().int().positive().optional().nullable(),
   })
 });
 

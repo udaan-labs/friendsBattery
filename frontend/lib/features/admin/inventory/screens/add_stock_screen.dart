@@ -8,6 +8,7 @@ import '../../../../core/state/data_sync.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
 import '../../../shared/inventory/providers/inventory_provider.dart';
 import '../../../shared/products/providers/product_catalog_providers.dart';
+import '../../locations/providers/locations_providers.dart';
 
 class AddStockScreen extends ConsumerStatefulWidget {
   const AddStockScreen({super.key});
@@ -25,6 +26,8 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
 
   String? _selectedProductNameId;
   String? _selectedProductModelId;
+  /// Target warehouse for new units (null → API default WH / actor location).
+  int? _selectedWarehouseId;
 
   @override
   void dispose() {
@@ -62,6 +65,7 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
         productModelId: int.parse(_selectedProductModelId!),
         quantity: quantity,
         minSellPrice: minPrice,
+        locationId: _selectedWarehouseId,
       );
 
       if (mounted) {
@@ -87,6 +91,7 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
   @override
   Widget build(BuildContext context) {
     final namesAsync = ref.watch(productNamesProvider);
+    final warehousesAsync = ref.watch(locationsByTypeProvider('WAREHOUSE'));
     final selectedNameId = int.tryParse(_selectedProductNameId ?? '');
     final modelsAsync = selectedNameId == null
         ? null
@@ -308,6 +313,94 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
                             ),
                             const SizedBox(height: 20),
                           ],
+
+                          const Text(
+                            'Warehouse',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
+                          ),
+                          const SizedBox(height: 8),
+                          warehousesAsync.when(
+                            loading: () => const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                              child: Center(
+                                child: SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ),
+                            ),
+                            error: (_, __) => TextButton(
+                              onPressed: () =>
+                                  ref.invalidate(locationsByTypeProvider('WAREHOUSE')),
+                              child: const Text('Failed to load warehouses. Retry'),
+                            ),
+                            data: (warehouses) {
+                              if (warehouses.isEmpty) {
+                                return TextFormField(
+                                  enabled: false,
+                                  decoration: InputDecoration(
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 12),
+                                    hintText:
+                                        'No warehouses yet — default WH used if configured',
+                                    border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8)),
+                                    filled: true,
+                                    fillColor: Colors.grey.shade100,
+                                  ),
+                                );
+                              }
+                              // Auto-select single warehouse once
+                              if (_selectedWarehouseId == null &&
+                                  warehouses.length == 1 &&
+                                  warehouses.first.id != null) {
+                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                  if (mounted && _selectedWarehouseId == null) {
+                                    setState(() =>
+                                        _selectedWarehouseId = warehouses.first.id);
+                                  }
+                                });
+                              }
+                              return DropdownButtonFormField<int>(
+                                isExpanded: true,
+                                value: _selectedWarehouseId != null &&
+                                        warehouses.any((w) => w.id == _selectedWarehouseId)
+                                    ? _selectedWarehouseId
+                                    : null,
+                                decoration: InputDecoration(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 12),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                ),
+                                hint: const Text('Select warehouse'),
+                                items: warehouses
+                                    .where((w) => w.id != null)
+                                    .map(
+                                      (w) => DropdownMenuItem(
+                                        value: w.id,
+                                        child: Text(
+                                          '${w.name ?? w.code ?? 'WH'} (${w.code ?? w.id})',
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (id) =>
+                                    setState(() => _selectedWarehouseId = id),
+                                validator: (value) {
+                                  if (warehouses.isNotEmpty && value == null) {
+                                    return 'Please select a warehouse';
+                                  }
+                                  return null;
+                                },
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 20),
 
                           const Text(
                             'Quantity',

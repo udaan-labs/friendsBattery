@@ -18,6 +18,7 @@ part 'update_stock_request.g.dart';
 /// * [minUnitCountAdmin] 
 /// * [minUnitCountSeller] 
 /// * [onSale] 
+/// * [locationId] - Target warehouse/location for new units. Omit for actor location or default WH.
 @BuiltValue()
 abstract class UpdateStockRequest implements Built<UpdateStockRequest, UpdateStockRequestBuilder> {
   @BuiltValueField(wireName: r'productNameId')
@@ -41,6 +42,10 @@ abstract class UpdateStockRequest implements Built<UpdateStockRequest, UpdateSto
 
   @BuiltValueField(wireName: r'onSale')
   bool? get onSale;
+
+  /// Target warehouse/location for new units. Omit for actor location or default WH.
+  @BuiltValueField(wireName: r'location_id')
+  int? get locationId;
 
   UpdateStockRequest._();
 
@@ -108,6 +113,13 @@ class _$UpdateStockRequestSerializer implements PrimitiveSerializer<UpdateStockR
       yield serializers.serialize(
         object.onSale,
         specifiedType: const FullType(bool),
+      );
+    }
+    if (object.locationId != null) {
+      yield r'location_id';
+      yield serializers.serialize(
+        object.locationId,
+        specifiedType: const FullType.nullable(int),
       );
     }
   }
@@ -181,6 +193,14 @@ class _$UpdateStockRequestSerializer implements PrimitiveSerializer<UpdateStockR
             specifiedType: const FullType(bool),
           ) as bool;
           result.onSale = valueDes;
+          break;
+        case r'location_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
+          if (valueDes == null) continue;
+          result.locationId = valueDes;
           break;
         default:
           unhandled.add(key);

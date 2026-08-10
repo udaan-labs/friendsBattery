@@ -8,6 +8,7 @@ import '../../../../shared/widgets/responsive_helper.dart';
 import '../../../../core/state/data_sync.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
 import '../../../../shared/widgets/scanner_screen.dart';
+import '../../../../shared/providers/auth_provider.dart';
 import '../../sales/providers/seller_sales_provider.dart';
 import '../models/sale_success_data.dart';
 
@@ -159,8 +160,13 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
       if (mounted) {
         context.showSuccessSnackBar('Sale recorded successfully');
         DataSync.afterSaleMutation(ref);
+        final role = ref.read(authProvider).role;
+        final isAdminLike =
+            role == UserRole.admin || role == UserRole.superAdmin;
+        final successPath =
+            isAdminLike ? '/admin/sale-success' : '/seller/sale-success';
         context.go(
-          '/seller/sale-success',
+          successPath,
           extra: SaleSuccessData(
             customerName: _customerNameController.text,
             customerNumber: _customerMobileController.text,
@@ -170,7 +176,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
             invoiceNumber:
                 'INV-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}',
             saleDate: DateTime.now(),
-            sellerName: 'Friends Battery Seller',
+            sellerName: isAdminLike ? 'Friends Battery Admin' : 'Friends Battery Seller',
           ),
         );
       }
@@ -196,12 +202,17 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
         _sellPriceController.text.isNotEmpty;
   }
 
+  String get _homePath {
+    final role = ref.read(authProvider).role;
+    return homePathForRole(role);
+  }
+
   Future<void> _onBackPressed() async {
     if (!_hasUnsavedChanges()) {
       if (context.canPop()) {
         context.pop();
       } else {
-        context.go('/seller/dashboard');
+        context.go(_homePath);
       }
       return;
     }
@@ -229,7 +240,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
       if (context.canPop()) {
         context.pop();
       } else {
-        context.go('/seller/dashboard');
+        context.go(_homePath);
       }
     }
   }

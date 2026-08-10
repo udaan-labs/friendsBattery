@@ -2739,6 +2739,11 @@
           },
           "onSale": {
             "type": "boolean"
+          },
+          "location_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Target warehouse/location for new units. Omit for actor location or default WH."
           }
         }
       },
@@ -2765,6 +2770,10 @@
           },
           "onSale": {
             "type": "boolean"
+          },
+          "location_id": {
+            "type": "integer",
+            "nullable": true
           }
         }
       },
@@ -5334,9 +5343,14 @@
     },
     "/api/auth/register": {
       "post": {
-        "summary": "Register a new user",
+        "summary": "Register a new seller",
         "tags": [
           "Auth"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
         ],
         "requestBody": {
           "required": true,
@@ -5399,6 +5413,82 @@
           },
           "409": {
             "description": "Username already exists"
+          }
+        }
+      }
+    },
+    "/api/auth/register-admin": {
+      "post": {
+        "summary": "Super Admin creates a shop Admin",
+        "description": "SUPER_ADMIN only. Creates role ADMIN with parent_id = Super Admin.\nNew admin is active and verified (can log in immediately).\nOptional location_id must be an active SHOP.\n",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "user_id",
+                  "username",
+                  "user_number",
+                  "shop_name",
+                  "password"
+                ],
+                "properties": {
+                  "user_id": {
+                    "type": "string",
+                    "example": "ADMIN001"
+                  },
+                  "username": {
+                    "type": "string",
+                    "example": "shop_admin"
+                  },
+                  "user_number": {
+                    "type": "string",
+                    "example": "9876543211"
+                  },
+                  "shop_name": {
+                    "type": "string",
+                    "example": "Main Shop Admin"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password"
+                  },
+                  "location_id": {
+                    "type": "integer",
+                    "description": "Optional SHOP location for this admin",
+                    "example": 2
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Admin created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only Super Admin"
+          },
+          "409": {
+            "description": "User id / username / number already exists"
           }
         }
       }
@@ -5712,6 +5802,78 @@
           },
           "403": {
             "description": "Employee only"
+          }
+        }
+      }
+    },
+    "/api/employee/attendance/checked-in": {
+      "get": {
+        "summary": "List all currently checked-in employees (Admin / Super Admin)",
+        "description": "Returns open attendance rows with check-in GPS and employee profile.\n§2 may re-scope Admin to own shop; Super Admin sees all.\n",
+        "tags": [
+          "Attendance"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Checked-in staff list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "employee_id": {
+                            "type": "integer"
+                          },
+                          "check_in_time": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "check_in_lat": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "check_in_lng": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "location": {
+                            "type": "object"
+                          },
+                          "employee": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Admin only"
           }
         }
       }

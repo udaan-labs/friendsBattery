@@ -50,7 +50,7 @@ Doc: repo root `docs/architecture.md`. One domain = one module folder. Reuse exi
 1. **Unit inventory** — one `product_units` row = one physical battery (serial). No shop/product stock-count columns (request `quantity` on stock requests is OK).
 2. **Immutable ledger** — `inventory_transactions` is **append-only**. Never UPDATE/DELETE history. Ownership/status change = new row.
 3. **Roles** (`SUPER_ADMIN → ADMIN → SELLER → EMPLOYEE`)
-   - `SUPER_ADMIN` — org root; full multi-WH/shop tools in §1. `parent_id` null.
+   - `SUPER_ADMIN` — org root; full multi-WH/shop tools in §1. `parent_id` null. Inventory scope: units owned by `ADMIN` **or** `SUPER_ADMIN`. Stock may target any active `location_id` (warehouse).
    - `ADMIN` — shop admin under a Super Admin (`users.parent_id` → SA). Today many APIs still use global admin scope until §2 re-scopes to own shop.
    - `SELLER` — own inventory, sales, requests; `parent_id` → Admin.
    - `EMPLOYEE` — staff at a location; inventory by `current_location_id = user.location_id` (not owner_id). Job title is `employee_roles` via `users.employee_role_id` (Manager, Cashier, …) — separate from system `Role`. `parent_id` → Admin (or seller’s parent Admin).

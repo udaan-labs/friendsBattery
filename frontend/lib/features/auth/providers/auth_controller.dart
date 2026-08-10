@@ -73,4 +73,29 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
       rethrow;
     }
   }
+
+  Future<void> registerAdmin({
+    required String userId,
+    required String username,
+    required String userNumber,
+    required String shopName,
+    required String password,
+    int? locationId,
+  }) async {
+    state = const AsyncValue.loading();
+    try {
+      await repository.registerAdmin(
+        userId: userId,
+        username: username,
+        userNumber: userNumber,
+        shopName: shopName,
+        password: password,
+        locationId: locationId,
+      );
+      state = const AsyncValue.data(null);
+    } catch (e, stack) {
+      state = AsyncValue.error(e, stack);
+      rethrow;
+    }
+  }
 }

@@ -48,7 +48,8 @@ const { validateRequest } = require('../../shared/middleware/validation.middlewa
 router.post(
   '/',
   authenticate,
-  requireSeller,
+  // Seller + Super Admin / Admin (own inventory units)
+  requireAdminOrSeller,
   validateRequest(createSaleSchema),
   salesController.createSale
 );

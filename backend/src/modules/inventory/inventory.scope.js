@@ -5,7 +5,7 @@ const { isAdminLikeRole } = require('../../shared/utils/role.util');
 /**
  * Prisma filter for which product_units a user may see as inventory.
  *
- * - ADMIN: units owned by admin users
+ * - ADMIN / SUPER_ADMIN: units owned by ADMIN or SUPER_ADMIN (org admin stock)
  * - SELLER: units where owner_id = seller
  * - EMPLOYEE: units where current_location_id = employee.location_id
  *
@@ -15,9 +15,9 @@ const { isAdminLikeRole } = require('../../shared/utils/role.util');
  * @returns {Promise<object|null>}
  */
 async function resolveUnitScope(userId, role, locationId = undefined) {
-  // SUPER_ADMIN shares global admin inventory view until §1 dedicated SA tools
+  // Admin-like sees org admin stock (SA units + shop Admin units). §2 may narrow Admin later.
   if (isAdminLikeRole(role)) {
-    return { owner: { role: ROLES.ADMIN } };
+    return { owner: { role: { in: [ROLES.ADMIN, ROLES.SUPER_ADMIN] } } };
   }
 
   if (role === ROLES.EMPLOYEE) {

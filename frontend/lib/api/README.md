@@ -67,11 +67,13 @@ Class | Method | HTTP request | Description
 [*AppApi*](doc/AppApi.md) | [**apiAppStatusGet**](doc/AppApi.md#apiappstatusget) | **GET** /api/app/status | App version + maintenance gate status
 [*AttendanceApi*](doc/AttendanceApi.md) | [**apiEmployeeAttendanceCheckInPost**](doc/AttendanceApi.md#apiemployeeattendancecheckinpost) | **POST** /api/employee/attendance/check-in | Check in at assigned shop location
 [*AttendanceApi*](doc/AttendanceApi.md) | [**apiEmployeeAttendanceCheckOutPost**](doc/AttendanceApi.md#apiemployeeattendancecheckoutpost) | **POST** /api/employee/attendance/check-out | Check out (close open attendance)
+[*AttendanceApi*](doc/AttendanceApi.md) | [**apiEmployeeAttendanceCheckedInGet**](doc/AttendanceApi.md#apiemployeeattendancecheckedinget) | **GET** /api/employee/attendance/checked-in | List all currently checked-in employees (Admin / Super Admin)
 [*AttendanceApi*](doc/AttendanceApi.md) | [**apiEmployeeAttendanceStatusGet**](doc/AttendanceApi.md#apiemployeeattendancestatusget) | **GET** /api/employee/attendance/status | Current check-in status for employee
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthActivatePut**](doc/AuthApi.md#apiauthactivateput) | **PUT** /api/auth/activate | Activate and verify a user account
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthLoginPost**](doc/AuthApi.md#apiauthloginpost) | **POST** /api/auth/login | Authenticate user and return token
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthLogoutPost**](doc/AuthApi.md#apiauthlogoutpost) | **POST** /api/auth/logout | End session (closes employee_sessions for EMPLOYEE)
-[*AuthApi*](doc/AuthApi.md) | [**apiAuthRegisterPost**](doc/AuthApi.md#apiauthregisterpost) | **POST** /api/auth/register | Register a new user
+[*AuthApi*](doc/AuthApi.md) | [**apiAuthRegisterAdminPost**](doc/AuthApi.md#apiauthregisteradminpost) | **POST** /api/auth/register-admin | Super Admin creates a shop Admin
+[*AuthApi*](doc/AuthApi.md) | [**apiAuthRegisterPost**](doc/AuthApi.md#apiauthregisterpost) | **POST** /api/auth/register | Register a new seller
 [*DashboardApi*](doc/DashboardApi.md) | [**apiDashboardActivityHistoryGet**](doc/DashboardApi.md#apidashboardactivityhistoryget) | **GET** /api/dashboard/activity-history | Get paginated activity history (Admin only)
 [*DashboardApi*](doc/DashboardApi.md) | [**apiDashboardRecentActivityGet**](doc/DashboardApi.md#apidashboardrecentactivityget) | **GET** /api/dashboard/recent-activity | Get recent activity feed (Admin only)
 [*DashboardApi*](doc/DashboardApi.md) | [**apiDashboardStatsGet**](doc/DashboardApi.md#apidashboardstatsget) | **GET** /api/dashboard/stats | Get dashboard statistics
@@ -148,6 +150,8 @@ Class | Method | HTTP request | Description
  - [ApiAuthRegisterPostRequest](doc/ApiAuthRegisterPostRequest.md)
  - [ApiDashboardStatsGet200Response](doc/ApiDashboardStatsGet200Response.md)
  - [ApiEmployeeAttendanceCheckInPost201Response](doc/ApiEmployeeAttendanceCheckInPost201Response.md)
+ - [ApiEmployeeAttendanceCheckedInGet200Response](doc/ApiEmployeeAttendanceCheckedInGet200Response.md)
+ - [ApiEmployeeAttendanceCheckedInGet200ResponseDataInner](doc/ApiEmployeeAttendanceCheckedInGet200ResponseDataInner.md)
  - [ApiEmployeeAttendanceStatusGet200Response](doc/ApiEmployeeAttendanceStatusGet200Response.md)
  - [ApiInventoryDetailsGet200Response](doc/ApiInventoryDetailsGet200Response.md)
  - [ApiInventoryDetailsGet200ResponseData](doc/ApiInventoryDetailsGet200ResponseData.md)

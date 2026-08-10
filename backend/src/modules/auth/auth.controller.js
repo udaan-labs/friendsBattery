@@ -21,6 +21,24 @@ class AuthController {
     }
   }
 
+  async registerAdmin(req, res) {
+    try {
+      const { user_id, username, user_number, shop_name, password, location_id } = req.body;
+      const result = await authService.registerAdmin({
+        user_id,
+        username,
+        user_number,
+        shop_name,
+        password,
+        location_id,
+        actor: req.user,
+      });
+      return successResponse(res, 201, 'Admin created successfully', result);
+    } catch (error) {
+      return handleRouteError(res, error, 'Register Admin Error:');
+    }
+  }
+
   async login(req, res) {
     try {
       const { user_id, password, device_id, app_version, firebase_token } = req.body;

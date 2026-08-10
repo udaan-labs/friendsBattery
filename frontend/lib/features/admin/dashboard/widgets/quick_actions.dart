@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 
-class QuickActions extends StatelessWidget {
+class QuickActions extends ConsumerWidget {
   const QuickActions({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isSmall = ResponsiveHelper.isSmallPhone(context);
     final titleSize = isSmall ? 16.0 : 18.0;
+    final isSuperAdmin = ref.watch(authProvider).role == UserRole.superAdmin;
 
     // One clear home per task (no duplicates on Sellers / forms).
     final actions = [
@@ -24,6 +27,13 @@ class QuickActions extends StatelessWidget {
         icon: Icons.move_to_inbox_outlined,
         route: '/admin/shipments/create',
       ),
+      if (isSuperAdmin)
+        _ActionItemData(
+          title: 'Add Admin',
+          subtitle: 'Create shop admin account',
+          icon: Icons.admin_panel_settings_outlined,
+          route: '/admin/add-admin',
+        ),
       _ActionItemData(
         title: 'Sellers',
         subtitle: 'List sellers · add accounts',
@@ -37,6 +47,12 @@ class QuickActions extends StatelessWidget {
         route: '/admin/locations',
       ),
       _ActionItemData(
+        title: 'Create Bill',
+        subtitle: 'Sell from admin stock',
+        icon: Icons.receipt_long_outlined,
+        route: '/admin/create-bill',
+      ),
+      _ActionItemData(
         title: 'View Sales',
         subtitle: 'Browse all sales transactions',
         icon: Icons.point_of_sale_outlined,
@@ -47,6 +63,12 @@ class QuickActions extends StatelessWidget {
         subtitle: 'Track stock transfers',
         icon: Icons.local_shipping_outlined,
         route: '/admin/shipments',
+      ),
+      _ActionItemData(
+        title: 'Checked-in staff',
+        subtitle: 'Live GPS at check-in',
+        icon: Icons.my_location_outlined,
+        route: '/admin/checked-in',
       ),
     ];
 

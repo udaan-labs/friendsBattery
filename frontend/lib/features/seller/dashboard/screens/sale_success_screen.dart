@@ -82,9 +82,15 @@ Thank you for choosing Friends Battery.''';
     }
   }
 
+  String get _dashboardPath {
+    final path = GoRouterState.of(context).uri.path;
+    return path.startsWith('/admin') ? '/admin/dashboard' : '/seller/dashboard';
+  }
+
   @override
   Widget build(BuildContext context) {
     final data = widget.saleData;
+    final home = _dashboardPath;
 
     final invoiceWidget = InvoiceWidget(
       invoiceNumber: data.invoiceNumber,
@@ -106,7 +112,7 @@ Thank you for choosing Friends Battery.''';
         leading: IconButton(
           icon: const Icon(Icons.close, color: Color(0xFF3E4A3D)),
           onPressed: () {
-            context.go('/seller/dashboard');
+            context.go(home);
           },
         ),
       ),
@@ -180,7 +186,7 @@ Thank you for choosing Friends Battery.''';
                         ),
                         const SizedBox(height: 12),
                         OutlinedButton(
-                          onPressed: () => context.go('/seller/dashboard'),
+                          onPressed: () => context.go(home),
                           style: OutlinedButton.styleFrom(
                             minimumSize: const Size(double.infinity, 50),
                             shape: RoundedRectangleBorder(

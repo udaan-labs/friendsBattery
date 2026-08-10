@@ -15,6 +15,7 @@ Name | Type | Description | Notes
 **minUnitCountAdmin** | **int** |  | [optional] 
 **minUnitCountSeller** | **int** |  | [optional] 
 **onSale** | **bool** |  | [optional] 
+**locationId** | **int** | Target warehouse/location for new units. Omit for actor location or default WH. | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

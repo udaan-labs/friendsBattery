@@ -39,6 +39,25 @@ function mapAttendance(row) {
   };
 }
 
+function mapCheckedInStaff(row) {
+  const base = mapAttendance(row);
+  if (!base) return null;
+  const emp = row.employee;
+  return {
+    ...base,
+    employee: emp
+      ? {
+          id: Number(emp.id),
+          user_name: emp.userName,
+          user_number: emp.userNumber,
+          shop_name: emp.shopName,
+          role: emp.role,
+          location_id: emp.locationId != null ? Number(emp.locationId) : null,
+        }
+      : null,
+  };
+}
+
 function assertWithinAssignedLocation(location, lat, lng) {
   if (lat == null || lng == null || Number.isNaN(lat) || Number.isNaN(lng)) {
     fail('GPS coordinates are required for attendance', 400);
@@ -177,6 +196,12 @@ class AttendanceService {
     }
 
     return mapAttendance(row);
+  }
+
+  /** Admin / Super Admin: all currently checked-in staff with last check-in GPS. */
+  async listCheckedInStaff() {
+    const rows = await attendanceRepository.findAllOpenAttendances();
+    return rows.map(mapCheckedInStaff).filter(Boolean);
   }
 }
 

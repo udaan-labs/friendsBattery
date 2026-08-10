@@ -28,6 +28,10 @@ Serializers _$serializers =
           ..add(ApiAuthRegisterPostRequest.serializer)
           ..add(ApiDashboardStatsGet200Response.serializer)
           ..add(ApiEmployeeAttendanceCheckInPost201Response.serializer)
+          ..add(ApiEmployeeAttendanceCheckedInGet200Response.serializer)
+          ..add(
+            ApiEmployeeAttendanceCheckedInGet200ResponseDataInner.serializer,
+          )
           ..add(ApiEmployeeAttendanceStatusGet200Response.serializer)
           ..add(ApiInventoryDetailsGet200Response.serializer)
           ..add(ApiInventoryDetailsGet200ResponseData.serializer)
@@ -192,6 +196,17 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(AdminSaleRecord)]),
             () => ListBuilder<AdminSaleRecord>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                ApiEmployeeAttendanceCheckedInGet200ResponseDataInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  ApiEmployeeAttendanceCheckedInGet200ResponseDataInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

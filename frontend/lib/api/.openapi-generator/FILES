@@ -21,6 +21,8 @@ doc/ApiAuthLoginPostRequest.md
 doc/ApiAuthRegisterPostRequest.md
 doc/ApiDashboardStatsGet200Response.md
 doc/ApiEmployeeAttendanceCheckInPost201Response.md
+doc/ApiEmployeeAttendanceCheckedInGet200Response.md
+doc/ApiEmployeeAttendanceCheckedInGet200ResponseDataInner.md
 doc/ApiEmployeeAttendanceStatusGet200Response.md
 doc/ApiInventoryDetailsGet200Response.md
 doc/ApiInventoryDetailsGet200ResponseData.md
@@ -209,6 +211,8 @@ lib/src/model/api_auth_login_post_request.dart
 lib/src/model/api_auth_register_post_request.dart
 lib/src/model/api_dashboard_stats_get200_response.dart
 lib/src/model/api_employee_attendance_check_in_post201_response.dart
+lib/src/model/api_employee_attendance_checked_in_get200_response.dart
+lib/src/model/api_employee_attendance_checked_in_get200_response_data_inner.dart
 lib/src/model/api_employee_attendance_status_get200_response.dart
 lib/src/model/api_inventory_details_get200_response.dart
 lib/src/model/api_inventory_details_get200_response_data.dart
@@ -345,6 +349,5 @@ lib/src/model/verify_product_response.dart
 lib/src/model/verify_product_unit.dart
 lib/src/serializers.dart
 pubspec.yaml
-test/app_api_test.dart
-test/app_status_response_test.dart
-test/app_status_test.dart
+test/api_employee_attendance_checked_in_get200_response_data_inner_test.dart
+test/api_employee_attendance_checked_in_get200_response_test.dart

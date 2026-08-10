@@ -3,14 +3,20 @@ const router = express.Router();
 const authController = require('./auth.controller');
 const { validateRegister, validateLogin, validateActivate } = require('./auth.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
-const { requireSuperAdminOrAdmin } = require('../../shared/middleware/role.middleware');
+const {
+  requireSuperAdminOrAdmin,
+  requireRole,
+} = require('../../shared/middleware/role.middleware');
+const ROLES = require('../../shared/constants/roles');
 
 /**
  * @swagger
  * /api/auth/register:
  *   post:
- *     summary: Register a new user
+ *     summary: Register a new seller
  *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -58,6 +64,70 @@ const { requireSuperAdminOrAdmin } = require('../../shared/middleware/role.middl
  */
 // Super Admin or Admin: no open self-register of active sellers
 router.post('/register', authenticate, requireSuperAdminOrAdmin, validateRegister, authController.register);
+
+/**
+ * @swagger
+ * /api/auth/register-admin:
+ *   post:
+ *     summary: Super Admin creates a shop Admin
+ *     description: |
+ *       SUPER_ADMIN only. Creates role ADMIN with parent_id = Super Admin.
+ *       New admin is active and verified (can log in immediately).
+ *       Optional location_id must be an active SHOP.
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - user_id
+ *               - username
+ *               - user_number
+ *               - shop_name
+ *               - password
+ *             properties:
+ *               user_id:
+ *                 type: string
+ *                 example: ADMIN001
+ *               username:
+ *                 type: string
+ *                 example: shop_admin
+ *               user_number:
+ *                 type: string
+ *                 example: "9876543211"
+ *               shop_name:
+ *                 type: string
+ *                 example: Main Shop Admin
+ *               password:
+ *                 type: string
+ *                 format: password
+ *               location_id:
+ *                 type: integer
+ *                 description: Optional SHOP location for this admin
+ *                 example: 2
+ *     responses:
+ *       201:
+ *         description: Admin created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RegisterResponse'
+ *       403:
+ *         description: Only Super Admin
+ *       409:
+ *         description: User id / username / number already exists
+ */
+router.post(
+  '/register-admin',
+  authenticate,
+  requireRole(ROLES.SUPER_ADMIN),
+  validateRegister,
+  authController.registerAdmin
+);
 
 /**
  * @swagger

@@ -3,7 +3,10 @@ const router = express.Router();
 const attendanceController = require('./attendance.controller');
 const { checkInSchema, checkOutSchema } = require('./attendance.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
-const { requireEmployee } = require('../../shared/middleware/role.middleware');
+const {
+  requireEmployee,
+  requireAdmin,
+} = require('../../shared/middleware/role.middleware');
 const { validateRequest } = require('../../shared/middleware/validation.middleware');
 
 /**
@@ -129,6 +132,63 @@ router.post(
   requireEmployee,
   validateRequest(checkOutSchema),
   attendanceController.checkOut.bind(attendanceController)
+);
+
+/**
+ * @swagger
+ * /api/employee/attendance/checked-in:
+ *   get:
+ *     summary: List all currently checked-in employees (Admin / Super Admin)
+ *     description: |
+ *       Returns open attendance rows with check-in GPS and employee profile.
+ *       §2 may re-scope Admin to own shop; Super Admin sees all.
+ *     tags: [Attendance]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Checked-in staff list
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       employee_id:
+ *                         type: integer
+ *                       check_in_time:
+ *                         type: string
+ *                         format: date-time
+ *                       check_in_lat:
+ *                         type: number
+ *                         nullable: true
+ *                       check_in_lng:
+ *                         type: number
+ *                         nullable: true
+ *                       status:
+ *                         type: string
+ *                       location:
+ *                         type: object
+ *                       employee:
+ *                         type: object
+ *       403:
+ *         description: Admin only
+ */
+router.get(
+  '/checked-in',
+  authenticate,
+  requireAdmin,
+  attendanceController.listCheckedIn.bind(attendanceController)
 );
 
 module.exports = router;

@@ -13,7 +13,11 @@ const {
   getInventoryDetailsSchema
 } = require('./inventory.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
-const { requireAdmin, requireSeller } = require('../../shared/middleware/role.middleware');
+const {
+  requireAdmin,
+  requireSeller,
+  requireAdminOrSeller,
+} = require('../../shared/middleware/role.middleware');
 const { validateRequest } = require('../../shared/middleware/validation.middleware');
 
 /**
@@ -308,7 +312,7 @@ router.get(
 router.get(
   '/scan-for-sale',
   authenticate,
-  requireSeller,
+  requireAdminOrSeller,
   inventoryController.scanForSale.bind(inventoryController)
 );
 

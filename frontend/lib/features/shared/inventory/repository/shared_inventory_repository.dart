@@ -131,6 +131,7 @@ class SharedInventoryRepository {
   }
 
   /// Admin add stock / update price & sale flags.
+  /// [locationId] = warehouse (or any active location) for new units.
   Future<void> updateStock({
     required int productNameId,
     required int productModelId,
@@ -139,6 +140,7 @@ class SharedInventoryRepository {
     int? minUnitCountAdmin,
     int? minUnitCountSeller,
     bool? onSale,
+    int? locationId,
   }) async {
     final body = UpdateStockRequest((b) {
       b.productNameId = productNameId;
@@ -148,6 +150,7 @@ class SharedInventoryRepository {
       if (minUnitCountAdmin != null) b.minUnitCountAdmin = minUnitCountAdmin;
       if (minUnitCountSeller != null) b.minUnitCountSeller = minUnitCountSeller;
       if (onSale != null) b.onSale = onSale;
+      if (locationId != null) b.locationId = locationId;
     });
 
     await _inventory.apiInventoryUpdateStockPost(updateStockRequest: body);
