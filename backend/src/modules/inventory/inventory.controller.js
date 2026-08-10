@@ -228,13 +228,16 @@ class InventoryController {
   async scanForSale(req, res) {
     try {
       const { serial_number } = req.query;
-      const sellerId = req.user.id;
 
       if (!serial_number) {
         return errorResponse(res, 400, 'Serial number is required');
       }
 
-      const productDetails = await inventoryService.scanForSale(serial_number, sellerId);
+      const productDetails = await inventoryService.scanForSale(serial_number, {
+        id: req.user.id,
+        role: req.user.role,
+        locationId: req.user.locationId ?? null,
+      });
       return successResponse(res, 200, 'Product found successfully', productDetails);
     } catch (error) {
       return handleRouteError(res, error, 'Scan For Sale Error:');

@@ -4,15 +4,15 @@ const salesController = require('./sales.controller');
 const {
   createSaleSchema,
   viewSaleSchema,
-  customerSalesSchema,
   salesHistorySchema,
-  adminSalesHistorySchema
+  adminSalesHistorySchema,
 } = require('./sales.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
 const {
   requireAdmin,
   requireSeller,
   requireAdminOrSeller,
+  requireAdminOrSellerOrEmployee,
 } = require('../../shared/middleware/role.middleware');
 const { validateRequest } = require('../../shared/middleware/validation.middleware');
 
@@ -27,7 +27,7 @@ const { validateRequest } = require('../../shared/middleware/validation.middlewa
  * @swagger
  * /api/sales:
  *   post:
- *     summary: Create a new sale transaction
+ *     summary: Create a sale (SA/Admin/Seller own units; EMPLOYEE location stock)
  *     tags: [Sales]
  *     security:
  *       - bearerAuth: []
@@ -44,12 +44,18 @@ const { validateRequest } = require('../../shared/middleware/validation.middlewa
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/CreateSaleResponse'
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Serial not available in actor inventory/location
+ *       409:
+ *         description: Concurrent claim lost (already sold)
  */
 router.post(
   '/',
   authenticate,
-  // Seller + Super Admin / Admin (own inventory units)
-  requireAdminOrSeller,
+  // SA/Admin/Seller: own units · EMPLOYEE: AVAILABLE at own location
+  requireAdminOrSellerOrEmployee,
   validateRequest(createSaleSchema),
   salesController.createSale
 );

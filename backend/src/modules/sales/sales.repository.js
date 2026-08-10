@@ -30,69 +30,48 @@ class SalesRepository {
   }
 
   /**
-   * Find an available product unit by serial number and seller ID
+   * AVAILABLE unit for sale: owner stock OR shop location stock.
+   * @param {string} serialNumber
+   * @param {{ ownerId?: number|bigint, locationId?: number|bigint }} scope
    */
-  async findAvailableProductUnit(serialNumber, sellerId) {
+  async findAvailableProductUnit(serialNumber, scope) {
     const clean = serialNumber != null ? String(serialNumber).trim() : '';
+    const where = {
+      serialNumber: { equals: clean, mode: 'insensitive' },
+      status: 'AVAILABLE',
+    };
+    if (scope.locationId != null) {
+      where.currentLocationId = BigInt(scope.locationId);
+    } else {
+      where.ownerId = BigInt(scope.ownerId);
+    }
     return prisma.productUnit.findFirst({
-      where: {
-        serialNumber: { equals: clean, mode: 'insensitive' },
-        ownerId: BigInt(sellerId),
-        status: 'AVAILABLE'
-      },
-      include: {
-        product: true
-      }
+      where,
+      include: { product: true },
     });
   }
 
-  /**
-   * Find an available product unit by product ID and seller ID
-   */
-  async findAvailableProductUnitByProductId(productId, sellerId) {
-    return prisma.productUnit.findFirst({
-      where: {
-        productId: productId,
-        ownerId: BigInt(sellerId),
-        status: 'AVAILABLE'
-      }
-    });
-  }
-
-  /**
-   * Check if a serial number is already in use by any product unit
-   */
-  async checkSerialNumberExists(serialNumber) {
-    return prisma.productUnit.findUnique({
-      where: { serialNumber }
-    });
-  }
-
-  /**
-   * Create sale transaction and update inventory atomically
-   * Includes the immutable ledger record for inventory_transactions
-   */
+  /** Atomic sale + unit claim + ledger row. */
   async createSaleTransaction(saleData) {
     return prisma.$transaction(async (tx) => {
-      // 1. Atomic claim — only one concurrent sale can flip AVAILABLE → SOLD
-      const claimed = await tx.productUnit.updateMany({
-        where: {
-          id: saleData.productUnitId,
-          ownerId: BigInt(saleData.sellerId),
-          status: 'AVAILABLE',
-        },
-        data: {
-          status: 'SOLD',
-          soldDate: new Date(),
-        },
-      });
-      if (claimed.count !== 1) {
-        throw httpError(409, 
-          'The scanned serial number is not available in your inventory.'
-        );
+      const claimWhere = {
+        id: saleData.productUnitId,
+        status: 'AVAILABLE',
+      };
+      if (saleData.claimByLocationId != null) {
+        claimWhere.currentLocationId = BigInt(saleData.claimByLocationId);
+      } else {
+        claimWhere.ownerId = BigInt(saleData.ownerId ?? saleData.sellerId);
       }
 
-      // 2. Create the SalesTransaction record
+      const claimed = await tx.productUnit.updateMany({
+        where: claimWhere,
+        data: { status: 'SOLD', soldDate: new Date() },
+      });
+      if (claimed.count !== 1) {
+        throw httpError(409, 'The scanned serial number is not available in your inventory.');
+      }
+
       const sale = await tx.salesTransaction.create({
         data: {
           productId: saleData.productId,
@@ -101,18 +80,18 @@ class SalesRepository {
           sellerId: BigInt(saleData.sellerId),
           sellPrice: saleData.sellPrice,
           serialNumber: saleData.serialNumber,
-          vehicleNumber: saleData.vehicleNumber
-        }
+          vehicleNumber: saleData.vehicleNumber,
+        },
       });
 
-      // 3. Create audit log in inventory_transactions (Immutable Ledger)
+      const ownerId = BigInt(saleData.ownerId ?? saleData.sellerId);
       await tx.inventoryTransaction.create({
         data: {
           productUnitId: saleData.productUnitId,
-          fromUserId: BigInt(saleData.sellerId),
-          toUserId: BigInt(saleData.sellerId), // Required by schema, we set it back to seller since customer isn't a User
-          action: 'SOLD'
-        }
+          fromUserId: ownerId,
+          toUserId: ownerId,
+          action: 'SOLD',
+        },
       });
 
       return sale;

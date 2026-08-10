@@ -46,28 +46,37 @@ class SalesService {
   }
 
   /**
-   * Create a new sale transaction
+   * Create a new sale transaction.
+   * SA/Admin/Seller: claim unit by ownerId = actor.id.
+   * EMPLOYEE: claim AVAILABLE unit at actor.locationId; sellerId on sale = employee.
    * @param {Object} data Request body
-   * @param {Number|BigInt} sellerId Authenticated user ID
+   * @param {{ id: number|bigint, role: string, locationId?: number|null }} actor
    */
-  async createSale(data, sellerId) {
-    // 1. Find or create customer
+  async createSale(data, actor) {
+    const sellerId = actor.id;
+    const isEmployee = actor.role === ROLES.EMPLOYEE;
+    const sellPrice = Number(data.sell_price);
+
     let customer = await salesRepository.findCustomerByMobile(data.customer_number);
     if (!customer) {
       customer = await salesRepository.createCustomer({
         name: data.customer_name,
-        phone: data.customer_number
+        phone: data.customer_number,
       });
     }
 
-    // 3. Find the specific available product unit by serial number
-    const productUnit = await salesRepository.findAvailableProductUnit(data.serial_number, sellerId);
-    
+    if (isEmployee && actor.locationId == null) {
+      throw httpError(400, 'Your account has no shop location. Contact admin.');
+    }
+
+    const productUnit = await salesRepository.findAvailableProductUnit(
+      data.serial_number,
+      isEmployee ? { locationId: actor.locationId } : { ownerId: sellerId }
+    );
     if (!productUnit) {
       throw httpError(404, 'The scanned serial number is not available in your inventory.');
     }
 
-    // 4. Validate that it matches the selected product name and model
     if (
       Number(productUnit.product.productNameId) !== Number(data.product_name_id) ||
       Number(productUnit.product.productModelId) !== Number(data.product_model_id)
@@ -75,24 +84,26 @@ class SalesService {
       throw httpError(400, 'The scanned serial number does not match the selected Product Name or Model.');
     }
 
-    // 4.5 Validate that selling price is not below minimum price limit
-    if (productUnit.product && productUnit.product.minPrice && Number(data.sell_price) < Number(productUnit.product.minPrice)) {
-      throw httpError(400, `Selling price (₹${data.sell_price}) cannot be less than minimum allowed price (₹${productUnit.product.minPrice}).`);
+    const minPrice = Number(productUnit.product?.minPrice);
+    if (Number.isFinite(minPrice) && sellPrice < minPrice) {
+      throw httpError(
+        400,
+        `Selling price (₹${sellPrice}) cannot be less than minimum allowed price (₹${minPrice}).`
+      );
     }
 
-    // 4. Create sale transaction & update inventory (Atomically handled in repository)
-    // Use unit's canonical serial (find was case-insensitive)
     const sale = await salesRepository.createSaleTransaction({
       productUnitId: productUnit.id,
       productId: productUnit.productId,
       customerId: customer.id,
-      sellerId: sellerId,
-      sellPrice: data.sell_price,
+      sellerId,
+      ownerId: productUnit.ownerId,
+      sellPrice,
       serialNumber: productUnit.serialNumber,
-      vehicleNumber: data.vehicle_number
+      vehicleNumber: data.vehicle_number,
+      claimByLocationId: isEmployee ? actor.locationId : null,
     });
 
-    // 5. Return transaction ID
     return { transaction_id: Number(sale.id) };
   }
 

@@ -145,6 +145,13 @@ class EmployeeHomeScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
               _ActionTile(
+                icon: Icons.receipt_long_rounded,
+                title: 'Create bill',
+                subtitle: 'Sell a battery from shop stock',
+                onTap: () => context.push('/employee/create-bill'),
+              ),
+              const SizedBox(height: 10),
+              _ActionTile(
                 icon: Icons.inventory_2_outlined,
                 title: 'View stock',
                 subtitle: 'Batteries at your shop location',

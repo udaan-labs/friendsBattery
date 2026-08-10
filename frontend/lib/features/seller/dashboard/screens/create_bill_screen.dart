@@ -142,18 +142,19 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
     });
 
     try {
-      final sellPrice = double.parse(_sellPriceController.text);
-      final serialValue = _serialNumberController.text.trim();
+      // Min price enforced by form validator; backend re-checks.
+      final sellPrice = double.parse(_sellPriceController.text.trim());
+      final customerName = _customerNameController.text.trim();
+      final customerNumber = _customerMobileController.text.trim();
+      final vehicleRaw = _vehicleNumberController.text.trim();
 
       await ref.read(sellerSalesRepositoryProvider).createSale(
             productNameId: int.parse(_selectedProductNameId!),
             productModelId: int.parse(_selectedProductModelId!),
             serialNumber: serialValue,
-            customerName: _customerNameController.text,
-            customerNumber: _customerMobileController.text,
-            vehicleNumber: _vehicleNumberController.text.isNotEmpty
-                ? _vehicleNumberController.text
-                : null,
+            customerName: customerName,
+            customerNumber: customerNumber,
+            vehicleNumber: vehicleRaw.isNotEmpty ? vehicleRaw.toUpperCase() : null,
             sellPrice: sellPrice,
           );
 
@@ -161,22 +162,28 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
         context.showSuccessSnackBar('Sale recorded successfully');
         DataSync.afterSaleMutation(ref);
         final role = ref.read(authProvider).role;
-        final isAdminLike =
-            role == UserRole.admin || role == UserRole.superAdmin;
-        final successPath =
-            isAdminLike ? '/admin/sale-success' : '/seller/sale-success';
+        final successPath = switch (role) {
+          UserRole.admin || UserRole.superAdmin => '/admin/sale-success',
+          UserRole.employee => '/employee/sale-success',
+          _ => '/seller/sale-success',
+        };
+        final sellerLabel = switch (role) {
+          UserRole.admin || UserRole.superAdmin => 'Friends Battery Admin',
+          UserRole.employee => 'Friends Battery Employee',
+          _ => 'Friends Battery Seller',
+        };
         context.go(
           successPath,
           extra: SaleSuccessData(
-            customerName: _customerNameController.text,
-            customerNumber: _customerMobileController.text,
+            customerName: customerName,
+            customerNumber: customerNumber,
             productName: '$_selectedProductName $_selectedProductModel',
             serialNumber: serialValue,
             sellPrice: sellPrice,
             invoiceNumber:
                 'INV-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}',
             saleDate: DateTime.now(),
-            sellerName: isAdminLike ? 'Friends Battery Admin' : 'Friends Battery Seller',
+            sellerName: sellerLabel,
           ),
         );
       }
@@ -491,17 +498,22 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                                 if (value == null || value.trim().isEmpty) {
                                   return 'Sell price is required';
                                 }
-                                final parsed = double.tryParse(value);
+                                final parsed = double.tryParse(value.trim());
                                 if (parsed == null || parsed <= 0) {
                                   return 'Sell price must be greater than 0';
+                                }
+                                if (_minPrice != null && parsed < _minPrice!) {
+                                  return 'Price cannot be below minimum ₹$_minPrice';
                                 }
                                 return null;
                               },
                             ),
                             const SizedBox(height: 12),
 
-                            // Selling below recommended warning
-                            if (_minPrice != null && _userSellPrice != null && _userSellPrice! < _minPrice!) ...[
+                            // Below min — blocked by validator; surface while typing
+                            if (_minPrice != null &&
+                                _userSellPrice != null &&
+                                _userSellPrice! < _minPrice!) ...[
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
@@ -509,14 +521,18 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                                   border: Border.all(color: const Color(0xFFDC2626)),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Row(
+                                child: Row(
                                   children: [
-                                    Icon(Icons.warning_amber_rounded, color: Color(0xFFDC2626)),
-                                    SizedBox(width: 8),
+                                    const Icon(Icons.block, color: Color(0xFFDC2626)),
+                                    const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
-                                        'Warning: Selling below minimum recommended price.',
-                                        style: TextStyle(color: Color(0xFFDC2626), fontSize: 13, fontWeight: FontWeight.w500),
+                                        'Price is below minimum ₹$_minPrice. Raise the price to continue.',
+                                        style: const TextStyle(
+                                          color: Color(0xFFDC2626),
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
                                     ),
                                   ],

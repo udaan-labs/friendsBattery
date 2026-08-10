@@ -14,11 +14,13 @@ class SalesController {
    */
   async createSale(req, res) {
     try {
-      // Pass the authenticated user ID safely
-      // Never trust frontend seller id, always use req.user.id
-      const sellerId = req.user.id;
-      const result = await salesService.createSale(req.body, sellerId);
-      
+      // Never trust client seller/owner/location — always req.user
+      const result = await salesService.createSale(req.body, {
+        id: req.user.id,
+        role: req.user.role,
+        locationId: req.user.locationId ?? null,
+      });
+
       return successResponse(res, 201, 'Sale transaction created successfully', result);
     } catch (error) {
       return handleRouteError(res, error, 'Create Sale Error:');

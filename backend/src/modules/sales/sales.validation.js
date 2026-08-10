@@ -1,18 +1,40 @@
 const { z } = require('zod');
 
 /**
- * Validation schema for creating a sale
+ * Validation schema for creating a sale.
+ * Ownership/location enforced in service (actor from JWT, not body).
  */
 const createSaleSchema = z.object({
   body: z.object({
     product_name_id: z.number().int().positive('Product Name ID must be a valid positive integer'),
     product_model_id: z.number().int().positive('Product Model ID must be a valid positive integer'),
-    serial_number: z.string().min(1, 'Serial number is required').max(100, 'Serial number is too long'),
-    customer_name: z.string().min(1, 'Customer name is required').max(100, 'Customer name is too long'),
-    customer_number: z.string().length(10, 'Customer mobile number must be exactly 10 digits').regex(/^\d{10}$/, 'Customer mobile number must contain only digits'),
-    vehicle_number: z.string().max(50, 'Vehicle number is too long').optional().nullable(),
-    sell_price: z.number().positive('Sell price must be a positive number')
-  })
+    serial_number: z
+      .string()
+      .trim()
+      .min(1, 'Serial number is required')
+      .max(100, 'Serial number is too long'),
+    customer_name: z
+      .string()
+      .trim()
+      .min(1, 'Customer name is required')
+      .max(100, 'Customer name is too long'),
+    customer_number: z
+      .string()
+      .trim()
+      .regex(/^\d{10}$/, 'Customer mobile number must be exactly 10 digits'),
+    vehicle_number: z
+      .string()
+      .trim()
+      .max(50, 'Vehicle number is too long')
+      .optional()
+      .nullable()
+      .transform((v) => (v == null || v === '' ? null : v)),
+    // Decimal(12, 2) — reject overflow before Prisma
+    sell_price: z
+      .number()
+      .positive('Sell price must be a positive number')
+      .max(9_999_999_999.99, 'Sell price is too large'),
+  }),
 });
 
 /**
@@ -21,15 +43,6 @@ const createSaleSchema = z.object({
 const viewSaleSchema = z.object({
   params: z.object({
     transactionId: z.string().regex(/^\d+$/, 'Transaction ID must be numeric').transform(Number)
-  })
-});
-
-/**
- * Validation schema for viewing customer sales
- */
-const customerSalesSchema = z.object({
-  params: z.object({
-    mobile: z.string().min(10, 'Mobile number must be at least 10 characters')
   })
 });
 
@@ -66,7 +79,6 @@ const adminSalesHistorySchema = z.object({
 module.exports = {
   createSaleSchema,
   viewSaleSchema,
-  customerSalesSchema,
   salesHistorySchema,
   adminSalesHistorySchema,
 };

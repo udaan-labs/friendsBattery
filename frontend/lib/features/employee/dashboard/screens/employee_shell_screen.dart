@@ -168,6 +168,15 @@ class _EmployeeDrawer extends StatelessWidget {
                     },
                   ),
                   _DrawerItem(
+                    icon: Icons.receipt_long_rounded,
+                    label: 'Create bill',
+                    isActive: _isActive('/employee/create-bill'),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      context.go('/employee/create-bill');
+                    },
+                  ),
+                  _DrawerItem(
                     icon: Icons.fingerprint,
                     label: 'Check-in / Check-out',
                     isActive: _isActive('/employee/attendance'),

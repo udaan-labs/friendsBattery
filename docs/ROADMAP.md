@@ -3,7 +3,7 @@
 **Role chain:** `SUPER ADMIN → ADMIN → SELLER → EMPLOYEE`  
 One stream at a time. Work **down** the chain.  
 `- [ ]` todo · `- [x]` done.  
-**Next:** §4 Employee (create bill).
+**Next:** §5.3 OTP (reusable).
 
 ```text
 SUPER ADMIN     all WH + shops · stock any WH · adjust any shop · PDF/GPS all · sell/accept
@@ -89,9 +89,9 @@ Shared sell tools (§5) once anyone can sell. Obsidian: `obsidian/FriendsBattery
 - [x] Check-in / check-out (geofence)  
 - [x] View location stock  
 - [x] Shipments **read-only** — **cannot** accept  
-- [ ] **Create bill** (reuse seller flow; stock = employee location)  
-- [ ] Same serial / unit rules as seller  
-- [ ] No Super Admin / Admin-only screens  
+- [x] **Create bill** (reuse seller flow; stock = employee location)  
+- [x] Same serial / unit rules as seller  
+- [x] No Super Admin / Admin-only screens  
 - [ ] Can use service bills when off-site (jumpstart etc. via §5)  
 
 ---
@@ -101,12 +101,12 @@ Shared sell tools (§5) once anyone can sell. Obsidian: `obsidian/FriendsBattery
 *Admin · Seller · Employee · Super Admin who create bills — build once.*
 
 ### 5.1 Harden current bill
-- [ ] Stronger validation (price, serials, ownership/location)  
-- [ ] On sale success → **WhatsApp message to customer**  
+- [x] Stronger validation (price, serials, ownership/location)  
+- [x] On sale success → **WhatsApp message to customer**  
 
 ### 5.2 Hardware bill print
-- [ ] Connect to print hardware (Bluetooth / ESC-POS / machine SDK)  
-- [ ] Print bill after successful sale (same path all roles)  
+- [x] Connect to print hardware — **OS system print** (USB/Wi‑Fi/paired via phone dialog; ESC-POS app pairing later if needed)  
+- [x] Print bill after successful sale (same path all roles — `SaleSuccessScreen`)  
 
 ### 5.3 OTP (reusable)
 - [ ] Send OTP + verify OTP (backend)  

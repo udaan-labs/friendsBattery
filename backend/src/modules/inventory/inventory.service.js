@@ -5,6 +5,7 @@ const { getDefaultWarehouseId, getUserLocationId } = require('../../shared/utils
 const { prisma } = require('../../config/db');
 const { httpError } = require('../../shared/utils/http-error');
 const { isAdminLikeRole } = require('../../shared/utils/role.util');
+const ROLES = require('../../shared/constants/roles');
 
 /**
  * Inventory Service
@@ -622,27 +623,37 @@ class InventoryService {
   }
 
   /**
-   * Scan a serial number to fetch product details for a sale
+   * Scan serial for sale.
+   * Admin/Seller: unit owned by actor. Employee: AVAILABLE at actor's shop location.
    * @param {string} serialNumber
-   * @param {number|string|bigint} sellerId
-   * @returns {Promise<Object>}
+   * @param {{ id: number, role: string, locationId?: number|null }} actor
    */
-  async scanForSale(serialNumber, sellerId) {
+  async scanForSale(serialNumber, actor) {
     const cleanSerial = serialNumber ? serialNumber.trim() : '';
+    const where = {
+      serialNumber: { equals: cleanSerial, mode: 'insensitive' },
+      status: 'AVAILABLE',
+    };
+
+    if (actor.role === ROLES.EMPLOYEE) {
+      if (actor.locationId == null) {
+        throw httpError(400, 'Your account has no shop location. Contact admin.');
+      }
+      where.currentLocationId = BigInt(actor.locationId);
+    } else {
+      where.ownerId = BigInt(actor.id);
+    }
+
     const unit = await prisma.productUnit.findFirst({
-      where: {
-        serialNumber: { equals: cleanSerial, mode: 'insensitive' },
-        ownerId: BigInt(sellerId),
-        status: 'AVAILABLE'
-      },
+      where,
       include: {
         product: {
           include: {
             productName: true,
-            productModel: true
-          }
-        }
-      }
+            productModel: true,
+          },
+        },
+      },
     });
 
     if (!unit) {
@@ -655,7 +666,7 @@ class InventoryService {
       productModelId: Number(unit.product.productModelId),
       productName: unit.product.productName.name,
       productModel: unit.product.productModel.name,
-      minSellPrice: Number(unit.product.minPrice)
+      minSellPrice: Number(unit.product.minPrice),
     };
   }
 }

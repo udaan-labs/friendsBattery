@@ -15,8 +15,8 @@ const {
 const { authenticate } = require('../../shared/middleware/auth.middleware');
 const {
   requireAdmin,
-  requireSeller,
   requireAdminOrSeller,
+  requireAdminOrSellerOrEmployee,
 } = require('../../shared/middleware/role.middleware');
 const { validateRequest } = require('../../shared/middleware/validation.middleware');
 
@@ -289,7 +289,7 @@ router.get(
  * @swagger
  * /api/inventory/scan-for-sale:
  *   get:
- *     summary: Scan a serial number to fetch product details for a sale
+ *     summary: Scan serial for sale (owner stock; EMPLOYEE = location stock)
  *     tags: [Inventory]
  *     security:
  *       - bearerAuth: []
@@ -306,13 +306,15 @@ router.get(
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ScanForSaleResponse'
+ *       400:
+ *         description: Employee has no shop location
  *       404:
  *         description: Product not found in available inventory
  */
 router.get(
   '/scan-for-sale',
   authenticate,
-  requireAdminOrSeller,
+  requireAdminOrSellerOrEmployee,
   inventoryController.scanForSale.bind(inventoryController)
 );
 

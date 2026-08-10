@@ -408,6 +408,22 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const CurrentInventoryScreen(),
           ),
           GoRoute(
+            path: '/employee/create-bill',
+            builder: (context, state) => const CreateBillScreen(),
+          ),
+          GoRoute(
+            path: '/employee/sale-success',
+            builder: (context, state) {
+              final saleData = state.extra as SaleSuccessData?;
+              if (saleData == null) {
+                return const Scaffold(
+                  body: Center(child: Text('Missing sale data')),
+                );
+              }
+              return SaleSuccessScreen(saleData: saleData);
+            },
+          ),
+          GoRoute(
             path: '/employee/attendance',
             builder: (context, state) => const EmployeeAttendanceScreen(),
           ),
