@@ -19,6 +19,10 @@ class _$AdminDashboardStats extends AdminDashboardStats {
   final int? totalSellers;
   @override
   final int? pendingShipments;
+  @override
+  final int? totalAdmins;
+  @override
+  final int? totalLocations;
 
   factory _$AdminDashboardStats([
     void Function(AdminDashboardStatsBuilder)? updates,
@@ -31,6 +35,8 @@ class _$AdminDashboardStats extends AdminDashboardStats {
     this.pendingRequests,
     this.totalSellers,
     this.pendingShipments,
+    this.totalAdmins,
+    this.totalLocations,
   }) : super._();
   @override
   AdminDashboardStats rebuild(
@@ -50,7 +56,9 @@ class _$AdminDashboardStats extends AdminDashboardStats {
         todaySalesAmount == other.todaySalesAmount &&
         pendingRequests == other.pendingRequests &&
         totalSellers == other.totalSellers &&
-        pendingShipments == other.pendingShipments;
+        pendingShipments == other.pendingShipments &&
+        totalAdmins == other.totalAdmins &&
+        totalLocations == other.totalLocations;
   }
 
   @override
@@ -62,6 +70,8 @@ class _$AdminDashboardStats extends AdminDashboardStats {
     _$hash = $jc(_$hash, pendingRequests.hashCode);
     _$hash = $jc(_$hash, totalSellers.hashCode);
     _$hash = $jc(_$hash, pendingShipments.hashCode);
+    _$hash = $jc(_$hash, totalAdmins.hashCode);
+    _$hash = $jc(_$hash, totalLocations.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -74,7 +84,9 @@ class _$AdminDashboardStats extends AdminDashboardStats {
           ..add('todaySalesAmount', todaySalesAmount)
           ..add('pendingRequests', pendingRequests)
           ..add('totalSellers', totalSellers)
-          ..add('pendingShipments', pendingShipments))
+          ..add('pendingShipments', pendingShipments)
+          ..add('totalAdmins', totalAdmins)
+          ..add('totalLocations', totalLocations))
         .toString();
   }
 }
@@ -110,6 +122,15 @@ class AdminDashboardStatsBuilder
   set pendingShipments(int? pendingShipments) =>
       _$this._pendingShipments = pendingShipments;
 
+  int? _totalAdmins;
+  int? get totalAdmins => _$this._totalAdmins;
+  set totalAdmins(int? totalAdmins) => _$this._totalAdmins = totalAdmins;
+
+  int? _totalLocations;
+  int? get totalLocations => _$this._totalLocations;
+  set totalLocations(int? totalLocations) =>
+      _$this._totalLocations = totalLocations;
+
   AdminDashboardStatsBuilder() {
     AdminDashboardStats._defaults(this);
   }
@@ -123,6 +144,8 @@ class AdminDashboardStatsBuilder
       _pendingRequests = $v.pendingRequests;
       _totalSellers = $v.totalSellers;
       _pendingShipments = $v.pendingShipments;
+      _totalAdmins = $v.totalAdmins;
+      _totalLocations = $v.totalLocations;
       _$v = null;
     }
     return this;
@@ -151,6 +174,8 @@ class AdminDashboardStatsBuilder
           pendingRequests: pendingRequests,
           totalSellers: totalSellers,
           pendingShipments: pendingShipments,
+          totalAdmins: totalAdmins,
+          totalLocations: totalLocations,
         );
     replace(_$result);
     return _$result;

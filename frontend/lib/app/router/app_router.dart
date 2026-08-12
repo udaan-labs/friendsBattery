@@ -8,7 +8,7 @@ import '../../features/admin/dashboard/screens/admin_dashboard_screen.dart';
 import '../../features/admin/dashboard/screens/admin_shell_screen.dart';
 import '../../features/admin/dashboard/screens/admin_activity_history_screen.dart';
 import '../../features/admin/inventory/screens/add_stock_screen.dart';
-import '../../features/admin/inventory/screens/add_product_screen.dart';
+import '../../features/admin/inventory/screens/forms/create_product_form.dart';
 import '../../features/admin/shipments/screens/shipment_list_screen.dart';
 import '../../features/admin/shipments/screens/create_shipment_screen.dart';
 import '../../features/admin/shipments/screens/admin_shipment_detail_screen.dart';
@@ -182,7 +182,23 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/admin/add-product',
-            builder: (context, state) => const AddProductScreen(),
+            builder: (context, state) {
+              final q = state.uri.queryParameters;
+              return CreateProductForm(
+                initialProductNameId: q['productNameId'],
+                initialProductModelId: q['productModelId'],
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/add-product/configure',
+            builder: (context, state) {
+              final q = state.uri.queryParameters;
+              return CreateProductForm(
+                initialProductNameId: q['productNameId'],
+                initialProductModelId: q['productModelId'],
+              );
+            },
           ),
           GoRoute(
             path: '/admin/inventory',

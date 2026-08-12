@@ -3,6 +3,7 @@ import 'dart:developer' as developer;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import '../../../../core/network/api_client_provider.dart';
+import '../../../shared/products/providers/product_catalog_providers.dart';
 
 DashboardApi _dashboard(Ref ref) => ref.watch(apiClientProvider).getDashboardApi();
 
@@ -26,6 +27,7 @@ Future<void> refreshAdminDashboard(WidgetRef ref) async {
   await Future.wait([
     _safeRefresh(ref, kpiProvider, 'KPIs'),
     _safeRefresh(ref, recentActivityProvider, 'Recent Activity'),
+    _safeRefresh(ref, productNamesProvider, 'Products'),
   ]);
 }
 

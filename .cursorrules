@@ -11,4 +11,15 @@ Before writing or modifying any code, you must walk through this ladder and stop
 6. **Can it be done in one line?** → Write one line.
 7. **Only then:** Write the minimum custom code that works.
 
-**CRITICAL:** Being lazy does not mean being negligent. You must NEVER cut trust-boundary validation, data-loss handling, security, or accessibility. Do not over-engineer, but do not compromise on safety.
+## Core Behavioral Principles (Karpathy Guidelines)
+1. **Think Before Coding**: State assumptions explicitly upfront; if ambiguous, ask rather than guess.
+2. **Simplicity First**: Write minimum code for current task only (no speculative abstractions or bloat).
+3. **Surgical Changes**: Edit ONLY what is directly requested. Never refactor or touch adjacent code/comments.
+4. **Goal-Driven Execution**: Define concrete verification steps and loop until verified.
+
+## Active Agent Skills
+Always inspect and apply skills from `.agents/skills/`:
+- `karpathy-guidelines` (`.agents/skills/karpathy-guidelines/SKILL.md`)
+- `ponytail` (`.agents/skills/ponytail/SKILL.md`)
+- `friendsbattery-flutter` (`.agents/skills/friendsbattery-flutter/SKILL.md`)
+- `todo` (`.agents/skills/todo/SKILL.md`)

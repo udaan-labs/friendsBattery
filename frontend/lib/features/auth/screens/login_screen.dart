@@ -57,14 +57,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     ref.listen(loginOtpChallengeProvider, (prev, next) {
       if (next != null && prev == null) {
-        _otpController.clear();
-        final masked = next.phoneMasked ?? 'your phone';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('OTP SMS sent to $masked. Enter the code from the message.'),
-            duration: const Duration(seconds: 4),
-          ),
-        );
+        final devOtp = next.otp;
+        if (devOtp != null && devOtp.isNotEmpty) {
+          _otpController.text = devOtp;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('SMS skipped (dev). OTP: $devOtp'),
+              duration: const Duration(seconds: 8),
+            ),
+          );
+        } else {
+          _otpController.clear();
+          final masked = next.phoneMasked ?? 'your phone';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'OTP SMS sent to $masked. Enter the code from the message.',
+              ),
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
       }
     });
 
@@ -109,7 +122,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               const SizedBox(height: 8),
               Text(
                 awaitingOtp
-                    ? 'Code sent to ${challenge.phoneMasked ?? 'your phone'}'
+                    ? (challenge.otp != null && challenge.otp!.isNotEmpty
+                        ? 'SMS skipped — use OTP ${challenge.otp}'
+                        : 'Code sent to ${challenge.phoneMasked ?? 'your phone'}')
                     : 'Sign in to manage your battery systems',
                 textAlign: TextAlign.center,
                 style: TextStyle(

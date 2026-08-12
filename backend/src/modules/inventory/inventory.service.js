@@ -510,12 +510,13 @@ class InventoryService {
     const unitScope = await resolveUnitScope(userId, role, locationId);
     if (!unitScope) {
       return {
-        productNames: [],
+        // Shape matches Swagger / OpenAPI (categories hierarchy) used by admin View Stock.
+        categories: [],
         pagination: {
           total: 0,
           page: Number(page),
           limit: Number(limit),
-          total_pages: 0
+          totalPages: 0
         }
       };
     }
@@ -535,12 +536,12 @@ class InventoryService {
 
     if (products.length === 0) {
       return {
-        productNames: [],
+        categories: [],
         pagination: {
           total,
           page: Number(page),
           limit: Number(limit),
-          total_pages: Math.ceil(total / limit)
+          totalPages: Math.ceil(total / limitNum) || 0
         }
       };
     }
@@ -580,7 +581,7 @@ class InventoryService {
 
     const productNameMap = new Map(productNameStats.map(s => [s.productNameId, s]));
 
-    // 5. Build hierarchy: ProductName -> Product
+    // 5. Build hierarchy: ProductName -> Product (internal)
     const productNames = [];
     for (const product of products) {
       const nameId = product.productNameId;
@@ -611,13 +612,30 @@ class InventoryService {
       });
     }
 
+    // Map to OpenAPI "categories → subcategories → products" for Flutter admin View Stock.
+    const categories = productNames.map((nameNode) => ({
+      categoryId: String(nameNode.productNameId),
+      categoryName: nameNode.productNameLabel,
+      subcategories: [
+        {
+          subcategoryName: 'Models',
+          products: nameNode.products.map((p) => ({
+            productName: p.productModel,
+            totalQuantity: p.totalQuantity,
+            soldQuantity: p.soldQuantity,
+            remainingQuantity: p.remainingQuantity
+          }))
+        }
+      ]
+    }));
+
     return {
-      productNames,
+      categories,
       pagination: {
         total,
         page: Number(page),
         limit: Number(limit),
-        total_pages: Math.ceil(total / limit)
+        totalPages: Math.ceil(total / limitNum) || 0
       }
     };
   }

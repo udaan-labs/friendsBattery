@@ -8,7 +8,15 @@ import '../../../../../shared/widgets/snackbar_helper.dart';
 import '../../../../shared/products/providers/product_catalog_providers.dart';
 
 class CreateProductForm extends ConsumerStatefulWidget {
-  const CreateProductForm({super.key});
+  /// Pre-select name/model when arriving from Add Name / Add Model.
+  final String? initialProductNameId;
+  final String? initialProductModelId;
+
+  const CreateProductForm({
+    super.key,
+    this.initialProductNameId,
+    this.initialProductModelId,
+  });
 
   @override
   ConsumerState<CreateProductForm> createState() => _CreateProductFormState();
@@ -28,6 +36,13 @@ class _CreateProductFormState extends ConsumerState<CreateProductForm> {
   String? _selectedProductModelId;
 
   bool _onSale = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedProductNameId = widget.initialProductNameId;
+    _selectedProductModelId = widget.initialProductModelId;
+  }
 
   @override
   void dispose() {
@@ -66,8 +81,8 @@ class _CreateProductFormState extends ConsumerState<CreateProductForm> {
 
       if (mounted) {
         context.showSuccessSnackBar('Product configured successfully');
-        DataSync.afterProductMutation(ref);
-        context.pop();
+        await DataSync.afterProductMutation(ref);
+        if (mounted) context.pop(true);
       }
     } on DioException catch (e) {
       if (mounted) {
@@ -144,7 +159,9 @@ class _CreateProductFormState extends ConsumerState<CreateProductForm> {
                               )
                             : DropdownButtonFormField<String>(
                                 isExpanded: true,
-                                value: _selectedProductNameId,
+                                value: productNames.any((n) => n.id == _selectedProductNameId)
+                                    ? _selectedProductNameId
+                                    : null,
                                 decoration: InputDecoration(
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -213,7 +230,9 @@ class _CreateProductFormState extends ConsumerState<CreateProductForm> {
                               : DropdownButtonFormField<String>(
                                   key: ValueKey('model_$_selectedProductNameId'),
                                   isExpanded: true,
-                                  value: _selectedProductModelId,
+                                  value: productModels.any((m) => m.id == _selectedProductModelId)
+                                      ? _selectedProductModelId
+                                      : null,
                                   decoration: InputDecoration(
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),

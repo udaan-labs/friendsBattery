@@ -1,6 +1,6 @@
 /**
  * Send OTP SMS via Fast2SMS Quick SMS.
- * Env: FAST2SMS_API_KEY (required)
+ * Env: FAST2SMS_API_KEY — when empty, SMS is skipped (dev); OTP is logged + echoed by auth.
  * ponytail: DLT template route later if Quick SMS / compliance needs it.
  */
 const { httpError } = require('../../shared/utils/http-error');
@@ -13,13 +13,17 @@ function normalizeIndiaMobile(raw) {
   return s;
 }
 
+/**
+ * @returns {Promise<{ skipped: boolean }>}
+ */
 async function sendOtpSms({ phone, code, purpose }) {
   const apiKey = process.env.FAST2SMS_API_KEY?.trim();
   if (!apiKey) {
-    throw httpError(
-      503,
-      'SMS not configured. Set FAST2SMS_API_KEY in backend/.env (fast2sms.com)'
+    // Dev bypass: no provider configured — do not block login.
+    console.warn(
+      `[SMS] FAST2SMS_API_KEY not set — skipping SMS. OTP=${code} purpose=${purpose || 'n/a'}`
     );
+    return { skipped: true };
   }
 
   const mobile = normalizeIndiaMobile(phone);
@@ -56,6 +60,7 @@ async function sendOtpSms({ phone, code, purpose }) {
   }
 
   console.log(`[SMS] OTP sent ****${mobile.slice(-4)} id=${data.request_id || 'n/a'}`);
+  return { skipped: false };
 }
 
 module.exports = { sendOtpSms, normalizeIndiaMobile };

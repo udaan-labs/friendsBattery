@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../shared/widgets/responsive_helper.dart';
 import '../../../../core/storage/session_manager.dart';
+import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/widgets/logout_dialog_helper.dart';
 import '../../../../theme/app_theme.dart';
 import '../providers/admin_stock_provider.dart';
@@ -12,7 +13,7 @@ import '../providers/dashboard_providers.dart';
 import '../widgets/kpi_grid.dart';
 import '../widgets/quick_actions.dart';
 import '../widgets/recent_activity_timeline.dart';
-import '../../inventory/screens/add_product_screen.dart';
+import '../../inventory/screens/forms/create_product_form.dart';
 
 class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -85,6 +86,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     final isDesktop = ResponsiveHelper.isDesktop(context);
     final isTablet = ResponsiveHelper.isTablet(context);
     final username = _getUserNameSafe();
+    final isSuperAdmin = ref.watch(authProvider).role == UserRole.superAdmin;
 
     return PopScope(
       canPop: _currentTab == 'dashboard',
@@ -210,21 +212,27 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     tabId: 'dashboard',
                   ),
                   _buildDrawerItem(
-                    icon: Icons.add_box_outlined,
-                    activeIcon: Icons.add_box,
-                    title: 'Add Product',
-                    tabId: 'add_product',
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.inventory_2_outlined,
-                    activeIcon: Icons.inventory_2,
-                    title: 'View Stock',
-                    tabId: 'view_stock',
+                    icon: Icons.price_change_outlined,
+                    activeIcon: Icons.price_change,
+                    title: 'Configure Product',
+                    tabId: 'configure_product',
                     onTap: () {
-                      context.pop(); // close drawer
-                      context.push('/admin/inventory');
+                      context.pop();
+                      context.push('/admin/add-product/configure');
                     },
                   ),
+                  // Super Admin owns catalog only — no personal inventory screen.
+                  if (!isSuperAdmin)
+                    _buildDrawerItem(
+                      icon: Icons.inventory_2_outlined,
+                      activeIcon: Icons.inventory_2,
+                      title: 'View Stock',
+                      tabId: 'view_stock',
+                      onTap: () {
+                        context.pop(); // close drawer
+                        context.push('/admin/inventory');
+                      },
+                    ),
                   _buildDrawerItem(
                     icon: Icons.qr_code_scanner_outlined,
                     activeIcon: Icons.qr_code_scanner,
@@ -245,26 +253,28 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       context.go('/admin/sellers');
                     },
                   ),
-                  _buildDrawerItem(
-                    icon: Icons.point_of_sale_outlined,
-                    activeIcon: Icons.point_of_sale,
-                    title: 'Sales',
-                    tabId: 'sales',
-                    onTap: () {
-                      context.pop();
-                      context.push('/admin/sales');
-                    },
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.swap_horiz_outlined,
-                    activeIcon: Icons.swap_horiz,
-                    title: 'Stock Transfer',
-                    tabId: 'stock_transfer',
-                    onTap: () {
-                      context.pop();
-                      context.go('/admin/shipments');
-                    },
-                  ),
+                  if (!isSuperAdmin) ...[
+                    _buildDrawerItem(
+                      icon: Icons.point_of_sale_outlined,
+                      activeIcon: Icons.point_of_sale,
+                      title: 'Sales',
+                      tabId: 'sales',
+                      onTap: () {
+                        context.pop();
+                        context.push('/admin/sales');
+                      },
+                    ),
+                    _buildDrawerItem(
+                      icon: Icons.swap_horiz_outlined,
+                      activeIcon: Icons.swap_horiz,
+                      title: 'Stock Transfer',
+                      tabId: 'stock_transfer',
+                      onTap: () {
+                        context.pop();
+                        context.go('/admin/shipments');
+                      },
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -438,9 +448,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     );
   }
 
-  // --- Sub-View: Add Product Form ---
+  // --- Sub-View: Configure product (pricing / min units) ---
   Widget _buildAddProductTabView() {
-    return const AddProductScreen();
+    return const CreateProductForm();
   }
   // --- Sub-View: View Stock (Paginated Table via shared provider) ---
   Widget _buildViewStockTabView() {

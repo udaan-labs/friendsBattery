@@ -373,9 +373,3 @@ lib/src/model/verify_product_response.dart
 lib/src/model/verify_product_unit.dart
 lib/src/serializers.dart
 pubspec.yaml
-test/create_rent_request_test.dart
-test/create_rent_response_test.dart
-test/create_rent_result_test.dart
-test/return_rent_request_test.dart
-test/return_rent_response_test.dart
-test/return_rent_result_test.dart

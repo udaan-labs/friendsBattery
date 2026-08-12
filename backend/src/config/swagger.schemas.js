@@ -333,7 +333,9 @@ module.exports = {
       todaySalesAmount: { type: 'number' },
       pendingRequests: { type: 'integer' },
       totalSellers: { type: 'integer' },
-      pendingShipments: { type: 'integer' }
+      pendingShipments: { type: 'integer' },
+      totalAdmins: { type: 'integer' },
+      totalLocations: { type: 'integer' },
     }
   },
   AdminDashboardStatsResponse: {

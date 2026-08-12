@@ -18,10 +18,21 @@ Inventory and stock management for batteries: admin (wholesaler) and seller role
 1. Before implementing backend work → read `docs/architecture.md` (at least the request path + domain rules).
 2. Before wiring or changing any frontend API usage → read `docs/OPENAPI.md`.
 3. Before new screens / providers / widgets → read `docs/frontend-guidelines.md`.
-4. If code and a doc disagree on **layers or OpenAPI/Dio**, fix code to match the doc (or update the doc only when introducing a real new pattern).
-5. Prefer linking/citing these paths in plans; do not restate full copies of them in every reply.
+4. Before planning, coding, or reviewing → load & follow skills in `.agents/skills/` (`karpathy-guidelines`, `ponytail`, `friendsbattery-flutter`, `todo`).
+5. If code and a doc disagree on **layers or OpenAPI/Dio**, fix code to match the doc (or update the doc only when introducing a real new pattern).
+6. Prefer linking/citing these paths in plans; do not restate full copies of them in every reply.
 
-Repo layout for docs:
+## Active Skills (.agents/skills/)
+
+AI Agents **must** load and follow the corresponding skills under `.agents/skills/`:
+| Skill | Location | Purpose |
+|---|---|---|
+| **karpathy-guidelines** | `.agents/skills/karpathy-guidelines/SKILL.md` | Eliminate LLM coding mistakes (Think before coding, Simplicity first, Surgical changes, Goal-driven execution) |
+| **ponytail** | `.agents/skills/ponytail/SKILL.md` | Ultra-minimalist code, zero bloat, YAGNI, simplest production-ready solution |
+| **friendsbattery-flutter** | `.agents/skills/friendsbattery-flutter/SKILL.md` | Flutter Riverpod UI + OpenAPI models + Dio transport only |
+| **todo** | `.agents/skills/todo/SKILL.md` | Roadmap & Obsidian canvas workflow management |
+
+Repo layout for docs and skills:
 
 ```text
 docs/
@@ -31,9 +42,16 @@ docs/
 └── PERFORMANCE_AUDIT.md
 ```
 
-## Development philosophy (YAGNI + Ponytail)
+## Development philosophy (YAGNI + Ponytail + Karpathy Guidelines)
 
-**Lead rule:** simplest production-ready change that ships the current MVP need. If a proposal violates YAGNI or Ponytail, reject it and offer a simpler path.
+**Lead rule:** simplest production-ready change that ships the current MVP need. If a proposal violates YAGNI, Ponytail, or Karpathy Guidelines, reject it and offer a simpler path.
+
+### Karpathy Guidelines (Core AI Behavioral Rules)
+
+1. **Think Before Coding**: Don't guess or silently pick interpretations. State assumptions explicitly upfront; if multiple approaches exist or ambiguity is present, surface tradeoffs and ask before coding.
+2. **Simplicity First**: Write the minimum code required for the current goal. No speculative flexibility, premature optimization, or bloated abstractions.
+3. **Surgical Changes**: Touch ONLY code directly requested. Do not refactor, reformat, or "improve" adjacent/unrelated code or comments.
+4. **Goal-Driven Execution**: Define clear, testable success criteria for every task (e.g., write failing tests first or set concrete verification checks) and loop until verified.
 
 ### YAGNI
 

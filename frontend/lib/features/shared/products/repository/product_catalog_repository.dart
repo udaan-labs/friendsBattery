@@ -74,7 +74,7 @@ class ProductCatalogRepository {
     return id;
   }
 
-  Future<void> createProductModel({
+  Future<int> createProductModel({
     required int productNameId,
     required String name,
   }) async {
@@ -82,9 +82,14 @@ class ProductCatalogRepository {
       b.productNameId = productNameId;
       b.name = name;
     });
-    await _products.apiProductsProductModelsPost(
+    final response = await _products.apiProductsProductModelsPost(
       createProductModelRequest: body,
     );
+    final id = response.data?.data?.id;
+    if (id == null) {
+      throw Exception('Product model created but id missing');
+    }
+    return id;
   }
 
   Future<void> createProduct({

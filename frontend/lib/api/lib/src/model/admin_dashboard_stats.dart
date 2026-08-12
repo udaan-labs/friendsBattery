@@ -17,6 +17,8 @@ part 'admin_dashboard_stats.g.dart';
 /// * [pendingRequests] 
 /// * [totalSellers] 
 /// * [pendingShipments] 
+/// * [totalAdmins] 
+/// * [totalLocations] 
 @BuiltValue()
 abstract class AdminDashboardStats implements Built<AdminDashboardStats, AdminDashboardStatsBuilder> {
   @BuiltValueField(wireName: r'totalStock')
@@ -36,6 +38,12 @@ abstract class AdminDashboardStats implements Built<AdminDashboardStats, AdminDa
 
   @BuiltValueField(wireName: r'pendingShipments')
   int? get pendingShipments;
+
+  @BuiltValueField(wireName: r'totalAdmins')
+  int? get totalAdmins;
+
+  @BuiltValueField(wireName: r'totalLocations')
+  int? get totalLocations;
 
   AdminDashboardStats._();
 
@@ -99,6 +107,20 @@ class _$AdminDashboardStatsSerializer implements PrimitiveSerializer<AdminDashbo
       yield r'pendingShipments';
       yield serializers.serialize(
         object.pendingShipments,
+        specifiedType: const FullType(int),
+      );
+    }
+    if (object.totalAdmins != null) {
+      yield r'totalAdmins';
+      yield serializers.serialize(
+        object.totalAdmins,
+        specifiedType: const FullType(int),
+      );
+    }
+    if (object.totalLocations != null) {
+      yield r'totalLocations';
+      yield serializers.serialize(
+        object.totalLocations,
         specifiedType: const FullType(int),
       );
     }
@@ -166,6 +188,20 @@ class _$AdminDashboardStatsSerializer implements PrimitiveSerializer<AdminDashbo
             specifiedType: const FullType(int),
           ) as int;
           result.pendingShipments = valueDes;
+          break;
+        case r'totalAdmins':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.totalAdmins = valueDes;
+          break;
+        case r'totalLocations':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.totalLocations = valueDes;
           break;
         default:
           unhandled.add(key);

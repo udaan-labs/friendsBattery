@@ -6,14 +6,23 @@ const { parsePagination } = require('../../shared/utils/pagination');
 class DashboardController {
   async getStats(req, res) {
     try {
-      const [totalStock, todaySales, pendingRequests, totalSellers, pendingShipments] =
-        await Promise.all([
-          dashboardRepository.getTotalStock(),
-          dashboardRepository.getTodaySales(),
-          dashboardRepository.getPendingRequests(),
-          dashboardRepository.getTotalSellers(),
-          dashboardRepository.getPendingShipmentsAdmin(),
-        ]);
+      const [
+        totalStock,
+        todaySales,
+        pendingRequests,
+        totalSellers,
+        pendingShipments,
+        totalAdmins,
+        totalLocations,
+      ] = await Promise.all([
+        dashboardRepository.getTotalStock(),
+        dashboardRepository.getTodaySales(),
+        dashboardRepository.getPendingRequests(),
+        dashboardRepository.getTotalSellers(),
+        dashboardRepository.getPendingShipmentsAdmin(),
+        dashboardRepository.getTotalAdmins(),
+        dashboardRepository.getTotalLocations(),
+      ]);
 
       return successResponse(res, 200, 'Dashboard stats retrieved successfully', {
         totalStock,
@@ -22,6 +31,8 @@ class DashboardController {
         pendingRequests,
         totalSellers,
         pendingShipments,
+        totalAdmins,
+        totalLocations,
       });
     } catch (error) {
       return handleRouteError(res, error, 'Error in DashboardController.getStats:');

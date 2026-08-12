@@ -13,20 +13,30 @@ class QuickActions extends ConsumerWidget {
     final titleSize = isSmall ? 16.0 : 18.0;
     final isSuperAdmin = ref.watch(authProvider).role == UserRole.superAdmin;
 
-    // One clear home per task (no duplicates on Sellers / forms).
-    final actions = [
+    // Super Admin: catalog only (no owned inventory). Shop Admin: stock + sales.
+    final actions = <_ActionItemData>[
       _ActionItemData(
-        title: 'Add Stock',
-        subtitle: 'Add new inventory items',
-        icon: Icons.add_box_outlined,
-        route: '/admin/add-stock',
+        title: 'Configure Product',
+        subtitle: isSuperAdmin
+            ? 'Set price + min units for the catalog'
+            : 'Price + min units (before stock)',
+        icon: Icons.price_change_outlined,
+        route: '/admin/add-product/configure',
       ),
-      _ActionItemData(
-        title: 'Assign Stock',
-        subtitle: 'Transfer stock to seller',
-        icon: Icons.move_to_inbox_outlined,
-        route: '/admin/shipments/create',
-      ),
+      if (!isSuperAdmin) ...[
+        _ActionItemData(
+          title: 'Add Stock',
+          subtitle: 'Add new inventory items',
+          icon: Icons.add_box_outlined,
+          route: '/admin/add-stock',
+        ),
+        _ActionItemData(
+          title: 'Assign Stock',
+          subtitle: 'Transfer stock to seller',
+          icon: Icons.move_to_inbox_outlined,
+          route: '/admin/shipments/create',
+        ),
+      ],
       if (isSuperAdmin)
         _ActionItemData(
           title: 'Add Admin',
@@ -48,36 +58,38 @@ class QuickActions extends ConsumerWidget {
         icon: Icons.location_city_outlined,
         route: '/admin/locations',
       ),
-      _ActionItemData(
-        title: 'Create Bill',
-        subtitle: 'Sell from admin stock',
-        icon: Icons.receipt_long_outlined,
-        route: '/admin/create-bill',
-      ),
-      _ActionItemData(
-        title: 'Service Bill',
-        subtitle: 'Check, charge, jumpstart…',
-        icon: Icons.build_circle_outlined,
-        route: '/admin/service-bill',
-      ),
-      _ActionItemData(
-        title: 'Battery Rent',
-        subtitle: 'Deposit out · fee + refund in',
-        icon: Icons.battery_charging_full,
-        route: '/admin/battery-rent',
-      ),
-      _ActionItemData(
-        title: 'View Sales',
-        subtitle: 'Browse all sales transactions',
-        icon: Icons.point_of_sale_outlined,
-        route: '/admin/sales',
-      ),
-      _ActionItemData(
-        title: 'Shipments',
-        subtitle: 'Track stock transfers',
-        icon: Icons.local_shipping_outlined,
-        route: '/admin/shipments',
-      ),
+      if (!isSuperAdmin) ...[
+        _ActionItemData(
+          title: 'Create Bill',
+          subtitle: 'Sell from admin stock',
+          icon: Icons.receipt_long_outlined,
+          route: '/admin/create-bill',
+        ),
+        _ActionItemData(
+          title: 'Service Bill',
+          subtitle: 'Check, charge, jumpstart…',
+          icon: Icons.build_circle_outlined,
+          route: '/admin/service-bill',
+        ),
+        _ActionItemData(
+          title: 'Battery Rent',
+          subtitle: 'Deposit out · fee + refund in',
+          icon: Icons.battery_charging_full,
+          route: '/admin/battery-rent',
+        ),
+        _ActionItemData(
+          title: 'View Sales',
+          subtitle: 'Browse all sales transactions',
+          icon: Icons.point_of_sale_outlined,
+          route: '/admin/sales',
+        ),
+        _ActionItemData(
+          title: 'Shipments',
+          subtitle: 'Track stock transfers',
+          icon: Icons.local_shipping_outlined,
+          route: '/admin/shipments',
+        ),
+      ],
       _ActionItemData(
         title: 'Checked-in staff',
         subtitle: 'Live GPS at check-in',

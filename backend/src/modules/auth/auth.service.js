@@ -208,8 +208,8 @@ class AuthService {
       },
     });
 
-    // Real SMS to user's registered mobile — user must type code from message
-    await sendOtpSms({
+    // SMS when FAST2SMS_API_KEY is set; otherwise skipped (dev) and OTP is echoed
+    const sms = await sendOtpSms({
       phone: user.userNumber,
       code,
       purpose: 'login',
@@ -221,7 +221,8 @@ class AuthService {
       expires_in: expiresIn,
       phone_masked: otpService.maskPhone(user.userNumber),
     };
-    if (otpService.shouldEchoOtp()) data.otp = code; // debug only
+    // Echo OTP when provider skipped or OTP_ECHO=1 (never rely on this in production SMS)
+    if (sms?.skipped || otpService.shouldEchoOtp()) data.otp = code;
     return data;
   }
 

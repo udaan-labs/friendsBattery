@@ -14,18 +14,12 @@ SUPER ADMIN     all WH + shops · stock any WH · adjust any shop · PDF/GPS all
 
 Shared sell tools (§5) once anyone can sell. Obsidian: `obsidian/FriendsBattery/Role Chain Workflow.canvas` · `/todo-sync`.
 
----
+## Completed Tasks & Archive
 
-## Already done
-
-- [x] Unit inventory + immutable ledger  
-- [x] Stock / products / sellers / locations (shop + warehouse + geofence)  
-- [x] Shipments: assign → seller accept  
-- [x] Seller: create bill, sales history, returns  
-- [x] Employee: check-in/out, location stock, shipments **read-only** (cannot accept)  
-- [x] OpenAPI → Flutter client  
+Completed sections and baseline tasks are archived with timestamps/numbers in [completed_tasks.md](file:///c:/Users/DELL/dev/friendsBattery/docs/completed_tasks.md).
 
 ---
+
 
 ## 0. Roles foundation (do first)
 

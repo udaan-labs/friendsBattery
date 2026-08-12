@@ -1,13 +1,13 @@
 ---
 name: todo
 description: >
-  Manage FriendsBattery roadmap in docs/ROADMAP.md AND sync Obsidian canvas
-  Role Chain Workflow. List, show, add, mark done/undone, full canvas sync.
-  Triggers: /todo, /todo-add, /todo-done, /todo-undone, /todo-sync, /todo next,
+  Manage FriendsBattery roadmap in docs/ROADMAP.md, sync Obsidian canvas,
+  and automatically execute tasks sequentially with Karpathy & Ponytail rules.
+  Triggers: /todo, /todo run, /todo-add, /todo-done, /todo-undone, /todo-sync, /todo next,
   roadmap, obsidian workflow.
 ---
 
-# Todo + Obsidian workflow
+# Todo + Obsidian + Automated Task Execution Workflow
 
 ## Files (always both)
 
@@ -29,6 +29,7 @@ Order: `§0 → §1 → §2 → §3 → §4 → §5 → §6` (Optional last).
 | Say | Do |
 |-----|-----|
 | `/todo` | Overview table from ROADMAP + **Next up** + remind canvas path |
+| `/todo run` | **Auto-run task execution loop** (plan → execute → audit → mark done → next) |
 | `/todo <n\|name>` | Print that ROADMAP section |
 | `/todo next` | First incomplete section + open boxes |
 | `/todo-add <text>` | Append `- [ ]` in right § → **sync canvas** |
@@ -37,6 +38,44 @@ Order: `§0 → §1 → §2 → §3 → §4 → §5 → §6` (Optional last).
 | `/todo-sync` | Rebuild canvas status from ROADMAP only (no ROADMAP edit) |
 
 Ambiguous match → one short question.
+
+---
+
+## Automated Task Execution Loop (`/todo run` or auto task mode)
+
+When a task exists or `/todo run` is invoked, execute each open task `- [ ]` in `docs/ROADMAP.md` following this strict 5-step loop:
+
+```mermaid
+graph TD
+    A["1. Read First Open Task"] --> B["2. Planning Phase (NO CODE)"]
+    B --> C["3. Execution Phase"]
+    C --> D["4. Review & Audit Phase"]
+    D --> E["5. Mark Done & Canvas Sync"]
+    E -->|Next Task Exists| A
+```
+
+### Step 1: Read First Task
+- Read `docs/ROADMAP.md` and find the first incomplete item (`- [ ]`).
+
+### Step 2: Planning Phase (DO NOT CODE YET)
+- State assumptions and create a concise step-by-step implementation plan.
+- **Apply `/karpathy-guidelines`**: "Think Before Coding" — surface hidden confusion, tradeoffs, and ask if ambiguous.
+- **Apply `/ponytail`**: "Simplicity First" — enforce YAGNI, check standard library/existing code first, reject over-engineering before writing any code.
+
+### Step 3: Execution Phase
+- Execute the planned task following [AGENTS.md](file:///c:/Users/DELL/dev/friendsBattery/AGENTS.md) and required docs under `docs/` (`docs/architecture.md`, `docs/OPENAPI.md`, `docs/frontend-guidelines.md`).
+- Apply **Surgical Changes**: touch ONLY lines relevant to the task; do not refactor adjacent code.
+
+### Step 4: Quality & Over-engineering Audit (Review Phase)
+- Review the implemented code to eliminate AI slop, bloated abstractions, and dead code:
+  - Run [`/ponytail-review`](file:///c:/Users/DELL/dev/friendsBattery/.agents/skills/ponytail-review/SKILL.md) / [`/ponytail-gain`](file:///c:/Users/DELL/dev/friendsBattery/.agents/skills/ponytail-gain/SKILL.md) to check for over-engineering.
+  - Verify that the code satisfies the success criteria.
+  - Run build/test verification commands (`npm run dev`, `flutter pub get`, etc.).
+
+### Step 5: Mark Complete & Loop Next
+- Mark item as done (`- [x]`) in `docs/ROADMAP.md`.
+- Run `/todo-sync` to update the Obsidian canvas.
+- Move immediately to the next open task in `docs/ROADMAP.md` and repeat Steps 1–5.
 
 ---
 
@@ -60,11 +99,16 @@ After add: say `§N` + line + “canvas synced”.
 ## Done / not done
 
 ### `/todo-done`
-1. In ROADMAP: flip matching open items to `- [x]`  
+1. In `docs/ROADMAP.md`: flip matching open items to `- [x]`.  
    - `/todo-done 1` → all open boxes under `## 1.`  
    - `/todo-done employee create bill` → match text  
-2. Run **canvas sync** (below).  
-3. Confirm what flipped + section status (NOT DONE / PARTIAL / DONE).
+2. **Archiving Completed Work:**  
+   - When a section (e.g. `## 1. Super Admin`) or batch of tasks is fully completed, archive it to `docs/completed_tasks.md`.  
+   - Append to `docs/completed_tasks.md` with incremental task numbering (`#1`, `#2`, …) and completion date (e.g. `2026-08-12`).  
+   - Replace the completed section/items in `docs/ROADMAP.md` with a clean summary or reference to `docs/completed_tasks.md` to prevent `ROADMAP.md` from growing too large.  
+3. Run **canvas sync** (below).  
+4. Confirm what flipped, archived items, and section status (NOT DONE / PARTIAL / DONE).
+
 
 ### `/todo-undone`
 Same, reverse: `- [x]` → `- [ ]`, then sync.

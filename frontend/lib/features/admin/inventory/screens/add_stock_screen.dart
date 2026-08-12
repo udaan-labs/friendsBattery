@@ -74,13 +74,13 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
 
       if (mounted) {
         context.showSuccessSnackBar('Stock updated successfully');
-        DataSync.afterInventoryMutation(ref);
         final nameId = int.tryParse(_selectedProductNameId ?? '');
         final modelId = int.tryParse(_selectedProductModelId ?? '');
         if (nameId != null && modelId != null) {
           ref.invalidate(productStockDetailsProvider((nameId: nameId, modelId: modelId)));
         }
-        context.pop();
+        await DataSync.afterInventoryMutationAndRefresh(ref);
+        if (mounted) context.pop(true);
       }
     } on DioException catch (e) {
       if (mounted) {
@@ -174,15 +174,27 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
                               child: const Text('Failed to load product names. Retry'),
                             ),
                             data: (productNames) => productNames.isEmpty
-                                ? TextFormField(
-                                    enabled: false,
-                                    decoration: InputDecoration(
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                      hintText: 'No products available. Please create one first.',
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                      filled: true,
-                                      fillColor: Colors.grey.shade100,
-                                    ),
+                                ? Column(
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    children: [
+                                      TextFormField(
+                                        enabled: false,
+                                        decoration: InputDecoration(
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                          hintText: 'No products yet — create catalog first',
+                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                          filled: true,
+                                          fillColor: Colors.grey.shade100,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      OutlinedButton.icon(
+                                        onPressed: () =>
+                                            context.push('/admin/add-product/configure'),
+                                        icon: const Icon(Icons.category_outlined),
+                                        label: const Text('Configure Product'),
+                                      ),
+                                    ],
                                   )
                                 : DropdownButtonFormField<String>(
                                     isExpanded: true,

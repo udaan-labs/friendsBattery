@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
+import '../../../shared/products/providers/product_catalog_providers.dart';
 import '../providers/dashboard_providers.dart';
 
 class KpiGrid extends ConsumerWidget {
@@ -13,22 +15,27 @@ class KpiGrid extends ConsumerWidget {
     final padding = ResponsiveHelper.responsiveHorizontalMargin(context);
     final isDesktop = ResponsiveHelper.isDesktop(context);
     final isSmall = ResponsiveHelper.isSmallPhone(context);
+    final isSuperAdmin = ref.watch(authProvider).role == UserRole.superAdmin;
 
-    String formatNumber(String val) {
-      if (val == '--') return '--';
-      final parsed = int.tryParse(val.replaceAll(RegExp(r'[^0-9]'), ''));
-      if (parsed == null) return val;
-      final str = parsed.toString();
-      if (str.length > 3) {
-        return '${str.substring(0, str.length - 3)},${str.substring(str.length - 3)}';
-      }
-      return str;
-    }
+    // Catalog product-name count (DataSync.afterProductMutation invalidates this).
+    final productCount = isSuperAdmin
+        ? ref.watch(productNamesProvider).when(
+              data: (n) => '${n.length}',
+              loading: () => '--',
+              error: (_, __) => '--',
+            )
+        : '--';
 
-    Widget buildCard(String title, String value, String subtitle, IconData icon, {VoidCallback? onTap}) {
+    Widget card(
+      String title,
+      String value,
+      String subtitle,
+      IconData icon, {
+      VoidCallback? onTap,
+    }) {
       return _KpiCard(
         title: title,
-        value: formatNumber(value),
+        value: value,
         subtitle: subtitle,
         icon: icon,
         color: const Color(0xFF006B2C),
@@ -37,77 +44,93 @@ class KpiGrid extends ConsumerWidget {
       );
     }
 
-    Widget buildGrid(String totalStock, String todaySales, String totalSellers, String pendingShipments) {
+    List<Widget> cards({
+      required String stock,
+      required String sales,
+      required String sellers,
+      required String shipments,
+      required String locations,
+      required String admins,
+    }) {
+      if (isSuperAdmin) {
+        return [
+          card('PRODUCTS', productCount, 'In catalog', Icons.inventory_2_outlined,
+              onTap: () => context.push('/admin/add-product/configure')),
+          card('TOTAL SELLERS', sellers, 'Active', Icons.group_outlined,
+              onTap: () => context.push('/admin/sellers')),
+          card('LOCATIONS', locations, 'Shops & warehouses', Icons.location_city_outlined,
+              onTap: () => context.push('/admin/locations')),
+          card('ADMINS', admins, 'Shop admins', Icons.admin_panel_settings_outlined,
+              onTap: () => context.push('/admin/add-admin')),
+        ];
+      }
+      return [
+        card('TOTAL STOCK', stock, 'Units', Icons.inventory_2_outlined,
+            onTap: () => context.push('/shared/inventory')),
+        card(isDesktop ? 'TOTAL SALES' : 'TODAY\'S SALES', sales, 'Transactions',
+            Icons.trending_up_outlined,
+            onTap: () => context.push('/admin/sales')),
+        card('TOTAL SELLERS', sellers, 'Active', Icons.group_outlined,
+            onTap: () => context.push('/admin/sellers')),
+        card('PENDING SHIPMENTS', shipments, 'In transit', Icons.local_shipping_outlined,
+            onTap: () => context.push('/admin/shipments')),
+      ];
+    }
+
+    Widget layout(List<Widget> items) {
       if (isDesktop) {
         return Padding(
-          padding: EdgeInsets.symmetric(horizontal: padding, vertical: 8.0),
+          padding: EdgeInsets.symmetric(horizontal: padding, vertical: 8),
           child: GridView.count(
-            crossAxisCount: 4,
+            crossAxisCount: items.length.clamp(1, 4),
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
             childAspectRatio: 2.0,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            children: [
-              buildCard('TOTAL STOCK', totalStock, 'Units', Icons.inventory_2_outlined, onTap: () {
-                context.push('/shared/inventory');
-              }),
-              buildCard('TOTAL SALES', todaySales, 'Transactions', Icons.trending_up_outlined, onTap: () {
-                context.push('/admin/sales');
-              }),
-              buildCard('TOTAL SELLERS', totalSellers, 'Active', Icons.group_outlined, onTap: () {
-                context.push('/admin/sellers');
-              }),
-              buildCard('PENDING SHIPMENTS', pendingShipments, 'In transit', Icons.local_shipping_outlined, onTap: () {
-                context.push('/admin/shipments');
-              }),
-            ],
-          ),
-        );
-      } else {
-        final spacing = isSmall ? 6.0 : 8.0;
-        return Padding(
-          padding: EdgeInsets.symmetric(horizontal: padding, vertical: 8.0),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(child: buildCard('TOTAL STOCK', totalStock, 'Units', Icons.inventory_2_outlined, onTap: () {
-                    context.push('/shared/inventory');
-                  })),
-                  SizedBox(width: spacing),
-                  Expanded(child: buildCard('TODAY\'S SALES', todaySales, 'Transactions', Icons.trending_up_outlined, onTap: () {
-                    context.push('/admin/sales');
-                  })),
-                ],
-              ),
-              SizedBox(height: spacing),
-              Row(
-                children: [
-                  Expanded(child: buildCard('TOTAL SELLERS', totalSellers, 'Active', Icons.group_outlined, onTap: () {
-                    context.push('/admin/sellers');
-                  })),
-                  SizedBox(width: spacing),
-                  Expanded(child: buildCard('PENDING SHIPMENTS', pendingShipments, 'In transit', Icons.local_shipping_outlined, onTap: () {
-                    context.push('/admin/shipments');
-                  })),
-                ],
-              ),
-            ],
+            children: items,
           ),
         );
       }
+      final gap = isSmall ? 6.0 : 8.0;
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: padding, vertical: 8),
+        child: Column(
+          children: [
+            Row(children: [
+              Expanded(child: items[0]),
+              SizedBox(width: gap),
+              Expanded(child: items[1]),
+            ]),
+            SizedBox(height: gap),
+            Row(children: [
+              Expanded(child: items[2]),
+              SizedBox(width: gap),
+              Expanded(child: items[3]),
+            ]),
+          ],
+        ),
+      );
     }
 
     return kpiData.when(
-      data: (stats) => buildGrid(
-        (stats.totalStock ?? 0).toString(),
-        (stats.todaySales ?? 0).toString(),
-        (stats.totalSellers ?? 0).toString(),
-        (stats.pendingShipments ?? 0).toString(),
-      ),
-      loading: () => buildGrid('--', '--', '--', '--'),
-      error: (e, st) => const SizedBox.shrink(),
+      data: (s) => layout(cards(
+        stock: '${s.totalStock ?? 0}',
+        sales: '${s.todaySales ?? 0}',
+        sellers: '${s.totalSellers ?? 0}',
+        shipments: '${s.pendingShipments ?? 0}',
+        locations: '${s.totalLocations ?? 0}',
+        admins: '${s.totalAdmins ?? 0}',
+      )),
+      loading: () => layout(cards(
+        stock: '--',
+        sales: '--',
+        sellers: '--',
+        shipments: '--',
+        locations: '--',
+        admins: '--',
+      )),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 }
@@ -155,61 +178,55 @@ class _KpiCard extends StatelessWidget {
         padding: EdgeInsets.all(isSmall ? 6 : 8),
         child: Row(
           children: [
-          Container(
-            width: isSmall ? 28 : 32,
-            height: isSmall ? 28 : 32,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.08),
-              shape: BoxShape.circle,
+            Container(
+              width: isSmall ? 28 : 32,
+              height: isSmall ? 28 : 32,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.08),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: iconSize),
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: iconSize,
+            SizedBox(width: isSmall ? 4 : 6),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: titleSize,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF586377),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: valueSize,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF191C1E),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(fontSize: 9, color: Color(0xFF586377)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
-          ),
-          SizedBox(width: isSmall ? 4 : 6),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: titleSize,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF586377),
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: valueSize,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF191C1E),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    fontSize: 9,
-                    color: Color(0xFF586377),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ));
+    );
   }
 }

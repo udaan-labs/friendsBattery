@@ -79,6 +79,30 @@ class DashboardRepository {
   }
 
   /**
+   * Shop admins under Super Admin hierarchy (role ADMIN).
+   * @returns {Promise<number>}
+   */
+  async getTotalAdmins() {
+    return prisma.user.count({
+      where: {
+        role: 'ADMIN',
+      },
+    });
+  }
+
+  /**
+   * Active shops + warehouses.
+   * @returns {Promise<number>}
+   */
+  async getTotalLocations() {
+    return prisma.location.count({
+      where: {
+        isActive: true,
+      },
+    });
+  }
+
+  /**
    * Get the total count of all stock items currently available in inventory for a specific seller.
    * @param {string|number|bigint} sellerId
    * @returns {Promise<number>}

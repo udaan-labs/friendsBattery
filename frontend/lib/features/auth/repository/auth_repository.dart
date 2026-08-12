@@ -21,11 +21,14 @@ class LoginOtpChallenge {
   final String challengeId;
   final int? expiresIn;
   final String? phoneMasked;
+  /// Present when SMS is skipped (no FAST2SMS_API_KEY) or OTP_ECHO=1.
+  final String? otp;
 
   LoginOtpChallenge({
     required this.challengeId,
     this.expiresIn,
     this.phoneMasked,
+    this.otp,
   });
 }
 
@@ -54,6 +57,7 @@ class AuthRepository {
         challengeId: challengeId,
         expiresIn: data?.expiresIn,
         phoneMasked: data?.phoneMasked,
+        otp: data?.otp,
       );
     } catch (e) {
       throw Exception(_authError(e, 'Login failed'));

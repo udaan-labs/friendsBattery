@@ -35,11 +35,44 @@ class DataSync {
     }
   }
 
+  /// Same as [afterInventoryMutation] but awaits Super Admin list re-fetch.
+  static Future<void> afterInventoryMutationAndRefresh(
+    WidgetRef ref, {
+    int? productId,
+  }) async {
+    afterInventoryMutation(ref, productId: productId);
+    await Future.wait([
+      _safeFuture(ref, sharedInventoryProvider),
+      _safeFuture(ref, adminStockDetailsProvider),
+      _safeFuture(ref, kpiProvider),
+      _safeFuture(ref, recentActivityProvider),
+    ]);
+  }
+
   /// Product name/model created or product configuration saved.
-  static void afterProductMutation(WidgetRef ref) {
+  ///
+  /// Invalidates catalog + inventory sources of truth, then awaits a re-fetch
+  /// of the main Super Admin lists so the screen under the form updates when
+  /// the user pops back (not only on the next manual pull-to-refresh).
+  static Future<void> afterProductMutation(WidgetRef ref) async {
     ref.invalidate(productNamesProvider);
     ref.invalidate(productModelsProvider);
+    ref.invalidate(productStockDetailsProvider);
     afterInventoryMutation(ref);
+
+    // Warm catalog + KPI so Super Admin home updates after pop.
+    await Future.wait([
+      _safeFuture(ref, productNamesProvider),
+      _safeFuture(ref, kpiProvider),
+    ]);
+  }
+
+  static Future<void> _safeFuture(WidgetRef ref, FutureProvider provider) async {
+    try {
+      final _ = await ref.refresh(provider.future);
+    } catch (_) {
+      // Screen can still show error/retry; mutation itself already succeeded.
+    }
   }
 
   /// Shipment created (admin) or accepted (seller).
