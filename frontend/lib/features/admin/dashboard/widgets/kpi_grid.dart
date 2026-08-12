@@ -56,12 +56,8 @@ class KpiGrid extends ConsumerWidget {
         return [
           card('PRODUCTS', productCount, 'In catalog', Icons.inventory_2_outlined,
               onTap: () => context.push('/admin/add-product/configure')),
-          card('TOTAL SELLERS', sellers, 'Active', Icons.group_outlined,
-              onTap: () => context.push('/admin/sellers')),
           card('LOCATIONS', locations, 'Shops & warehouses', Icons.location_city_outlined,
               onTap: () => context.push('/admin/locations')),
-          card('ADMINS', admins, 'Shop admins', Icons.admin_panel_settings_outlined,
-              onTap: () => context.push('/admin/add-admin')),
         ];
       }
       return [
@@ -76,6 +72,7 @@ class KpiGrid extends ConsumerWidget {
             onTap: () => context.push('/admin/shipments')),
       ];
     }
+
 
     Widget layout(List<Widget> items) {
       if (isDesktop) {
@@ -102,15 +99,18 @@ class KpiGrid extends ConsumerWidget {
               SizedBox(width: gap),
               Expanded(child: items[1]),
             ]),
-            SizedBox(height: gap),
-            Row(children: [
-              Expanded(child: items[2]),
-              SizedBox(width: gap),
-              Expanded(child: items[3]),
-            ]),
+            if (items.length >= 4) ...[
+              SizedBox(height: gap),
+              Row(children: [
+                Expanded(child: items[2]),
+                SizedBox(width: gap),
+                Expanded(child: items[3]),
+              ]),
+            ],
           ],
         ),
       );
+
     }
 
     return kpiData.when(

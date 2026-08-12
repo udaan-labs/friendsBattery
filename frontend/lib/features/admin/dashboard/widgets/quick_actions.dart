@@ -16,13 +16,14 @@ class QuickActions extends ConsumerWidget {
     // Super Admin: catalog only (no owned inventory). Shop Admin: stock + sales.
     final actions = <_ActionItemData>[
       _ActionItemData(
-        title: 'Configure Product',
+        title: 'Add Product',
         subtitle: isSuperAdmin
-            ? 'Set price + min units for the catalog'
-            : 'Price + min units (before stock)',
-        icon: Icons.price_change_outlined,
-        route: '/admin/add-product/configure',
+            ? 'Add category, model & configure pricing'
+            : 'Add product category & model',
+        icon: Icons.add_circle_outline_rounded,
+        route: '/admin/add-product',
       ),
+
       if (!isSuperAdmin) ...[
         _ActionItemData(
           title: 'Add Stock',

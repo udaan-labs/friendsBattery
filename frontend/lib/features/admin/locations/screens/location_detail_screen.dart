@@ -34,13 +34,23 @@ class LocationDetailScreen extends ConsumerWidget {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          title ?? 'Location team',
+          title ?? 'Location Details',
           style: const TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.bold,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.picture_as_pdf_outlined, color: Color(0xFF006B2C)),
+            tooltip: 'Export Location Sales PDF',
+            onPressed: () {
+              context.push('/admin/sales');
+            },
+          ),
+        ],
       ),
+
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           await context.push(

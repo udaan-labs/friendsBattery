@@ -21,11 +21,44 @@ class AdminActivityHistoryScreen extends ConsumerWidget {
         scrolledUnderElevation: 0,
         iconTheme: const IconThemeData(color: Color(0xFF191C1E)),
       ),
-      body: RefreshIndicator(
-        onRefresh: notifier.refresh,
-        color: const Color(0xFF006B2C),
-        child: state.items.isEmpty && state.isLoading
-            ? const Center(child: CircularProgressIndicator())
+      body: Column(
+        children: [
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  ChoiceChip(
+                    label: const Text('All'),
+                    selected: true,
+                    onSelected: (_) {},
+                    selectedColor: const Color(0xFFE8F5E9),
+                  ),
+                  const SizedBox(width: 8),
+                  ChoiceChip(
+                    label: const Text('Today'),
+                    selected: false,
+                    onSelected: (_) {},
+                  ),
+                  const SizedBox(width: 8),
+                  ChoiceChip(
+                    label: const Text('This Week'),
+                    selected: false,
+                    onSelected: (_) {},
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: notifier.refresh,
+              color: const Color(0xFF006B2C),
+              child: state.items.isEmpty && state.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+
             : state.items.isEmpty && state.error != null
                 ? Center(
                     child: Column(
@@ -86,7 +119,11 @@ class AdminActivityHistoryScreen extends ConsumerWidget {
                           );
                         },
                       ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
+

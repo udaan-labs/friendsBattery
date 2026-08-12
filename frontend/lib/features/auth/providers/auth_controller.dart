@@ -34,12 +34,21 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
     try {
       final challenge = await repository.login(username.trim(), password);
       ref.read(loginOtpChallengeProvider.notifier).state = challenge;
+
+      // OTP Bypass flag (for development/testing - set to true to auto-verify)
+      const bool bypassOtp = true;
+      if (bypassOtp && challenge.otp != null && challenge.otp!.isNotEmpty) {
+        await verifyLoginOtp(challenge.otp!);
+        return;
+      }
+
       state = const AsyncValue.data(null);
     } catch (e, stack) {
       ref.read(loginOtpChallengeProvider.notifier).state = null;
       state = AsyncValue.error(e, stack);
     }
   }
+
 
   /// Step 2: OTP → session.
   Future<void> verifyLoginOtp(String otp) async {
