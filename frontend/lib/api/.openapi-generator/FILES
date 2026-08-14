@@ -33,7 +33,6 @@ doc/ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProduc
 doc/ApiInventoryDetailsGet200ResponseDataPagination.md
 doc/ApiInventoryTransferPostRequest.md
 doc/ApiInventoryTransferPostRequestProductsInner.md
-doc/ApiProductsListPostRequest.md
 doc/ApiSellerDashboardPendingShipmentsGet200Response.md
 doc/ApiSellerDashboardPendingShipmentsGet200ResponseData.md
 doc/ApiSellerDashboardStatsGet200Response.md
@@ -105,6 +104,8 @@ doc/InventoryProductNameGroup.md
 doc/InventoryProductsResponse.md
 doc/InventoryTransaction.md
 doc/ListProductModelsRequest.md
+doc/ListProductsRequest.md
+doc/ListProductsResponse.md
 doc/LocationItem.md
 doc/LocationsListResponse.md
 doc/LoginData.md
@@ -115,6 +116,7 @@ doc/LoginUser.md
 doc/LoginUserEmployeeRole.md
 doc/LoginUserLocation.md
 doc/Product.md
+doc/ProductConfigItem.md
 doc/ProductCreated.md
 doc/ProductModel.md
 doc/ProductModelResponse.md
@@ -235,7 +237,6 @@ lib/src/model/api_inventory_details_get200_response_data_categories_inner_subcat
 lib/src/model/api_inventory_details_get200_response_data_pagination.dart
 lib/src/model/api_inventory_transfer_post_request.dart
 lib/src/model/api_inventory_transfer_post_request_products_inner.dart
-lib/src/model/api_products_list_post_request.dart
 lib/src/model/api_seller_dashboard_pending_shipments_get200_response.dart
 lib/src/model/api_seller_dashboard_pending_shipments_get200_response_data.dart
 lib/src/model/api_seller_dashboard_stats_get200_response.dart
@@ -302,6 +303,8 @@ lib/src/model/inventory_product_name_group.dart
 lib/src/model/inventory_products_response.dart
 lib/src/model/inventory_transaction.dart
 lib/src/model/list_product_models_request.dart
+lib/src/model/list_products_request.dart
+lib/src/model/list_products_response.dart
 lib/src/model/location_item.dart
 lib/src/model/locations_list_response.dart
 lib/src/model/login_data.dart
@@ -312,6 +315,7 @@ lib/src/model/login_user.dart
 lib/src/model/login_user_employee_role.dart
 lib/src/model/login_user_location.dart
 lib/src/model/product.dart
+lib/src/model/product_config_item.dart
 lib/src/model/product_created.dart
 lib/src/model/product_model.dart
 lib/src/model/product_model_response.dart

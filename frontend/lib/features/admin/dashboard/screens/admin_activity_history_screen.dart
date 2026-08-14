@@ -7,6 +7,39 @@ import '../../../../shared/widgets/responsive_helper.dart';
 class AdminActivityHistoryScreen extends ConsumerWidget {
   const AdminActivityHistoryScreen({super.key});
 
+  String _periodLabel(ActivityPeriod p, DateTimeRange? custom) {
+    switch (p) {
+      case ActivityPeriod.today:
+        return 'Today';
+      case ActivityPeriod.week:
+        return 'This week';
+      case ActivityPeriod.month:
+        return 'This month';
+      case ActivityPeriod.custom:
+        if (custom == null) return 'Date';
+        final a = custom.start;
+        final b = custom.end;
+        String d(DateTime t) =>
+            '${t.day.toString().padLeft(2, '0')}/${t.month.toString().padLeft(2, '0')}';
+        return '${d(a)} – ${d(b)}';
+    }
+  }
+
+  Future<void> _pickDates(BuildContext context, WidgetRef ref) async {
+    final now = DateTime.now();
+    final current = ref.read(adminActivityHistoryProvider).customRange;
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(now.year - 2),
+      lastDate: now,
+      initialDateRange: current ??
+          DateTimeRange(start: DateTime(now.year, now.month, now.day), end: now),
+    );
+    if (picked != null) {
+      await ref.read(adminActivityHistoryProvider.notifier).setCustomRange(picked);
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(adminActivityHistoryProvider);
@@ -25,29 +58,42 @@ class AdminActivityHistoryScreen extends ConsumerWidget {
         children: [
           Container(
             color: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  ChoiceChip(
-                    label: const Text('All'),
-                    selected: true,
-                    onSelected: (_) {},
-                    selectedColor: const Color(0xFFE8F5E9),
-                  ),
-                  const SizedBox(width: 8),
-                  ChoiceChip(
-                    label: const Text('Today'),
-                    selected: false,
-                    onSelected: (_) {},
-                  ),
-                  const SizedBox(width: 8),
-                  ChoiceChip(
-                    label: const Text('This Week'),
-                    selected: false,
-                    onSelected: (_) {},
-                  ),
+                  for (final p in ActivityPeriod.values) ...[
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        label: Text(_periodLabel(p, state.customRange)),
+                        selected: state.period == p,
+                        onSelected: (_) {
+                          if (p == ActivityPeriod.custom) {
+                            _pickDates(context, ref);
+                          } else {
+                            notifier.setPeriod(p);
+                          }
+                        },
+                        selectedColor: const Color(0xFFE8F5E9),
+                        labelStyle: TextStyle(
+                          color: state.period == p
+                              ? const Color(0xFF006B2C)
+                              : const Color(0xFF586377),
+                          fontWeight:
+                              state.period == p ? FontWeight.w600 : FontWeight.normal,
+                          fontSize: 13,
+                        ),
+                        side: BorderSide(
+                          color: state.period == p
+                              ? const Color(0xFF006B2C)
+                              : const Color(0xFFECEEF0),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -57,68 +103,76 @@ class AdminActivityHistoryScreen extends ConsumerWidget {
               onRefresh: notifier.refresh,
               color: const Color(0xFF006B2C),
               child: state.items.isEmpty && state.isLoading
-                  ? const Center(child: CircularProgressIndicator())
-
-            : state.items.isEmpty && state.error != null
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('Failed to load history: ${state.error}'),
-                        ElevatedButton(
-                          onPressed: notifier.refresh,
-                          child: const Text('Retry'),
-                        ),
-                      ],
-                    ),
-                  )
-                : state.items.isEmpty
-                    ? const Center(child: Text('No activity found.'))
-                    : ListView.builder(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: ResponsiveHelper.responsiveHorizontalMargin(context),
-                          vertical: 16,
-                        ),
-                        itemCount: state.items.length + 1,
-                        itemBuilder: (context, index) {
-                          if (index == state.items.length) {
-                            if (state.hasNextPage) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 24.0),
-                                child: Center(
-                                  child: state.isLoading
-                                      ? const CircularProgressIndicator()
-                                      : ElevatedButton(
-                                          onPressed: notifier.loadNextPage,
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: const Color(0xFF006B2C),
-                                            foregroundColor: Colors.white,
-                                          ),
-                                          child: const Text('Load More'),
-                                        ),
-                                ),
-                              );
-                            }
-                            return const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 24.0),
-                              child: Center(
-                                child: Text(
-                                  'No more activities',
-                                  style: TextStyle(color: Colors.grey),
-                                ),
-                              ),
-                            );
-                          }
-
-                          final item = state.items[index];
-                          return ActivityItemTile(
-                            title: item.title ?? '',
-                            subtitle: item.subtitle ?? '',
-                            time: relativeTimeLabel(item.time),
-                            icon: activityIconFor(item.icon),
-                          );
-                        },
+                  ? ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: ResponsiveHelper.responsiveHorizontalMargin(context),
+                        vertical: 16,
                       ),
+                      itemCount: 8,
+                      itemBuilder: (_, __) => const ActivityItemSkeleton(),
+                    )
+                  : state.items.isEmpty && state.error != null
+                      ? ListView(
+                          children: [
+                            const SizedBox(height: 120),
+                            Center(child: Text('Failed to load history: ${state.error}')),
+                            Center(
+                              child: ElevatedButton(
+                                onPressed: notifier.refresh,
+                                child: const Text('Retry'),
+                              ),
+                            ),
+                          ],
+                        )
+                      : state.items.isEmpty
+                          ? ListView(
+                              children: const [
+                                SizedBox(height: 120),
+                                Center(child: Text('No activity found.')),
+                              ],
+                            )
+                          : ListView.builder(
+                              padding: EdgeInsets.symmetric(
+                                horizontal:
+                                    ResponsiveHelper.responsiveHorizontalMargin(context),
+                                vertical: 16,
+                              ),
+                              itemCount: state.items.length + (state.hasNextPage ? 1 : 0),
+                              itemBuilder: (context, index) {
+                                if (index == state.items.length) {
+                                  if (state.isLoading) {
+                                    return const Column(
+                                      children: [
+                                        ActivityItemSkeleton(),
+                                        ActivityItemSkeleton(),
+                                      ],
+                                    );
+                                  }
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 24.0),
+                                    child: Center(
+                                      child: ElevatedButton(
+                                        onPressed: notifier.loadNextPage,
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFF006B2C),
+                                          foregroundColor: Colors.white,
+                                        ),
+                                        child: const Text('Load More'),
+                                      ),
+                                    ),
+                                  );
+                                }
+
+                                final item = state.items[index];
+                                return ActivityItemTile(
+                                  title: item.title ?? '',
+                                  subtitle: item.subtitle ?? '',
+                                  time: relativeTimeLabel(item.time),
+                                  icon: activityIconFor(item.icon),
+                                );
+                              },
+                            ),
             ),
           ),
         ],
@@ -126,4 +180,3 @@ class AdminActivityHistoryScreen extends ConsumerWidget {
     );
   }
 }
-

@@ -14,7 +14,7 @@ class ProductsController {
    */
   async createProductName(req, res) {
     try {
-      const productName = await productsService.createProductName(req.body);
+      const productName = await productsService.createProductName(req.body, req.user.id);
       return successResponse(res, 201, 'Product name created successfully', productName);
     } catch (error) {
       return handleRouteError(res, error, 'Create Product Name Error:');
@@ -38,7 +38,7 @@ class ProductsController {
    */
   async createProductModel(req, res) {
     try {
-      const productModel = await productsService.createProductModel(req.body);
+      const productModel = await productsService.createProductModel(req.body, req.user.id);
       return successResponse(res, 201, 'Product model created successfully', productModel);
     } catch (error) {
       return handleRouteError(res, error, 'Create Product Model Error:');
@@ -63,7 +63,7 @@ class ProductsController {
    */
   async createProduct(req, res) {
     try {
-      const product = await productsService.createProduct(req.body);
+      const product = await productsService.createProduct(req.body, req.user.id);
       return successResponse(res, 201, 'Product created successfully', product);
     } catch (error) {
       return handleRouteError(res, error, 'Create Product Error:');

@@ -8,13 +8,9 @@ part of 'activity_history_pagination.dart';
 
 class _$ActivityHistoryPagination extends ActivityHistoryPagination {
   @override
-  final int? page;
-  @override
   final int? limit;
   @override
-  final int? totalItems;
-  @override
-  final int? totalPages;
+  final String? nextCursor;
   @override
   final bool? hasNextPage;
 
@@ -22,13 +18,8 @@ class _$ActivityHistoryPagination extends ActivityHistoryPagination {
     void Function(ActivityHistoryPaginationBuilder)? updates,
   ]) => (ActivityHistoryPaginationBuilder()..update(updates))._build();
 
-  _$ActivityHistoryPagination._({
-    this.page,
-    this.limit,
-    this.totalItems,
-    this.totalPages,
-    this.hasNextPage,
-  }) : super._();
+  _$ActivityHistoryPagination._({this.limit, this.nextCursor, this.hasNextPage})
+    : super._();
   @override
   ActivityHistoryPagination rebuild(
     void Function(ActivityHistoryPaginationBuilder) updates,
@@ -42,20 +33,16 @@ class _$ActivityHistoryPagination extends ActivityHistoryPagination {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is ActivityHistoryPagination &&
-        page == other.page &&
         limit == other.limit &&
-        totalItems == other.totalItems &&
-        totalPages == other.totalPages &&
+        nextCursor == other.nextCursor &&
         hasNextPage == other.hasNextPage;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
-    _$hash = $jc(_$hash, page.hashCode);
     _$hash = $jc(_$hash, limit.hashCode);
-    _$hash = $jc(_$hash, totalItems.hashCode);
-    _$hash = $jc(_$hash, totalPages.hashCode);
+    _$hash = $jc(_$hash, nextCursor.hashCode);
     _$hash = $jc(_$hash, hasNextPage.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -64,10 +51,8 @@ class _$ActivityHistoryPagination extends ActivityHistoryPagination {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'ActivityHistoryPagination')
-          ..add('page', page)
           ..add('limit', limit)
-          ..add('totalItems', totalItems)
-          ..add('totalPages', totalPages)
+          ..add('nextCursor', nextCursor)
           ..add('hasNextPage', hasNextPage))
         .toString();
   }
@@ -78,21 +63,13 @@ class ActivityHistoryPaginationBuilder
         Builder<ActivityHistoryPagination, ActivityHistoryPaginationBuilder> {
   _$ActivityHistoryPagination? _$v;
 
-  int? _page;
-  int? get page => _$this._page;
-  set page(int? page) => _$this._page = page;
-
   int? _limit;
   int? get limit => _$this._limit;
   set limit(int? limit) => _$this._limit = limit;
 
-  int? _totalItems;
-  int? get totalItems => _$this._totalItems;
-  set totalItems(int? totalItems) => _$this._totalItems = totalItems;
-
-  int? _totalPages;
-  int? get totalPages => _$this._totalPages;
-  set totalPages(int? totalPages) => _$this._totalPages = totalPages;
+  String? _nextCursor;
+  String? get nextCursor => _$this._nextCursor;
+  set nextCursor(String? nextCursor) => _$this._nextCursor = nextCursor;
 
   bool? _hasNextPage;
   bool? get hasNextPage => _$this._hasNextPage;
@@ -105,10 +82,8 @@ class ActivityHistoryPaginationBuilder
   ActivityHistoryPaginationBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _page = $v.page;
       _limit = $v.limit;
-      _totalItems = $v.totalItems;
-      _totalPages = $v.totalPages;
+      _nextCursor = $v.nextCursor;
       _hasNextPage = $v.hasNextPage;
       _$v = null;
     }
@@ -132,10 +107,8 @@ class ActivityHistoryPaginationBuilder
     final _$result =
         _$v ??
         _$ActivityHistoryPagination._(
-          page: page,
           limit: limit,
-          totalItems: totalItems,
-          totalPages: totalPages,
+          nextCursor: nextCursor,
           hasNextPage: hasNextPage,
         );
     replace(_$result);

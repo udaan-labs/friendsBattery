@@ -96,6 +96,16 @@ class ProductsRepository {
     });
   }
 
+  async findByNameAndModel(productNameId, productModelId) {
+    return prisma.product.findFirst({
+      where: {
+        productNameId: BigInt(productNameId),
+        productModelId: BigInt(productModelId)
+      },
+      orderBy: { id: 'asc' }
+    });
+  }
+
   /**
    * Create a new product
    */
@@ -109,6 +119,39 @@ class ProductsRepository {
         offerPrice: data.offer_price,
         minUnitCountAdmin: data.min_unit_count_admin,
         minUnitCountSeller: data.min_unit_count_seller
+      }
+    });
+  }
+
+  async updateProductConfig(id, data) {
+    return prisma.product.update({
+      where: { id: BigInt(id) },
+      data: {
+        minPrice: data.min_price,
+        onSale: data.on_sale,
+        offerPrice: data.offer_price,
+        minUnitCountAdmin: data.min_unit_count_admin,
+        minUnitCountSeller: data.min_unit_count_seller
+      }
+    });
+  }
+
+  async createCatalogEvent({
+    action,
+    actorId,
+    productNameId,
+    productModelId,
+    productId,
+    payload
+  }) {
+    return prisma.productCatalogEvent.create({
+      data: {
+        action,
+        actorId: BigInt(actorId),
+        productNameId: productNameId != null ? BigInt(productNameId) : null,
+        productModelId: productModelId != null ? BigInt(productModelId) : null,
+        productId: productId != null ? BigInt(productId) : null,
+        payload
       }
     });
   }

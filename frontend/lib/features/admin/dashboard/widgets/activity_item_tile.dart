@@ -24,6 +24,8 @@ IconData activityIconFor(String? iconName) {
       return Icons.inventory_2_outlined;
     case 'person_add':
       return Icons.person_add_alt_1_outlined;
+    case 'store':
+      return Icons.storefront_outlined;
     case 'local_shipping':
       return Icons.local_shipping_outlined;
     case 'point_of_sale':
@@ -117,6 +119,70 @@ class ActivityItemTile extends StatelessWidget {
             style: const TextStyle(
               fontSize: 10,
               color: Color(0xFF586377),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ActivityItemSkeleton extends StatelessWidget {
+  const ActivityItemSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final hPad = ResponsiveHelper.isSmallPhone(context) ? 12.0 : 16.0;
+    final vPad = ResponsiveHelper.isSmallPhone(context) ? 10.0 : 12.0;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFECEEF0)),
+      ),
+      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 12,
+                  width: 160,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  height: 10,
+                  width: 110,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            height: 10,
+            width: 36,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(4),
             ),
           ),
         ],

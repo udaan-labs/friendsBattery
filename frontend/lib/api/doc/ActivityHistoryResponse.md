@@ -9,6 +9,7 @@ import 'package:friends_battery_api/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **success** | **bool** |  | [optional] 
+**message** | **String** |  | [optional] 
 **data** | [**BuiltList&lt;ActivityItem&gt;**](ActivityItem.md) |  | [optional] 
 **pagination** | [**ActivityHistoryPagination**](ActivityHistoryPagination.md) |  | [optional] 
 

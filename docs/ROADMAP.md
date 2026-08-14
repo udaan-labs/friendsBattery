@@ -27,7 +27,6 @@ Finished sections (§0 through §5) are archived with numbers (`#1` through `#6`
 
 ---
 
-
 ## 6. Hardening / ops (suggested)
 
 - [ ] E2E smoke: login → stock → ship → accept → sell → return (all roles that apply)  

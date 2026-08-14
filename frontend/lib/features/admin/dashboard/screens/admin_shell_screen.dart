@@ -61,7 +61,7 @@ class AdminShellScreen extends ConsumerWidget {
                   } else if (index == 2) {
                     if (isSuperAdmin) {
                       // SA catalog: configure pricing (no personal stock screen).
-                      context.push('/admin/add-product/configure');
+                      context.push('/admin/add-product');
                     } else {
                       context.push('/admin/inventory');
                     }

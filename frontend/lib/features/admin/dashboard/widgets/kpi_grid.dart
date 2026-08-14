@@ -55,7 +55,7 @@ class KpiGrid extends ConsumerWidget {
       if (isSuperAdmin) {
         return [
           card('PRODUCTS', productCount, 'In catalog', Icons.inventory_2_outlined,
-              onTap: () => context.push('/admin/add-product/configure')),
+              onTap: () => context.push('/admin/products')),
           card('LOCATIONS', locations, 'Shops & warehouses', Icons.location_city_outlined,
               onTap: () => context.push('/admin/locations')),
         ];

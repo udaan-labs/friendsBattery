@@ -581,6 +581,21 @@
           }
         }
       },
+      "ListProductsRequest": {
+        "type": "object",
+        "required": [
+          "product_name_id",
+          "product_model_id"
+        ],
+        "properties": {
+          "product_name_id": {
+            "type": "integer"
+          },
+          "product_model_id": {
+            "type": "integer"
+          }
+        }
+      },
       "CreateProductRequest": {
         "type": "object",
         "required": [
@@ -657,6 +672,53 @@
           },
           "data": {
             "$ref": "#/components/schemas/ProductCreated"
+          }
+        }
+      },
+      "ProductConfigItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "product_name": {
+            "type": "string"
+          },
+          "product_model": {
+            "type": "string"
+          },
+          "min_price": {
+            "type": "number"
+          },
+          "on_sale": {
+            "type": "boolean"
+          },
+          "offer_price": {
+            "type": "number",
+            "nullable": true
+          },
+          "min_unit_count_admin": {
+            "type": "integer"
+          },
+          "min_unit_count_seller": {
+            "type": "integer"
+          }
+        }
+      },
+      "ListProductsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductConfigItem"
+            }
           }
         }
       },
@@ -830,17 +892,12 @@
       "ActivityHistoryPagination": {
         "type": "object",
         "properties": {
-          "page": {
-            "type": "integer"
-          },
           "limit": {
             "type": "integer"
           },
-          "totalItems": {
-            "type": "integer"
-          },
-          "totalPages": {
-            "type": "integer"
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
           },
           "hasNextPage": {
             "type": "boolean"
@@ -852,6 +909,9 @@
         "properties": {
           "success": {
             "type": "boolean"
+          },
+          "message": {
+            "type": "string"
           },
           "data": {
             "type": "array",
@@ -4834,27 +4894,31 @@
         "tags": [
           "Products"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "product_name_id": {
-                    "type": "integer"
-                  },
-                  "product_model_id": {
-                    "type": "integer"
-                  }
-                }
+                "$ref": "#/components/schemas/ListProductsRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Products fetched successfully"
+            "description": "Products fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListProductsResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -5657,16 +5721,37 @@
         "parameters": [
           {
             "in": "query",
-            "name": "page",
+            "name": "cursor",
             "schema": {
-              "type": "integer"
-            }
+              "type": "string"
+            },
+            "description": "Opaque cursor from previous page (pagination.nextCursor)"
+          },
+          {
+            "in": "query",
+            "name": "from_date",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Inclusive start of range (ISO)"
+          },
+          {
+            "in": "query",
+            "name": "to_date",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Inclusive end of range (ISO)"
           },
           {
             "in": "query",
             "name": "limit",
             "schema": {
-              "type": "integer"
+              "type": "integer",
+              "default": 20,
+              "maximum": 50
             }
           }
         ],
@@ -5762,8 +5847,8 @@
     },
     "/api/auth/register-admin": {
       "post": {
-        "summary": "Super Admin creates a shop Admin",
-        "description": "SUPER_ADMIN only. Creates role ADMIN with parent_id = Super Admin.\nNew admin is active and verified (can log in immediately).\nOptional location_id must be an active SHOP.\n",
+        "summary": "Super Admin creates a shop or warehouse Admin",
+        "description": "SUPER_ADMIN only. Creates role ADMIN with parent_id = Super Admin.\nNew admin is active and verified (can log in immediately).\nOptional location_id must be an active SHOP or WAREHOUSE.\n",
         "tags": [
           "Auth"
         ],
@@ -5808,7 +5893,7 @@
                   },
                   "location_id": {
                     "type": "integer",
-                    "description": "Optional SHOP location for this admin",
+                    "description": "Optional SHOP or WAREHOUSE location for this admin",
                     "example": 2
                   }
                 }
@@ -5838,8 +5923,8 @@
     },
     "/api/auth/login": {
       "post": {
-        "summary": "Start login (password → OTP challenge)",
-        "description": "Step 1 of login for SUPER_ADMIN, ADMIN, SELLER, EMPLOYEE.\nOn success returns challenge_id after SMS. Complete with POST /api/auth/verify-otp.\n",
+        "summary": "Login with User ID and password",
+        "description": "Password login for SUPER_ADMIN, ADMIN, SELLER, EMPLOYEE. Returns JWT.\nOTP step is deferred.\n",
         "tags": [
           "Auth"
         ],
@@ -5883,11 +5968,11 @@
         },
         "responses": {
           "200": {
-            "description": "Password OK — OTP challenge issued (no token yet)",
+            "description": "Login successful",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/LoginOtpChallengeResponse"
+                  "$ref": "#/components/schemas/LoginResponse"
                 }
               }
             }

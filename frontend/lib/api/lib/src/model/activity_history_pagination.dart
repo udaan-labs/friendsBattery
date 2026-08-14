@@ -11,24 +11,16 @@ part 'activity_history_pagination.g.dart';
 /// ActivityHistoryPagination
 ///
 /// Properties:
-/// * [page] 
 /// * [limit] 
-/// * [totalItems] 
-/// * [totalPages] 
+/// * [nextCursor] 
 /// * [hasNextPage] 
 @BuiltValue()
 abstract class ActivityHistoryPagination implements Built<ActivityHistoryPagination, ActivityHistoryPaginationBuilder> {
-  @BuiltValueField(wireName: r'page')
-  int? get page;
-
   @BuiltValueField(wireName: r'limit')
   int? get limit;
 
-  @BuiltValueField(wireName: r'totalItems')
-  int? get totalItems;
-
-  @BuiltValueField(wireName: r'totalPages')
-  int? get totalPages;
+  @BuiltValueField(wireName: r'nextCursor')
+  String? get nextCursor;
 
   @BuiltValueField(wireName: r'hasNextPage')
   bool? get hasNextPage;
@@ -56,13 +48,6 @@ class _$ActivityHistoryPaginationSerializer implements PrimitiveSerializer<Activ
     ActivityHistoryPagination object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    if (object.page != null) {
-      yield r'page';
-      yield serializers.serialize(
-        object.page,
-        specifiedType: const FullType(int),
-      );
-    }
     if (object.limit != null) {
       yield r'limit';
       yield serializers.serialize(
@@ -70,18 +55,11 @@ class _$ActivityHistoryPaginationSerializer implements PrimitiveSerializer<Activ
         specifiedType: const FullType(int),
       );
     }
-    if (object.totalItems != null) {
-      yield r'totalItems';
+    if (object.nextCursor != null) {
+      yield r'nextCursor';
       yield serializers.serialize(
-        object.totalItems,
-        specifiedType: const FullType(int),
-      );
-    }
-    if (object.totalPages != null) {
-      yield r'totalPages';
-      yield serializers.serialize(
-        object.totalPages,
-        specifiedType: const FullType(int),
+        object.nextCursor,
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.hasNextPage != null) {
@@ -114,13 +92,6 @@ class _$ActivityHistoryPaginationSerializer implements PrimitiveSerializer<Activ
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'page':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
-          result.page = valueDes;
-          break;
         case r'limit':
           final valueDes = serializers.deserialize(
             value,
@@ -128,19 +99,13 @@ class _$ActivityHistoryPaginationSerializer implements PrimitiveSerializer<Activ
           ) as int;
           result.limit = valueDes;
           break;
-        case r'totalItems':
+        case r'nextCursor':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(int),
-          ) as int;
-          result.totalItems = valueDes;
-          break;
-        case r'totalPages':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
-          result.totalPages = valueDes;
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.nextCursor = valueDes;
           break;
         case r'hasNextPage':
           final valueDes = serializers.deserialize(

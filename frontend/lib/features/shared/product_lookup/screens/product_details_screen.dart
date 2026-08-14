@@ -45,7 +45,6 @@ class ProductDetailsScreen extends StatelessWidget {
                   _buildRow('Serial Number', unit?.serialNumber),
                   _buildRow('Status', unit?.status, isStatus: true),
                   _buildRow('QR Code', unit?.qrCode),
-                  _buildRow('Manufactured', _formatDate(unit?.manufactureDate)),
                   _buildRow(
                     'Warranty Expiry',
                     _formatDate(warranty),

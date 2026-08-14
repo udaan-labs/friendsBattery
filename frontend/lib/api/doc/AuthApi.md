@@ -10,9 +10,9 @@ All URIs are relative to *http://localhost:3000*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**apiAuthActivatePut**](AuthApi.md#apiauthactivateput) | **PUT** /api/auth/activate | Activate and verify a user account
-[**apiAuthLoginPost**](AuthApi.md#apiauthloginpost) | **POST** /api/auth/login | Start login (password → OTP challenge)
+[**apiAuthLoginPost**](AuthApi.md#apiauthloginpost) | **POST** /api/auth/login | Login with User ID and password
 [**apiAuthLogoutPost**](AuthApi.md#apiauthlogoutpost) | **POST** /api/auth/logout | End session (closes employee_sessions for EMPLOYEE)
-[**apiAuthRegisterAdminPost**](AuthApi.md#apiauthregisteradminpost) | **POST** /api/auth/register-admin | Super Admin creates a shop Admin
+[**apiAuthRegisterAdminPost**](AuthApi.md#apiauthregisteradminpost) | **POST** /api/auth/register-admin | Super Admin creates a shop or warehouse Admin
 [**apiAuthRegisterPost**](AuthApi.md#apiauthregisterpost) | **POST** /api/auth/register | Register a new seller
 [**apiAuthVerifyOtpPost**](AuthApi.md#apiauthverifyotppost) | **POST** /api/auth/verify-otp | Complete login with OTP
 
@@ -58,11 +58,11 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiAuthLoginPost**
-> LoginOtpChallengeResponse apiAuthLoginPost(apiAuthLoginPostRequest)
+> LoginResponse apiAuthLoginPost(apiAuthLoginPostRequest)
 
-Start login (password → OTP challenge)
+Login with User ID and password
 
-Step 1 of login for SUPER_ADMIN, ADMIN, SELLER, EMPLOYEE. On success returns challenge_id after SMS. Complete with POST /api/auth/verify-otp. 
+Password login for SUPER_ADMIN, ADMIN, SELLER, EMPLOYEE. Returns JWT. OTP step is deferred. 
 
 ### Example
 ```dart
@@ -87,7 +87,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**LoginOtpChallengeResponse**](LoginOtpChallengeResponse.md)
+[**LoginResponse**](LoginResponse.md)
 
 ### Authorization
 
@@ -139,9 +139,9 @@ void (empty response body)
 # **apiAuthRegisterAdminPost**
 > RegisterResponse apiAuthRegisterAdminPost(apiAuthRegisterPostRequest)
 
-Super Admin creates a shop Admin
+Super Admin creates a shop or warehouse Admin
 
-SUPER_ADMIN only. Creates role ADMIN with parent_id = Super Admin. New admin is active and verified (can log in immediately). Optional location_id must be an active SHOP. 
+SUPER_ADMIN only. Creates role ADMIN with parent_id = Super Admin. New admin is active and verified (can log in immediately). Optional location_id must be an active SHOP or WAREHOUSE. 
 
 ### Example
 ```dart

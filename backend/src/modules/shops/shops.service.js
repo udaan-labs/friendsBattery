@@ -3,6 +3,7 @@ const shopsRepository = require('./shops.repository');
 const authRepository = require('../auth/auth.repository');
 const ROLES = require('../../shared/constants/roles');
 const { httpError } = require('../../shared/utils/http-error');
+const orgEventsRepository = require('../../shared/org-events.repository');
 const {
   resolveAdminShopScope,
   sellerWhereForShopScope,
@@ -357,6 +358,14 @@ class ShopsService {
       await shopsRepository.updateUserLocationId(actor.id, created.id);
     }
 
+    await orgEventsRepository.create({
+      action: type === 'WAREHOUSE' ? 'WAREHOUSE_CREATED' : 'SHOP_CREATED',
+      actorId: actor?.id,
+      entityType: 'location',
+      entityId: created.id,
+      payload: { name: created.name, code: created.code, type },
+    });
+
     return this._mapLocationItem(created);
   }
 
@@ -461,6 +470,18 @@ class ShopsService {
       isActive: true,
       isVerified: true,
       loginAttempt: 0,
+    });
+
+    await orgEventsRepository.create({
+      action: 'EMPLOYEE_CREATED',
+      actorId: actor.id,
+      entityType: 'user',
+      entityId: created.id,
+      payload: {
+        username: created.userName,
+        location_name: created.location?.name || shopName,
+        job_title: created.employeeRole?.name || null,
+      },
     });
 
     return {

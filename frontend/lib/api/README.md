@@ -70,9 +70,9 @@ Class | Method | HTTP request | Description
 [*AttendanceApi*](doc/AttendanceApi.md) | [**apiEmployeeAttendanceCheckedInGet**](doc/AttendanceApi.md#apiemployeeattendancecheckedinget) | **GET** /api/employee/attendance/checked-in | List all currently checked-in employees (Admin / Super Admin)
 [*AttendanceApi*](doc/AttendanceApi.md) | [**apiEmployeeAttendanceStatusGet**](doc/AttendanceApi.md#apiemployeeattendancestatusget) | **GET** /api/employee/attendance/status | Current check-in status for employee
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthActivatePut**](doc/AuthApi.md#apiauthactivateput) | **PUT** /api/auth/activate | Activate and verify a user account
-[*AuthApi*](doc/AuthApi.md) | [**apiAuthLoginPost**](doc/AuthApi.md#apiauthloginpost) | **POST** /api/auth/login | Start login (password → OTP challenge)
+[*AuthApi*](doc/AuthApi.md) | [**apiAuthLoginPost**](doc/AuthApi.md#apiauthloginpost) | **POST** /api/auth/login | Login with User ID and password
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthLogoutPost**](doc/AuthApi.md#apiauthlogoutpost) | **POST** /api/auth/logout | End session (closes employee_sessions for EMPLOYEE)
-[*AuthApi*](doc/AuthApi.md) | [**apiAuthRegisterAdminPost**](doc/AuthApi.md#apiauthregisteradminpost) | **POST** /api/auth/register-admin | Super Admin creates a shop Admin
+[*AuthApi*](doc/AuthApi.md) | [**apiAuthRegisterAdminPost**](doc/AuthApi.md#apiauthregisteradminpost) | **POST** /api/auth/register-admin | Super Admin creates a shop or warehouse Admin
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthRegisterPost**](doc/AuthApi.md#apiauthregisterpost) | **POST** /api/auth/register | Register a new seller
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthVerifyOtpPost**](doc/AuthApi.md#apiauthverifyotppost) | **POST** /api/auth/verify-otp | Complete login with OTP
 [*DashboardApi*](doc/DashboardApi.md) | [**apiDashboardActivityHistoryGet**](doc/DashboardApi.md#apidashboardactivityhistoryget) | **GET** /api/dashboard/activity-history | Get paginated activity history (Admin only)
@@ -166,7 +166,6 @@ Class | Method | HTTP request | Description
  - [ApiInventoryDetailsGet200ResponseDataPagination](doc/ApiInventoryDetailsGet200ResponseDataPagination.md)
  - [ApiInventoryTransferPostRequest](doc/ApiInventoryTransferPostRequest.md)
  - [ApiInventoryTransferPostRequestProductsInner](doc/ApiInventoryTransferPostRequestProductsInner.md)
- - [ApiProductsListPostRequest](doc/ApiProductsListPostRequest.md)
  - [ApiSellerDashboardPendingShipmentsGet200Response](doc/ApiSellerDashboardPendingShipmentsGet200Response.md)
  - [ApiSellerDashboardPendingShipmentsGet200ResponseData](doc/ApiSellerDashboardPendingShipmentsGet200ResponseData.md)
  - [ApiSellerDashboardStatsGet200Response](doc/ApiSellerDashboardStatsGet200Response.md)
@@ -232,6 +231,8 @@ Class | Method | HTTP request | Description
  - [InventoryProductsResponse](doc/InventoryProductsResponse.md)
  - [InventoryTransaction](doc/InventoryTransaction.md)
  - [ListProductModelsRequest](doc/ListProductModelsRequest.md)
+ - [ListProductsRequest](doc/ListProductsRequest.md)
+ - [ListProductsResponse](doc/ListProductsResponse.md)
  - [LocationItem](doc/LocationItem.md)
  - [LocationsListResponse](doc/LocationsListResponse.md)
  - [LoginData](doc/LoginData.md)
@@ -242,6 +243,7 @@ Class | Method | HTTP request | Description
  - [LoginUserEmployeeRole](doc/LoginUserEmployeeRole.md)
  - [LoginUserLocation](doc/LoginUserLocation.md)
  - [Product](doc/Product.md)
+ - [ProductConfigItem](doc/ProductConfigItem.md)
  - [ProductCreated](doc/ProductCreated.md)
  - [ProductModel](doc/ProductModel.md)
  - [ProductModelResponse](doc/ProductModelResponse.md)

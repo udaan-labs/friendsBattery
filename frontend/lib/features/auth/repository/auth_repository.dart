@@ -16,28 +16,12 @@ class AuthResponse {
   });
 }
 
-/// Password OK → OTP challenge (no JWT yet).
-class LoginOtpChallenge {
-  final String challengeId;
-  final int? expiresIn;
-  final String? phoneMasked;
-  /// Present when SMS is skipped (no FAST2SMS_API_KEY) or OTP_ECHO=1.
-  final String? otp;
-
-  LoginOtpChallenge({
-    required this.challengeId,
-    this.expiresIn,
-    this.phoneMasked,
-    this.otp,
-  });
-}
-
 class AuthRepository {
   final AuthApi api;
 
   AuthRepository({required this.api});
 
-  Future<LoginOtpChallenge> login(String username, String password) async {
+  Future<AuthResponse> login(String username, String password) async {
     final request = (ApiAuthLoginPostRequestBuilder()
           ..userId = username
           ..password = password)
@@ -46,76 +30,47 @@ class AuthRepository {
     try {
       final response =
           await api.apiAuthLoginPost(apiAuthLoginPostRequest: request);
-      final data = response.data?.data;
-      final challengeId = data?.challengeId;
-      if (challengeId == null || challengeId.isEmpty) {
-        throw Exception(
-          response.data?.message ?? 'Login did not return OTP challenge',
-        );
-      }
-      return LoginOtpChallenge(
-        challengeId: challengeId,
-        expiresIn: data?.expiresIn,
-        phoneMasked: data?.phoneMasked,
-        otp: data?.otp,
-      );
+      return _toAuthResponse(response.data);
     } catch (e) {
       throw Exception(_authError(e, 'Login failed'));
     }
   }
 
-  Future<AuthResponse> verifyLoginOtp({
-    required String challengeId,
-    required String otp,
-  }) async {
-    final request = (ApiAuthVerifyOtpPostRequestBuilder()
-          ..challengeId = challengeId
-          ..otp = otp)
-        .build();
+  AuthResponse _toAuthResponse(LoginResponse? body) {
+    final data = body?.data;
+    final authId = data?.authId;
+    final authKey = data?.authKey;
+    final loginUser = data?.user;
 
-    try {
-      final response = await api.apiAuthVerifyOtpPost(
-        apiAuthVerifyOtpPostRequest: request,
-      );
-      final data = response.data?.data;
-      final authId = data?.authId;
-      final authKey = data?.authKey;
-      final loginUser = data?.user;
-
-      if (authId == null ||
-          authId.isEmpty ||
-          authKey == null ||
-          authKey.isEmpty) {
-        throw Exception(
-          response.data?.message ?? 'Login response missing credentials',
-        );
-      }
-
-      final roleRaw = loginUser?.role?.name;
-      if (roleRaw == null || roleRaw.isEmpty) {
-        throw Exception('Login response missing role');
-      }
-
-      final roleLower = roleRaw.toLowerCase();
-      const allowed = {'super_admin', 'admin', 'seller', 'employee'};
-      if (!allowed.contains(roleLower)) {
-        throw Exception('Unsupported role: $roleRaw');
-      }
-
-      return AuthResponse(
-        authId: authId,
-        authKey: authKey,
-        role: roleLower,
-        user: {
-          'username': loginUser?.username,
-          'user_number': loginUser?.userNumber,
-          'shop_name': loginUser?.shopName,
-          'role': roleRaw,
-        },
-      );
-    } catch (e) {
-      throw Exception(_authError(e, 'OTP verification failed'));
+    if (authId == null ||
+        authId.isEmpty ||
+        authKey == null ||
+        authKey.isEmpty) {
+      throw Exception(body?.message ?? 'Login response missing credentials');
     }
+
+    final roleRaw = loginUser?.role?.name;
+    if (roleRaw == null || roleRaw.isEmpty) {
+      throw Exception('Login response missing role');
+    }
+
+    final roleLower = roleRaw.toLowerCase();
+    const allowed = {'super_admin', 'admin', 'seller', 'employee'};
+    if (!allowed.contains(roleLower)) {
+      throw Exception('Unsupported role: $roleRaw');
+    }
+
+    return AuthResponse(
+      authId: authId,
+      authKey: authKey,
+      role: roleLower,
+      user: {
+        'username': loginUser?.username,
+        'user_number': loginUser?.userNumber,
+        'shop_name': loginUser?.shopName,
+        'role': roleRaw,
+      },
+    );
   }
 
   /// Closes server session (employee_sessions) while tokens are still present.
@@ -155,7 +110,7 @@ class AuthRepository {
     }
   }
 
-  /// Super Admin creates a shop Admin (active + verified).
+  /// Super Admin creates a shop or warehouse Admin (active + verified).
   Future<void> registerAdmin({
     required String userId,
     required String username,

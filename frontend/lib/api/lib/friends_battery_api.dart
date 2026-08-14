@@ -56,7 +56,6 @@ export 'package:friends_battery_api/src/model/api_inventory_details_get200_respo
 export 'package:friends_battery_api/src/model/api_inventory_details_get200_response_data_pagination.dart';
 export 'package:friends_battery_api/src/model/api_inventory_transfer_post_request.dart';
 export 'package:friends_battery_api/src/model/api_inventory_transfer_post_request_products_inner.dart';
-export 'package:friends_battery_api/src/model/api_products_list_post_request.dart';
 export 'package:friends_battery_api/src/model/api_seller_dashboard_pending_shipments_get200_response.dart';
 export 'package:friends_battery_api/src/model/api_seller_dashboard_pending_shipments_get200_response_data.dart';
 export 'package:friends_battery_api/src/model/api_seller_dashboard_stats_get200_response.dart';
@@ -122,6 +121,8 @@ export 'package:friends_battery_api/src/model/inventory_product_name_group.dart'
 export 'package:friends_battery_api/src/model/inventory_products_response.dart';
 export 'package:friends_battery_api/src/model/inventory_transaction.dart';
 export 'package:friends_battery_api/src/model/list_product_models_request.dart';
+export 'package:friends_battery_api/src/model/list_products_request.dart';
+export 'package:friends_battery_api/src/model/list_products_response.dart';
 export 'package:friends_battery_api/src/model/location_item.dart';
 export 'package:friends_battery_api/src/model/locations_list_response.dart';
 export 'package:friends_battery_api/src/model/login_data.dart';
@@ -132,6 +133,7 @@ export 'package:friends_battery_api/src/model/login_user.dart';
 export 'package:friends_battery_api/src/model/login_user_employee_role.dart';
 export 'package:friends_battery_api/src/model/login_user_location.dart';
 export 'package:friends_battery_api/src/model/product.dart';
+export 'package:friends_battery_api/src/model/product_config_item.dart';
 export 'package:friends_battery_api/src/model/product_created.dart';
 export 'package:friends_battery_api/src/model/product_model.dart';
 export 'package:friends_battery_api/src/model/product_model_response.dart';

@@ -66,7 +66,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (needsShop && _selectedShopLocationId == null) {
       context.showErrorSnackBar(
         widget.isCreateAdmin
-            ? 'Select a shop for this admin'
+            ? 'Select a shop or warehouse for this admin'
             : 'Select a shop for this seller',
       );
       return;
@@ -102,7 +102,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       if (mounted) {
         context.showSuccessSnackBar(
           widget.isCreateAdmin
-              ? 'Admin created and can log in immediately.'
+              ? 'Admin created for that location and can log in immediately.'
               : widget.isAdminFlow
                   ? 'Seller created at selected shop (inactive until activated).'
                   : 'Registration successful.',
@@ -137,20 +137,26 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     });
   }
 
-  Future<void> _goCreateShop() async {
-    await context.push('/admin/locations/add?type=SHOP');
+  Future<void> _goCreateLocation() async {
+    await context.push(
+      widget.isCreateAdmin
+          ? '/admin/locations/add'
+          : '/admin/locations/add?type=SHOP',
+    );
     ref.invalidate(locationsByTypeProvider('SHOP'));
     ref.invalidate(allLocationsProvider);
   }
 
-  /// Shop picker for seller or create-admin flows.
+  /// Shop picker for seller; shop + warehouse picker for create-admin.
   Widget _buildShopSection(bool formLoading) {
-    final shopsAsync = ref.watch(locationsByTypeProvider('SHOP'));
+    final shopsAsync = widget.isCreateAdmin
+        ? ref.watch(allLocationsProvider)
+        : ref.watch(locationsByTypeProvider('SHOP'));
     final shopTitle = widget.isCreateAdmin
-        ? 'Select shop for this admin'
+        ? 'Select shop or warehouse'
         : 'Select shop for this seller';
     final shopHint = widget.isCreateAdmin
-        ? 'Required. Admin is linked to this shop.'
+        ? 'Required. Admin is linked to this location.'
         : 'Required. Multiple sellers can use the same shop.';
 
     return Container(
@@ -192,18 +198,24 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Text(
-                      'No shops in the system yet.',
-                      style: TextStyle(
+                    Text(
+                      widget.isCreateAdmin
+                          ? 'No shops or warehouses yet.'
+                          : 'No shops in the system yet.',
+                      style: const TextStyle(
                         color: AppTheme.error,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 10),
                     ElevatedButton.icon(
-                      onPressed: formLoading ? null : _goCreateShop,
+                      onPressed: formLoading ? null : _goCreateLocation,
                       icon: const Icon(Icons.add_business),
-                      label: const Text('Go to Shops to create one'),
+                      label: Text(
+                        widget.isCreateAdmin
+                            ? 'Create a location first'
+                            : 'Go to Shops to create one',
+                      ),
                     ),
                   ],
                 );
@@ -221,20 +233,28 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 // ignore: deprecated_member_use
                 value: valueOk ? _selectedShopLocationId : null,
                 isExpanded: true,
-                decoration: const InputDecoration(
-                  labelText: 'Shop *',
+                decoration: InputDecoration(
+                  labelText: widget.isCreateAdmin ? 'Location *' : 'Shop *',
                   filled: true,
                   fillColor: Colors.white,
-                  prefixIcon: Icon(Icons.store),
+                  prefixIcon: Icon(
+                    widget.isCreateAdmin ? Icons.place : Icons.store,
+                  ),
                 ),
-                hint: const Text('Tap to choose shop'),
+                hint: Text(
+                  widget.isCreateAdmin
+                      ? 'Tap to choose shop or warehouse'
+                      : 'Tap to choose shop',
+                ),
                 items: [
                   for (final s in shops)
                     if (s.id != null)
                       DropdownMenuItem<int>(
                         value: s.id!,
                         child: Text(
-                          '${s.name ?? 'Shop'}${s.code != null ? ' · ${s.code}' : ''}',
+                          widget.isCreateAdmin
+                              ? '${s.type == LocationItemTypeEnum.WAREHOUSE ? 'Warehouse' : 'Shop'} · ${s.name ?? s.code ?? 'Location'}'
+                              : '${s.name ?? 'Shop'}${s.code != null ? ' · ${s.code}' : ''}',
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -257,13 +277,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Could not load shops: ${friendlyError(e)}',
+                  'Could not load ${widget.isCreateAdmin ? 'locations' : 'shops'}: ${friendlyError(e)}',
                   style: const TextStyle(color: AppTheme.error),
                 ),
                 const SizedBox(height: 8),
                 OutlinedButton(
-                  onPressed: () =>
-                      ref.invalidate(locationsByTypeProvider('SHOP')),
+                  onPressed: () {
+                    if (widget.isCreateAdmin) {
+                      ref.invalidate(allLocationsProvider);
+                    } else {
+                      ref.invalidate(locationsByTypeProvider('SHOP'));
+                    }
+                  },
                   child: const Text('Retry'),
                 ),
                 TextButton(
@@ -323,7 +348,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               const SizedBox(height: 16),
               Text(
                 widget.isCreateAdmin
-                    ? 'Create Shop Admin'
+                    ? 'Create Shop or Warehouse Admin'
                     : widget.isAdminFlow
                         ? 'Create Seller Account'
                         : 'Create Account',
@@ -382,9 +407,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     TextField(
                       controller: _shopNameController,
                       enabled: !isLoading,
-                      decoration: const InputDecoration(
-                        labelText: 'Shop Name',
-                        helperText: 'Filled when you pick a shop; editable',
+                      decoration: InputDecoration(
+                        labelText: widget.isCreateAdmin
+                            ? 'Location name'
+                            : 'Shop Name',
+                        helperText: widget.isCreateAdmin
+                            ? 'Filled when you pick a location; editable'
+                            : 'Filled when you pick a shop; editable',
                       ),
                     ),
                     const SizedBox(height: 16),

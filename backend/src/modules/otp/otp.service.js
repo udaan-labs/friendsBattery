@@ -88,9 +88,11 @@ function verifyChallenge({ challengeId, code, purpose }) {
   };
 }
 
-/** Debug only: OTP_ECHO=1 returns code in API. */
+/** Echo OTP unless SKIP_LOGIN_OTP=0. Set SKIP_LOGIN_OTP=0 to require SMS OTP UI. */
 function shouldEchoOtp() {
-  return process.env.OTP_ECHO === '1' || process.env.OTP_ECHO === 'true';
+  const skip = process.env.SKIP_LOGIN_OTP;
+  if (skip === '0' || skip === 'false') return false;
+  return true;
 }
 
 module.exports = {

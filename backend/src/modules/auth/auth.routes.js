@@ -74,11 +74,11 @@ router.post('/register', authenticate, requireSuperAdminOrAdmin, validateRegiste
  * @swagger
  * /api/auth/register-admin:
  *   post:
- *     summary: Super Admin creates a shop Admin
+ *     summary: Super Admin creates a shop or warehouse Admin
  *     description: |
  *       SUPER_ADMIN only. Creates role ADMIN with parent_id = Super Admin.
  *       New admin is active and verified (can log in immediately).
- *       Optional location_id must be an active SHOP.
+ *       Optional location_id must be an active SHOP or WAREHOUSE.
  *     tags: [Auth]
  *     security:
  *       - bearerAuth: []
@@ -112,7 +112,7 @@ router.post('/register', authenticate, requireSuperAdminOrAdmin, validateRegiste
  *                 format: password
  *               location_id:
  *                 type: integer
- *                 description: Optional SHOP location for this admin
+ *                 description: Optional SHOP or WAREHOUSE location for this admin
  *                 example: 2
  *     responses:
  *       201:
@@ -138,10 +138,10 @@ router.post(
  * @swagger
  * /api/auth/login:
  *   post:
- *     summary: Start login (password → OTP challenge)
+ *     summary: Login with User ID and password
  *     description: |
- *       Step 1 of login for SUPER_ADMIN, ADMIN, SELLER, EMPLOYEE.
- *       On success returns challenge_id after SMS. Complete with POST /api/auth/verify-otp.
+ *       Password login for SUPER_ADMIN, ADMIN, SELLER, EMPLOYEE. Returns JWT.
+ *       OTP step is deferred.
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -171,11 +171,11 @@ router.post(
  *                 type: string
  *     responses:
  *       200:
- *         description: Password OK — OTP challenge issued (no token yet)
+ *         description: Login successful
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/LoginOtpChallengeResponse'
+ *               $ref: '#/components/schemas/LoginResponse'
  *       400:
  *         description: Validation Error
  *         content:

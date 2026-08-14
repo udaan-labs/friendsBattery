@@ -17,9 +17,7 @@ class QuickActions extends ConsumerWidget {
     final actions = <_ActionItemData>[
       _ActionItemData(
         title: 'Add Product',
-        subtitle: isSuperAdmin
-            ? 'Add category, model & configure pricing'
-            : 'Add product category & model',
+        subtitle: 'Name, model, or configure',
         icon: Icons.add_circle_outline_rounded,
         route: '/admin/add-product',
       ),
@@ -41,7 +39,7 @@ class QuickActions extends ConsumerWidget {
       if (isSuperAdmin)
         _ActionItemData(
           title: 'Add Admin',
-          subtitle: 'Create shop admin account',
+          subtitle: 'Shop or warehouse admin',
           icon: Icons.admin_panel_settings_outlined,
           route: '/admin/add-admin',
         ),

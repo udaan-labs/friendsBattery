@@ -33,12 +33,12 @@ class AuthRepository {
     });
   }
 
-  /** Active SHOP location only (sellers assign to shops, not warehouses). */
-  async findActiveShopLocation(locationId) {
+  /** Active location. Default SHOP (sellers). Pass types for SA admin assign. */
+  async findActiveLocation(locationId, types = ['SHOP']) {
     return prisma.location.findFirst({
       where: {
         id: BigInt(locationId),
-        type: 'SHOP',
+        type: { in: types },
         isActive: true,
       },
       select: { id: true, code: true, name: true, type: true, isActive: true },

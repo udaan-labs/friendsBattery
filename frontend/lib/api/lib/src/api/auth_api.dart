@@ -13,7 +13,6 @@ import 'package:friends_battery_api/src/model/api_auth_login_post_request.dart';
 import 'package:friends_battery_api/src/model/api_auth_register_post_request.dart';
 import 'package:friends_battery_api/src/model/api_auth_verify_otp_post_request.dart';
 import 'package:friends_battery_api/src/model/error.dart';
-import 'package:friends_battery_api/src/model/login_otp_challenge_response.dart';
 import 'package:friends_battery_api/src/model/login_response.dart';
 import 'package:friends_battery_api/src/model/register_response.dart';
 
@@ -98,8 +97,8 @@ class AuthApi {
     return _response;
   }
 
-  /// Start login (password → OTP challenge)
-  /// Step 1 of login for SUPER_ADMIN, ADMIN, SELLER, EMPLOYEE. On success returns challenge_id after SMS. Complete with POST /api/auth/verify-otp. 
+  /// Login with User ID and password
+  /// Password login for SUPER_ADMIN, ADMIN, SELLER, EMPLOYEE. Returns JWT. OTP step is deferred. 
   ///
   /// Parameters:
   /// * [apiAuthLoginPostRequest] 
@@ -110,9 +109,9 @@ class AuthApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future] containing a [Response] with a [LoginOtpChallengeResponse] as data
+  /// Returns a [Future] containing a [Response] with a [LoginResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<LoginOtpChallengeResponse>> apiAuthLoginPost({ 
+  Future<Response<LoginResponse>> apiAuthLoginPost({ 
     required ApiAuthLoginPostRequest apiAuthLoginPostRequest,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -168,14 +167,14 @@ class AuthApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    LoginOtpChallengeResponse? _responseData;
+    LoginResponse? _responseData;
 
     try {
       final rawResponse = _response.data;
       _responseData = rawResponse == null ? null : _serializers.deserialize(
         rawResponse,
-        specifiedType: const FullType(LoginOtpChallengeResponse),
-      ) as LoginOtpChallengeResponse;
+        specifiedType: const FullType(LoginResponse),
+      ) as LoginResponse;
 
     } catch (error, stackTrace) {
       throw DioException(
@@ -187,7 +186,7 @@ class AuthApi {
       );
     }
 
-    return Response<LoginOtpChallengeResponse>(
+    return Response<LoginResponse>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,
@@ -250,8 +249,8 @@ class AuthApi {
     return _response;
   }
 
-  /// Super Admin creates a shop Admin
-  /// SUPER_ADMIN only. Creates role ADMIN with parent_id &#x3D; Super Admin. New admin is active and verified (can log in immediately). Optional location_id must be an active SHOP. 
+  /// Super Admin creates a shop or warehouse Admin
+  /// SUPER_ADMIN only. Creates role ADMIN with parent_id &#x3D; Super Admin. New admin is active and verified (can log in immediately). Optional location_id must be an active SHOP or WAREHOUSE. 
   ///
   /// Parameters:
   /// * [apiAuthRegisterPostRequest] 

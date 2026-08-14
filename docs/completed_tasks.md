@@ -69,3 +69,13 @@
 - [x] Service bills (Check, Charging, Jumpstart, Inverter)  
 - [x] Battery rent with deposit & refund  
 
+### #7 Section 1 follow-up: SA add shop + warehouse admin (2026-08-14)
+- [x] Super Admin quick action Add Admin: create **shop admin** and **warehouse admin** (`POST /api/auth/register-admin` accepts SHOP or WAREHOUSE)
+
+### #8 Section 1 follow-up: Add Product = name + model (2026-08-14)
+- [x] Quick action **Add Product** opens add name/model (`/admin/add-product`), not configure pricing
+
+### #9 Section 1 follow-up: product card + Add Product UI (2026-08-14)
+- [x] Top PRODUCTS card: list all catalog names, tap → configure product
+- [x] SA Add Product uses the same Admin form layout (name/model card, not a separate SA form)
+

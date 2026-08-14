@@ -145,6 +145,8 @@ model User {
   attendances            EmployeeAttendance[]   @relation("AttendanceEmployee")
   activityLogs           EmployeeActivityLog[]  @relation("ActivityLogEmployee")
   sessions               EmployeeSession[]      @relation("SessionEmployee")
+  catalogEvents          ProductCatalogEvent[]  @relation("CatalogEventActor")
+  orgEvents              OrgEvent[]             @relation("OrgEventActor")
 
   @@index([locationId])
   @@index([parentId])
@@ -184,6 +186,23 @@ model EmployeeActivityLog {
   @@index([createdAt])
   @@index([action])
   @@map("employee_activity_logs")
+}
+
+/// Append-only org setup (shop / warehouse / admin / seller / employee). Never update or delete.
+model OrgEvent {
+  id         BigInt   @id @default(autoincrement())
+  action     String   @db.VarChar(40)
+  actorId    BigInt   @map("actor_id")
+  entityType String   @map("entity_type") @db.VarChar(20)
+  entityId   BigInt   @map("entity_id")
+  payload    Json
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamp()
+
+  actor User @relation("OrgEventActor", fields: [actorId], references: [id])
+
+  @@index([createdAt])
+  @@index([actorId, createdAt])
+  @@map("org_events")
 }
 
 enum AttendanceStatus {
@@ -236,6 +255,7 @@ model ProductName {
   products         Product[]
   productModels    ProductModel[]
   newShipmentItems NewShipmentItem[]
+  catalogEvents    ProductCatalogEvent[]
 
   @@map("product_names")
 }
@@ -248,6 +268,7 @@ model ProductModel {
   productName      ProductName       @relation(fields: [productNameId], references: [id])
   products         Product[]
   newShipmentItems NewShipmentItem[]
+  catalogEvents    ProductCatalogEvent[]
 
   @@unique([productNameId, name])
   @@map("product_models")
@@ -276,8 +297,32 @@ model Product {
   returns           ReturnProduct[]
   shipmentItems     ShipmentItem[]
   newShipmentItems  NewShipmentItem[]
+  catalogEvents     ProductCatalogEvent[]
 
+  @@unique([productNameId, productModelId])
   @@map("products")
+}
+
+/// Append-only catalog history (add name / model / configure). Never update or delete.
+model ProductCatalogEvent {
+  id             BigInt   @id @default(autoincrement())
+  action         String   @db.VarChar(40)
+  actorId        BigInt   @map("actor_id")
+  productNameId  BigInt?  @map("product_name_id")
+  productModelId BigInt?  @map("product_model_id")
+  productId      BigInt?  @map("product_id")
+  payload        Json
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamp()
+
+  actor        User          @relation("CatalogEventActor", fields: [actorId], references: [id])
+  productName  ProductName?  @relation(fields: [productNameId], references: [id], onDelete: SetNull)
+  productModel ProductModel? @relation(fields: [productModelId], references: [id], onDelete: SetNull)
+  product      Product?      @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([productNameId, createdAt])
+  @@index([actorId, createdAt])
+  @@map("product_catalog_events")
 }
 
 model ProductUnit {

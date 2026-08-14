@@ -1,4 +1,92 @@
+const { Prisma } = require('@prisma/client');
 const { prisma } = require('../../config/db');
+
+function encodeActivityCursor(row) {
+  return `${new Date(row.time).toISOString()}|${row.type}|${row.id}`;
+}
+
+function parseActivityCursor(raw) {
+  if (!raw || typeof raw !== 'string') return null;
+  const parts = raw.split('|');
+  if (parts.length !== 3) return null;
+  const time = new Date(parts[0]);
+  if (Number.isNaN(time.getTime())) return null;
+  return { time, type: parts[1], id: String(parts[2]) };
+}
+
+function formatCatalogActivity(e) {
+  const who = e.actor?.shopName || e.actor?.userName || 'Admin';
+  const name = e.productName?.name || e.payload?.name || 'product';
+  const model = e.productModel?.name || e.payload?.name;
+  const after = e.payload?.after;
+  const before = e.payload?.before;
+  let title;
+  let subtitle = '';
+  if (e.action === 'NAME_CREATED') {
+    title = `${who} added product name`;
+    subtitle = name;
+  } else if (e.action === 'MODEL_CREATED') {
+    title = `${who} added model`;
+    subtitle = model ? `${name} • ${model}` : name;
+  } else if (e.action === 'PRODUCT_CREATED') {
+    title = `${who} configured product`;
+    subtitle = [name, model, after ? `min ₹${after.min_price}` : null].filter(Boolean).join(' • ');
+  } else {
+    title = `${who} updated product`;
+    const priceBit =
+      before && after && before.min_price !== after.min_price
+        ? `min ₹${before.min_price} → ₹${after.min_price}`
+        : after
+          ? `min ₹${after.min_price}`
+          : 'pricing / units';
+    subtitle = [name, model, priceBit].filter(Boolean).join(' • ');
+  }
+  return {
+    type: 'catalog',
+    title,
+    subtitle,
+    time: e.createdAt.toISOString(),
+    icon: 'inventory_2'
+  };
+}
+
+function formatOrgActivity(e) {
+  const who = e.actor?.shopName || e.actor?.userName || 'Admin';
+  const name = e.payload?.name || e.payload?.username || 'record';
+  const place = e.payload?.location_name || e.payload?.shop_name;
+  const job = e.payload?.job_title;
+  const map = {
+    SHOP_CREATED: { title: `${who} added shop`, subtitle: name, icon: 'store' },
+    WAREHOUSE_CREATED: { title: `${who} added warehouse`, subtitle: name, icon: 'store' },
+    ADMIN_CREATED: {
+      title: `${who} created shop admin`,
+      subtitle: [name, place].filter(Boolean).join(' • '),
+      icon: 'person_add',
+    },
+    SELLER_CREATED: {
+      title: `${who} added seller`,
+      subtitle: [name, place].filter(Boolean).join(' • '),
+      icon: 'person_add',
+    },
+    EMPLOYEE_CREATED: {
+      title: `${who} added employee`,
+      subtitle: [name, job, place].filter(Boolean).join(' • '),
+      icon: 'person_add',
+    },
+  };
+  const row = map[e.action] || {
+    title: `${who} updated org`,
+    subtitle: name,
+    icon: 'person_add',
+  };
+  return {
+    type: 'org',
+    title: row.title,
+    subtitle: row.subtitle,
+    time: e.createdAt.toISOString(),
+    icon: row.icon,
+  };
+}
 
 class DashboardRepository {
   /**
@@ -230,8 +318,10 @@ class DashboardRepository {
     const shipmentIds = rawActivities.filter(a => a.type === 'shipment').map(a => BigInt(a.id));
     const saleIds = rawActivities.filter(a => a.type === 'sale').map(a => BigInt(a.id));
     const returnIds = rawActivities.filter(a => a.type === 'return').map(a => BigInt(a.id));
+    const catalogIds = rawActivities.filter(a => a.type === 'catalog').map(a => BigInt(a.id));
+    const orgIds = rawActivities.filter(a => a.type === 'org').map(a => BigInt(a.id));
 
-    const [shipments, sales, returns] = await Promise.all([
+    const [shipments, sales, returns, catalogEvents, orgEvents] = await Promise.all([
       shipmentIds.length > 0 ? prisma.newShipment.findMany({
         where: { id: { in: shipmentIds } },
         include: {
@@ -256,6 +346,20 @@ class DashboardRepository {
           returnBy: { select: { userName: true, shopName: true } },
           product: { include: { productModel: true } }
         }
+      }) : Promise.resolve([]),
+      catalogIds.length > 0 ? prisma.productCatalogEvent.findMany({
+        where: { id: { in: catalogIds } },
+        include: {
+          actor: { select: { userName: true, shopName: true } },
+          productName: { select: { name: true } },
+          productModel: { select: { name: true } }
+        }
+      }) : Promise.resolve([]),
+      orgIds.length > 0 ? prisma.orgEvent.findMany({
+        where: { id: { in: orgIds } },
+        include: {
+          actor: { select: { userName: true, shopName: true } },
+        }
       }) : Promise.resolve([])
     ]);
 
@@ -268,6 +372,8 @@ class DashboardRepository {
     const salesMap = new Map(sales.map(s => [s.id.toString(), s]));
     // Map Returns
     const returnsMap = new Map(returns.map(r => [r.id.toString(), r]));
+    const catalogMap = new Map(catalogEvents.map(e => [e.id.toString(), e]));
+    const orgMap = new Map(orgEvents.map(e => [e.id.toString(), e]));
 
     for (const raw of rawActivities) {
       if (raw.type === 'shipment') {
@@ -303,6 +409,16 @@ class DashboardRepository {
             icon: 'assignment_return'
           });
         }
+      } else if (raw.type === 'catalog') {
+        const e = catalogMap.get(raw.id.toString());
+        if (e) {
+          activities.push(formatCatalogActivity(e));
+        }
+      } else if (raw.type === 'org') {
+        const e = orgMap.get(raw.id.toString());
+        if (e) {
+          activities.push(formatOrgActivity(e));
+        }
       }
     }
 
@@ -321,6 +437,10 @@ class DashboardRepository {
       SELECT 'sale' AS type, id, sold_at AS time FROM sales_transactions
       UNION ALL
       SELECT 'return' AS type, id, created_at AS time FROM return_products
+      UNION ALL
+      SELECT 'catalog' AS type, id, created_at AS time FROM product_catalog_events
+      UNION ALL
+      SELECT 'org' AS type, id, created_at AS time FROM org_events
       ORDER BY time DESC
       LIMIT 10 OFFSET 0
     `;
@@ -329,39 +449,52 @@ class DashboardRepository {
   }
 
   /**
-   * Get paginated activities.
-   * @param {number} page
-   * @param {number} limit
-   * @returns {Promise<{data: Array, total: number}>}
+   * Cursor-paginated activities (newest first).
+   * Cursor is opaque: `${isoTime}|${type}|${id}`
+   * @param {{ cursor?: string|null, limit?: number, fromDate?: Date|null, toDate?: Date|null }} opts
+   * @returns {Promise<{data: Array, nextCursor: string|null, hasNextPage: boolean}>}
    */
-  async getActivityHistory(page = 1, limit = 20) {
-    const offset = (page - 1) * limit;
+  async getActivityHistory({ cursor = null, limit = 20, fromDate = null, toDate = null } = {}) {
+    const take = limit + 1;
+    const parsed = parseActivityCursor(cursor);
+    const feed = Prisma.sql`
+      SELECT 'shipment' AS type, id, created_at AS time FROM shipments
+      UNION ALL
+      SELECT 'sale' AS type, id, sold_at AS time FROM sales_transactions
+      UNION ALL
+      SELECT 'return' AS type, id, created_at AS time FROM return_products
+      UNION ALL
+      SELECT 'catalog' AS type, id, created_at AS time FROM product_catalog_events
+      UNION ALL
+      SELECT 'org' AS type, id, created_at AS time FROM org_events
+    `;
+    const clauses = [];
+    if (fromDate) clauses.push(Prisma.sql`time >= ${fromDate}`);
+    if (toDate) clauses.push(Prisma.sql`time <= ${toDate}`);
+    if (parsed) {
+      clauses.push(Prisma.sql`(
+        time < ${parsed.time}
+        OR (time = ${parsed.time} AND (type, id::text) < (${parsed.type}, ${parsed.id}))
+      )`);
+    }
+    const where = clauses.length
+      ? Prisma.sql`WHERE ${Prisma.join(clauses, ' AND ')}`
+      : Prisma.empty;
 
-    const [rawActivities, countResult] = await Promise.all([
-      prisma.$queryRaw`
-        SELECT 'shipment' AS type, id, created_at AS time FROM shipments
-        UNION ALL
-        SELECT 'sale' AS type, id, sold_at AS time FROM sales_transactions
-        UNION ALL
-        SELECT 'return' AS type, id, created_at AS time FROM return_products
-        ORDER BY time DESC
-        LIMIT ${limit} OFFSET ${offset}
-      `,
-      prisma.$queryRaw`
-        SELECT COUNT(*) as total FROM (
-          SELECT id FROM shipments
-          UNION ALL
-          SELECT id FROM sales_transactions
-          UNION ALL
-          SELECT id FROM return_products
-        ) AS combined
-      `
-    ]);
+    const rawActivities = await prisma.$queryRaw`
+      SELECT type, id, time FROM (${feed}) AS combined
+      ${where}
+      ORDER BY time DESC, type DESC, id DESC
+      LIMIT ${take}
+    `;
 
-    const data = await this._fetchActivityDetails(rawActivities);
-    const total = countResult.length > 0 ? Number(countResult[0].total) : 0;
+    const hasNextPage = rawActivities.length > limit;
+    const pageRows = hasNextPage ? rawActivities.slice(0, limit) : rawActivities;
+    const last = pageRows[pageRows.length - 1];
+    const nextCursor = hasNextPage && last ? encodeActivityCursor(last) : null;
+    const data = await this._fetchActivityDetails(pageRows);
 
-    return { data, total };
+    return { data, nextCursor, hasNextPage };
   }
 }
 

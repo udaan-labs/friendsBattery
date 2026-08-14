@@ -5,17 +5,17 @@ const { JWT_SECRET, JWT_EXPIRES_IN } = require('../../config/env');
 const authRepository = require('./auth.repository');
 const ROLES = require('../../shared/constants/roles');
 const { httpError } = require('../../shared/utils/http-error');
+const orgEventsRepository = require('../../shared/org-events.repository');
 const otpService = require('../otp/otp.service');
-const { sendOtpSms } = require('../otp/sms.service');
 
 class AuthService {
   /**
-   * Super Admin only: create a shop ADMIN under this SA.
-   * parent_id = SA; optional SHOP location; active + verified (ready to log in).
+   * Super Admin only: create an ADMIN under this SA (shop or warehouse).
+   * parent_id = SA; optional SHOP|WAREHOUSE location; active + verified.
    */
   async registerAdmin({ user_id, username, user_number, shop_name, password, location_id, actor }) {
     if (!actor || actor.role !== ROLES.SUPER_ADMIN) {
-      throw httpError(403, 'Only Super Admin can create shop Admins');
+      throw httpError(403, 'Only Super Admin can create Admins');
     }
 
     const existingUserId = await authRepository.findUserByUserId(user_id);
@@ -36,9 +36,12 @@ class AuthService {
     let locationId = null;
     let resolvedShopName = shop_name;
     if (location_id != null) {
-      const location = await authRepository.findActiveShopLocation(location_id);
+      const location = await authRepository.findActiveLocation(location_id, [
+        'SHOP',
+        'WAREHOUSE',
+      ]);
       if (!location) {
-        throw httpError(400, 'Shop location not found or inactive (must be type SHOP)');
+        throw httpError(400, 'Location not found or inactive (must be SHOP or WAREHOUSE)');
       }
       locationId = Number(location.id);
       if (!resolvedShopName || !String(resolvedShopName).trim()) {
@@ -60,6 +63,18 @@ class AuthService {
       isActive: true,
       isVerified: true,
       loginAttempt: 0,
+    });
+
+    await orgEventsRepository.create({
+      action: 'ADMIN_CREATED',
+      actorId: actor.id,
+      entityType: 'user',
+      entityId: newUser.id,
+      payload: {
+        username: newUser.userName,
+        shop_name: newUser.shopName,
+        location_id: locationId,
+      },
     });
 
     return {
@@ -110,7 +125,7 @@ class AuthService {
           'Your account has no shop location. Create or assign a shop before adding sellers.'
         );
       }
-      const location = await authRepository.findActiveShopLocation(actor.locationId);
+      const location = await authRepository.findActiveLocation(actor.locationId);
       if (!location) {
         throw httpError(400, 'Shop location not found or inactive (must be type SHOP)');
       }
@@ -119,7 +134,7 @@ class AuthService {
         resolvedShopName = location.name;
       }
     } else if (location_id != null) {
-      const location = await authRepository.findActiveShopLocation(location_id);
+      const location = await authRepository.findActiveLocation(location_id);
       if (!location) {
         throw httpError(400, 'Shop location not found or inactive (must be type SHOP)');
       }
@@ -153,6 +168,18 @@ class AuthService {
 
     const newUser = await authRepository.createUser(userData);
 
+    await orgEventsRepository.create({
+      action: 'SELLER_CREATED',
+      actorId: actor?.id,
+      entityType: 'user',
+      entityId: newUser.id,
+      payload: {
+        username: newUser.userName,
+        shop_name: newUser.shopName,
+        location_id: locationId,
+      },
+    });
+
     return {
       id: Number(newUser.id),
       user_id: newUser.userId,
@@ -168,9 +195,7 @@ class AuthService {
     };
   }
 
-  /**
-   * Step 1 — validate password, issue OTP challenge (no JWT yet).
-   */
+  /** Password login → JWT. */
   async loginUser({ user_id, password, device_id, ip_address, app_version, firebase_token }) {
     const user = await authRepository.findUserByUserId(user_id);
     if (!user) {
@@ -195,35 +220,13 @@ class AuthService {
       throw httpError(403, 'login after some time');
     }
 
-    const { challengeId, code, expiresIn } = otpService.createChallenge({
-      purpose: 'login',
-      subject: `user:${Number(user.id)}`,
-      meta: {
-        userDbId: Number(user.id),
-        user_id: user.userId,
-        device_id: device_id || null,
-        ip_address: ip_address || null,
-        app_version: app_version || null,
-        firebase_token: firebase_token || null,
-      },
+    // ponytail: password login only — OTP/SMS later
+    return this._completeLogin(user, {
+      device_id,
+      ip_address,
+      app_version,
+      firebase_token,
     });
-
-    // SMS when FAST2SMS_API_KEY is set; otherwise skipped (dev) and OTP is echoed
-    const sms = await sendOtpSms({
-      phone: user.userNumber,
-      code,
-      purpose: 'login',
-    });
-
-    const data = {
-      requires_otp: true,
-      challenge_id: challengeId,
-      expires_in: expiresIn,
-      phone_masked: otpService.maskPhone(user.userNumber),
-    };
-    // Echo OTP when provider skipped or OTP_ECHO=1 (never rely on this in production SMS)
-    if (sms?.skipped || otpService.shouldEchoOtp()) data.otp = code;
-    return data;
   }
 
   /**
@@ -249,6 +252,10 @@ class AuthService {
       throw httpError(403, 'login after some time');
     }
 
+    return this._completeLogin(user, meta);
+  }
+
+  async _completeLogin(user, meta = {}) {
     if (user.loginAttempt > 0) {
       await authRepository.updateLoginAttempt(user.userId, 0);
     }

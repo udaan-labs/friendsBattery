@@ -34,9 +34,13 @@ async function main() {
     // Child / leaf tables first
     await del('employee_sessions', () => tx.employeeSession.deleteMany({}));
     await del('employee_activity_logs', () => tx.employeeActivityLog.deleteMany({}));
+    await del('product_catalog_events', () => tx.productCatalogEvent.deleteMany({}));
+    await del('org_events', () => tx.orgEvent.deleteMany({}));
     await del('employee_attendance', () => tx.employeeAttendance.deleteMany({}));
 
     await del('return_products', () => tx.returnProduct.deleteMany({}));
+    await del('battery_rents', () => tx.batteryRent.deleteMany({}));
+    await del('service_bills', () => tx.serviceBill.deleteMany({}));
     await del('sales_transactions', () => tx.salesTransaction.deleteMany({}));
     await del('customers', () => tx.customer.deleteMany({}));
 

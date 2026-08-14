@@ -48,7 +48,6 @@ Serializers _$serializers =
           ..add(ApiInventoryDetailsGet200ResponseDataPagination.serializer)
           ..add(ApiInventoryTransferPostRequest.serializer)
           ..add(ApiInventoryTransferPostRequestProductsInner.serializer)
-          ..add(ApiProductsListPostRequest.serializer)
           ..add(ApiSellerDashboardPendingShipmentsGet200Response.serializer)
           ..add(ApiSellerDashboardPendingShipmentsGet200ResponseData.serializer)
           ..add(ApiSellerDashboardStatsGet200Response.serializer)
@@ -123,6 +122,8 @@ Serializers _$serializers =
           ..add(InventoryTransaction.serializer)
           ..add(InventoryTransactionActionEnum.serializer)
           ..add(ListProductModelsRequest.serializer)
+          ..add(ListProductsRequest.serializer)
+          ..add(ListProductsResponse.serializer)
           ..add(LocationItem.serializer)
           ..add(LocationItemTypeEnum.serializer)
           ..add(LocationsListResponse.serializer)
@@ -136,6 +137,7 @@ Serializers _$serializers =
           ..add(LoginUserLocationTypeEnum.serializer)
           ..add(LoginUserRoleEnum.serializer)
           ..add(Product.serializer)
+          ..add(ProductConfigItem.serializer)
           ..add(ProductCreated.serializer)
           ..add(ProductModel.serializer)
           ..add(ProductModelResponse.serializer)
@@ -341,6 +343,12 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(LocationItem)]),
             () => ListBuilder<LocationItem>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(ProductConfigItem),
+            ]),
+            () => ListBuilder<ProductConfigItem>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(ProductModel)]),

@@ -92,6 +92,20 @@ class ProductCatalogRepository {
     return id;
   }
 
+  Future<ProductConfigItem?> getProductConfig({
+    required int productNameId,
+    required int productModelId,
+  }) async {
+    final body = ListProductsRequest((b) {
+      b.productNameId = productNameId;
+      b.productModelId = productModelId;
+    });
+    final response =
+        await _products.apiProductsListPost(listProductsRequest: body);
+    final rows = response.data?.data?.toList() ?? [];
+    return rows.isEmpty ? null : rows.first;
+  }
+
   Future<void> createProduct({
     required int productNameId,
     required int productModelId,

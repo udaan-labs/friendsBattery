@@ -57,6 +57,8 @@ class DataSync {
   static Future<void> afterProductMutation(WidgetRef ref) async {
     ref.invalidate(productNamesProvider);
     ref.invalidate(productModelsProvider);
+    ref.invalidate(productCatalogCombosProvider);
+    ref.invalidate(productConfigProvider);
     ref.invalidate(productStockDetailsProvider);
     afterInventoryMutation(ref);
 

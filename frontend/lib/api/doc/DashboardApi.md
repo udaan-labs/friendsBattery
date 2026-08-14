@@ -16,7 +16,7 @@ Method | HTTP request | Description
 
 
 # **apiDashboardActivityHistoryGet**
-> ActivityHistoryResponse apiDashboardActivityHistoryGet(page, limit)
+> ActivityHistoryResponse apiDashboardActivityHistoryGet(cursor, fromDate, toDate, limit)
 
 Get paginated activity history (Admin only)
 
@@ -25,11 +25,13 @@ Get paginated activity history (Admin only)
 import 'package:friends_battery_api/api.dart';
 
 final api = FriendsBatteryApi().getDashboardApi();
-final int page = 56; // int | 
+final String cursor = cursor_example; // String | Opaque cursor from previous page (pagination.nextCursor)
+final DateTime fromDate = 2013-10-20T19:20:30+01:00; // DateTime | Inclusive start of range (ISO)
+final DateTime toDate = 2013-10-20T19:20:30+01:00; // DateTime | Inclusive end of range (ISO)
 final int limit = 56; // int | 
 
 try {
-    final response = api.apiDashboardActivityHistoryGet(page, limit);
+    final response = api.apiDashboardActivityHistoryGet(cursor, fromDate, toDate, limit);
     print(response);
 } on DioException catch (e) {
     print('Exception when calling DashboardApi->apiDashboardActivityHistoryGet: $e\n');
@@ -40,8 +42,10 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **page** | **int**|  | [optional] 
- **limit** | **int**|  | [optional] 
+ **cursor** | **String**| Opaque cursor from previous page (pagination.nextCursor) | [optional] 
+ **fromDate** | **DateTime**| Inclusive start of range (ISO) | [optional] 
+ **toDate** | **DateTime**| Inclusive end of range (ISO) | [optional] 
+ **limit** | **int**|  | [optional] [default to 20]
 
 ### Return type
 

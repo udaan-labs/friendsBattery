@@ -46,7 +46,6 @@ import 'package:friends_battery_api/src/model/api_inventory_details_get200_respo
 import 'package:friends_battery_api/src/model/api_inventory_details_get200_response_data_pagination.dart';
 import 'package:friends_battery_api/src/model/api_inventory_transfer_post_request.dart';
 import 'package:friends_battery_api/src/model/api_inventory_transfer_post_request_products_inner.dart';
-import 'package:friends_battery_api/src/model/api_products_list_post_request.dart';
 import 'package:friends_battery_api/src/model/api_seller_dashboard_pending_shipments_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_seller_dashboard_pending_shipments_get200_response_data.dart';
 import 'package:friends_battery_api/src/model/api_seller_dashboard_stats_get200_response.dart';
@@ -112,6 +111,8 @@ import 'package:friends_battery_api/src/model/inventory_product_name_group.dart'
 import 'package:friends_battery_api/src/model/inventory_products_response.dart';
 import 'package:friends_battery_api/src/model/inventory_transaction.dart';
 import 'package:friends_battery_api/src/model/list_product_models_request.dart';
+import 'package:friends_battery_api/src/model/list_products_request.dart';
+import 'package:friends_battery_api/src/model/list_products_response.dart';
 import 'package:friends_battery_api/src/model/location_item.dart';
 import 'package:friends_battery_api/src/model/locations_list_response.dart';
 import 'package:friends_battery_api/src/model/login_data.dart';
@@ -122,6 +123,7 @@ import 'package:friends_battery_api/src/model/login_user.dart';
 import 'package:friends_battery_api/src/model/login_user_employee_role.dart';
 import 'package:friends_battery_api/src/model/login_user_location.dart';
 import 'package:friends_battery_api/src/model/product.dart';
+import 'package:friends_battery_api/src/model/product_config_item.dart';
 import 'package:friends_battery_api/src/model/product_created.dart';
 import 'package:friends_battery_api/src/model/product_model.dart';
 import 'package:friends_battery_api/src/model/product_model_response.dart';
@@ -217,7 +219,6 @@ part 'serializers.g.dart';
   ApiInventoryDetailsGet200ResponseDataPagination,
   ApiInventoryTransferPostRequest,
   ApiInventoryTransferPostRequestProductsInner,
-  ApiProductsListPostRequest,
   ApiSellerDashboardPendingShipmentsGet200Response,
   ApiSellerDashboardPendingShipmentsGet200ResponseData,
   ApiSellerDashboardStatsGet200Response,
@@ -283,6 +284,8 @@ part 'serializers.g.dart';
   InventoryProductsResponse,
   InventoryTransaction,
   ListProductModelsRequest,
+  ListProductsRequest,
+  ListProductsResponse,
   LocationItem,
   LocationsListResponse,
   LoginData,
@@ -293,6 +296,7 @@ part 'serializers.g.dart';
   LoginUserEmployeeRole,
   LoginUserLocation,
   Product,
+  ProductConfigItem,
   ProductCreated,
   ProductModel,
   ProductModelResponse,

@@ -10,6 +10,8 @@ class _$ActivityHistoryResponse extends ActivityHistoryResponse {
   @override
   final bool? success;
   @override
+  final String? message;
+  @override
   final BuiltList<ActivityItem>? data;
   @override
   final ActivityHistoryPagination? pagination;
@@ -18,8 +20,12 @@ class _$ActivityHistoryResponse extends ActivityHistoryResponse {
     void Function(ActivityHistoryResponseBuilder)? updates,
   ]) => (ActivityHistoryResponseBuilder()..update(updates))._build();
 
-  _$ActivityHistoryResponse._({this.success, this.data, this.pagination})
-    : super._();
+  _$ActivityHistoryResponse._({
+    this.success,
+    this.message,
+    this.data,
+    this.pagination,
+  }) : super._();
   @override
   ActivityHistoryResponse rebuild(
     void Function(ActivityHistoryResponseBuilder) updates,
@@ -34,6 +40,7 @@ class _$ActivityHistoryResponse extends ActivityHistoryResponse {
     if (identical(other, this)) return true;
     return other is ActivityHistoryResponse &&
         success == other.success &&
+        message == other.message &&
         data == other.data &&
         pagination == other.pagination;
   }
@@ -42,6 +49,7 @@ class _$ActivityHistoryResponse extends ActivityHistoryResponse {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, success.hashCode);
+    _$hash = $jc(_$hash, message.hashCode);
     _$hash = $jc(_$hash, data.hashCode);
     _$hash = $jc(_$hash, pagination.hashCode);
     _$hash = $jf(_$hash);
@@ -52,6 +60,7 @@ class _$ActivityHistoryResponse extends ActivityHistoryResponse {
   String toString() {
     return (newBuiltValueToStringHelper(r'ActivityHistoryResponse')
           ..add('success', success)
+          ..add('message', message)
           ..add('data', data)
           ..add('pagination', pagination))
         .toString();
@@ -66,6 +75,10 @@ class ActivityHistoryResponseBuilder
   bool? _success;
   bool? get success => _$this._success;
   set success(bool? success) => _$this._success = success;
+
+  String? _message;
+  String? get message => _$this._message;
+  set message(String? message) => _$this._message = message;
 
   ListBuilder<ActivityItem>? _data;
   ListBuilder<ActivityItem> get data =>
@@ -86,6 +99,7 @@ class ActivityHistoryResponseBuilder
     final $v = _$v;
     if ($v != null) {
       _success = $v.success;
+      _message = $v.message;
       _data = $v.data?.toBuilder();
       _pagination = $v.pagination?.toBuilder();
       _$v = null;
@@ -113,6 +127,7 @@ class ActivityHistoryResponseBuilder
           _$v ??
           _$ActivityHistoryResponse._(
             success: success,
+            message: message,
             data: _data?.build(),
             pagination: _pagination?.build(),
           );

@@ -79,13 +79,28 @@ router.get(
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
- *         name: page
+ *         name: cursor
  *         schema:
- *           type: integer
+ *           type: string
+ *         description: Opaque cursor from previous page (pagination.nextCursor)
+ *       - in: query
+ *         name: from_date
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Inclusive start of range (ISO)
+ *       - in: query
+ *         name: to_date
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Inclusive end of range (ISO)
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
+ *           default: 20
+ *           maximum: 50
  *     responses:
  *       200:
  *         description: Activity history retrieved successfully

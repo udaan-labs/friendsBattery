@@ -1,7 +1,12 @@
 const dashboardRepository = require('./dashboard.repository');
 const { successResponse } = require('../../shared/utils/response');
 const { handleRouteError } = require('../../shared/utils/handle-route-error');
-const { parsePagination } = require('../../shared/utils/pagination');
+
+function parseQueryDate(value) {
+  if (typeof value !== 'string' || !value) return null;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
 
 class DashboardController {
   async getStats(req, res) {
@@ -72,20 +77,24 @@ class DashboardController {
 
   async getActivityHistory(req, res) {
     try {
-      const { page, limit } = parsePagination(req.query, { defaultLimit: 20 });
-      const { data, total } = await dashboardRepository.getActivityHistory(page, limit);
-
-      const totalPages = Math.ceil(total / limit);
-      const hasNextPage = page < totalPages;
+      const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 20));
+      const cursor = typeof req.query.cursor === 'string' ? req.query.cursor : null;
+      const fromDate = parseQueryDate(req.query.from_date);
+      const toDate = parseQueryDate(req.query.to_date);
+      const { data, nextCursor, hasNextPage } = await dashboardRepository.getActivityHistory({
+        cursor,
+        limit,
+        fromDate,
+        toDate,
+      });
 
       return res.status(200).json({
         success: true,
-        data: data,
+        message: 'Activity history retrieved successfully',
+        data,
         pagination: {
-          page,
           limit,
-          totalItems: total,
-          totalPages,
+          nextCursor,
           hasNextPage,
         },
       });

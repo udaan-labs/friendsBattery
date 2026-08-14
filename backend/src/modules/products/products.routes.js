@@ -214,20 +214,21 @@ productRouter.post(
  *   post:
  *     summary: Return all products matching filters
  *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               product_name_id:
- *                 type: integer
- *               product_model_id:
- *                 type: integer
+ *             $ref: '#/components/schemas/ListProductsRequest'
  *     responses:
  *       200:
  *         description: Products fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ListProductsResponse'
  */
 productRouter.post(
   '/list',

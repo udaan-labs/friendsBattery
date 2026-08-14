@@ -13,7 +13,6 @@ import '../providers/dashboard_providers.dart';
 import '../widgets/kpi_grid.dart';
 import '../widgets/quick_actions.dart';
 import '../widgets/recent_activity_timeline.dart';
-import '../../inventory/screens/forms/create_product_form.dart';
 
 class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -340,8 +339,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     switch (_currentTab) {
       case 'dashboard':
         return _buildDashboardTabView(isDesktop, isTablet);
-      case 'add_product':
-        return _buildAddProductTabView();
       case 'view_stock':
         return _buildViewStockTabView();
       case 'manage_sellers':
@@ -448,10 +445,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     );
   }
 
-  // --- Sub-View: Configure product (pricing / min units) ---
-  Widget _buildAddProductTabView() {
-    return const CreateProductForm();
-  }
   // --- Sub-View: View Stock (Paginated Table via shared provider) ---
   Widget _buildViewStockTabView() {
     final stockAsync = ref.watch(adminStockDetailsProvider);

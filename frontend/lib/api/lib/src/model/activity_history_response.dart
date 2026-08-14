@@ -15,12 +15,16 @@ part 'activity_history_response.g.dart';
 ///
 /// Properties:
 /// * [success] 
+/// * [message] 
 /// * [data] 
 /// * [pagination] 
 @BuiltValue()
 abstract class ActivityHistoryResponse implements Built<ActivityHistoryResponse, ActivityHistoryResponseBuilder> {
   @BuiltValueField(wireName: r'success')
   bool? get success;
+
+  @BuiltValueField(wireName: r'message')
+  String? get message;
 
   @BuiltValueField(wireName: r'data')
   BuiltList<ActivityItem>? get data;
@@ -56,6 +60,13 @@ class _$ActivityHistoryResponseSerializer implements PrimitiveSerializer<Activit
       yield serializers.serialize(
         object.success,
         specifiedType: const FullType(bool),
+      );
+    }
+    if (object.message != null) {
+      yield r'message';
+      yield serializers.serialize(
+        object.message,
+        specifiedType: const FullType(String),
       );
     }
     if (object.data != null) {
@@ -101,6 +112,13 @@ class _$ActivityHistoryResponseSerializer implements PrimitiveSerializer<Activit
             specifiedType: const FullType(bool),
           ) as bool;
           result.success = valueDes;
+          break;
+        case r'message':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.message = valueDes;
           break;
         case r'data':
           final valueDes = serializers.deserialize(

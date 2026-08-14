@@ -26,7 +26,9 @@ class DashboardApi {
   /// 
   ///
   /// Parameters:
-  /// * [page] 
+  /// * [cursor] - Opaque cursor from previous page (pagination.nextCursor)
+  /// * [fromDate] - Inclusive start of range (ISO)
+  /// * [toDate] - Inclusive end of range (ISO)
   /// * [limit] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -38,8 +40,10 @@ class DashboardApi {
   /// Returns a [Future] containing a [Response] with a [ActivityHistoryResponse] as data
   /// Throws [DioException] if API call or serialization fails
   Future<Response<ActivityHistoryResponse>> apiDashboardActivityHistoryGet({ 
-    int? page,
-    int? limit,
+    String? cursor,
+    DateTime? fromDate,
+    DateTime? toDate,
+    int? limit = 20,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -67,7 +71,9 @@ class DashboardApi {
     );
 
     final _queryParameters = <String, dynamic>{
-      if (page != null) r'page': encodeQueryParameter(_serializers, page, const FullType(int)),
+      if (cursor != null) r'cursor': encodeQueryParameter(_serializers, cursor, const FullType(String)),
+      if (fromDate != null) r'from_date': encodeQueryParameter(_serializers, fromDate, const FullType(DateTime)),
+      if (toDate != null) r'to_date': encodeQueryParameter(_serializers, toDate, const FullType(DateTime)),
       if (limit != null) r'limit': encodeQueryParameter(_serializers, limit, const FullType(int)),
     };
 

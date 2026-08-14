@@ -56,7 +56,7 @@ class AuthController {
         app_version,
         firebase_token,
       });
-      return successResponse(res, 200, 'OTP required', result);
+      return successResponse(res, 200, 'Login successful', result);
     } catch (error) {
       return handleRouteError(res, error, 'Login Error:');
     }

@@ -190,7 +190,7 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
                                       const SizedBox(height: 12),
                                       OutlinedButton.icon(
                                         onPressed: () =>
-                                            context.push('/admin/add-product/configure'),
+                                            context.push('/admin/add-product/name'),
                                         icon: const Icon(Icons.category_outlined),
                                         label: const Text('Configure Product'),
                                       ),

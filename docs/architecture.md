@@ -48,7 +48,7 @@ Doc: repo root `docs/architecture.md`. One domain = one module folder. Reuse exi
 ## Critical domain rules
 
 1. **Unit inventory** — one `product_units` row = one physical battery (serial). No shop/product stock-count columns (request `quantity` on stock requests is OK).
-2. **Immutable ledger** — `inventory_transactions` is **append-only**. Never UPDATE/DELETE history. Ownership/status change = new row.
+2. **Immutable ledger** — `inventory_transactions` is **append-only**. Never UPDATE/DELETE history. Ownership/status change = new row. Catalog setup is append-only in `product_catalog_events`. Org setup (shop / warehouse / admin / seller / employee) is append-only in `org_events`. Both feed admin Activity History.
 3. **Roles** (`SUPER_ADMIN → ADMIN → SELLER → EMPLOYEE`)
    - `SUPER_ADMIN` — org root; full multi-WH/shop tools in §1. `parent_id` null. Inventory scope: units owned by `ADMIN` **or** `SUPER_ADMIN`. Stock may target any active `location_id` (warehouse).
    - `ADMIN` — shop admin under a Super Admin (`users.parent_id` → SA). **Own shop** = `users.location_id` (SHOP); staff tree = `parent_id` = admin. Inventory = units with `ownerId` = admin (not shared SA pool). Scope helper: `shared/utils/shop-scope.util.js`.

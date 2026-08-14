@@ -275,6 +275,14 @@ module.exports = {
       product_name_id: { type: 'integer' }
     }
   },
+  ListProductsRequest: {
+    type: 'object',
+    required: ['product_name_id', 'product_model_id'],
+    properties: {
+      product_name_id: { type: 'integer' },
+      product_model_id: { type: 'integer' }
+    }
+  },
   CreateProductRequest: {
     type: 'object',
     required: ['product_name_id', 'product_model_id'],
@@ -308,6 +316,30 @@ module.exports = {
       success: { type: 'boolean' },
       message: { type: 'string' },
       data: { $ref: '#/components/schemas/ProductCreated' }
+    }
+  },
+  ProductConfigItem: {
+    type: 'object',
+    properties: {
+      id: { type: 'integer' },
+      product_name: { type: 'string' },
+      product_model: { type: 'string' },
+      min_price: { type: 'number' },
+      on_sale: { type: 'boolean' },
+      offer_price: { type: 'number', nullable: true },
+      min_unit_count_admin: { type: 'integer' },
+      min_unit_count_seller: { type: 'integer' }
+    }
+  },
+  ListProductsResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean' },
+      message: { type: 'string' },
+      data: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/ProductConfigItem' }
+      }
     }
   },
   ProductStockDetails: {
@@ -402,10 +434,8 @@ module.exports = {
   ActivityHistoryPagination: {
     type: 'object',
     properties: {
-      page: { type: 'integer' },
       limit: { type: 'integer' },
-      totalItems: { type: 'integer' },
-      totalPages: { type: 'integer' },
+      nextCursor: { type: 'string', nullable: true },
       hasNextPage: { type: 'boolean' }
     }
   },
@@ -413,6 +443,7 @@ module.exports = {
     type: 'object',
     properties: {
       success: { type: 'boolean' },
+      message: { type: 'string' },
       data: {
         type: 'array',
         items: { $ref: '#/components/schemas/ActivityItem' }

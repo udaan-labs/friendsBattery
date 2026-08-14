@@ -56,7 +56,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiProductsListPost**
-> apiProductsListPost(apiProductsListPostRequest)
+> ListProductsResponse apiProductsListPost(listProductsRequest)
 
 Return all products matching filters
 
@@ -65,10 +65,11 @@ Return all products matching filters
 import 'package:friends_battery_api/api.dart';
 
 final api = FriendsBatteryApi().getProductsApi();
-final ApiProductsListPostRequest apiProductsListPostRequest = ; // ApiProductsListPostRequest | 
+final ListProductsRequest listProductsRequest = ; // ListProductsRequest | 
 
 try {
-    api.apiProductsListPost(apiProductsListPostRequest);
+    final response = api.apiProductsListPost(listProductsRequest);
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling ProductsApi->apiProductsListPost: $e\n');
 }
@@ -78,11 +79,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **apiProductsListPostRequest** | [**ApiProductsListPostRequest**](ApiProductsListPostRequest.md)|  | 
+ **listProductsRequest** | [**ListProductsRequest**](ListProductsRequest.md)|  | 
 
 ### Return type
 
-void (empty response body)
+[**ListProductsResponse**](ListProductsResponse.md)
 
 ### Authorization
 
@@ -91,7 +92,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
