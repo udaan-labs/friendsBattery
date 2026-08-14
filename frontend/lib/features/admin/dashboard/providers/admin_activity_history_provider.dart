@@ -81,8 +81,9 @@ class AdminActivityHistoryNotifier extends StateNotifier<ActivityHistoryState> {
       final response = await _api.getDashboardApi().apiDashboardActivityHistoryGet(
         cursor: state.nextCursor,
         limit: 20,
-        fromDate: range.from,
-        toDate: range.to,
+        // Iso8601DateTimeSerializer rejects non-UTC DateTimes.
+        fromDate: range.from?.toUtc(),
+        toDate: range.to?.toUtc(),
       );
       final body = response.data;
 
