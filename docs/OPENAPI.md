@@ -22,7 +22,7 @@ UI → Riverpod → Feature Repository → friends_battery_api (*Api)
 // OK
 final rows = (await _sales.apiSalesHistoryGet(...)).data?.data?.data?.toList() ?? [];
 
-// Not OK
+// Not OK  
 final res = await dio.get('/api/sales/history');
 MySale.fromJson(...);
 ```
