@@ -63,6 +63,8 @@ Doc: repo root `docs/architecture.md`. One domain = one module folder. Reuse exi
    - **Locations (shop / warehouse)**: `GET /api/shops/locations?type=SHOP|WAREHOUSE` (admin list), `POST /api/shops/locations` (admin create; optional `latitude`/`longitude`/`allowed_radius` for attendance geofence). **SHOP** requires `warehouse_id` of an active warehouse; **WAREHOUSE** has no parent. `GET /api/shops/locations/:locationId/staff` (admin — sellers + employees at that location). Sellers are assigned to **SHOP** via optional `location_id` on `POST /api/auth/register`.
    Auth from `req.user` (middleware). **Never** trust client-supplied seller/owner IDs for authorization.
 
+4. **IDOR** — `shared/utils/access.util.js` (`assertAccess`). Role ≠ row access. Load by id, then assert. Default deny. Lists filter in SQL.
+
 ---
 
 ## Auth & security
@@ -71,6 +73,36 @@ Doc: repo root `docs/architecture.md`. One domain = one module folder. Reuse exi
 - JWT (`JWT_SECRET`, `JWT_EXPIRES_IN`); middleware sets `req.user` (includes `role`)
 - Never expose password hashes
 - Always check seller ownership on seller-scoped data
+
+### IDOR (hard rules)
+
+`requireRole` answers “may this role call this URL?”. It does **not** answer “may this user see *this* sale / unit / seller?”.
+
+| Rule | Do |
+|------|----|
+| Subject | Only `req.user` from `authenticate` (loaded from DB). |
+| Object | Path/query/body ids name the *record*, never the *permission*. |
+| By-id | `find` → if missing 404 → `assertAccess(actor, { kind, ... })` → 403 if out of scope. |
+| Default | Deny unknown `kind` or missing fields. |
+| Lists | `WHERE owner_id / seller_id / location_id` in the repository. No unscoped `findMany` then JS filter. |
+| SA | Org-wide. |
+| Admin | Shop: `resolveAdminShopScope` + `isUserInShopScope` / `resolveShopSellerIds`. Not another admin’s shop. |
+| Seller | `ownerId` or `sellerId` or `userId` === `actor.id`. |
+| Employee | Self, or units/shipments at `actor.locationId`. |
+
+```js
+const { assertAccess } = require('../../shared/utils/access.util');
+// after load:
+assertAccess(actor, { kind: 'sale', sellerId: sale.sellerId, inShop });
+assertAccess(actor, { kind: 'owned', ownerId: unit.ownerId });
+assertAccess(actor, { kind: 'user', target: staffUser });
+assertAccess(actor, { kind: 'self', userId: attendance.userId });
+assertAccess(actor, { kind: 'location', locationId: unit.currentLocationId });
+```
+
+New endpoint checklist: auth + role + **assertAccess (or scoped WHERE)** before return/update.
+
+---
 
 ---
 
@@ -102,7 +134,7 @@ No frontend-facing route without accurate OpenAPI. Frontend: `docs/OPENAPI.md`.
 
 1. Module files under `src/modules/<name>/` (match neighbors)
 2. Mount in `app.js` under `/api/...`
-3. Auth + role + Zod
+3. Auth + role + Zod + **IDOR** (`assertAccess` or scoped `WHERE`)
 4. Controller thin → service → repository
 5. Swagger complete
 6. `npm run swagger:export` (or `npm run gen` if Flutter needs types)

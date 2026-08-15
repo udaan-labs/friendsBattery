@@ -189,7 +189,15 @@ FriendsBattery/
    Middleware: `requireRole` / `requireSuperAdmin` / `requireAdmin` / `requireSuperAdminOrAdmin` / …  
    Never trust client-supplied seller/owner IDs for authorization; use `req.user` from auth middleware.
 
-4. **Layered backend**  
+4. **IDOR (object access)**  
+   Role middleware only gates who may hit the route — not another user’s row.  
+   - Authorize only from `req.user`. Never from body / query / path / headers for `user_id`, `seller_id`, `owner_id`, `location_id`.  
+   - Every by-id read/update/delete: load the row → `assertAccess` (`backend/src/shared/utils/access.util.js`). Missing → 404. Out of scope → 403. Default deny.  
+   - SUPER_ADMIN: org. ADMIN: own shop only. SELLER: own `ownerId` / `sellerId` / self. EMPLOYEE: self or same `location_id`.  
+   - List endpoints filter in SQL (`WHERE`), never fetch-all-then-drop.  
+   - Client-supplied ids name the *object*, never the *permission*.
+
+5. **Layered backend**  
    ```
    Route → authenticate → requireRole → Zod validation → Controller → Service → Repository → Prisma → PostgreSQL
    ```

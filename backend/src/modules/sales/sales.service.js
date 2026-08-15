@@ -8,6 +8,7 @@ const {
   isUserInShopScope,
 } = require('../../shared/utils/shop-scope.util');
 const { prisma } = require('../../config/db');
+const { assertAccess } = require('../../shared/utils/access.util');
 
 /**
  * Sales Service
@@ -299,22 +300,14 @@ class SalesService {
     if (!sale) {
       throw httpError(404, 'Transaction not found');
     }
-    if (user?.role === ROLES.SUPER_ADMIN) {
-      return this._formatSale(sale);
-    }
+    let inShop = false;
     if (user?.role === ROLES.ADMIN) {
       const scope = resolveAdminShopScope(user);
       const sellerIds = await resolveShopSellerIds(prisma, scope);
-      const allowed = new Set((sellerIds || []).map((id) => Number(id)));
-      if (allowed.has(Number(sale.sellerId))) {
-        return this._formatSale(sale);
-      }
-      throw httpError(403, 'Forbidden: You cannot view this sale');
+      inShop = (sellerIds || []).some((id) => Number(id) === Number(sale.sellerId));
     }
-    if (user?.role === 'SELLER' && Number(sale.sellerId) === Number(user.id)) {
-      return this._formatSale(sale);
-    }
-    throw httpError(403, 'Forbidden: You cannot view this sale');
+    assertAccess(user, { kind: 'sale', sellerId: sale.sellerId, inShop });
+    return this._formatSale(sale);
   }
 
   /**
