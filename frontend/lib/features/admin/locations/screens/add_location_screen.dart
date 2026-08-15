@@ -34,6 +34,7 @@ class _AddLocationScreenState extends ConsumerState<AddLocationScreen> {
   final _radiusController = TextEditingController(text: '100');
 
   late String _type;
+  int? _warehouseId;
   double _latitude = _defaultLat;
   double _longitude = _defaultLng;
   bool _submitting = false;
@@ -57,6 +58,21 @@ class _AddLocationScreenState extends ConsumerState<AddLocationScreen> {
     super.dispose();
   }
 
+  String _previewCode(WidgetRef ref, String type) {
+    final prefix = type == 'WAREHOUSE' ? 'WH' : 'SHOP';
+    final rows = ref.read(allLocationsProvider).asData?.value ?? const [];
+    var max = 0;
+    final re = RegExp('^$prefix(\\d+)\$', caseSensitive: false);
+    for (final loc in rows) {
+      final m = re.firstMatch(loc.code ?? '');
+      if (m != null) {
+        final n = int.tryParse(m.group(1)!) ?? 0;
+        if (n > max) max = n;
+      }
+    }
+    return '$prefix${(max + 1).toString().padLeft(3, '0')}';
+  }
+
   void _onMapChanged(LatLng point) {
     setState(() {
       _latitude = point.latitude;
@@ -65,10 +81,16 @@ class _AddLocationScreenState extends ConsumerState<AddLocationScreen> {
   }
 
   Future<void> _submit() async {
-    final code = _codeController.text.trim();
     final name = _nameController.text.trim();
-    if (code.isEmpty || name.isEmpty) {
-      context.showErrorSnackBar('Code and name are required');
+    if (name.isEmpty) {
+      context.showErrorSnackBar('Name is required');
+      return;
+    }
+
+    final isSuperAdmin = ref.read(authProvider).role == UserRole.superAdmin;
+    final type = isSuperAdmin ? _type : 'SHOP';
+    if (type == 'SHOP' && _warehouseId == null) {
+      context.showErrorSnackBar('Pick a warehouse for this shop');
       return;
     }
 
@@ -80,13 +102,11 @@ class _AddLocationScreenState extends ConsumerState<AddLocationScreen> {
 
     setState(() => _submitting = true);
     try {
-      final isSuperAdmin =
-          ref.read(authProvider).role == UserRole.superAdmin;
-      final type = isSuperAdmin ? _type : 'SHOP';
       await ref.read(locationsRepositoryProvider).create(
-            code: code,
+            code: _previewCode(ref, type),
             name: name,
             type: type,
+            warehouseId: type == 'SHOP' ? _warehouseId : null,
             address: _addressController.text.trim(),
             phone: _phoneController.text.trim(),
             latitude: _latitude,
@@ -110,6 +130,12 @@ class _AddLocationScreenState extends ConsumerState<AddLocationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isSuperAdmin = ref.watch(authProvider).role == UserRole.superAdmin;
+    ref.watch(allLocationsProvider);
+    final autoCode = _previewCode(ref, isSuperAdmin ? _type : 'SHOP');
+    if (_codeController.text != autoCode) {
+      _codeController.text = autoCode;
+    }
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FB),
       appBar: AppBar(
@@ -161,63 +187,63 @@ class _AddLocationScreenState extends ConsumerState<AddLocationScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Builder(
-                      builder: (context) {
-                        final isSuperAdmin =
-                            ref.watch(authProvider).role == UserRole.superAdmin;
-                        if (!isSuperAdmin) {
-                          return const Padding(
-                            padding: EdgeInsets.only(bottom: 20),
-                            child: Text(
-                              'Creating a shop (warehouses are Super Admin only)',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFF586377),
-                              ),
-                            ),
-                          );
-                        }
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            const Text(
-                              'Type',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            SegmentedButton<String>(
-                              segments: const [
-                                ButtonSegment(
-                                  value: 'SHOP',
-                                  label: Text('Shop'),
-                                  icon: Icon(Icons.storefront_outlined, size: 18),
-                                ),
-                                ButtonSegment(
-                                  value: 'WAREHOUSE',
-                                  label: Text('Warehouse'),
-                                  icon: Icon(Icons.warehouse_outlined, size: 18),
-                                ),
-                              ],
-                              selected: {_type},
-                              onSelectionChanged: _submitting
-                                  ? null
-                                  : (s) => setState(() => _type = s.first),
-                            ),
-                            const SizedBox(height: 20),
-                          ],
-                        );
-                      },
-                    ),
+                    if (!isSuperAdmin)
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 20),
+                        child: Text(
+                          'Creating a shop (warehouses are Super Admin only)',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF586377),
+                          ),
+                        ),
+                      )
+                    else ...[
+                      const Text(
+                        'Type',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SegmentedButton<String>(
+                        segments: const [
+                          ButtonSegment(
+                            value: 'SHOP',
+                            label: Text('Shop'),
+                            icon: Icon(Icons.storefront_outlined, size: 18),
+                          ),
+                          ButtonSegment(
+                            value: 'WAREHOUSE',
+                            label: Text('Warehouse'),
+                            icon: Icon(Icons.warehouse_outlined, size: 18),
+                          ),
+                        ],
+                        selected: {_type},
+                        onSelectionChanged: _submitting
+                            ? null
+                            : (s) => setState(() {
+                                  _type = s.first;
+                                  if (_type != 'SHOP') _warehouseId = null;
+                                }),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                    if (_isShop) ...[
+                      _WarehousePicker(
+                        value: _warehouseId,
+                        enabled: !_submitting,
+                        onChanged: (v) => setState(() => _warehouseId = v),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                     TextField(
                       controller: _codeController,
-                      enabled: !_submitting,
-                      textCapitalization: TextCapitalization.characters,
-                      decoration: InputDecoration(
+                      enabled: false,
+                      decoration: const InputDecoration(
                         labelText: 'Code',
-                        hintText: _isShop ? 'e.g. SHOP002' : 'e.g. WH002',
+                        helperText: 'Assigned automatically',
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -303,6 +329,52 @@ class _AddLocationScreenState extends ConsumerState<AddLocationScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _WarehousePicker extends ConsumerWidget {
+  const _WarehousePicker({
+    required this.value,
+    required this.enabled,
+    required this.onChanged,
+  });
+
+  final int? value;
+  final bool enabled;
+  final ValueChanged<int?> onChanged;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(locationsByTypeProvider('WAREHOUSE'));
+    return async.when(
+      loading: () => const LinearProgressIndicator(),
+      error: (e, _) => Text('$e', style: const TextStyle(color: AppTheme.error)),
+      data: (rows) {
+        if (rows.isEmpty) {
+          return const Text(
+            'Create a warehouse first, then add a shop.',
+            style: TextStyle(color: AppTheme.error),
+          );
+        }
+        final ok = value != null && rows.any((w) => w.id == value);
+        return DropdownButtonFormField<int>(
+          // ignore: deprecated_member_use
+          value: ok ? value : null,
+          decoration: const InputDecoration(labelText: 'Warehouse'),
+          items: [
+            for (final w in rows)
+              DropdownMenuItem<int>(
+                value: w.id,
+                child: Text(
+                  '${w.code} · ${w.name}',
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+          ],
+          onChanged: enabled ? onChanged : null,
+        );
+      },
     );
   }
 }

@@ -237,7 +237,7 @@ Name | Type | Description  | Notes
 
 Create a shop or warehouse location
 
-Admin only. Creates an active location used for seller assignment, employees, and inventory placement. Optional latitude/longitude set the attendance geofence center (both required together); allowed_radius defaults to 100m. 
+Admin only. Creates an active location used for seller assignment, employees, and inventory placement. Optional latitude/longitude set the attendance geofence center (both required together); allowed_radius defaults to 100m. SHOP requires warehouse_id of an active warehouse. WAREHOUSE has no parent. 
 
 ### Example
 ```dart

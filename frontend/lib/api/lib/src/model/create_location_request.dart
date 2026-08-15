@@ -20,6 +20,7 @@ part 'create_location_request.g.dart';
 /// * [latitude] - Geofence center; required together with longitude
 /// * [longitude] - Geofence center; required together with latitude
 /// * [allowedRadius] - Attendance radius in meters (default 100 when lat/lng set)
+/// * [warehouseId] - Required for SHOP. Must be an active warehouse. Omit for WAREHOUSE.
 @BuiltValue()
 abstract class CreateLocationRequest implements Built<CreateLocationRequest, CreateLocationRequestBuilder> {
   /// Unique location code (stored uppercase)
@@ -50,6 +51,10 @@ abstract class CreateLocationRequest implements Built<CreateLocationRequest, Cre
   /// Attendance radius in meters (default 100 when lat/lng set)
   @BuiltValueField(wireName: r'allowed_radius')
   int? get allowedRadius;
+
+  /// Required for SHOP. Must be an active warehouse. Omit for WAREHOUSE.
+  @BuiltValueField(wireName: r'warehouse_id')
+  int? get warehouseId;
 
   CreateLocationRequest._();
 
@@ -121,6 +126,13 @@ class _$CreateLocationRequestSerializer implements PrimitiveSerializer<CreateLoc
       yield r'allowed_radius';
       yield serializers.serialize(
         object.allowedRadius,
+        specifiedType: const FullType.nullable(int),
+      );
+    }
+    if (object.warehouseId != null) {
+      yield r'warehouse_id';
+      yield serializers.serialize(
+        object.warehouseId,
         specifiedType: const FullType.nullable(int),
       );
     }
@@ -207,6 +219,14 @@ class _$CreateLocationRequestSerializer implements PrimitiveSerializer<CreateLoc
           ) as int?;
           if (valueDes == null) continue;
           result.allowedRadius = valueDes;
+          break;
+        case r'warehouse_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
+          if (valueDes == null) continue;
+          result.warehouseId = valueDes;
           break;
         default:
           unhandled.add(key);

@@ -85,6 +85,12 @@ class _$LocationItem extends LocationItem {
   final num? longitude;
   @override
   final int? allowedRadius;
+  @override
+  final int? warehouseId;
+  @override
+  final String? warehouseCode;
+  @override
+  final String? warehouseName;
 
   factory _$LocationItem([void Function(LocationItemBuilder)? updates]) =>
       (LocationItemBuilder()..update(updates))._build();
@@ -100,6 +106,9 @@ class _$LocationItem extends LocationItem {
     this.latitude,
     this.longitude,
     this.allowedRadius,
+    this.warehouseId,
+    this.warehouseCode,
+    this.warehouseName,
   }) : super._();
   @override
   LocationItem rebuild(void Function(LocationItemBuilder) updates) =>
@@ -121,7 +130,10 @@ class _$LocationItem extends LocationItem {
         phone == other.phone &&
         latitude == other.latitude &&
         longitude == other.longitude &&
-        allowedRadius == other.allowedRadius;
+        allowedRadius == other.allowedRadius &&
+        warehouseId == other.warehouseId &&
+        warehouseCode == other.warehouseCode &&
+        warehouseName == other.warehouseName;
   }
 
   @override
@@ -137,6 +149,9 @@ class _$LocationItem extends LocationItem {
     _$hash = $jc(_$hash, latitude.hashCode);
     _$hash = $jc(_$hash, longitude.hashCode);
     _$hash = $jc(_$hash, allowedRadius.hashCode);
+    _$hash = $jc(_$hash, warehouseId.hashCode);
+    _$hash = $jc(_$hash, warehouseCode.hashCode);
+    _$hash = $jc(_$hash, warehouseName.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -153,7 +168,10 @@ class _$LocationItem extends LocationItem {
           ..add('phone', phone)
           ..add('latitude', latitude)
           ..add('longitude', longitude)
-          ..add('allowedRadius', allowedRadius))
+          ..add('allowedRadius', allowedRadius)
+          ..add('warehouseId', warehouseId)
+          ..add('warehouseCode', warehouseCode)
+          ..add('warehouseName', warehouseName))
         .toString();
   }
 }
@@ -203,6 +221,20 @@ class LocationItemBuilder
   set allowedRadius(int? allowedRadius) =>
       _$this._allowedRadius = allowedRadius;
 
+  int? _warehouseId;
+  int? get warehouseId => _$this._warehouseId;
+  set warehouseId(int? warehouseId) => _$this._warehouseId = warehouseId;
+
+  String? _warehouseCode;
+  String? get warehouseCode => _$this._warehouseCode;
+  set warehouseCode(String? warehouseCode) =>
+      _$this._warehouseCode = warehouseCode;
+
+  String? _warehouseName;
+  String? get warehouseName => _$this._warehouseName;
+  set warehouseName(String? warehouseName) =>
+      _$this._warehouseName = warehouseName;
+
   LocationItemBuilder() {
     LocationItem._defaults(this);
   }
@@ -220,6 +252,9 @@ class LocationItemBuilder
       _latitude = $v.latitude;
       _longitude = $v.longitude;
       _allowedRadius = $v.allowedRadius;
+      _warehouseId = $v.warehouseId;
+      _warehouseCode = $v.warehouseCode;
+      _warehouseName = $v.warehouseName;
       _$v = null;
     }
     return this;
@@ -252,6 +287,9 @@ class LocationItemBuilder
           latitude: latitude,
           longitude: longitude,
           allowedRadius: allowedRadius,
+          warehouseId: warehouseId,
+          warehouseCode: warehouseCode,
+          warehouseName: warehouseName,
         );
     replace(_$result);
     return _$result;

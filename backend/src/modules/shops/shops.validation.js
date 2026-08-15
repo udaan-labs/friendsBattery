@@ -69,9 +69,10 @@ const createLocationSchema = z.object({
     .object({
       code: z
         .string()
-        .min(1)
         .max(50)
-        .transform((s) => s.trim().toUpperCase()),
+        .transform((s) => s.trim().toUpperCase())
+        .optional()
+        .nullable(),
       name: z.string().min(1).max(150).transform((s) => s.trim()),
       type: z.enum(['SHOP', 'WAREHOUSE']),
       address: z.string().max(2000).optional().nullable(),
@@ -85,13 +86,22 @@ const createLocationSchema = z.object({
         .max(5000)
         .optional()
         .nullable(),
+      warehouse_id: z.coerce.number().int().positive().optional().nullable(),
     })
     .refine(
       (b) =>
         (b.latitude == null && b.longitude == null) ||
         (b.latitude != null && b.longitude != null),
       { message: 'latitude and longitude must both be provided' }
-    ),
+    )
+    .refine((b) => b.type !== 'SHOP' || b.warehouse_id != null, {
+      message: 'warehouse_id is required for shops',
+      path: ['warehouse_id'],
+    })
+    .refine((b) => b.type !== 'WAREHOUSE' || b.warehouse_id == null, {
+      message: 'warehouse cannot have a parent warehouse',
+      path: ['warehouse_id'],
+    }),
 });
 
 module.exports = {

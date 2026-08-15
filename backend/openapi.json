@@ -1822,6 +1822,19 @@
             "type": "integer",
             "description": "Max check-in distance in meters from center",
             "example": 100
+          },
+          "warehouse_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Parent warehouse id (shops only)"
+          },
+          "warehouse_code": {
+            "type": "string",
+            "nullable": true
+          },
+          "warehouse_name": {
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -1899,6 +1912,11 @@
             "maximum": 5000,
             "example": 100,
             "description": "Attendance radius in meters (default 100 when lat/lng set)"
+          },
+          "warehouse_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Required for SHOP. Must be an active warehouse. Omit for WAREHOUSE."
           }
         }
       },
@@ -3538,7 +3556,7 @@
       },
       "post": {
         "summary": "Create a shop or warehouse location",
-        "description": "Admin only. Creates an active location used for seller assignment,\nemployees, and inventory placement. Optional latitude/longitude set the\nattendance geofence center (both required together); allowed_radius defaults to 100m.\n",
+        "description": "Admin only. Creates an active location used for seller assignment,\nemployees, and inventory placement. Optional latitude/longitude set the\nattendance geofence center (both required together); allowed_radius defaults to 100m.\nSHOP requires warehouse_id of an active warehouse. WAREHOUSE has no parent.\n",
         "tags": [
           "Shops"
         ],

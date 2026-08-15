@@ -219,6 +219,7 @@ router.get(
  *       Admin only. Creates an active location used for seller assignment,
  *       employees, and inventory placement. Optional latitude/longitude set the
  *       attendance geofence center (both required together); allowed_radius defaults to 100m.
+ *       SHOP requires warehouse_id of an active warehouse. WAREHOUSE has no parent.
  *     tags: [Shops]
  *     security:
  *       - bearerAuth: []

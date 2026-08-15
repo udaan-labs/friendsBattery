@@ -16,6 +16,7 @@ Name | Type | Description | Notes
 **latitude** | **num** | Geofence center; required together with longitude | [optional] 
 **longitude** | **num** | Geofence center; required together with latitude | [optional] 
 **allowedRadius** | **int** | Attendance radius in meters (default 100 when lat/lng set) | [optional] 
+**warehouseId** | **int** | Required for SHOP. Must be an active warehouse. Omit for WAREHOUSE. | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

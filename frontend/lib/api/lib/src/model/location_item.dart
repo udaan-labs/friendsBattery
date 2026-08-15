@@ -22,6 +22,9 @@ part 'location_item.g.dart';
 /// * [latitude] - Geofence center latitude (WGS84)
 /// * [longitude] - Geofence center longitude (WGS84)
 /// * [allowedRadius] - Max check-in distance in meters from center
+/// * [warehouseId] - Parent warehouse id (shops only)
+/// * [warehouseCode] 
+/// * [warehouseName] 
 @BuiltValue()
 abstract class LocationItem implements Built<LocationItem, LocationItemBuilder> {
   @BuiltValueField(wireName: r'id')
@@ -57,6 +60,16 @@ abstract class LocationItem implements Built<LocationItem, LocationItemBuilder> 
   /// Max check-in distance in meters from center
   @BuiltValueField(wireName: r'allowed_radius')
   int? get allowedRadius;
+
+  /// Parent warehouse id (shops only)
+  @BuiltValueField(wireName: r'warehouse_id')
+  int? get warehouseId;
+
+  @BuiltValueField(wireName: r'warehouse_code')
+  String? get warehouseCode;
+
+  @BuiltValueField(wireName: r'warehouse_name')
+  String? get warehouseName;
 
   LocationItem._();
 
@@ -149,6 +162,27 @@ class _$LocationItemSerializer implements PrimitiveSerializer<LocationItem> {
       yield serializers.serialize(
         object.allowedRadius,
         specifiedType: const FullType(int),
+      );
+    }
+    if (object.warehouseId != null) {
+      yield r'warehouse_id';
+      yield serializers.serialize(
+        object.warehouseId,
+        specifiedType: const FullType.nullable(int),
+      );
+    }
+    if (object.warehouseCode != null) {
+      yield r'warehouse_code';
+      yield serializers.serialize(
+        object.warehouseCode,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.warehouseName != null) {
+      yield r'warehouse_name';
+      yield serializers.serialize(
+        object.warehouseName,
+        specifiedType: const FullType.nullable(String),
       );
     }
   }
@@ -247,6 +281,30 @@ class _$LocationItemSerializer implements PrimitiveSerializer<LocationItem> {
             specifiedType: const FullType(int),
           ) as int;
           result.allowedRadius = valueDes;
+          break;
+        case r'warehouse_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
+          if (valueDes == null) continue;
+          result.warehouseId = valueDes;
+          break;
+        case r'warehouse_code':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.warehouseCode = valueDes;
+          break;
+        case r'warehouse_name':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.warehouseName = valueDes;
           break;
         default:
           unhandled.add(key);

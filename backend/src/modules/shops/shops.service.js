@@ -280,8 +280,11 @@ class ShopsService {
   async listLocations(filter = {}, actor) {
     const scope = resolveAdminShopScope(actor || {});
     if (scope?.kind === 'shop') {
+      if (filter.type === 'WAREHOUSE') {
+        const rows = await shopsRepository.findActiveLocations({ type: 'WAREHOUSE' });
+        return rows.map((loc) => this._mapLocationItem(loc));
+      }
       if (scope.locationId == null) return [];
-      if (filter.type === 'WAREHOUSE') return [];
       const loc = await shopsRepository.findLocationById(scope.locationId);
       if (!loc || loc.isActive === false) return [];
       if (loc.type !== 'SHOP') return [];
@@ -289,6 +292,18 @@ class ShopsService {
     }
     const rows = await shopsRepository.findActiveLocations(filter);
     return rows.map((loc) => this._mapLocationItem(loc));
+  }
+
+  async _nextLocationCode(type) {
+    const prefix = type === 'WAREHOUSE' ? 'WH' : 'SHOP';
+    const codes = await shopsRepository.findCodesByType(type);
+    let max = 0;
+    const re = new RegExp(`^${prefix}(\\d+)$`, 'i');
+    for (const c of codes) {
+      const m = String(c).match(re);
+      if (m) max = Math.max(max, parseInt(m[1], 10));
+    }
+    return `${prefix}${String(max + 1).padStart(3, '0')}`;
   }
 
   _mapLocationItem(loc) {
@@ -304,6 +319,7 @@ class ShopsService {
       longitude: loc.longitude != null ? Number(loc.longitude) : null,
       allowed_radius:
         loc.allowedRadius != null ? Number(loc.allowedRadius) : 100,
+      warehouse_id: loc.warehouseId != null ? Number(loc.warehouseId) : null,
     };
   }
 
@@ -330,16 +346,21 @@ class ShopsService {
       }
     }
 
-    const code = body.code;
-    const existing = await shopsRepository.findLocationByCode(code);
-    if (existing) {
-      throw httpError(409, `Location code already exists: ${code}`);
-    }
+    const code = await this._nextLocationCode(type);
 
     const lat = body.latitude != null ? Number(body.latitude) : null;
     const lng = body.longitude != null ? Number(body.longitude) : null;
     const hasGeo =
       lat != null && lng != null && !Number.isNaN(lat) && !Number.isNaN(lng);
+
+    let warehouseId = null;
+    if (type === 'SHOP') {
+      const wh = await shopsRepository.findLocationById(body.warehouse_id);
+      if (!wh || wh.isActive === false || wh.type !== 'WAREHOUSE') {
+        throw httpError(400, 'warehouse_id must be an active warehouse');
+      }
+      warehouseId = Number(wh.id);
+    }
 
     const created = await shopsRepository.createLocation({
       code,
@@ -351,6 +372,7 @@ class ShopsService {
       longitude: hasGeo ? lng : null,
       allowedRadius:
         body.allowed_radius != null ? Number(body.allowed_radius) : undefined,
+      warehouseId,
     });
 
     // First shop for Admin → bind users.location_id
@@ -363,7 +385,7 @@ class ShopsService {
       actorId: actor?.id,
       entityType: 'location',
       entityId: created.id,
-      payload: { name: created.name, code: created.code, type },
+      payload: { name: created.name, code: created.code, type, warehouse_id: warehouseId },
     });
 
     return this._mapLocationItem(created);

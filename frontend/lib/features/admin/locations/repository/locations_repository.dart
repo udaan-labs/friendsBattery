@@ -23,6 +23,7 @@ class LocationsRepository {
     required String code,
     required String name,
     required String type,
+    int? warehouseId,
     String? address,
     String? phone,
     double? latitude,
@@ -34,6 +35,7 @@ class LocationsRepository {
         b.code = code;
         b.name = name;
         b.type = CreateLocationRequestTypeEnum.valueOf(type);
+        if (warehouseId != null) b.warehouseId = warehouseId;
         if (address != null && address.isNotEmpty) b.address = address;
         if (phone != null && phone.isNotEmpty) b.phone = phone;
         if (latitude != null && longitude != null) {

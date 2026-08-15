@@ -82,15 +82,20 @@ model Location {
   /// Max distance in meters from center for check-in / check-out
   allowedRadius  Int          @default(100) @map("allowed_radius")
   isActive       Boolean      @default(true) @map("is_active")
+  /// SHOP → parent warehouse. WAREHOUSE always null.
+  warehouseId    BigInt?      @map("warehouse_id")
   createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamp()
   updatedAt      DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamp()
 
+  warehouse            Location?              @relation("ShopWarehouse", fields: [warehouseId], references: [id])
+  shops                Location[]             @relation("ShopWarehouse")
   users                User[]
   employeeAttendances  EmployeeAttendance[]
   productUnits         ProductUnit[]
   transactionsFrom     InventoryTransaction[] @relation("TransactionFromLocation")
   transactionsTo       InventoryTransaction[] @relation("TransactionToLocation")
 
+  @@index([warehouseId])
   @@map("locations")
 }
 

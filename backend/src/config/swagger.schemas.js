@@ -924,6 +924,11 @@ module.exports = {
         description: 'Max check-in distance in meters from center',
         example: 100,
       },
+      warehouse_id: {
+        type: 'integer',
+        nullable: true,
+        description: 'Parent warehouse id (shops only)',
+      },
     },
   },
   LocationsListResponse: {
@@ -939,13 +944,13 @@ module.exports = {
   },
   CreateLocationRequest: {
     type: 'object',
-    required: ['code', 'name', 'type'],
+    required: ['name', 'type'],
     properties: {
       code: {
         type: 'string',
         maxLength: 50,
         example: 'SHOP002',
-        description: 'Unique location code (stored uppercase)',
+        description: 'Ignored. Server assigns SHOP001 / WH001 …',
       },
       name: { type: 'string', maxLength: 150, example: 'Andheri Shop' },
       type: { type: 'string', enum: ['SHOP', 'WAREHOUSE'] },
@@ -974,6 +979,11 @@ module.exports = {
         maximum: 5000,
         example: 100,
         description: 'Attendance radius in meters (default 100 when lat/lng set)',
+      },
+      warehouse_id: {
+        type: 'integer',
+        nullable: true,
+        description: 'Required for SHOP. Must be an active warehouse. Omit for WAREHOUSE.',
       },
     },
   },

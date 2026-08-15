@@ -94,6 +94,7 @@ class ShopsRepository {
         latitude: true,
         longitude: true,
         allowedRadius: true,
+        warehouseId: true,
       },
     });
   }
@@ -103,6 +104,14 @@ class ShopsRepository {
       where: { code },
       select: { id: true, code: true, name: true, type: true, isActive: true },
     });
+  }
+
+  async findCodesByType(type) {
+    const rows = await prisma.location.findMany({
+      where: { type },
+      select: { code: true },
+    });
+    return rows.map((r) => r.code);
   }
 
   /**
@@ -127,6 +136,7 @@ class ShopsRepository {
         latitude: true,
         longitude: true,
         allowedRadius: true,
+        warehouseId: true,
       },
       orderBy: [{ type: 'asc' }, { name: 'asc' }],
     });
@@ -145,6 +155,7 @@ class ShopsRepository {
         ...(data.allowedRadius != null
           ? { allowedRadius: data.allowedRadius }
           : {}),
+        warehouseId: data.warehouseId != null ? BigInt(data.warehouseId) : null,
         isActive: true,
       },
       select: {
@@ -158,6 +169,7 @@ class ShopsRepository {
         latitude: true,
         longitude: true,
         allowedRadius: true,
+        warehouseId: true,
         createdAt: true,
       },
     });

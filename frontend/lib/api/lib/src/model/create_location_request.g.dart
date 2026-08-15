@@ -86,6 +86,8 @@ class _$CreateLocationRequest extends CreateLocationRequest {
   final num? longitude;
   @override
   final int? allowedRadius;
+  @override
+  final int? warehouseId;
 
   factory _$CreateLocationRequest([
     void Function(CreateLocationRequestBuilder)? updates,
@@ -100,6 +102,7 @@ class _$CreateLocationRequest extends CreateLocationRequest {
     this.latitude,
     this.longitude,
     this.allowedRadius,
+    this.warehouseId,
   }) : super._();
   @override
   CreateLocationRequest rebuild(
@@ -121,7 +124,8 @@ class _$CreateLocationRequest extends CreateLocationRequest {
         phone == other.phone &&
         latitude == other.latitude &&
         longitude == other.longitude &&
-        allowedRadius == other.allowedRadius;
+        allowedRadius == other.allowedRadius &&
+        warehouseId == other.warehouseId;
   }
 
   @override
@@ -135,6 +139,7 @@ class _$CreateLocationRequest extends CreateLocationRequest {
     _$hash = $jc(_$hash, latitude.hashCode);
     _$hash = $jc(_$hash, longitude.hashCode);
     _$hash = $jc(_$hash, allowedRadius.hashCode);
+    _$hash = $jc(_$hash, warehouseId.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -149,7 +154,8 @@ class _$CreateLocationRequest extends CreateLocationRequest {
           ..add('phone', phone)
           ..add('latitude', latitude)
           ..add('longitude', longitude)
-          ..add('allowedRadius', allowedRadius))
+          ..add('allowedRadius', allowedRadius)
+          ..add('warehouseId', warehouseId))
         .toString();
   }
 }
@@ -191,6 +197,10 @@ class CreateLocationRequestBuilder
   set allowedRadius(int? allowedRadius) =>
       _$this._allowedRadius = allowedRadius;
 
+  int? _warehouseId;
+  int? get warehouseId => _$this._warehouseId;
+  set warehouseId(int? warehouseId) => _$this._warehouseId = warehouseId;
+
   CreateLocationRequestBuilder() {
     CreateLocationRequest._defaults(this);
   }
@@ -206,6 +216,7 @@ class CreateLocationRequestBuilder
       _latitude = $v.latitude;
       _longitude = $v.longitude;
       _allowedRadius = $v.allowedRadius;
+      _warehouseId = $v.warehouseId;
       _$v = null;
     }
     return this;
@@ -248,6 +259,7 @@ class CreateLocationRequestBuilder
           latitude: latitude,
           longitude: longitude,
           allowedRadius: allowedRadius,
+          warehouseId: warehouseId,
         );
     replace(_$result);
     return _$result;
