@@ -152,8 +152,8 @@ class _AddEmployeeScreenState extends ConsumerState<AddEmployeeScreen> {
               const SizedBox(height: 12),
               Text(
                 widget.isAdmin
-                    ? 'Create employee for a warehouse or shop'
-                    : 'Add employee to your shop',
+                    ? 'One employee per warehouse or shop'
+                    : 'One employee per shop',
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 16, color: Color(0xFF545F73)),
               ),

@@ -43,6 +43,8 @@ const ROLES = require('../../shared/constants/roles');
  *                 example: seller123
  *               user_number:
  *                 type: string
+ *                 pattern: '^\\d{10}$'
+ *                 description: Exactly 10 digits
  *                 example: "9876543210"
  *               shop_name:
  *                 type: string
@@ -103,6 +105,8 @@ router.post('/register', authenticate, requireSuperAdminOrAdmin, validateRegiste
  *                 example: shop_admin
  *               user_number:
  *                 type: string
+ *                 pattern: '^\\d{10}$'
+ *                 description: Exactly 10 digits
  *                 example: "9876543211"
  *               shop_name:
  *                 type: string

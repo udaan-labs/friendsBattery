@@ -23,8 +23,6 @@ part 'location_item.g.dart';
 /// * [longitude] - Geofence center longitude (WGS84)
 /// * [allowedRadius] - Max check-in distance in meters from center
 /// * [warehouseId] - Parent warehouse id (shops only)
-/// * [warehouseCode] 
-/// * [warehouseName] 
 @BuiltValue()
 abstract class LocationItem implements Built<LocationItem, LocationItemBuilder> {
   @BuiltValueField(wireName: r'id')
@@ -64,12 +62,6 @@ abstract class LocationItem implements Built<LocationItem, LocationItemBuilder> 
   /// Parent warehouse id (shops only)
   @BuiltValueField(wireName: r'warehouse_id')
   int? get warehouseId;
-
-  @BuiltValueField(wireName: r'warehouse_code')
-  String? get warehouseCode;
-
-  @BuiltValueField(wireName: r'warehouse_name')
-  String? get warehouseName;
 
   LocationItem._();
 
@@ -169,20 +161,6 @@ class _$LocationItemSerializer implements PrimitiveSerializer<LocationItem> {
       yield serializers.serialize(
         object.warehouseId,
         specifiedType: const FullType.nullable(int),
-      );
-    }
-    if (object.warehouseCode != null) {
-      yield r'warehouse_code';
-      yield serializers.serialize(
-        object.warehouseCode,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    if (object.warehouseName != null) {
-      yield r'warehouse_name';
-      yield serializers.serialize(
-        object.warehouseName,
-        specifiedType: const FullType.nullable(String),
       );
     }
   }
@@ -289,22 +267,6 @@ class _$LocationItemSerializer implements PrimitiveSerializer<LocationItem> {
           ) as int?;
           if (valueDes == null) continue;
           result.warehouseId = valueDes;
-          break;
-        case r'warehouse_code':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.warehouseCode = valueDes;
-          break;
-        case r'warehouse_name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.warehouseName = valueDes;
           break;
         default:
           unhandled.add(key);

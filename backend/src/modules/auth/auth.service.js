@@ -47,6 +47,10 @@ class AuthService {
       if (!resolvedShopName || !String(resolvedShopName).trim()) {
         resolvedShopName = location.name;
       }
+      const taken = await authRepository.findUserByLocationAndRole(locationId, ROLES.ADMIN);
+      if (taken) {
+        throw httpError(409, 'This location already has an admin');
+      }
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -141,6 +145,13 @@ class AuthService {
       locationId = Number(location.id);
       if (!resolvedShopName || !String(resolvedShopName).trim()) {
         resolvedShopName = location.name;
+      }
+    }
+
+    if (locationId != null) {
+      const taken = await authRepository.findUserByLocationAndRole(locationId, ROLES.SELLER);
+      if (taken) {
+        throw httpError(409, 'This shop already has a seller');
       }
     }
 

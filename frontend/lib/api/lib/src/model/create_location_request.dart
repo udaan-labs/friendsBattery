@@ -12,7 +12,7 @@ part 'create_location_request.g.dart';
 /// CreateLocationRequest
 ///
 /// Properties:
-/// * [code] - Unique location code (stored uppercase)
+/// * [code] - Ignored. Server assigns SHOP001 / WH001 …
 /// * [name] 
 /// * [type] 
 /// * [address] 
@@ -23,9 +23,9 @@ part 'create_location_request.g.dart';
 /// * [warehouseId] - Required for SHOP. Must be an active warehouse. Omit for WAREHOUSE.
 @BuiltValue()
 abstract class CreateLocationRequest implements Built<CreateLocationRequest, CreateLocationRequestBuilder> {
-  /// Unique location code (stored uppercase)
+  /// Ignored. Server assigns SHOP001 / WH001 …
   @BuiltValueField(wireName: r'code')
-  String get code;
+  String? get code;
 
   @BuiltValueField(wireName: r'name')
   String get name;
@@ -79,11 +79,13 @@ class _$CreateLocationRequestSerializer implements PrimitiveSerializer<CreateLoc
     CreateLocationRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'code';
-    yield serializers.serialize(
-      object.code,
-      specifiedType: const FullType(String),
-    );
+    if (object.code != null) {
+      yield r'code';
+      yield serializers.serialize(
+        object.code,
+        specifiedType: const FullType(String),
+      );
+    }
     yield r'name';
     yield serializers.serialize(
       object.name,

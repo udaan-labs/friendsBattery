@@ -71,7 +71,7 @@ class _$CreateLocationRequestTypeEnumSerializer
 
 class _$CreateLocationRequest extends CreateLocationRequest {
   @override
-  final String code;
+  final String? code;
   @override
   final String name;
   @override
@@ -94,7 +94,7 @@ class _$CreateLocationRequest extends CreateLocationRequest {
   ]) => (CreateLocationRequestBuilder()..update(updates))._build();
 
   _$CreateLocationRequest._({
-    required this.code,
+    this.code,
     required this.name,
     required this.type,
     this.address,
@@ -239,11 +239,7 @@ class CreateLocationRequestBuilder
     final _$result =
         _$v ??
         _$CreateLocationRequest._(
-          code: BuiltValueNullFieldError.checkNotNull(
-            code,
-            r'CreateLocationRequest',
-            'code',
-          ),
+          code: code,
           name: BuiltValueNullFieldError.checkNotNull(
             name,
             r'CreateLocationRequest',

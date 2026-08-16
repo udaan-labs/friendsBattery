@@ -19,8 +19,6 @@ Name | Type | Description | Notes
 **longitude** | **num** | Geofence center longitude (WGS84) | [optional] 
 **allowedRadius** | **int** | Max check-in distance in meters from center | [optional] 
 **warehouseId** | **int** | Parent warehouse id (shops only) | [optional] 
-**warehouseCode** | **String** |  | [optional] 
-**warehouseName** | **String** |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

@@ -467,6 +467,14 @@ class ShopsService {
       employeeRoleId = Number(er.id);
     }
 
+    const employeeTaken = await authRepository.findUserByLocationAndRole(
+      locationId,
+      ROLES.EMPLOYEE,
+    );
+    if (employeeTaken) {
+      throw httpError(409, 'This location already has an employee');
+    }
+
     if (await authRepository.findUserByUserId(user_id)) {
       throw httpError(409, 'User ID already exists');
     }

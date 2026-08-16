@@ -8,7 +8,7 @@ import 'package:friends_battery_api/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**code** | **String** | Unique location code (stored uppercase) | 
+**code** | **String** | Ignored. Server assigns SHOP001 / WH001 … | [optional] 
 **name** | **String** |  | 
 **type** | **String** |  | 
 **address** | **String** |  | [optional] 

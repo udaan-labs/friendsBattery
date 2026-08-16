@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import 'package:go_router/go_router.dart';
@@ -38,6 +39,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   int? _selectedShopLocationId;
+  String? _mobileError;
 
   @override
   void dispose() {
@@ -53,6 +55,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Future<void> _register() async {
     final number = _userNumberController.text.trim();
     if (!RegExp(r'^\d{10}$').hasMatch(number)) {
+      setState(() {
+        _mobileError = 'Mobile number must be exactly 10 digits';
+      });
       context.showErrorSnackBar('Mobile number must be exactly 10 digits');
       return;
     }
@@ -147,6 +152,214 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     ref.invalidate(allLocationsProvider);
   }
 
+  String _locationLabel(LocationItem s) {
+    final name = s.name ?? s.code ?? 'Location';
+    if (s.code != null && s.code!.isNotEmpty && s.name != null) {
+      return '$name · ${s.code}';
+    }
+    return name;
+  }
+
+  Widget _adminLocationField(bool formLoading, List<LocationItem> locations) {
+    LocationItem? selected;
+    for (final s in locations) {
+      if (s.id == _selectedShopLocationId) {
+        selected = s;
+        break;
+      }
+    }
+    final isWh = selected?.type == LocationItemTypeEnum.WAREHOUSE;
+    final label = selected == null
+        ? 'Tap to choose shop or warehouse'
+        : '${isWh ? 'Warehouse' : 'Shop'} · ${_locationLabel(selected)}';
+
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        onTap: formLoading ? null : () => _openAdminLocationPicker(locations),
+        borderRadius: BorderRadius.circular(8),
+        child: InputDecorator(
+          decoration: const InputDecoration(
+            labelText: 'Location *',
+            filled: true,
+            fillColor: Colors.white,
+            prefixIcon: Icon(Icons.place),
+            suffixIcon: Icon(Icons.unfold_more),
+          ),
+          child: Text(
+            label,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: selected == null
+                  ? AppTheme.textSecondary
+                  : AppTheme.textPrimary,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openAdminLocationPicker(List<LocationItem> locations) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (ctx) {
+        var query = '';
+        return StatefulBuilder(
+          builder: (ctx, setSheet) {
+            final q = query.trim().toLowerCase();
+            bool matches(LocationItem s) {
+              if (q.isEmpty) return true;
+              final name = (s.name ?? '').toLowerCase();
+              final code = (s.code ?? '').toLowerCase();
+              return name.contains(q) || code.contains(q);
+            }
+
+            final shops = [
+              for (final s in locations)
+                if (s.type != LocationItemTypeEnum.WAREHOUSE && matches(s)) s,
+            ];
+            final warehouses = [
+              for (final s in locations)
+                if (s.type == LocationItemTypeEnum.WAREHOUSE && matches(s)) s,
+            ];
+
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                bottom: MediaQuery.viewInsetsOf(ctx).bottom + 16,
+              ),
+              child: SizedBox(
+                height: MediaQuery.sizeOf(ctx).height * 0.7,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text(
+                      'Choose location',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Shops and warehouses are listed separately.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppTheme.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      autofocus: false,
+                      decoration: const InputDecoration(
+                        hintText: 'Search name or code',
+                        prefixIcon: Icon(Icons.search),
+                        filled: true,
+                      ),
+                      onChanged: (v) => setSheet(() => query = v),
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: ListView(
+                        children: [
+                          _locationSectionHeader(
+                            Icons.storefront,
+                            'Shops',
+                            shops.length,
+                          ),
+                          if (shops.isEmpty)
+                            const _EmptyLocationHint('No shops')
+                          else
+                            for (final s in shops) _locationTile(s, ctx),
+                          const SizedBox(height: 8),
+                          _locationSectionHeader(
+                            Icons.warehouse_outlined,
+                            'Warehouses',
+                            warehouses.length,
+                          ),
+                          if (warehouses.isEmpty)
+                            const _EmptyLocationHint('No warehouses')
+                          else
+                            for (final s in warehouses) _locationTile(s, ctx),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _locationSectionHeader(IconData icon, String title, int count) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 8, 0, 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: AppTheme.primary),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
+              color: AppTheme.primary,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '$count',
+            style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _locationTile(LocationItem s, BuildContext sheetContext) {
+    final id = s.id;
+    if (id == null) return const SizedBox.shrink();
+    final selected = id == _selectedShopLocationId;
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+      leading: Icon(
+        s.type == LocationItemTypeEnum.WAREHOUSE
+            ? Icons.warehouse_outlined
+            : Icons.storefront,
+        color: selected ? AppTheme.primary : AppTheme.textSecondary,
+      ),
+      title: Text(
+        s.name ?? s.code ?? 'Location',
+        style: TextStyle(
+          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+          color: AppTheme.textPrimary,
+        ),
+      ),
+      subtitle: s.code != null && s.code!.isNotEmpty
+          ? Text(s.code!, style: const TextStyle(color: AppTheme.textSecondary))
+          : null,
+      trailing: selected
+          ? const Icon(Icons.check_circle, color: AppTheme.primary)
+          : null,
+      selected: selected,
+      selectedTileColor: const Color(0xFFE8F5E9),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      onTap: () {
+        _selectShop(id, [s]);
+        Navigator.pop(sheetContext);
+      },
+    );
+  }
+
   /// Shop picker for seller; shop + warehouse picker for create-admin.
   Widget _buildShopSection(bool formLoading) {
     final shopsAsync = widget.isCreateAdmin
@@ -156,8 +369,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         ? 'Select shop or warehouse'
         : 'Select shop for this seller';
     final shopHint = widget.isCreateAdmin
-        ? 'Required. Admin is linked to this location.'
-        : 'Required. Multiple sellers can use the same shop.';
+        ? 'Required. One admin per location.'
+        : 'Required. One seller per shop.';
 
     return Container(
       width: double.infinity,
@@ -221,6 +434,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 );
               }
 
+              if (widget.isCreateAdmin) {
+                return _adminLocationField(formLoading, shops);
+              }
+
               final ids = [
                 for (final s in shops)
                   if (s.id != null) s.id!,
@@ -228,33 +445,24 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               final valueOk = _selectedShopLocationId != null &&
                   ids.contains(_selectedShopLocationId);
 
-              // Pick only — create shops lives on Dashboard → Shops.
               return DropdownButtonFormField<int>(
                 // ignore: deprecated_member_use
                 value: valueOk ? _selectedShopLocationId : null,
                 isExpanded: true,
-                decoration: InputDecoration(
-                  labelText: widget.isCreateAdmin ? 'Location *' : 'Shop *',
+                decoration: const InputDecoration(
+                  labelText: 'Shop *',
                   filled: true,
                   fillColor: Colors.white,
-                  prefixIcon: Icon(
-                    widget.isCreateAdmin ? Icons.place : Icons.store,
-                  ),
+                  prefixIcon: Icon(Icons.store),
                 ),
-                hint: Text(
-                  widget.isCreateAdmin
-                      ? 'Tap to choose shop or warehouse'
-                      : 'Tap to choose shop',
-                ),
+                hint: const Text('Tap to choose shop'),
                 items: [
                   for (final s in shops)
                     if (s.id != null)
                       DropdownMenuItem<int>(
                         value: s.id!,
                         child: Text(
-                          widget.isCreateAdmin
-                              ? '${s.type == LocationItemTypeEnum.WAREHOUSE ? 'Warehouse' : 'Shop'} · ${s.name ?? s.code ?? 'Location'}'
-                              : '${s.name ?? 'Shop'}${s.code != null ? ' · ${s.code}' : ''}',
+                          '${s.name ?? 'Shop'}${s.code != null ? ' · ${s.code}' : ''}',
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -399,9 +607,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     TextField(
                       controller: _userNumberController,
                       enabled: !isLoading,
-                      decoration:
-                          const InputDecoration(labelText: 'Mobile Number'),
-                      keyboardType: TextInputType.phone,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      decoration: InputDecoration(
+                        labelText: 'Mobile Number',
+                        hintText: '10 digits',
+                        errorText: _mobileError,
+                      ),
+                      onChanged: (v) {
+                        setState(() {
+                          _mobileError = v.length > 10
+                              ? 'Mobile number must be exactly 10 digits'
+                              : null;
+                        });
+                      },
                     ),
                     const SizedBox(height: 16),
                     TextField(
@@ -490,6 +711,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _EmptyLocationHint extends StatelessWidget {
+  const _EmptyLocationHint(this.text);
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      child: Text(
+        text,
+        style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
       ),
     );
   }

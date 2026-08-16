@@ -5,7 +5,7 @@ const { z } = require('zod');
 const registerSchema = z.object({
   user_id: z.string().min(1),
   username: z.string().min(1),
-  user_number: z.string().min(1),
+  user_number: z.string().regex(/^\d{10}$/, 'Mobile number must be exactly 10 digits'),
   shop_name: z.string().min(1),
   password: z.string().min(1),
   /** Optional shop location — assign seller to an existing SHOP */
@@ -37,7 +37,14 @@ const validateRegister = (req, res, next) => {
     registerSchema.parse(req.body);
     next();
   } catch (error) {
-    return errorResponse(res, 400, 'user_id, username, user_number, shop_name and password are required');
+    const msg = error.issues?.[0]?.message;
+    return errorResponse(
+      res,
+      400,
+      msg && msg.includes('10 digits')
+        ? msg
+        : 'user_id, username, user_number, shop_name and password are required',
+    );
   }
 };
 

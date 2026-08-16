@@ -1827,14 +1827,6 @@
             "type": "integer",
             "nullable": true,
             "description": "Parent warehouse id (shops only)"
-          },
-          "warehouse_code": {
-            "type": "string",
-            "nullable": true
-          },
-          "warehouse_name": {
-            "type": "string",
-            "nullable": true
           }
         }
       },
@@ -1858,7 +1850,6 @@
       "CreateLocationRequest": {
         "type": "object",
         "required": [
-          "code",
           "name",
           "type"
         ],
@@ -1867,7 +1858,7 @@
             "type": "string",
             "maxLength": 50,
             "example": "SHOP002",
-            "description": "Unique location code (stored uppercase)"
+            "description": "Ignored. Server assigns SHOP001 / WH001 …"
           },
           "name": {
             "type": "string",
