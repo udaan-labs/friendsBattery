@@ -13,6 +13,8 @@ const getInventorySchema = z.object({
     page: z.string().regex(/^\d+$/).transform(Number).refine(val => val > 0, { message: 'Page must be positive' }).optional(),
     limit: z.string().regex(/^\d+$/).transform(Number).refine(val => val > 0, { message: 'Limit must be positive' }).optional(),
     includeOutOfStock: z.string().optional(),
+    /** SA/Admin: physical units at this location. Seller/Employee: ignored. */
+    location_id: z.string().regex(/^\d+$/).transform(Number).optional(),
   })
 });
 

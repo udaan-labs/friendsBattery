@@ -4,8 +4,10 @@ const { resolveUnitScope } = require('./inventory.scope');
 const { getDefaultWarehouseId, getUserLocationId } = require('../../shared/utils/location.util');
 const { prisma } = require('../../config/db');
 const { httpError } = require('../../shared/utils/http-error');
+const { assertAccess } = require('../../shared/utils/access.util');
 const { isAdminLikeRole } = require('../../shared/utils/role.util');
 const ROLES = require('../../shared/constants/roles');
+const shopsRepository = require('../shops/shops.repository');
 
 /**
  * Inventory Service
@@ -30,14 +32,28 @@ class InventoryService {
   /**
    * Fetch inventory for a specific user.
    * Seller: owner_id = seller. Employee: current_location_id = employee.location_id.
+   * SA/Admin may pass filterLocationId = units physically at that location.
    */
-  async getInventory(userId, role, { search, page = 1, limit = 10, includeOutOfStock = false, locationId } = {}) {
+  async getInventory(userId, role, { search, page = 1, limit = 10, includeOutOfStock = false, locationId, filterLocationId, actor } = {}) {
     const skip = (page - 1) * limit;
     const includeOOS = String(includeOutOfStock) === 'true';
 
-    const unitScope = await resolveUnitScope(userId, role, locationId);
-    if (!unitScope) {
-      return this._emptyInventoryPage(page, limit);
+    let unitScope;
+    if (filterLocationId != null && isAdminLikeRole(role)) {
+      const location = await shopsRepository.findLocationById(filterLocationId);
+      if (!location) {
+        throw httpError(404, 'Location not found');
+      }
+      assertAccess(actor || { id: userId, role, locationId }, {
+        kind: 'location',
+        locationId: Number(location.id),
+      });
+      unitScope = { currentLocationId: BigInt(location.id) };
+    } else {
+      unitScope = await resolveUnitScope(userId, role, locationId);
+      if (!unitScope) {
+        return this._emptyInventoryPage(page, limit);
+      }
     }
 
     let products, total;

@@ -38,6 +38,8 @@ const { validateRequest } = require('../../shared/middleware/validation.middlewa
  *       - SELLER: units where owner_id = seller
  *       - EMPLOYEE: units where current_location_id = employee.location_id
  *       Employee with no location_id gets an empty list.
+ *       Optional `location_id` (SUPER_ADMIN / ADMIN only): available units at that
+ *       location (`current_location_id`). Seller/Employee query is ignored.
  *     tags: [Inventory]
  *     security:
  *       - bearerAuth: []
@@ -58,6 +60,11 @@ const { validateRequest } = require('../../shared/middleware/validation.middlewa
  *         name: includeOutOfStock
  *         schema:
  *           type: boolean
+ *       - in: query
+ *         name: location_id
+ *         description: SA/Admin only. Physical stock at this shop or warehouse.
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
  *         description: Inventory fetched successfully

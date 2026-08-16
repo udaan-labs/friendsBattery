@@ -153,11 +153,11 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiInventoryGet**
-> InventoryListResponse apiInventoryGet(search, page, limit, includeOutOfStock)
+> InventoryListResponse apiInventoryGet(search, page, limit, includeOutOfStock, locationId)
 
 Return logged-in user's inventory
 
-Scope by role (unit inventory): - ADMIN: units owned by admin users - SELLER: units where owner_id = seller - EMPLOYEE: units where current_location_id = employee.location_id Employee with no location_id gets an empty list. 
+Scope by role (unit inventory): - ADMIN: units owned by admin users - SELLER: units where owner_id = seller - EMPLOYEE: units where current_location_id = employee.location_id Employee with no location_id gets an empty list. Optional `location_id` (SUPER_ADMIN / ADMIN only): available units at that location (`current_location_id`). Seller/Employee query is ignored. 
 
 ### Example
 ```dart
@@ -168,9 +168,10 @@ final String search = search_example; // String |
 final int page = 56; // int | 
 final int limit = 56; // int | 
 final bool includeOutOfStock = true; // bool | 
+final int locationId = 56; // int | SA/Admin only. Physical stock at this shop or warehouse.
 
 try {
-    final response = api.apiInventoryGet(search, page, limit, includeOutOfStock);
+    final response = api.apiInventoryGet(search, page, limit, includeOutOfStock, locationId);
     print(response);
 } on DioException catch (e) {
     print('Exception when calling InventoryApi->apiInventoryGet: $e\n');
@@ -185,6 +186,7 @@ Name | Type | Description  | Notes
  **page** | **int**|  | [optional] 
  **limit** | **int**|  | [optional] 
  **includeOutOfStock** | **bool**|  | [optional] 
+ **locationId** | **int**| SA/Admin only. Physical stock at this shop or warehouse. | [optional] 
 
 ### Return type
 

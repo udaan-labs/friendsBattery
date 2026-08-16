@@ -71,7 +71,7 @@ Doc: repo root `docs/architecture.md`. One domain = one module folder. Reuse exi
    - Admin **employee view**: `GET /api/shops/employees/:id` — profile + **only** CHECK_IN / CHECK_OUT actions (no sales/inventory).
    - **Create employee**: `POST /api/shops/employees` (admin or seller). Seller always uses own `location_id` (body `location_id` ignored). Admin must pass `location_id` (WAREHOUSE or SHOP). New employees are **active + verified**. Supporting: `GET /api/shops/employee-roles`, `GET /api/shops/locations` (admin), `GET /api/shops/my-staff` (seller).
    - **One of each role per location:** a SHOP (or WAREHOUSE) may have at most one `ADMIN`, one `SELLER` (shops only), and one `EMPLOYEE`. Create returns 409 if that role is already assigned.
-   - **Locations (shop / warehouse)**: `GET /api/shops/locations?type=SHOP|WAREHOUSE` (admin list), `POST /api/shops/locations` (admin create; optional `latitude`/`longitude`/`allowed_radius` for attendance geofence). **SHOP** requires `warehouse_id` of an active warehouse; **WAREHOUSE** has no parent. `GET /api/shops/locations/:locationId/staff` (admin — admin + sellers + employees at that location). Sellers are assigned to **SHOP** via optional `location_id` on `POST /api/auth/register`.
+   - **Locations (shop / warehouse)**: `GET /api/shops/locations?type=SHOP|WAREHOUSE` (admin list), `POST /api/shops/locations` (admin create; optional `latitude`/`longitude`/`allowed_radius` for attendance geofence), `PATCH /api/shops/locations/:locationId` (admin update name / address / geofence; SA any location, shop Admin own shop only). **SHOP** requires `warehouse_id` of an active warehouse; **WAREHOUSE** has no parent. `GET /api/shops/locations/:locationId/staff` (admin — admin + sellers + employees at that location). Sellers are assigned to **SHOP** via optional `location_id` on `POST /api/auth/register`.
    Auth from `req.user` (middleware). **Never** trust client-supplied seller/owner IDs for authorization.
 
 4. **IDOR** — `shared/utils/access.util.js` (`assertAccess`). Role ≠ row access. Load by id, then assert. Default deny. Lists filter in SQL.
@@ -176,6 +176,8 @@ Admin stock → (shipment/transfer) → Seller stock → sale → customer
 ```
 
 Ledger is the history; units are current state. Do not invent parallel quantity tables for MVP stock.
+
+`GET /api/inventory?location_id=` (SA/Admin): available units with `current_location_id` = that location. Seller/Employee ignore the query.
 
 ---
 

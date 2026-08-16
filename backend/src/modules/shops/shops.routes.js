@@ -9,6 +9,7 @@ const {
   createEmployeeSchema,
   listLocationsSchema,
   createLocationSchema,
+  updateLocationSchema,
 } = require('./shops.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
 const {
@@ -298,6 +299,54 @@ router.post(
   requireAdmin,
   validateRequest(createLocationSchema),
   shopsController.createLocation
+);
+
+/**
+ * @swagger
+ * /api/shops/locations/{locationId}:
+ *   patch:
+ *     summary: Update a shop or warehouse name and map location
+ *     description: |
+ *       Admin only. Updates name, address, and/or attendance geofence
+ *       (latitude, longitude, allowed_radius). Does not change type, code,
+ *       or warehouse_id. Super Admin: any location. Shop Admin: own shop only.
+ *     tags: [Shops]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: locationId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateLocationRequest'
+ *     responses:
+ *       200:
+ *         description: Location updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UpdateLocationResponse'
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden (not your shop)
+ *       404:
+ *         description: Location not found
+ */
+router.patch(
+  '/locations/:locationId',
+  authenticate,
+  requireAdmin,
+  validateRequest(updateLocationSchema),
+  shopsController.updateLocation
 );
 
 /**

@@ -192,6 +192,27 @@ class ShopsController {
       return handleRouteError(res, error, 'Create Location Error:');
     }
   }
+
+  /**
+   * PATCH /api/shops/locations/:locationId — admin update name / map pin.
+   */
+  async updateLocation(req, res) {
+    try {
+      const { locationId } = req.params;
+      const data = await shopsService.updateLocation(
+        Number(locationId),
+        req.body,
+        {
+          id: req.user.id,
+          role: req.user.role,
+          locationId: req.user.locationId ?? null,
+        }
+      );
+      return successResponse(res, 200, 'Location updated successfully', data);
+    } catch (error) {
+      return handleRouteError(res, error, 'Update Location Error:');
+    }
+  }
 }
 
 module.exports = new ShopsController();

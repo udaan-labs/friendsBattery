@@ -191,6 +191,8 @@ Serializers _$serializers =
           ..add(ShopStaffMemberRoleEnum.serializer)
           ..add(ShopStaffResponse.serializer)
           ..add(TransferInventoryCount.serializer)
+          ..add(UpdateLocationRequest.serializer)
+          ..add(UpdateLocationResponse.serializer)
           ..add(UpdateStockRequest.serializer)
           ..add(UpdateStockResponse.serializer)
           ..add(UpdateStockResult.serializer)

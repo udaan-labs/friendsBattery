@@ -55,3 +55,14 @@ final sharedInventoryProductDetailProvider = FutureProvider.family<InventoryProd
   final repository = ref.watch(sharedInventoryRepositoryProvider);
   return repository.getProductDetail(productId);
 });
+
+/// SA/Admin: available units physically at this shop/warehouse.
+/// ponytail: first page limit=50; add paging if a warehouse grows past that.
+final locationInventoryProvider =
+    FutureProvider.family<PaginatedInventoryResponse, int>((ref, locationId) async {
+  return ref.watch(sharedInventoryRepositoryProvider).getInventory(
+        locationId: locationId,
+        page: 1,
+        limit: 50,
+      );
+});

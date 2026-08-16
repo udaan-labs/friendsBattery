@@ -58,6 +58,8 @@ function formatOrgActivity(e) {
   const map = {
     SHOP_CREATED: { title: `${who} added shop`, subtitle: name, icon: 'store' },
     WAREHOUSE_CREATED: { title: `${who} added warehouse`, subtitle: name, icon: 'store' },
+    SHOP_UPDATED: { title: `${who} updated shop`, subtitle: name, icon: 'store' },
+    WAREHOUSE_UPDATED: { title: `${who} updated warehouse`, subtitle: name, icon: 'store' },
     ADMIN_CREATED: {
       title: `${who} created shop admin`,
       subtitle: [name, place].filter(Boolean).join(' • '),

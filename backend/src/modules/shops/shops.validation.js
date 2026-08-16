@@ -104,6 +104,33 @@ const createLocationSchema = z.object({
     }),
 });
 
+// Schema for PATCH /shops/locations/:locationId
+const updateLocationSchema = z.object({
+  params: z.object({
+    locationId: z.string().regex(/^\d+$/).transform(Number),
+  }),
+  body: z
+    .object({
+      name: z.string().min(1).max(150).transform((s) => s.trim()).optional(),
+      address: z.string().max(2000).optional().nullable(),
+      latitude: z.coerce.number().min(-90).max(90).optional().nullable(),
+      longitude: z.coerce.number().min(-180).max(180).optional().nullable(),
+      allowed_radius: z.coerce
+        .number()
+        .int()
+        .min(10)
+        .max(5000)
+        .optional()
+        .nullable(),
+    })
+    .refine(
+      (b) =>
+        (b.latitude == null && b.longitude == null) ||
+        (b.latitude != null && b.longitude != null),
+      { message: 'latitude and longitude must both be provided' }
+    ),
+});
+
 module.exports = {
   viewSellerSchema,
   shopStaffSchema,
@@ -112,4 +139,5 @@ module.exports = {
   createEmployeeSchema,
   listLocationsSchema,
   createLocationSchema,
+  updateLocationSchema,
 };

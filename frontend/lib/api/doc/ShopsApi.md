@@ -13,6 +13,7 @@ Method | HTTP request | Description
 [**apiShopsEmployeesEmployeeIdGet**](ShopsApi.md#apishopsemployeesemployeeidget) | **GET** /api/shops/employees/{employeeId} | Admin view one employee (profile + check-in/check-out only)
 [**apiShopsEmployeesPost**](ShopsApi.md#apishopsemployeespost) | **POST** /api/shops/employees | Create an employee at a shop or warehouse
 [**apiShopsLocationsGet**](ShopsApi.md#apishopslocationsget) | **GET** /api/shops/locations | List active locations (warehouse + shops)
+[**apiShopsLocationsLocationIdPatch**](ShopsApi.md#apishopslocationslocationidpatch) | **PATCH** /api/shops/locations/{locationId} | Update a shop or warehouse name and map location
 [**apiShopsLocationsLocationIdStaffGet**](ShopsApi.md#apishopslocationslocationidstaffget) | **GET** /api/shops/locations/{locationId}/staff | Admin, sellers and employees assigned to this location
 [**apiShopsLocationsPost**](ShopsApi.md#apishopslocationspost) | **POST** /api/shops/locations | Create a shop or warehouse location
 [**apiShopsMyStaffGet**](ShopsApi.md#apishopsmystaffget) | **GET** /api/shops/my-staff | Seller — staff at own shop location
@@ -185,6 +186,51 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiShopsLocationsLocationIdPatch**
+> UpdateLocationResponse apiShopsLocationsLocationIdPatch(locationId, updateLocationRequest)
+
+Update a shop or warehouse name and map location
+
+Admin only. Updates name, address, and/or attendance geofence (latitude, longitude, allowed_radius). Does not change type, code, or warehouse_id. Super Admin: any location. Shop Admin: own shop only. 
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getShopsApi();
+final int locationId = 56; // int | 
+final UpdateLocationRequest updateLocationRequest = ; // UpdateLocationRequest | 
+
+try {
+    final response = api.apiShopsLocationsLocationIdPatch(locationId, updateLocationRequest);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling ShopsApi->apiShopsLocationsLocationIdPatch: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **locationId** | **int**|  | 
+ **updateLocationRequest** | [**UpdateLocationRequest**](UpdateLocationRequest.md)|  | 
+
+### Return type
+
+[**UpdateLocationResponse**](UpdateLocationResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

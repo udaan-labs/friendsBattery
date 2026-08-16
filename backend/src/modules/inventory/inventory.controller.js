@@ -19,7 +19,7 @@ class InventoryController {
       const userId = Number(req.user.id);
       const role = req.user.role;
       const locationId = req.user.locationId ?? null;
-      const { search, page, limit, includeOutOfStock } = req.query;
+      const { search, page, limit, includeOutOfStock, location_id } = req.query;
 
       // Call business layer
       const inventory = await inventoryService.getInventory(userId, role, {
@@ -28,6 +28,12 @@ class InventoryController {
         limit,
         includeOutOfStock,
         locationId,
+        filterLocationId: location_id ?? null,
+        actor: {
+          id: userId,
+          role,
+          locationId,
+        },
       });
 
       // Return standardized success response

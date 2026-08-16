@@ -142,6 +142,32 @@ class ShopsRepository {
     });
   }
 
+  async updateLocation(locationId, data) {
+    return prisma.location.update({
+      where: { id: BigInt(locationId) },
+      data: {
+        name: data.name,
+        address: data.address,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        allowedRadius: data.allowedRadius,
+      },
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        type: true,
+        isActive: true,
+        address: true,
+        phone: true,
+        latitude: true,
+        longitude: true,
+        allowedRadius: true,
+        warehouseId: true,
+      },
+    });
+  }
+
   async createLocation(data) {
     return prisma.location.create({
       data: {

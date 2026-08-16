@@ -317,13 +317,14 @@ class InventoryApi {
   }
 
   /// Return logged-in user&#39;s inventory
-  /// Scope by role (unit inventory): - ADMIN: units owned by admin users - SELLER: units where owner_id &#x3D; seller - EMPLOYEE: units where current_location_id &#x3D; employee.location_id Employee with no location_id gets an empty list. 
+  /// Scope by role (unit inventory): - ADMIN: units owned by admin users - SELLER: units where owner_id &#x3D; seller - EMPLOYEE: units where current_location_id &#x3D; employee.location_id Employee with no location_id gets an empty list. Optional &#x60;location_id&#x60; (SUPER_ADMIN / ADMIN only): available units at that location (&#x60;current_location_id&#x60;). Seller/Employee query is ignored. 
   ///
   /// Parameters:
   /// * [search] 
   /// * [page] 
   /// * [limit] 
   /// * [includeOutOfStock] 
+  /// * [locationId] - SA/Admin only. Physical stock at this shop or warehouse.
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -338,6 +339,7 @@ class InventoryApi {
     int? page,
     int? limit,
     bool? includeOutOfStock,
+    int? locationId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -369,6 +371,7 @@ class InventoryApi {
       if (page != null) r'page': encodeQueryParameter(_serializers, page, const FullType(int)),
       if (limit != null) r'limit': encodeQueryParameter(_serializers, limit, const FullType(int)),
       if (includeOutOfStock != null) r'includeOutOfStock': encodeQueryParameter(_serializers, includeOutOfStock, const FullType(bool)),
+      if (locationId != null) r'location_id': encodeQueryParameter(_serializers, locationId, const FullType(int)),
     };
 
     final _response = await _dio.request<Object>(

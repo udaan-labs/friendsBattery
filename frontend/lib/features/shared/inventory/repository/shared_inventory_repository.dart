@@ -67,12 +67,14 @@ class SharedInventoryRepository {
     String? search,
     int page = 1,
     int limit = 10,
+    int? locationId,
   }) async {
     try {
       final response = await _inventory.apiInventoryGet(
         search: (search != null && search.isNotEmpty) ? search : null,
         page: page,
         limit: limit,
+        locationId: locationId,
       );
 
       final payload = response.data?.data;

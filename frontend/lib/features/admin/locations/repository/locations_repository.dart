@@ -19,6 +19,14 @@ class LocationsRepository {
     return data.toList();
   }
 
+  Never _fromDio(DioException e) {
+    final data = e.response?.data;
+    if (data is Map && data['message'] != null) {
+      throw Exception(data['message'].toString());
+    }
+    throw e;
+  }
+
   Future<LocationItem> create({
     required String code,
     required String name,
@@ -52,11 +60,37 @@ class LocationsRepository {
       }
       return data;
     } on DioException catch (e) {
-      final data = e.response?.data;
-      if (data is Map && data['message'] != null) {
-        throw Exception(data['message'].toString());
+      _fromDio(e);
+    }
+  }
+
+  Future<LocationItem> update({
+    required int locationId,
+    required String name,
+    required String address,
+    required double latitude,
+    required double longitude,
+    required int allowedRadius,
+  }) async {
+    try {
+      final body = UpdateLocationRequest((b) {
+        b.name = name;
+        b.address = address;
+        b.latitude = latitude;
+        b.longitude = longitude;
+        b.allowedRadius = allowedRadius;
+      });
+      final response = await _shops.apiShopsLocationsLocationIdPatch(
+        locationId: locationId,
+        updateLocationRequest: body,
+      );
+      final data = response.data?.data;
+      if (data == null) {
+        throw Exception(response.data?.message ?? 'Failed to update location');
       }
-      rethrow;
+      return data;
+    } on DioException catch (e) {
+      _fromDio(e);
     }
   }
 }

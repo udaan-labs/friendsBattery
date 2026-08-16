@@ -3,6 +3,7 @@ const shopsRepository = require('./shops.repository');
 const authRepository = require('../auth/auth.repository');
 const ROLES = require('../../shared/constants/roles');
 const { httpError } = require('../../shared/utils/http-error');
+const { assertAccess } = require('../../shared/utils/access.util');
 const orgEventsRepository = require('../../shared/org-events.repository');
 const {
   resolveAdminShopScope,
@@ -390,6 +391,37 @@ class ShopsService {
     });
 
     return this._mapLocationItem(created);
+  }
+
+  /**
+   * Update name / address / geofence. Type, code, warehouse_id stay put.
+   * SA: any location. Shop Admin: own shop only (`assertAccess` kind location).
+   */
+  async updateLocation(locationId, body, actor) {
+    const loc = await shopsRepository.findLocationById(locationId);
+    if (!loc || loc.isActive === false) {
+      throw httpError(404, 'Location not found');
+    }
+
+    assertAccess(actor || {}, { kind: 'location', locationId: Number(loc.id) });
+
+    const updated = await shopsRepository.updateLocation(loc.id, {
+      name: body.name,
+      address: body.address === undefined ? undefined : body.address || null,
+      latitude: body.latitude ?? undefined,
+      longitude: body.longitude ?? undefined,
+      allowedRadius: body.allowed_radius ?? undefined,
+    });
+
+    await orgEventsRepository.create({
+      action: loc.type === 'WAREHOUSE' ? 'WAREHOUSE_UPDATED' : 'SHOP_UPDATED',
+      actorId: actor?.id,
+      entityType: 'location',
+      entityId: updated.id,
+      payload: { name: updated.name, code: updated.code, type: loc.type },
+    });
+
+    return this._mapLocationItem(updated);
   }
 
   /**

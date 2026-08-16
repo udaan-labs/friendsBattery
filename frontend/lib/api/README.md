@@ -119,6 +119,7 @@ Class | Method | HTTP request | Description
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsEmployeesEmployeeIdGet**](doc/ShopsApi.md#apishopsemployeesemployeeidget) | **GET** /api/shops/employees/{employeeId} | Admin view one employee (profile + check-in/check-out only)
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsEmployeesPost**](doc/ShopsApi.md#apishopsemployeespost) | **POST** /api/shops/employees | Create an employee at a shop or warehouse
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsLocationsGet**](doc/ShopsApi.md#apishopslocationsget) | **GET** /api/shops/locations | List active locations (warehouse + shops)
+[*ShopsApi*](doc/ShopsApi.md) | [**apiShopsLocationsLocationIdPatch**](doc/ShopsApi.md#apishopslocationslocationidpatch) | **PATCH** /api/shops/locations/{locationId} | Update a shop or warehouse name and map location
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsLocationsLocationIdStaffGet**](doc/ShopsApi.md#apishopslocationslocationidstaffget) | **GET** /api/shops/locations/{locationId}/staff | Admin, sellers and employees assigned to this location
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsLocationsPost**](doc/ShopsApi.md#apishopslocationspost) | **POST** /api/shops/locations | Create a shop or warehouse location
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsMyStaffGet**](doc/ShopsApi.md#apishopsmystaffget) | **GET** /api/shops/my-staff | Seller — staff at own shop location
@@ -294,6 +295,8 @@ Class | Method | HTTP request | Description
  - [ShopStaffMember](doc/ShopStaffMember.md)
  - [ShopStaffResponse](doc/ShopStaffResponse.md)
  - [TransferInventoryCount](doc/TransferInventoryCount.md)
+ - [UpdateLocationRequest](doc/UpdateLocationRequest.md)
+ - [UpdateLocationResponse](doc/UpdateLocationResponse.md)
  - [UpdateStockRequest](doc/UpdateStockRequest.md)
  - [UpdateStockResponse](doc/UpdateStockResponse.md)
  - [UpdateStockResult](doc/UpdateStockResult.md)

@@ -174,6 +174,8 @@ import 'package:friends_battery_api/src/model/shop_staff_data.dart';
 import 'package:friends_battery_api/src/model/shop_staff_member.dart';
 import 'package:friends_battery_api/src/model/shop_staff_response.dart';
 import 'package:friends_battery_api/src/model/transfer_inventory_count.dart';
+import 'package:friends_battery_api/src/model/update_location_request.dart';
+import 'package:friends_battery_api/src/model/update_location_response.dart';
 import 'package:friends_battery_api/src/model/update_stock_request.dart';
 import 'package:friends_battery_api/src/model/update_stock_response.dart';
 import 'package:friends_battery_api/src/model/update_stock_result.dart';
@@ -347,6 +349,8 @@ part 'serializers.g.dart';
   ShopStaffMember,
   ShopStaffResponse,
   TransferInventoryCount,
+  UpdateLocationRequest,
+  UpdateLocationResponse,
   UpdateStockRequest,
   UpdateStockResponse,
   UpdateStockResult,

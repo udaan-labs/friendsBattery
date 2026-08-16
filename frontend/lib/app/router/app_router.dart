@@ -38,6 +38,7 @@ import '../../features/seller/staff/screens/seller_staff_screen.dart';
 import '../../features/admin/locations/screens/locations_list_screen.dart';
 import '../../features/admin/locations/screens/add_location_screen.dart';
 import '../../features/admin/locations/screens/location_detail_screen.dart';
+import '../../features/admin/locations/screens/edit_location_screen.dart';
 import '../../features/employee/dashboard/screens/employee_shell_screen.dart';
 import '../../features/employee/dashboard/screens/employee_home_screen.dart';
 import '../../features/employee/attendance/employee_attendance_screen.dart';
@@ -252,6 +253,18 @@ final routerProvider = Provider<GoRouter>((ref) {
               return AddLocationScreen(
                 initialType: t == 'WAREHOUSE' ? 'WAREHOUSE' : 'SHOP',
               );
+            },
+          ),
+          GoRoute(
+            path: '/admin/locations/:id/edit',
+            builder: (context, state) {
+              final id = int.tryParse(state.pathParameters['id'] ?? '');
+              if (id == null) {
+                return const Scaffold(
+                  body: Center(child: Text('Invalid location')),
+                );
+              }
+              return EditLocationScreen(locationId: id);
             },
           ),
           GoRoute(

@@ -999,6 +999,45 @@ module.exports = {
       data: { $ref: '#/components/schemas/LocationItem' },
     },
   },
+  UpdateLocationRequest: {
+    type: 'object',
+    properties: {
+      name: { type: 'string', maxLength: 150, example: 'Andheri Shop' },
+      address: { type: 'string', nullable: true },
+      latitude: {
+        type: 'number',
+        nullable: true,
+        minimum: -90,
+        maximum: 90,
+        example: 23.0225,
+        description: 'Geofence center; required together with longitude',
+      },
+      longitude: {
+        type: 'number',
+        nullable: true,
+        minimum: -180,
+        maximum: 180,
+        example: 72.5714,
+        description: 'Geofence center; required together with latitude',
+      },
+      allowed_radius: {
+        type: 'integer',
+        nullable: true,
+        minimum: 10,
+        maximum: 5000,
+        example: 100,
+        description: 'Attendance radius in meters',
+      },
+    },
+  },
+  UpdateLocationResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean' },
+      message: { type: 'string' },
+      data: { $ref: '#/components/schemas/LocationItem' },
+    },
+  },
   EmployeeAction: {
     type: 'object',
     description: 'Employee-only action (CHECK_IN or CHECK_OUT)',
