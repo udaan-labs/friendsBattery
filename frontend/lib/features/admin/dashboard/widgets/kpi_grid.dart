@@ -54,6 +54,9 @@ class KpiGrid extends ConsumerWidget {
     }) {
       if (isSuperAdmin) {
         return [
+          card('TODAY\'S SALES', sales, 'Transactions',
+              Icons.trending_up_outlined,
+              onTap: () => context.push('/admin/sales')),
           card('PRODUCTS', productCount, 'In catalog', Icons.inventory_2_outlined,
               onTap: () => context.push('/admin/products')),
           card('LOCATIONS', locations, 'Shops & warehouses', Icons.location_city_outlined,
@@ -99,13 +102,16 @@ class KpiGrid extends ConsumerWidget {
               SizedBox(width: gap),
               Expanded(child: items[1]),
             ]),
-            if (items.length >= 4) ...[
+            if (items.length >= 3) ...[
               SizedBox(height: gap),
-              Row(children: [
-                Expanded(child: items[2]),
-                SizedBox(width: gap),
-                Expanded(child: items[3]),
-              ]),
+              if (items.length >= 4)
+                Row(children: [
+                  Expanded(child: items[2]),
+                  SizedBox(width: gap),
+                  Expanded(child: items[3]),
+                ])
+              else
+                items[2],
             ],
           ],
         ),

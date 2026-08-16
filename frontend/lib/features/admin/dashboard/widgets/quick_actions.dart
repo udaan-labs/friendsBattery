@@ -13,8 +13,15 @@ class QuickActions extends ConsumerWidget {
     final titleSize = isSmall ? 16.0 : 18.0;
     final isSuperAdmin = ref.watch(authProvider).role == UserRole.superAdmin;
 
-    // Super Admin: catalog only (no owned inventory). Shop Admin: stock + sales.
+    // Super Admin: catalog + org-wide sales (no owned inventory). Shop Admin: stock + sales.
     final actions = <_ActionItemData>[
+      if (isSuperAdmin)
+        _ActionItemData(
+          title: 'View Sales',
+          subtitle: 'Today, week, month, year, date',
+          icon: Icons.point_of_sale_outlined,
+          route: '/admin/sales',
+        ),
       _ActionItemData(
         title: 'Add Product',
         subtitle: 'Name, model, or configure',

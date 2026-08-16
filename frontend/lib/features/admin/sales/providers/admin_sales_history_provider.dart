@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_client_provider.dart';
+import '../../../../shared/utils/app_formatters.dart';
 import '../models/admin_sale_history.dart';
 import '../repositories/admin_sales_repository.dart';
 
@@ -12,7 +13,23 @@ final adminSalesRepositoryProvider = Provider<AdminSalesRepository>((ref) {
 // ─── State ─────────────────────────────────────────────────────────────────
 
 /// Period filter for sales report chips.
-enum AdminSalesPeriod { all, today, week, month }
+enum AdminSalesPeriod {
+  today,
+  week,
+  month,
+  year,
+  custom,
+  all;
+
+  String label(DateTime? customDate) => switch (this) {
+        today => 'Today',
+        week => 'This week',
+        month => 'This month',
+        year => 'This year',
+        custom => customDate == null ? 'Date' : formatAppDate(customDate),
+        all => 'All',
+      };
+}
 
 class AdminSalesHistoryState {
   final List<AdminSaleHistory> sales;
@@ -21,6 +38,7 @@ class AdminSalesHistoryState {
   final String? error;
   final String searchQuery;
   final AdminSalesPeriod period;
+  final DateTime? customDate;
   final int currentPage;
   final int totalPages;
   final int total;
@@ -32,6 +50,7 @@ class AdminSalesHistoryState {
     this.error,
     this.searchQuery = '',
     this.period = AdminSalesPeriod.today,
+    this.customDate,
     this.currentPage = 1,
     this.totalPages = 1,
     this.total = 0,
@@ -50,6 +69,8 @@ class AdminSalesHistoryState {
     bool clearError = false,
     String? searchQuery,
     AdminSalesPeriod? period,
+    DateTime? customDate,
+    bool clearCustomDate = false,
     int? currentPage,
     int? totalPages,
     int? total,
@@ -61,6 +82,7 @@ class AdminSalesHistoryState {
       error: clearError ? null : error ?? this.error,
       searchQuery: searchQuery ?? this.searchQuery,
       period: period ?? this.period,
+      customDate: clearCustomDate ? null : customDate ?? this.customDate,
       currentPage: currentPage ?? this.currentPage,
       totalPages: totalPages ?? this.totalPages,
       total: total ?? this.total,
@@ -83,28 +105,22 @@ class AdminSalesHistoryNotifier
 
   ({String? from, String? to}) _dateRangeFor(AdminSalesPeriod period) {
     final now = DateTime.now();
-    final todayStart = DateTime(now.year, now.month, now.day);
-    switch (period) {
-      case AdminSalesPeriod.all:
-        return (from: null, to: null);
-      case AdminSalesPeriod.today:
-        return (
-          from: todayStart.toIso8601String(),
-          to: now.toIso8601String(),
-        );
-      case AdminSalesPeriod.week:
-        final weekStart = todayStart.subtract(Duration(days: now.weekday - 1));
-        return (
-          from: weekStart.toIso8601String(),
-          to: now.toIso8601String(),
-        );
-      case AdminSalesPeriod.month:
-        final monthStart = DateTime(now.year, now.month, 1);
-        return (
-          from: monthStart.toIso8601String(),
-          to: now.toIso8601String(),
-        );
+    final today = DateTime(now.year, now.month, now.day);
+    if (period == AdminSalesPeriod.all) return (from: null, to: null);
+    if (period == AdminSalesPeriod.custom) {
+      final day = state.customDate ?? today;
+      final start = DateTime(day.year, day.month, day.day);
+      final end = DateTime(day.year, day.month, day.day, 23, 59, 59, 999);
+      return (from: start.toIso8601String(), to: end.toIso8601String());
     }
+    final start = switch (period) {
+      AdminSalesPeriod.today => today,
+      AdminSalesPeriod.week => today.subtract(Duration(days: now.weekday - 1)),
+      AdminSalesPeriod.month => DateTime(now.year, now.month, 1),
+      AdminSalesPeriod.year => DateTime(now.year, 1, 1),
+      _ => today,
+    };
+    return (from: start.toIso8601String(), to: now.toIso8601String());
   }
 
   Future<void> fetchSales({bool isRefresh = false}) async {
@@ -180,7 +196,12 @@ class AdminSalesHistoryNotifier
 
   void setPeriod(AdminSalesPeriod period) {
     if (state.period == period) return;
-    state = state.copyWith(period: period);
+    state = state.copyWith(period: period, clearCustomDate: true);
+    fetchSales(isRefresh: true);
+  }
+
+  void setCustomDate(DateTime date) {
+    state = state.copyWith(period: AdminSalesPeriod.custom, customDate: date);
     fetchSales(isRefresh: true);
   }
 }

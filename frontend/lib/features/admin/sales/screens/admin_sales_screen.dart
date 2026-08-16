@@ -7,6 +7,7 @@ import '../../../../shared/widgets/responsive_helper.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
 import '../providers/admin_sales_history_provider.dart';
 import '../widgets/admin_sale_history_card.dart';
+import '../widgets/admin_sales_period_chips.dart';
 
 class AdminSalesScreen extends ConsumerStatefulWidget {
   const AdminSalesScreen({super.key});
@@ -49,21 +50,8 @@ class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
         .fetchSales(isRefresh: true);
   }
 
-  String _periodLabel(AdminSalesPeriod p) {
-    switch (p) {
-      case AdminSalesPeriod.all:
-        return 'All';
-      case AdminSalesPeriod.today:
-        return 'Today';
-      case AdminSalesPeriod.week:
-        return 'This week';
-      case AdminSalesPeriod.month:
-        return 'This month';
-    }
-  }
-
   Future<void> _shareReport(AdminSalesHistoryState state) async {
-    final period = _periodLabel(state.period);
+    final period = state.period.label(state.customDate);
     final buf = StringBuffer()
       ..writeln('Friends Battery — Sales report ($period)')
       ..writeln('Total sales: ${state.total}')
@@ -104,9 +92,9 @@ class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
                 'Sales History',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
-              if (!state.isLoading && state.total > 0)
+              if (!state.isLoading)
                 Text(
-                  '${state.total} total · ₹${state.totalRevenue.toStringAsFixed(0)} (shown)',
+                  '${state.total} total${state.sales.isEmpty ? '' : ' · ₹${state.totalRevenue.toStringAsFixed(0)} (shown)'}',
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.normal,
@@ -142,46 +130,7 @@ class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
         body: SafeArea(
         child: Column(
           children: [
-          // ── Period chips (today / week / month / all) ───────────────
-          Container(
-            color: Colors.white,
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  for (final p in AdminSalesPeriod.values) ...[
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: ChoiceChip(
-                        label: Text(_periodLabel(p)),
-                        selected: state.period == p,
-                        onSelected: (_) => ref
-                            .read(adminSalesHistoryProvider.notifier)
-                            .setPeriod(p),
-                        selectedColor: const Color(0xFFE8F5E9),
-                        labelStyle: TextStyle(
-                          color: state.period == p
-                              ? AppTheme.primary
-                              : const Color(0xFF586377),
-                          fontWeight: state.period == p
-                              ? FontWeight.w600
-                              : FontWeight.normal,
-                          fontSize: 13,
-                        ),
-                        side: BorderSide(
-                          color: state.period == p
-                              ? AppTheme.primary
-                              : const Color(0xFFECEEF0),
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
+          const AdminSalesPeriodChips(),
 
           // ── Search bar ──────────────────────────────────────────────
           Container(
@@ -350,9 +299,11 @@ class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    _searchController.text.isEmpty
-                        ? 'No sales have been recorded yet.'
-                        : 'No results match your search.',
+                    _searchController.text.isNotEmpty
+                        ? 'No results match your search.'
+                        : state.period == AdminSalesPeriod.custom
+                            ? 'No sales on this date.'
+                            : 'No sales have been recorded yet.',
                     style: TextStyle(
                         color: Colors.grey.shade500, fontSize: 14),
                   ),

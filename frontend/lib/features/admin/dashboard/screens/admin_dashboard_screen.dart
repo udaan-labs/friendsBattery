@@ -252,17 +252,17 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       context.go('/admin/sellers');
                     },
                   ),
+                  _buildDrawerItem(
+                    icon: Icons.point_of_sale_outlined,
+                    activeIcon: Icons.point_of_sale,
+                    title: 'Sales',
+                    tabId: 'sales',
+                    onTap: () {
+                      context.pop();
+                      context.push('/admin/sales');
+                    },
+                  ),
                   if (!isSuperAdmin) ...[
-                    _buildDrawerItem(
-                      icon: Icons.point_of_sale_outlined,
-                      activeIcon: Icons.point_of_sale,
-                      title: 'Sales',
-                      tabId: 'sales',
-                      onTap: () {
-                        context.pop();
-                        context.push('/admin/sales');
-                      },
-                    ),
                     _buildDrawerItem(
                       icon: Icons.swap_horiz_outlined,
                       activeIcon: Icons.swap_horiz,
