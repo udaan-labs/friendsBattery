@@ -31,3 +31,14 @@ final locationStaffProvider =
     FutureProvider.family<ShopStaffData, int>((ref, locationId) async {
   return ref.watch(staffRepositoryProvider).getStaffByLocationId(locationId);
 });
+
+final locationStaffQueryProvider =
+    StateProvider.family<String, int>((ref, locationId) => '');
+
+bool staffMatchesQuery(ShopStaffMember member, String query) {
+  final q = query.trim().toLowerCase();
+  if (q.isEmpty) return true;
+  return (member.userName ?? '').toLowerCase().contains(q) ||
+      (member.userId ?? '').toLowerCase().contains(q) ||
+      (member.userNumber ?? '').contains(q);
+}

@@ -1642,7 +1642,9 @@
           "password": {
             "type": "string",
             "format": "password",
-            "minLength": 6
+            "minLength": 8,
+            "description": "Min 8 characters, at least one uppercase letter and one special character",
+            "example": "Passw0rd!"
           },
           "employee_role_id": {
             "type": "integer",
@@ -3209,6 +3211,107 @@
             "$ref": "#/components/schemas/AdjustInventoryResult"
           }
         }
+      },
+      "AccountUserLocation": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "AccountUser": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "user_name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "SELLER",
+              "EMPLOYEE"
+            ]
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "location": {
+            "$ref": "#/components/schemas/AccountUserLocation",
+            "nullable": true
+          }
+        }
+      },
+      "AccountUsersResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountUser"
+            }
+          }
+        }
+      },
+      "SetAccountActiveRequest": {
+        "type": "object",
+        "required": [
+          "is_active"
+        ],
+        "properties": {
+          "is_active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SetAccountActiveData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "SELLER",
+              "EMPLOYEE"
+            ]
+          },
+          "is_active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SetAccountActiveResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SetAccountActiveData"
+          }
+        }
       }
     },
     "securitySchemes": {
@@ -3226,6 +3329,111 @@
     }
   ],
   "paths": {
+    "/api/users": {
+      "get": {
+        "summary": "List admins, sellers, and employees",
+        "description": "Super Admin only. Filter by ADMIN, SELLER, or EMPLOYEE.",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "role",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ADMIN",
+                "SELLER",
+                "EMPLOYEE"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Users fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountUsersResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Super Admin only"
+          }
+        }
+      }
+    },
+    "/api/users/{id}/active": {
+      "patch": {
+        "summary": "Activate or deactivate an admin, seller, or employee",
+        "description": "Super Admin only. Inactive users cannot log in or use the API. Cannot change self or SUPER_ADMIN.",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetAccountActiveRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User status updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetAccountActiveResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
     "/api/transfers": {
       "post": {
         "summary": "Create a new shipment from Admin to Seller",
@@ -6003,7 +6211,9 @@
                   "password": {
                     "type": "string",
                     "format": "password",
-                    "example": "password123"
+                    "minLength": 8,
+                    "description": "Min 8 characters, one uppercase, one special character",
+                    "example": "Passw0rd!"
                   },
                   "location_id": {
                     "type": "integer",
@@ -6081,7 +6291,10 @@
                   },
                   "password": {
                     "type": "string",
-                    "format": "password"
+                    "format": "password",
+                    "minLength": 8,
+                    "description": "Min 8 characters, one uppercase, one special character",
+                    "example": "Passw0rd!"
                   },
                   "location_id": {
                     "type": "integer",
@@ -6597,6 +6810,10 @@
     }
   },
   "tags": [
+    {
+      "name": "Users",
+      "description": "Super Admin account list and activate / deactivate"
+    },
     {
       "name": "Transfers",
       "description": "Shipment / Transfer management APIs"

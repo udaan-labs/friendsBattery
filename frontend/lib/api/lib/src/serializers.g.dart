@@ -8,6 +8,11 @@ part of 'serializers.dart';
 
 Serializers _$serializers =
     (Serializers().toBuilder()
+          ..add(AccountUser.serializer)
+          ..add(AccountUserLocation.serializer)
+          ..add(AccountUserLocationTypeEnum.serializer)
+          ..add(AccountUserRoleEnum.serializer)
+          ..add(AccountUsersResponse.serializer)
           ..add(ActivityHistoryPagination.serializer)
           ..add(ActivityHistoryResponse.serializer)
           ..add(ActivityItem.serializer)
@@ -185,6 +190,10 @@ Serializers _$serializers =
           ..add(SellerShopSummary.serializer)
           ..add(SellerStatistics.serializer)
           ..add(SellersListResponse.serializer)
+          ..add(SetAccountActiveData.serializer)
+          ..add(SetAccountActiveDataRoleEnum.serializer)
+          ..add(SetAccountActiveRequest.serializer)
+          ..add(SetAccountActiveResponse.serializer)
           ..add(Shipment.serializer)
           ..add(ShipmentItem.serializer)
           ..add(ShipmentStatusEnum.serializer)
@@ -205,6 +214,10 @@ Serializers _$serializers =
           ..add(VerifyProductRequest.serializer)
           ..add(VerifyProductResponse.serializer)
           ..add(VerifyProductUnit.serializer)
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(AccountUser)]),
+            () => ListBuilder<AccountUser>(),
+          )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(ActivityItem)]),
             () => ListBuilder<ActivityItem>(),

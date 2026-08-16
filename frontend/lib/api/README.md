@@ -132,10 +132,15 @@ Class | Method | HTTP request | Description
 [*TransfersApi*](doc/TransfersApi.md) | [**apiTransfersShipmentIdCancelPatch**](doc/TransfersApi.md#apitransfersshipmentidcancelpatch) | **PATCH** /api/transfers/{shipmentId}/cancel | Admin cancels a pending shipment
 [*TransfersApi*](doc/TransfersApi.md) | [**apiTransfersShipmentIdGet**](doc/TransfersApi.md#apitransfersshipmentidget) | **GET** /api/transfers/{shipmentId} | Return complete shipment details by ID
 [*TransfersApi*](doc/TransfersApi.md) | [**apiTransfersShipmentIdReceivePatch**](doc/TransfersApi.md#apitransfersshipmentidreceivepatch) | **PATCH** /api/transfers/{shipmentId}/receive | Seller receives and confirms a shipment delivery
+[*UsersApi*](doc/UsersApi.md) | [**apiUsersGet**](doc/UsersApi.md#apiusersget) | **GET** /api/users | List admins, sellers, and employees
+[*UsersApi*](doc/UsersApi.md) | [**apiUsersIdActivePatch**](doc/UsersApi.md#apiusersidactivepatch) | **PATCH** /api/users/{id}/active | Activate or deactivate an admin, seller, or employee
 
 
 ## Documentation For Models
 
+ - [AccountUser](doc/AccountUser.md)
+ - [AccountUserLocation](doc/AccountUserLocation.md)
+ - [AccountUsersResponse](doc/AccountUsersResponse.md)
  - [ActivityHistoryPagination](doc/ActivityHistoryPagination.md)
  - [ActivityHistoryResponse](doc/ActivityHistoryResponse.md)
  - [ActivityItem](doc/ActivityItem.md)
@@ -292,6 +297,9 @@ Class | Method | HTTP request | Description
  - [SellerShopSummary](doc/SellerShopSummary.md)
  - [SellerStatistics](doc/SellerStatistics.md)
  - [SellersListResponse](doc/SellersListResponse.md)
+ - [SetAccountActiveData](doc/SetAccountActiveData.md)
+ - [SetAccountActiveRequest](doc/SetAccountActiveRequest.md)
+ - [SetAccountActiveResponse](doc/SetAccountActiveResponse.md)
  - [Shipment](doc/Shipment.md)
  - [ShipmentItem](doc/ShipmentItem.md)
  - [ShopStaffData](doc/ShopStaffData.md)

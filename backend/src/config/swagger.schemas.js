@@ -1655,5 +1655,57 @@ module.exports = {
       message: { type: 'string' },
       data: { $ref: '#/components/schemas/AdjustInventoryResult' }
     }
+  },
+  AccountUserLocation: {
+    type: 'object',
+    properties: {
+      name: { type: 'string' },
+    },
+  },
+  AccountUser: {
+    type: 'object',
+    properties: {
+      id: { type: 'integer' },
+      user_id: { type: 'string' },
+      user_name: { type: 'string' },
+      role: { type: 'string', enum: ['ADMIN', 'SELLER', 'EMPLOYEE'] },
+      is_active: { type: 'boolean' },
+      location: { $ref: '#/components/schemas/AccountUserLocation', nullable: true },
+    },
+  },
+  AccountUsersResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean' },
+      message: { type: 'string' },
+      data: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/AccountUser' },
+      },
+    },
+  },
+  SetAccountActiveRequest: {
+    type: 'object',
+    required: ['is_active'],
+    properties: {
+      is_active: { type: 'boolean' },
+    },
+  },
+  SetAccountActiveData: {
+    type: 'object',
+    properties: {
+      id: { type: 'integer' },
+      user_id: { type: 'string' },
+      role: { type: 'string', enum: ['ADMIN', 'SELLER', 'EMPLOYEE'] },
+      is_active: { type: 'boolean' },
+    },
+  },
+  SetAccountActiveResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean' },
+      message: { type: 'string' },
+      data: { $ref: '#/components/schemas/SetAccountActiveData' },
+    },
   }
 };

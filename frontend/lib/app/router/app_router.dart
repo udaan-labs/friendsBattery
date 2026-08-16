@@ -30,6 +30,7 @@ import '../../features/seller/sales/screens/seller_sales_history_screen.dart';
 import '../../features/seller/sales/screens/seller_sale_details_screen.dart';
 import '../../features/shared/inventory/screens/current_inventory_screen.dart';
 import '../../features/shared/inventory/screens/inventory_product_detail_screen.dart';
+import '../../features/admin/accounts/screens/accounts_screen.dart';
 import '../../features/admin/sellers/screens/sellers_list_screen.dart';
 import '../../features/admin/sellers/screens/seller_details_screen.dart';
 import '../../features/shared/product_lookup/screens/verify_product_screen.dart';
@@ -182,6 +183,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                 state.uri.queryParameters['locationId'] ?? '',
               ),
             ),
+          ),
+          GoRoute(
+            path: '/admin/accounts',
+            builder: (context, state) => const AccountsScreen(),
           ),
           GoRoute(
             path: '/admin/add-stock',

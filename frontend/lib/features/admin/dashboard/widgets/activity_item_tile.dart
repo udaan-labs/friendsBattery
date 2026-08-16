@@ -24,6 +24,8 @@ IconData activityIconFor(String? iconName) {
       return Icons.inventory_2_outlined;
     case 'person_add':
       return Icons.person_add_alt_1_outlined;
+    case 'person_off':
+      return Icons.person_off_outlined;
     case 'store':
       return Icons.storefront_outlined;
     case 'local_shipping':

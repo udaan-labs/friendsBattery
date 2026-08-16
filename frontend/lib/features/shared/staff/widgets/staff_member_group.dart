@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
+import 'confirm_mark_active.dart';
 
 /// Shared employees/sellers list card used by admin shop team + seller My Team.
 class StaffMemberGroup extends StatelessWidget {
@@ -13,6 +14,7 @@ class StaffMemberGroup extends StatelessWidget {
     this.showRoleChip = false,
     this.onAdd,
     this.addLabel,
+    this.onToggleActive,
   });
 
   final String title;
@@ -23,6 +25,7 @@ class StaffMemberGroup extends StatelessWidget {
   final bool showRoleChip;
   final VoidCallback? onAdd;
   final String? addLabel;
+  final Future<void> Function(ShopStaffMember member, bool isActive)? onToggleActive;
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +84,7 @@ class StaffMemberGroup extends StatelessWidget {
                 member: m,
                 accent: color,
                 showRoleChip: showRoleChip,
+                onToggleActive: onToggleActive,
               ),
             ),
         ],
@@ -94,11 +98,26 @@ class _Tile extends StatelessWidget {
     required this.member,
     required this.accent,
     required this.showRoleChip,
+    this.onToggleActive,
   });
 
   final ShopStaffMember member;
   final Color accent;
   final bool showRoleChip;
+  final Future<void> Function(ShopStaffMember member, bool isActive)?
+      onToggleActive;
+
+  Future<void> _onTap(BuildContext context) async {
+    final cb = onToggleActive;
+    if (cb == null) return;
+    final active = member.isActive != false;
+    final ok = await confirmMarkActive(
+      context,
+      name: member.userName ?? member.userId ?? 'this account',
+      currentlyActive: active,
+    );
+    if (ok) await cb(member, !active);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,11 +126,15 @@ class _Tile extends StatelessWidget {
     final jobTitle = member.employeeRole?.name;
     final roleLabel = member.role?.name ?? member.role?.toString() ?? '';
     final active = member.isActive != false;
+    final canToggle = onToggleActive != null && member.id != null;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
+      child: InkWell(
+        onTap: canToggle ? () => _onTap(context) : null,
+        borderRadius: BorderRadius.circular(8),
+        child: Row(
+          children: [
           CircleAvatar(
             radius: 18,
             backgroundColor: accent.withValues(alpha: 0.12),
@@ -173,6 +196,7 @@ class _Tile extends StatelessWidget {
               ],
             ),
         ],
+        ),
       ),
     );
   }

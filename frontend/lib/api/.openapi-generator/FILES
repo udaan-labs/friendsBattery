@@ -1,6 +1,9 @@
 .gitignore
 README.md
 analysis_options.yaml
+doc/AccountUser.md
+doc/AccountUserLocation.md
+doc/AccountUsersResponse.md
 doc/ActivityHistoryPagination.md
 doc/ActivityHistoryResponse.md
 doc/ActivityItem.md
@@ -167,6 +170,9 @@ doc/SellerShipmentsListResponse.md
 doc/SellerShopSummary.md
 doc/SellerStatistics.md
 doc/SellersListResponse.md
+doc/SetAccountActiveData.md
+doc/SetAccountActiveRequest.md
+doc/SetAccountActiveResponse.md
 doc/Shipment.md
 doc/ShipmentItem.md
 doc/ShipmentsApi.md
@@ -182,6 +188,7 @@ doc/UpdateStockRequest.md
 doc/UpdateStockResponse.md
 doc/UpdateStockResult.md
 doc/User.md
+doc/UsersApi.md
 doc/VerifyProductInfo.md
 doc/VerifyProductPayload.md
 doc/VerifyProductRequest.md
@@ -202,6 +209,7 @@ lib/src/api/sales_api.dart
 lib/src/api/shipments_api.dart
 lib/src/api/shops_api.dart
 lib/src/api/transfers_api.dart
+lib/src/api/users_api.dart
 lib/src/api_util.dart
 lib/src/auth/api_key_auth.dart
 lib/src/auth/auth.dart
@@ -209,6 +217,9 @@ lib/src/auth/basic_auth.dart
 lib/src/auth/bearer_auth.dart
 lib/src/auth/oauth.dart
 lib/src/date_serializer.dart
+lib/src/model/account_user.dart
+lib/src/model/account_user_location.dart
+lib/src/model/account_users_response.dart
 lib/src/model/activity_history_pagination.dart
 lib/src/model/activity_history_response.dart
 lib/src/model/activity_item.dart
@@ -366,6 +377,9 @@ lib/src/model/seller_shipments_list_response.dart
 lib/src/model/seller_shop_summary.dart
 lib/src/model/seller_statistics.dart
 lib/src/model/sellers_list_response.dart
+lib/src/model/set_account_active_data.dart
+lib/src/model/set_account_active_request.dart
+lib/src/model/set_account_active_response.dart
 lib/src/model/shipment.dart
 lib/src/model/shipment_item.dart
 lib/src/model/shop_staff_data.dart
@@ -385,5 +399,10 @@ lib/src/model/verify_product_response.dart
 lib/src/model/verify_product_unit.dart
 lib/src/serializers.dart
 pubspec.yaml
-test/next_employee_user_id_data_test.dart
-test/next_employee_user_id_response_test.dart
+test/account_user_location_test.dart
+test/account_user_test.dart
+test/account_users_response_test.dart
+test/set_account_active_data_test.dart
+test/set_account_active_request_test.dart
+test/set_account_active_response_test.dart
+test/users_api_test.dart

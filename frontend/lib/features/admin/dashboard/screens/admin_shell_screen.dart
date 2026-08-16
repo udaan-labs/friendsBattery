@@ -21,6 +21,7 @@ class AdminShellScreen extends ConsumerWidget {
       currentIndex = 0;
     } else if (location.startsWith('/admin/sellers') ||
         location.startsWith('/admin/add-seller') ||
+        location.startsWith('/admin/accounts') ||
         location.startsWith('/admin/shops') ||
         location.startsWith('/admin/warehouses') ||
         location.startsWith('/admin/locations') ||

@@ -52,7 +52,7 @@ function formatCatalogActivity(e) {
 
 function formatOrgActivity(e) {
   const who = e.actor?.shopName || e.actor?.userName || 'Admin';
-  const name = e.payload?.name || e.payload?.username || 'record';
+  const name = e.payload?.name || e.payload?.username || e.payload?.user_id || 'record';
   const place = e.payload?.location_name || e.payload?.shop_name;
   const job = e.payload?.job_title;
   const map = {
@@ -75,6 +75,8 @@ function formatOrgActivity(e) {
       subtitle: [name, job, place].filter(Boolean).join(' • '),
       icon: 'person_add',
     },
+    USER_DEACTIVATED: { title: `${who} deactivated account`, subtitle: name, icon: 'person_off' },
+    USER_ACTIVATED: { title: `${who} activated account`, subtitle: name, icon: 'person_add' },
   };
   const row = map[e.action] || {
     title: `${who} updated org`,

@@ -14,6 +14,9 @@ import 'package:built_value/iso_8601_date_time_serializer.dart';
 import 'package:friends_battery_api/src/date_serializer.dart';
 import 'package:friends_battery_api/src/model/date.dart';
 
+import 'package:friends_battery_api/src/model/account_user.dart';
+import 'package:friends_battery_api/src/model/account_user_location.dart';
+import 'package:friends_battery_api/src/model/account_users_response.dart';
 import 'package:friends_battery_api/src/model/activity_history_pagination.dart';
 import 'package:friends_battery_api/src/model/activity_history_response.dart';
 import 'package:friends_battery_api/src/model/activity_item.dart';
@@ -170,6 +173,9 @@ import 'package:friends_battery_api/src/model/seller_shipments_list_response.dar
 import 'package:friends_battery_api/src/model/seller_shop_summary.dart';
 import 'package:friends_battery_api/src/model/seller_statistics.dart';
 import 'package:friends_battery_api/src/model/sellers_list_response.dart';
+import 'package:friends_battery_api/src/model/set_account_active_data.dart';
+import 'package:friends_battery_api/src/model/set_account_active_request.dart';
+import 'package:friends_battery_api/src/model/set_account_active_response.dart';
 import 'package:friends_battery_api/src/model/shipment.dart';
 import 'package:friends_battery_api/src/model/shipment_item.dart';
 import 'package:friends_battery_api/src/model/shop_staff_data.dart';
@@ -191,6 +197,9 @@ import 'package:friends_battery_api/src/model/verify_product_unit.dart';
 part 'serializers.g.dart';
 
 @SerializersFor([
+  AccountUser,
+  AccountUserLocation,
+  AccountUsersResponse,
   ActivityHistoryPagination,
   ActivityHistoryResponse,
   ActivityItem,
@@ -347,6 +356,9 @@ part 'serializers.g.dart';
   SellerShopSummary,
   SellerStatistics,
   SellersListResponse,
+  SetAccountActiveData,
+  SetAccountActiveRequest,
+  SetAccountActiveResponse,
   Shipment,
   ShipmentItem,
   ShopStaffData,

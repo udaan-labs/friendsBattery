@@ -50,6 +50,13 @@ class QuickActions extends ConsumerWidget {
           icon: Icons.admin_panel_settings_outlined,
           route: '/admin/add-admin',
         ),
+      if (isSuperAdmin)
+        _ActionItemData(
+          title: 'Accounts',
+          subtitle: 'Admins, sellers, employees · deactivate',
+          icon: Icons.manage_accounts_outlined,
+          route: '/admin/accounts',
+        ),
       _ActionItemData(
         title: 'Sellers',
         subtitle: 'List sellers · add accounts',
