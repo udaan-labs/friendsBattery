@@ -292,6 +292,7 @@ class _AddLocationScreenState extends ConsumerState<AddLocationScreen> {
                       latitude: _latitude,
                       longitude: _longitude,
                       onChanged: _onMapChanged,
+                      onAddressFound: (a) => _addressController.text = a,
                       enabled: !_submitting,
                     ),
                     const SizedBox(height: 12),
