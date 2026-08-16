@@ -8,12 +8,22 @@ const { httpError } = require('../../shared/utils/http-error');
 const orgEventsRepository = require('../../shared/org-events.repository');
 const otpService = require('../otp/otp.service');
 
+function titleName(value) {
+  return String(value ?? '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toLocaleUpperCase() + w.slice(1).toLocaleLowerCase())
+    .join(' ');
+}
+
 class AuthService {
   /**
    * Super Admin only: create an ADMIN under this SA (shop or warehouse).
    * parent_id = SA; optional SHOP|WAREHOUSE location; active + verified.
    */
   async registerAdmin({ user_id, username, user_number, shop_name, password, location_id, actor }) {
+    username = titleName(username);
     if (!actor || actor.role !== ROLES.SUPER_ADMIN) {
       throw httpError(403, 'Only Super Admin can create Admins');
     }
@@ -102,6 +112,7 @@ class AuthService {
    * Shop Admin: force seller location_id = admin's shop (client location ignored).
    */
   async registerUser({ user_id, username, user_number, shop_name, password, location_id, actor }) {
+    username = titleName(username);
     // Check constraints sequentially to return specific error messages
     const existingUserId = await authRepository.findUserByUserId(user_id);
     if (existingUserId) {

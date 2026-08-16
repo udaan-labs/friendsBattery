@@ -9,6 +9,7 @@ import 'package:friends_battery_api/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **location** | [**SellerDetailLocation**](SellerDetailLocation.md) |  | [optional] 
+**admins** | [**BuiltList&lt;ShopStaffMember&gt;**](ShopStaffMember.md) |  | [optional] 
 **sellers** | [**BuiltList&lt;ShopStaffMember&gt;**](ShopStaffMember.md) |  | [optional] 
 **employees** | [**BuiltList&lt;ShopStaffMember&gt;**](ShopStaffMember.md) |  | [optional] 
 

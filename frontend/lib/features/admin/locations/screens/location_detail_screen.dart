@@ -7,7 +7,7 @@ import '../../../../shared/utils/app_formatters.dart';
 import '../../../shared/staff/providers/staff_providers.dart';
 import '../../../shared/staff/widgets/staff_member_group.dart';
 
-/// Admin: sellers + employees at one shop/warehouse.
+/// Admin: admin + sellers + employees at one shop/warehouse.
 class LocationDetailScreen extends ConsumerWidget {
   const LocationDetailScreen({
     super.key,
@@ -107,9 +107,10 @@ class _StaffList extends StatelessWidget {
   Widget build(BuildContext context) {
     final location = data.location;
     final isShop = location?.type != 'WAREHOUSE';
+    final admins = data.admins?.toList() ?? [];
     final sellers = data.sellers?.toList() ?? [];
     final employees = data.employees?.toList() ?? [];
-    final empty = sellers.isEmpty && employees.isEmpty;
+    final empty = admins.isEmpty && sellers.isEmpty && employees.isEmpty;
 
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
@@ -142,8 +143,8 @@ class _StaffList extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   isShop
-                      ? 'Assign a seller to this shop or add an employee.'
-                      : 'Add an employee assigned to this warehouse.',
+                      ? 'Assign an admin or seller to this shop, or add an employee.'
+                      : 'Assign an admin or add an employee to this warehouse.',
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Color(0xFF64748B)),
                 ),
@@ -151,6 +152,15 @@ class _StaffList extends StatelessWidget {
             ),
           )
         else ...[
+          StaffMemberGroup(
+            title: 'Admins',
+            icon: Icons.admin_panel_settings_outlined,
+            color: const Color(0xFF7C3AED),
+            members: admins,
+            emptyLabel: 'No admin at this location',
+            showRoleChip: true,
+          ),
+          const SizedBox(height: 12),
           StaffMemberGroup(
             title: 'Sellers',
             icon: Icons.storefront_rounded,

@@ -13,7 +13,7 @@ Method | HTTP request | Description
 [**apiShopsEmployeesEmployeeIdGet**](ShopsApi.md#apishopsemployeesemployeeidget) | **GET** /api/shops/employees/{employeeId} | Admin view one employee (profile + check-in/check-out only)
 [**apiShopsEmployeesPost**](ShopsApi.md#apishopsemployeespost) | **POST** /api/shops/employees | Create an employee at a shop or warehouse
 [**apiShopsLocationsGet**](ShopsApi.md#apishopslocationsget) | **GET** /api/shops/locations | List active locations (warehouse + shops)
-[**apiShopsLocationsLocationIdStaffGet**](ShopsApi.md#apishopslocationslocationidstaffget) | **GET** /api/shops/locations/{locationId}/staff | Sellers and employees assigned to this location
+[**apiShopsLocationsLocationIdStaffGet**](ShopsApi.md#apishopslocationslocationidstaffget) | **GET** /api/shops/locations/{locationId}/staff | Admin, sellers and employees assigned to this location
 [**apiShopsLocationsPost**](ShopsApi.md#apishopslocationspost) | **POST** /api/shops/locations | Create a shop or warehouse location
 [**apiShopsMyStaffGet**](ShopsApi.md#apishopsmystaffget) | **GET** /api/shops/my-staff | Seller — staff at own shop location
 [**apiShopsSellersGet**](ShopsApi.md#apishopssellersget) | **GET** /api/shops/sellers | Return all sellers
@@ -192,9 +192,9 @@ Name | Type | Description  | Notes
 # **apiShopsLocationsLocationIdStaffGet**
 > ShopStaffResponse apiShopsLocationsLocationIdStaffGet(locationId)
 
-Sellers and employees assigned to this location
+Admin, sellers and employees assigned to this location
 
-Admin only. Returns SELLER and EMPLOYEE users with users.location_id equal to this shop/warehouse. 
+Admin only. Returns ADMIN, SELLER and EMPLOYEE users with users.location_id equal to this shop/warehouse. 
 
 ### Example
 ```dart

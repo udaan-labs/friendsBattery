@@ -257,9 +257,9 @@ router.get(
  * @swagger
  * /api/shops/locations/{locationId}/staff:
  *   get:
- *     summary: Sellers and employees assigned to this location
+ *     summary: Admin, sellers and employees assigned to this location
  *     description: |
- *       Admin only. Returns SELLER and EMPLOYEE users with users.location_id
+ *       Admin only. Returns ADMIN, SELLER and EMPLOYEE users with users.location_id
  *       equal to this shop/warehouse.
  *     tags: [Shops]
  *     security:

@@ -10,7 +10,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **userId** | **String** |  | 
 **username** | **String** |  | 
-**userNumber** | **String** |  | 
+**userNumber** | **String** | Exactly 10 digits | 
 **shopName** | **String** |  | 
 **password** | **String** |  | 
 **locationId** | **int** | Optional SHOP location id (assign seller to a shop) | [optional] 

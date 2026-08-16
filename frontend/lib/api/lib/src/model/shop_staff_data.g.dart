@@ -10,6 +10,8 @@ class _$ShopStaffData extends ShopStaffData {
   @override
   final SellerDetailLocation? location;
   @override
+  final BuiltList<ShopStaffMember>? admins;
+  @override
   final BuiltList<ShopStaffMember>? sellers;
   @override
   final BuiltList<ShopStaffMember>? employees;
@@ -17,7 +19,8 @@ class _$ShopStaffData extends ShopStaffData {
   factory _$ShopStaffData([void Function(ShopStaffDataBuilder)? updates]) =>
       (ShopStaffDataBuilder()..update(updates))._build();
 
-  _$ShopStaffData._({this.location, this.sellers, this.employees}) : super._();
+  _$ShopStaffData._({this.location, this.admins, this.sellers, this.employees})
+    : super._();
   @override
   ShopStaffData rebuild(void Function(ShopStaffDataBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -30,6 +33,7 @@ class _$ShopStaffData extends ShopStaffData {
     if (identical(other, this)) return true;
     return other is ShopStaffData &&
         location == other.location &&
+        admins == other.admins &&
         sellers == other.sellers &&
         employees == other.employees;
   }
@@ -38,6 +42,7 @@ class _$ShopStaffData extends ShopStaffData {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, location.hashCode);
+    _$hash = $jc(_$hash, admins.hashCode);
     _$hash = $jc(_$hash, sellers.hashCode);
     _$hash = $jc(_$hash, employees.hashCode);
     _$hash = $jf(_$hash);
@@ -48,6 +53,7 @@ class _$ShopStaffData extends ShopStaffData {
   String toString() {
     return (newBuiltValueToStringHelper(r'ShopStaffData')
           ..add('location', location)
+          ..add('admins', admins)
           ..add('sellers', sellers)
           ..add('employees', employees))
         .toString();
@@ -63,6 +69,11 @@ class ShopStaffDataBuilder
       _$this._location ??= SellerDetailLocationBuilder();
   set location(SellerDetailLocationBuilder? location) =>
       _$this._location = location;
+
+  ListBuilder<ShopStaffMember>? _admins;
+  ListBuilder<ShopStaffMember> get admins =>
+      _$this._admins ??= ListBuilder<ShopStaffMember>();
+  set admins(ListBuilder<ShopStaffMember>? admins) => _$this._admins = admins;
 
   ListBuilder<ShopStaffMember>? _sellers;
   ListBuilder<ShopStaffMember> get sellers =>
@@ -84,6 +95,7 @@ class ShopStaffDataBuilder
     final $v = _$v;
     if ($v != null) {
       _location = $v.location?.toBuilder();
+      _admins = $v.admins?.toBuilder();
       _sellers = $v.sellers?.toBuilder();
       _employees = $v.employees?.toBuilder();
       _$v = null;
@@ -111,6 +123,7 @@ class ShopStaffDataBuilder
           _$v ??
           _$ShopStaffData._(
             location: _location?.build(),
+            admins: _admins?.build(),
             sellers: _sellers?.build(),
             employees: _employees?.build(),
           );
@@ -119,6 +132,8 @@ class ShopStaffDataBuilder
       try {
         _$failedField = 'location';
         _location?.build();
+        _$failedField = 'admins';
+        _admins?.build();
         _$failedField = 'sellers';
         _sellers?.build();
         _$failedField = 'employees';

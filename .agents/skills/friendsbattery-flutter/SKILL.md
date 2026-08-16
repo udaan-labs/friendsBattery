@@ -70,6 +70,16 @@ frontend/lib/
 - Shared inventory/product/staff flows live under `features/shared/`.
 - No empty folders “for later.”
 
+### Hard rule — small feature widgets (no god screens)
+
+A screen is a **shell**. Never dump a whole feature into one screen file.
+
+- Split each feature UI into small widgets under that feature’s `widgets/`.
+- One widget = one job (form, list, picker, card, empty state).
+- Screen `build`: compose those widgets + `ref.watch` + loading/error. No 400-line `build()`.
+- Stay in the feature folder. Move to `features/shared` or `lib/shared/widgets` only on a **second** real use.
+- Do not extract one-line pass-through wrappers.
+
 ---
 
 ## Add or change a feature (order)
@@ -79,7 +89,7 @@ frontend/lib/
 1. Find the right `*Api` in `friends_battery_api` (e.g. `ShopsApi`, `SalesApi`).
 2. Implement/update **feature repository** — call generated methods only.
 3. Add/update **Riverpod** providers (`Provider`, `FutureProvider`, `Notifier` as fits existing feature).
-4. Wire **screen** with `ConsumerWidget` + loading / error / empty.
+4. Wire **screen** as a shell: `ConsumerWidget` + loading / error / empty, composing feature `widgets/`.
 5. Route via **go_router** if new destination.
 6. Use `AppTheme` + existing shared widgets when possible.
 
@@ -248,6 +258,7 @@ Source: `frontend/lib/theme/app_theme.dart` and `docs/frontend-guidelines.md`.
 - [ ] Stock-count UI that ignores serial units  
 - [ ] Scaffolding unused providers/screens “for later”  
 - [ ] Ignoring `AppTheme` with one-off palettes  
+- [ ] Entire feature UI dumped in one screen file (god screen)  
 
 ---
 

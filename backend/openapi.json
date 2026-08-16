@@ -1530,6 +1530,7 @@
           "role": {
             "type": "string",
             "enum": [
+              "ADMIN",
               "SELLER",
               "EMPLOYEE"
             ]
@@ -1580,6 +1581,12 @@
               "is_active": {
                 "type": "boolean"
               }
+            }
+          },
+          "admins": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShopStaffMember"
             }
           },
           "sellers": {
@@ -3594,8 +3601,8 @@
     },
     "/api/shops/locations/{locationId}/staff": {
       "get": {
-        "summary": "Sellers and employees assigned to this location",
-        "description": "Admin only. Returns SELLER and EMPLOYEE users with users.location_id\nequal to this shop/warehouse.\n",
+        "summary": "Admin, sellers and employees assigned to this location",
+        "description": "Admin only. Returns ADMIN, SELLER and EMPLOYEE users with users.location_id\nequal to this shop/warehouse.\n",
         "tags": [
           "Shops"
         ],
@@ -5813,6 +5820,8 @@
                   },
                   "user_number": {
                     "type": "string",
+                    "pattern": "^\\\\d{10}$",
+                    "description": "Exactly 10 digits",
                     "example": "9876543210"
                   },
                   "shop_name": {
@@ -5890,6 +5899,8 @@
                   },
                   "user_number": {
                     "type": "string",
+                    "pattern": "^\\\\d{10}$",
+                    "description": "Exactly 10 digits",
                     "example": "9876543211"
                   },
                   "shop_name": {

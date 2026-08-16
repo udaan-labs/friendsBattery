@@ -20,7 +20,17 @@ Route → authenticate → requireRole → Zod validate → Controller → Servi
 | **Repository** | Prisma only | Permissions, pricing rules |
 | **Middleware** | JWT auth, RBAC, Zod | Domain writes |
 
-**Never:** Prisma in controllers · Express objects in services · skip auth/RBAC/Zod on protected routes.
+**Never:** Prisma in controllers · Express objects in services · skip auth/RBAC/Zod on protected routes · trust frontend payload for identity/permission.
+
+### Hard rule — never trust the frontend (no IDOR)
+
+Every API: `authenticate` + `requireRole` + Zod (`*.validation.js`) + object access.
+
+- Identity, role, owner, seller, location come from `req.user` only. Never from body / query / path / headers.
+- Client ids name the *record*, never the *permission*.
+- By-id: load row → missing 404 → `assertAccess` → out of scope 403. Default deny.
+- Lists: SQL `WHERE` scoped to the actor. Never fetch-all-then-filter in JS.
+- No protected route without a Zod schema. Frontend validation is not security.
 
 ---
 
@@ -61,7 +71,7 @@ Doc: repo root `docs/architecture.md`. One domain = one module folder. Reuse exi
    - Admin **employee view**: `GET /api/shops/employees/:id` — profile + **only** CHECK_IN / CHECK_OUT actions (no sales/inventory).
    - **Create employee**: `POST /api/shops/employees` (admin or seller). Seller always uses own `location_id` (body `location_id` ignored). Admin must pass `location_id` (WAREHOUSE or SHOP). New employees are **active + verified**. Supporting: `GET /api/shops/employee-roles`, `GET /api/shops/locations` (admin), `GET /api/shops/my-staff` (seller).
    - **One of each role per location:** a SHOP (or WAREHOUSE) may have at most one `ADMIN`, one `SELLER` (shops only), and one `EMPLOYEE`. Create returns 409 if that role is already assigned.
-   - **Locations (shop / warehouse)**: `GET /api/shops/locations?type=SHOP|WAREHOUSE` (admin list), `POST /api/shops/locations` (admin create; optional `latitude`/`longitude`/`allowed_radius` for attendance geofence). **SHOP** requires `warehouse_id` of an active warehouse; **WAREHOUSE** has no parent. `GET /api/shops/locations/:locationId/staff` (admin — sellers + employees at that location). Sellers are assigned to **SHOP** via optional `location_id` on `POST /api/auth/register`.
+   - **Locations (shop / warehouse)**: `GET /api/shops/locations?type=SHOP|WAREHOUSE` (admin list), `POST /api/shops/locations` (admin create; optional `latitude`/`longitude`/`allowed_radius` for attendance geofence). **SHOP** requires `warehouse_id` of an active warehouse; **WAREHOUSE** has no parent. `GET /api/shops/locations/:locationId/staff` (admin — admin + sellers + employees at that location). Sellers are assigned to **SHOP** via optional `location_id` on `POST /api/auth/register`.
    Auth from `req.user` (middleware). **Never** trust client-supplied seller/owner IDs for authorization.
 
 4. **IDOR** — `shared/utils/access.util.js` (`assertAccess`). Role ≠ row access. Load by id, then assert. Default deny. Lists filter in SQL.
@@ -109,7 +119,8 @@ New endpoint checklist: auth + role + **assertAccess (or scoped WHERE)** before 
 
 ## Validation & responses
 
-- Zod schemas in `*.validation.js`; run **before** controller
+- Zod schemas in `*.validation.js` on **every** protected route; run **before** controller
+- Frontend checks are UX only. Backend Zod + `req.user` + `assertAccess` are the real gate.
 - Success: `{ success: true, message, data }`
 - Error: `{ success: false, message, error_code? }`
 - Helpers: `shared/utils/response` (`successResponse` / `errorResponse`)

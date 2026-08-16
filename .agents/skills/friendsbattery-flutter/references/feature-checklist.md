@@ -10,8 +10,8 @@
 
 - [ ] `repository/` — generated `*Api` only; return OpenAPI types
 - [ ] `providers/` — `Provider` for repo; `FutureProvider` / notifier for data/actions
-- [ ] `screens/` — `ConsumerWidget` + loading/error/empty
-- [ ] `widgets/` — only if reused or screen would be huge
+- [ ] `screens/` — thin shell: `ConsumerWidget` + compose feature widgets + loading/error/empty
+- [ ] `widgets/` — split feature UI here (one widget = one job). No god screens.
 - [ ] `models/` — only thin UI projection if OpenAPI type is awkward
 - [ ] `go_router` entry if new route; role-correct placement
 - [ ] Theme via `AppTheme`; shared widgets if already exist

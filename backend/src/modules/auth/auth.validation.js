@@ -41,7 +41,7 @@ const validateRegister = (req, res, next) => {
     return errorResponse(
       res,
       400,
-      msg && msg.includes('10 digits')
+      msg && msg.includes('digits')
         ? msg
         : 'user_id, username, user_number, shop_name and password are required',
     );

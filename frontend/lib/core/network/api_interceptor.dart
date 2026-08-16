@@ -7,11 +7,10 @@ import 'package:top_snackbar_flutter/top_snack_bar.dart';
 import '../navigation/root_navigator_key.dart';
 
 class ApiInterceptor extends Interceptor {
-  /// Login/register: no force-logout on 401 (bad credentials).
+  /// Login / OTP: no force-logout on 401 (bad credentials).
+  /// Register and register-admin require auth-id + auth-key — do not skip tokens.
   static bool _isPublicAuthPath(String path) {
-    return path.contains('/auth/login') ||
-        path.contains('/auth/verify-otp') ||
-        path.contains('/auth/register');
+    return path.contains('/auth/login') || path.contains('/auth/verify-otp');
   }
 
   /// Public endpoints that must not wait on FlutterSecureStorage.

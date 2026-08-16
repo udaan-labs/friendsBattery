@@ -21,6 +21,7 @@ Inventory and stock management for batteries: admin (wholesaler) and seller role
 4. Before planning, coding, or reviewing → load & follow skills in `.agents/skills/` (`karpathy-guidelines`, `ponytail`, `friendsbattery-flutter`, `todo`).
 5. If code and a doc disagree on **layers or OpenAPI/Dio**, fix code to match the doc (or update the doc only when introducing a real new pattern).
 6. Prefer linking/citing these paths in plans; do not restate full copies of them in every reply.
+7. **Never trust the frontend.** Every API: auth + role + Zod + IDOR (`assertAccess` or scoped `WHERE`). Identity/owner/seller/location from `req.user` only. No IDOR.
 
 ## Active Skills (.agents/skills/)
 
@@ -75,6 +76,7 @@ One feature at a time: smallest slice → test fully → refactor if needed → 
 - Feature-first folders; small files; single responsibility; clear names  
 - Backend: existing controller → service → repository → Prisma (no new layers)  
 - Repository only where DB access exists; service for business logic  
+- Flutter: screens compose small feature widgets under `widgets/`; no god screens  
 - Flutter: only screens / providers / models / widgets that are used today  
 - No folders/classes “for later”
 
@@ -189,8 +191,9 @@ FriendsBattery/
    Middleware: `requireRole` / `requireSuperAdmin` / `requireAdmin` / `requireSuperAdminOrAdmin` / …  
    Never trust client-supplied seller/owner IDs for authorization; use `req.user` from auth middleware.
 
-4. **IDOR (object access)**  
-   Role middleware only gates who may hit the route — not another user’s row.  
+4. **IDOR (object access) — hard rule, never skip**  
+   **Never trust the frontend payload for identity or permission.** Role middleware only gates who may hit the URL — not another user’s row.  
+   - Every protected API: `authenticate` + `requireRole` + Zod (`*.validation.js`) + object access.  
    - Authorize only from `req.user`. Never from body / query / path / headers for `user_id`, `seller_id`, `owner_id`, `location_id`.  
    - Every by-id read/update/delete: load the row → `assertAccess` (`backend/src/shared/utils/access.util.js`). Missing → 404. Out of scope → 403. Default deny.  
    - SUPER_ADMIN: org. ADMIN: own shop only. SELLER: own `ownerId` / `sellerId` / self. EMPLOYEE: self or same `location_id`.  
@@ -212,6 +215,7 @@ FriendsBattery/
 - Mount routes in `backend/src/app.js` under `/api/...`.
 - Use shared helpers: `successResponse` / `errorResponse` from `shared/utils/response`.
 - Auth: `authenticate` + `requireAdmin` / `requireSeller` / `requireAdminOrSeller` from shared middleware.
+- **Hard rule — never trust the frontend (no IDOR):** every API validates with Zod. Identity, role, owner, seller, location come from `req.user` only — never from body / query / path / headers. Client ids name the record, not the permission. By-id: load → 404 if missing → `assertAccess` → 403 if out of scope. Lists: SQL `WHERE` scoped to the actor. No protected route without `*.validation.js`.
 - Response shape:
   - Success: `{ success: true, message, data }`
   - Error: `{ success: false, message, error_code? }`
@@ -237,6 +241,7 @@ npm run swagger:export   # writes openapi.json
 - State: **flutter_riverpod only** (no flutter_hooks).
 - Screens: `ConsumerWidget` / `ConsumerStatefulWidget` + `ref.watch`.
 - Feature structure: `screens/`, `providers/`, `repository/` (or `repositories/`), `widgets/`, `models/` as needed.
+- **Hard rule — small feature widgets:** a screen is a shell. Split each feature UI into small widgets under that feature’s `widgets/` (one widget = one job: form, list, picker, card, empty). Screen `build` only composes + `ref.watch` + loading/error. Stay feature-local; move to `shared/` only on a second real use. No one-line pass-through wrappers. No entire feature in one screen file.
 - Network path: **UI → Provider → Feature Repository → generated OpenAPI client → Dio transport**.  
   Do not call Dio/raw HTTP from UI or providers when a generated method exists.
 - **API data models:** OpenAPI types from `friends_battery_api` (or thin UI models mapped from them). Not Dio maps / hand-rolled API `fromJson`.
@@ -277,10 +282,12 @@ Env files via `--dart-define=ENV_FILE=.env.local` (or `.env.production`). Fronte
 
 - Do not put Prisma in controllers or Express objects in services.
 - Do not skip auth/RBAC/Zod on protected routes.
+- Do not trust frontend payload for `user_id` / `seller_id` / `owner_id` / `location_id` or any permission. No IDOR.
 - Do not mutate `inventory_transactions` history.
 - Do not edit generated OpenAPI Dart under `frontend/lib/api/`.
 - Do not commit secrets (`.env`, tokens, service keys).
 - Do not expand scope beyond the task (no drive-by refactors).
+- Do not put an entire Flutter feature UI in one screen file.
 
 ## When implementing features
 

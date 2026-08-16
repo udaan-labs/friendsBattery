@@ -13,7 +13,7 @@ part 'api_auth_register_post_request.g.dart';
 /// Properties:
 /// * [userId] 
 /// * [username] 
-/// * [userNumber] 
+/// * [userNumber] - Exactly 10 digits
 /// * [shopName] 
 /// * [password] 
 /// * [locationId] - Optional SHOP location id (assign seller to a shop)
@@ -25,6 +25,7 @@ abstract class ApiAuthRegisterPostRequest implements Built<ApiAuthRegisterPostRe
   @BuiltValueField(wireName: r'username')
   String get username;
 
+  /// Exactly 10 digits
   @BuiltValueField(wireName: r'user_number')
   String get userNumber;
 

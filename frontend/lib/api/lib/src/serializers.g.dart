@@ -401,6 +401,10 @@ Serializers _$serializers =
             () => ListBuilder<ShopStaffMember>(),
           )
           ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(ShopStaffMember)]),
+            () => ListBuilder<ShopStaffMember>(),
+          )
+          ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),
             () => ListBuilder<String>(),
           )

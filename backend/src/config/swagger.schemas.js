@@ -771,7 +771,7 @@ module.exports = {
       user_name: { type: 'string' },
       user_number: { type: 'string', nullable: true },
       shop_name: { type: 'string', nullable: true },
-      role: { type: 'string', enum: ['SELLER', 'EMPLOYEE'] },
+      role: { type: 'string', enum: ['ADMIN', 'SELLER', 'EMPLOYEE'] },
       is_active: { type: 'boolean' },
       is_verified: { type: 'boolean' },
       employee_role: {
@@ -798,6 +798,10 @@ module.exports = {
           type: { type: 'string' },
           is_active: { type: 'boolean' },
         },
+      },
+      admins: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/ShopStaffMember' },
       },
       sellers: {
         type: 'array',

@@ -25,7 +25,7 @@ lib/
 | Routing | go_router only |
 | Network | UI → provider → **repository** → generated `*Api` → Dio (`core/network`) |
 | Models | OpenAPI types for API data; thin UI models OK if mapped from OpenAPI |
-| Widgets | Small, shared when reused twice; no giant generated screens |
+| Widgets | **Hard rule:** small feature widgets. Screen = shell. No god screens |
 
 ---
 
@@ -77,6 +77,16 @@ Source of truth for colors/shapes is **`AppTheme`**, not a parallel design essay
 Prefer `AppTheme.themeData` / `AppTheme.*` colors over hard-coded one-offs.
 
 ---
+
+## Hard rule — small feature widgets (no god screens)
+
+A screen is a **shell**. Never dump a whole feature into one screen file.
+
+- Split each feature UI into small widgets under `features/<area>/<feature>/widgets/`.
+- One widget = one job (form, list, picker, card, empty state).
+- Screen `build`: compose those widgets + `ref.watch` + loading/error. No 400-line `build()`.
+- Stay in the feature folder. Move to `features/shared` or `lib/shared/widgets` only on a **second** real use.
+- Do not extract one-line pass-through wrappers.
 
 ## UI habits
 

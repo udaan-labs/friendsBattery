@@ -10,6 +10,8 @@ import '../providers/auth_controller.dart';
 import '../../../core/state/data_sync.dart';
 import '../../../shared/widgets/snackbar_helper.dart';
 import '../../admin/locations/providers/locations_providers.dart';
+import '../../shared/staff/providers/staff_providers.dart';
+import '../widgets/admin_location_picker.dart';
 
 /// Admin Add Seller (`isAdminFlow: true`) or Super Admin Add Admin (`isCreateAdmin: true`).
 /// Shop list: GET /api/shops/locations?type=SHOP
@@ -41,6 +43,25 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   int? _selectedShopLocationId;
   String? _mobileError;
 
+  static String _titleName(String value) {
+    return value
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((w) => w.isNotEmpty)
+        .map((w) => '${w[0].toUpperCase()}${w.substring(1).toLowerCase()}')
+        .join(' ');
+  }
+
+  static String? _mobileLengthError(String value) {
+    if (value.length < 10) {
+      return 'Mobile number cannot be less than 10 digits';
+    }
+    if (value.length > 10) {
+      return 'Mobile number cannot be more than 10 digits';
+    }
+    return null;
+  }
+
   @override
   void dispose() {
     _userIdController.dispose();
@@ -54,11 +75,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   Future<void> _register() async {
     final number = _userNumberController.text.trim();
-    if (!RegExp(r'^\d{10}$').hasMatch(number)) {
-      setState(() {
-        _mobileError = 'Mobile number must be exactly 10 digits';
-      });
-      context.showErrorSnackBar('Mobile number must be exactly 10 digits');
+    final mobileError = _mobileLengthError(number);
+    if (mobileError != null) {
+      setState(() => _mobileError = mobileError);
+      context.showErrorSnackBar(mobileError);
       return;
     }
 
@@ -82,12 +102,37 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
 
+    if (widget.isCreateAdmin) {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Add this admin?'),
+          content: Text(
+            'Create admin ${_userIdController.text.trim()} at ${_shopNameController.text.trim()}?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Add Admin'),
+            ),
+          ],
+        ),
+      );
+      if (ok != true || !mounted) return;
+    }
+
     try {
+      final username = _titleName(_usernameController.text);
+      _usernameController.text = username;
       final notifier = ref.read(authControllerProvider.notifier);
       if (widget.isCreateAdmin) {
         await notifier.registerAdmin(
           userId: _userIdController.text.trim(),
-          username: _usernameController.text.trim(),
+          username: username,
           userNumber: number,
           shopName: _shopNameController.text.trim(),
           password: _passwordController.text,
@@ -96,7 +141,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       } else {
         await notifier.register(
           userId: _userIdController.text.trim(),
-          username: _usernameController.text.trim(),
+          username: username,
           userNumber: number,
           shopName: _shopNameController.text.trim(),
           password: _passwordController.text,
@@ -114,6 +159,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         );
         if (widget.isAdminFlow) {
           DataSync.afterSellerMutation(ref);
+        }
+        if (widget.isCreateAdmin && _selectedShopLocationId != null) {
+          ref.invalidate(locationStaffProvider(_selectedShopLocationId!));
         }
         context.pop();
       }
@@ -150,214 +198,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
     ref.invalidate(locationsByTypeProvider('SHOP'));
     ref.invalidate(allLocationsProvider);
-  }
-
-  String _locationLabel(LocationItem s) {
-    final name = s.name ?? s.code ?? 'Location';
-    if (s.code != null && s.code!.isNotEmpty && s.name != null) {
-      return '$name · ${s.code}';
-    }
-    return name;
-  }
-
-  Widget _adminLocationField(bool formLoading, List<LocationItem> locations) {
-    LocationItem? selected;
-    for (final s in locations) {
-      if (s.id == _selectedShopLocationId) {
-        selected = s;
-        break;
-      }
-    }
-    final isWh = selected?.type == LocationItemTypeEnum.WAREHOUSE;
-    final label = selected == null
-        ? 'Tap to choose shop or warehouse'
-        : '${isWh ? 'Warehouse' : 'Shop'} · ${_locationLabel(selected)}';
-
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(8),
-      child: InkWell(
-        onTap: formLoading ? null : () => _openAdminLocationPicker(locations),
-        borderRadius: BorderRadius.circular(8),
-        child: InputDecorator(
-          decoration: const InputDecoration(
-            labelText: 'Location *',
-            filled: true,
-            fillColor: Colors.white,
-            prefixIcon: Icon(Icons.place),
-            suffixIcon: Icon(Icons.unfold_more),
-          ),
-          child: Text(
-            label,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: selected == null
-                  ? AppTheme.textSecondary
-                  : AppTheme.textPrimary,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _openAdminLocationPicker(List<LocationItem> locations) async {
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      builder: (ctx) {
-        var query = '';
-        return StatefulBuilder(
-          builder: (ctx, setSheet) {
-            final q = query.trim().toLowerCase();
-            bool matches(LocationItem s) {
-              if (q.isEmpty) return true;
-              final name = (s.name ?? '').toLowerCase();
-              final code = (s.code ?? '').toLowerCase();
-              return name.contains(q) || code.contains(q);
-            }
-
-            final shops = [
-              for (final s in locations)
-                if (s.type != LocationItemTypeEnum.WAREHOUSE && matches(s)) s,
-            ];
-            final warehouses = [
-              for (final s in locations)
-                if (s.type == LocationItemTypeEnum.WAREHOUSE && matches(s)) s,
-            ];
-
-            return Padding(
-              padding: EdgeInsets.only(
-                left: 16,
-                right: 16,
-                bottom: MediaQuery.viewInsetsOf(ctx).bottom + 16,
-              ),
-              child: SizedBox(
-                height: MediaQuery.sizeOf(ctx).height * 0.7,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text(
-                      'Choose location',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Shops and warehouses are listed separately.',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: AppTheme.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      autofocus: false,
-                      decoration: const InputDecoration(
-                        hintText: 'Search name or code',
-                        prefixIcon: Icon(Icons.search),
-                        filled: true,
-                      ),
-                      onChanged: (v) => setSheet(() => query = v),
-                    ),
-                    const SizedBox(height: 8),
-                    Expanded(
-                      child: ListView(
-                        children: [
-                          _locationSectionHeader(
-                            Icons.storefront,
-                            'Shops',
-                            shops.length,
-                          ),
-                          if (shops.isEmpty)
-                            const _EmptyLocationHint('No shops')
-                          else
-                            for (final s in shops) _locationTile(s, ctx),
-                          const SizedBox(height: 8),
-                          _locationSectionHeader(
-                            Icons.warehouse_outlined,
-                            'Warehouses',
-                            warehouses.length,
-                          ),
-                          if (warehouses.isEmpty)
-                            const _EmptyLocationHint('No warehouses')
-                          else
-                            for (final s in warehouses) _locationTile(s, ctx),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _locationSectionHeader(IconData icon, String title, int count) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 8, 0, 4),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: AppTheme.primary),
-          const SizedBox(width: 8),
-          Text(
-            title,
-            style: const TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 14,
-              color: AppTheme.primary,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            '$count',
-            style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _locationTile(LocationItem s, BuildContext sheetContext) {
-    final id = s.id;
-    if (id == null) return const SizedBox.shrink();
-    final selected = id == _selectedShopLocationId;
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-      leading: Icon(
-        s.type == LocationItemTypeEnum.WAREHOUSE
-            ? Icons.warehouse_outlined
-            : Icons.storefront,
-        color: selected ? AppTheme.primary : AppTheme.textSecondary,
-      ),
-      title: Text(
-        s.name ?? s.code ?? 'Location',
-        style: TextStyle(
-          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-          color: AppTheme.textPrimary,
-        ),
-      ),
-      subtitle: s.code != null && s.code!.isNotEmpty
-          ? Text(s.code!, style: const TextStyle(color: AppTheme.textSecondary))
-          : null,
-      trailing: selected
-          ? const Icon(Icons.check_circle, color: AppTheme.primary)
-          : null,
-      selected: selected,
-      selectedTileColor: const Color(0xFFE8F5E9),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      onTap: () {
-        _selectShop(id, [s]);
-        Navigator.pop(sheetContext);
-      },
-    );
   }
 
   /// Shop picker for seller; shop + warehouse picker for create-admin.
@@ -435,7 +275,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               }
 
               if (widget.isCreateAdmin) {
-                return _adminLocationField(formLoading, shops);
+                return AdminLocationField(
+                  formLoading: formLoading,
+                  locations: shops,
+                  selectedId: _selectedShopLocationId,
+                  onOpen: () => showAdminLocationPicker(
+                    context: context,
+                    locations: shops,
+                    selectedId: _selectedShopLocationId,
+                    onSelected: (s) {
+                      final id = s.id;
+                      if (id != null) _selectShop(id, [s]);
+                    },
+                  ),
+                );
               }
 
               final ids = [
@@ -617,23 +470,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         errorText: _mobileError,
                       ),
                       onChanged: (v) {
-                        setState(() {
-                          _mobileError = v.length > 10
-                              ? 'Mobile number must be exactly 10 digits'
-                              : null;
-                        });
+                        setState(() => _mobileError = _mobileLengthError(v));
                       },
                     ),
                     const SizedBox(height: 16),
                     TextField(
                       controller: _shopNameController,
-                      enabled: !isLoading,
+                      enabled: !isLoading && !widget.isCreateAdmin,
                       decoration: InputDecoration(
                         labelText: widget.isCreateAdmin
                             ? 'Location name'
                             : 'Shop Name',
                         helperText: widget.isCreateAdmin
-                            ? 'Filled when you pick a location; editable'
+                            ? 'Change location with the picker above'
                             : 'Filled when you pick a shop; editable',
                       ),
                     ),
@@ -711,22 +560,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _EmptyLocationHint extends StatelessWidget {
-  const _EmptyLocationHint(this.text);
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
       ),
     );
   }

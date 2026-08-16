@@ -57,6 +57,7 @@ class ShopsService {
 
     return {
       location: this._mapLocationBrief(location),
+      admins: users.filter((u) => u.role === 'ADMIN').map((u) => this._mapStaffUser(u)),
       sellers: users.filter((u) => u.role === 'SELLER').map((u) => this._mapStaffUser(u)),
       employees: users.filter((u) => u.role === 'EMPLOYEE').map((u) => this._mapStaffUser(u)),
     };

@@ -68,10 +68,11 @@ class _StaffBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final location = data.location;
+    final admins = data.admins?.toList() ?? [];
     final sellers = data.sellers?.toList() ?? [];
     final employees = data.employees?.toList() ?? [];
     final noLocation = location == null;
-    final empty = sellers.isEmpty && employees.isEmpty;
+    final empty = admins.isEmpty && sellers.isEmpty && employees.isEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,9 +115,18 @@ class _StaffBody extends StatelessWidget {
           _EmptyCard(
             icon: Icons.groups_outlined,
             title: 'No team at this shop',
-            subtitle: 'No sellers or employees yet. Add an employee to this location.',
+            subtitle: 'No admin, sellers, or employees yet.',
           )
         else ...[
+          StaffMemberGroup(
+            title: 'Admins',
+            icon: Icons.admin_panel_settings_outlined,
+            color: const Color(0xFF7C3AED),
+            members: admins,
+            emptyLabel: 'No admin at this shop',
+            showRoleChip: true,
+          ),
+          const SizedBox(height: 12),
           StaffMemberGroup(
             title: 'Sellers',
             icon: Icons.storefront_rounded,

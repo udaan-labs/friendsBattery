@@ -119,7 +119,7 @@ Class | Method | HTTP request | Description
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsEmployeesEmployeeIdGet**](doc/ShopsApi.md#apishopsemployeesemployeeidget) | **GET** /api/shops/employees/{employeeId} | Admin view one employee (profile + check-in/check-out only)
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsEmployeesPost**](doc/ShopsApi.md#apishopsemployeespost) | **POST** /api/shops/employees | Create an employee at a shop or warehouse
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsLocationsGet**](doc/ShopsApi.md#apishopslocationsget) | **GET** /api/shops/locations | List active locations (warehouse + shops)
-[*ShopsApi*](doc/ShopsApi.md) | [**apiShopsLocationsLocationIdStaffGet**](doc/ShopsApi.md#apishopslocationslocationidstaffget) | **GET** /api/shops/locations/{locationId}/staff | Sellers and employees assigned to this location
+[*ShopsApi*](doc/ShopsApi.md) | [**apiShopsLocationsLocationIdStaffGet**](doc/ShopsApi.md#apishopslocationslocationidstaffget) | **GET** /api/shops/locations/{locationId}/staff | Admin, sellers and employees assigned to this location
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsLocationsPost**](doc/ShopsApi.md#apishopslocationspost) | **POST** /api/shops/locations | Create a shop or warehouse location
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsMyStaffGet**](doc/ShopsApi.md#apishopsmystaffget) | **GET** /api/shops/my-staff | Seller — staff at own shop location
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsSellersGet**](doc/ShopsApi.md#apishopssellersget) | **GET** /api/shops/sellers | Return all sellers

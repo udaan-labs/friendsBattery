@@ -6,6 +6,8 @@ part of 'shop_staff_member.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const ShopStaffMemberRoleEnum _$shopStaffMemberRoleEnum_ADMIN =
+    const ShopStaffMemberRoleEnum._('ADMIN');
 const ShopStaffMemberRoleEnum _$shopStaffMemberRoleEnum_SELLER =
     const ShopStaffMemberRoleEnum._('SELLER');
 const ShopStaffMemberRoleEnum _$shopStaffMemberRoleEnum_EMPLOYEE =
@@ -13,6 +15,8 @@ const ShopStaffMemberRoleEnum _$shopStaffMemberRoleEnum_EMPLOYEE =
 
 ShopStaffMemberRoleEnum _$shopStaffMemberRoleEnumValueOf(String name) {
   switch (name) {
+    case 'ADMIN':
+      return _$shopStaffMemberRoleEnum_ADMIN;
     case 'SELLER':
       return _$shopStaffMemberRoleEnum_SELLER;
     case 'EMPLOYEE':
@@ -24,6 +28,7 @@ ShopStaffMemberRoleEnum _$shopStaffMemberRoleEnumValueOf(String name) {
 
 final BuiltSet<ShopStaffMemberRoleEnum> _$shopStaffMemberRoleEnumValues =
     BuiltSet<ShopStaffMemberRoleEnum>(const <ShopStaffMemberRoleEnum>[
+      _$shopStaffMemberRoleEnum_ADMIN,
       _$shopStaffMemberRoleEnum_SELLER,
       _$shopStaffMemberRoleEnum_EMPLOYEE,
     ]);
@@ -34,10 +39,12 @@ Serializer<ShopStaffMemberRoleEnum> _$shopStaffMemberRoleEnumSerializer =
 class _$ShopStaffMemberRoleEnumSerializer
     implements PrimitiveSerializer<ShopStaffMemberRoleEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
+    'ADMIN': 'ADMIN',
     'SELLER': 'SELLER',
     'EMPLOYEE': 'EMPLOYEE',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
+    'ADMIN': 'ADMIN',
     'SELLER': 'SELLER',
     'EMPLOYEE': 'EMPLOYEE',
   };

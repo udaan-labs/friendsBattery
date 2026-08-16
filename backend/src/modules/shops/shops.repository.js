@@ -52,14 +52,14 @@ class ShopsRepository {
   }
 
   /**
-   * Sellers + employees assigned to a location (shop).
+   * Admin + sellers + employees assigned to a location.
    * @param {number|bigint} locationId
    */
   async findUsersByLocationId(locationId) {
     return prisma.user.findMany({
       where: {
         locationId: BigInt(locationId),
-        role: { in: ['SELLER', 'EMPLOYEE'] },
+        role: { in: ['ADMIN', 'SELLER', 'EMPLOYEE'] },
       },
       select: {
         id: true,

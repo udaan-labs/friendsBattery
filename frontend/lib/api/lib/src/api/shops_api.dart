@@ -383,8 +383,8 @@ class ShopsApi {
     );
   }
 
-  /// Sellers and employees assigned to this location
-  /// Admin only. Returns SELLER and EMPLOYEE users with users.location_id equal to this shop/warehouse. 
+  /// Admin, sellers and employees assigned to this location
+  /// Admin only. Returns ADMIN, SELLER and EMPLOYEE users with users.location_id equal to this shop/warehouse. 
   ///
   /// Parameters:
   /// * [locationId] 

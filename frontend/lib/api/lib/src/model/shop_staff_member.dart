@@ -41,7 +41,7 @@ abstract class ShopStaffMember implements Built<ShopStaffMember, ShopStaffMember
 
   @BuiltValueField(wireName: r'role')
   ShopStaffMemberRoleEnum? get role;
-  // enum roleEnum {  SELLER,  EMPLOYEE,  };
+  // enum roleEnum {  ADMIN,  SELLER,  EMPLOYEE,  };
 
   @BuiltValueField(wireName: r'is_active')
   bool? get isActive;
@@ -258,6 +258,8 @@ class _$ShopStaffMemberSerializer implements PrimitiveSerializer<ShopStaffMember
 
 class ShopStaffMemberRoleEnum extends EnumClass {
 
+  @BuiltValueEnumConst(wireName: r'ADMIN')
+  static const ShopStaffMemberRoleEnum ADMIN = _$shopStaffMemberRoleEnum_ADMIN;
   @BuiltValueEnumConst(wireName: r'SELLER')
   static const ShopStaffMemberRoleEnum SELLER = _$shopStaffMemberRoleEnum_SELLER;
   @BuiltValueEnumConst(wireName: r'EMPLOYEE')

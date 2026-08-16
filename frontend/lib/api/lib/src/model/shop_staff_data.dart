@@ -15,12 +15,16 @@ part 'shop_staff_data.g.dart';
 ///
 /// Properties:
 /// * [location] 
+/// * [admins] 
 /// * [sellers] 
 /// * [employees] 
 @BuiltValue()
 abstract class ShopStaffData implements Built<ShopStaffData, ShopStaffDataBuilder> {
   @BuiltValueField(wireName: r'location')
   SellerDetailLocation? get location;
+
+  @BuiltValueField(wireName: r'admins')
+  BuiltList<ShopStaffMember>? get admins;
 
   @BuiltValueField(wireName: r'sellers')
   BuiltList<ShopStaffMember>? get sellers;
@@ -56,6 +60,13 @@ class _$ShopStaffDataSerializer implements PrimitiveSerializer<ShopStaffData> {
       yield serializers.serialize(
         object.location,
         specifiedType: const FullType.nullable(SellerDetailLocation),
+      );
+    }
+    if (object.admins != null) {
+      yield r'admins';
+      yield serializers.serialize(
+        object.admins,
+        specifiedType: const FullType(BuiltList, [FullType(ShopStaffMember)]),
       );
     }
     if (object.sellers != null) {
@@ -102,6 +113,13 @@ class _$ShopStaffDataSerializer implements PrimitiveSerializer<ShopStaffData> {
           ) as SellerDetailLocation?;
           if (valueDes == null) continue;
           result.location.replace(valueDes);
+          break;
+        case r'admins':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(ShopStaffMember)]),
+          ) as BuiltList<ShopStaffMember>;
+          result.admins.replace(valueDes);
           break;
         case r'sellers':
           final valueDes = serializers.deserialize(
