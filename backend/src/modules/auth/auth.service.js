@@ -5,17 +5,9 @@ const { JWT_SECRET, JWT_EXPIRES_IN } = require('../../config/env');
 const authRepository = require('./auth.repository');
 const ROLES = require('../../shared/constants/roles');
 const { httpError } = require('../../shared/utils/http-error');
+const { titleName } = require('../../shared/utils/title-name');
 const orgEventsRepository = require('../../shared/org-events.repository');
 const otpService = require('../otp/otp.service');
-
-function titleName(value) {
-  return String(value ?? '')
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((w) => w.charAt(0).toLocaleUpperCase() + w.slice(1).toLocaleLowerCase())
-    .join(' ');
-}
 
 class AuthService {
   /**
@@ -56,10 +48,6 @@ class AuthService {
       locationId = Number(location.id);
       if (!resolvedShopName || !String(resolvedShopName).trim()) {
         resolvedShopName = location.name;
-      }
-      const taken = await authRepository.findUserByLocationAndRole(locationId, ROLES.ADMIN);
-      if (taken) {
-        throw httpError(409, 'This location already has an admin');
       }
     }
 

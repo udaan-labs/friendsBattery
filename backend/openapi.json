@@ -1620,7 +1620,6 @@
       "CreateEmployeeRequest": {
         "type": "object",
         "required": [
-          "user_id",
           "username",
           "user_number",
           "password"
@@ -1628,7 +1627,8 @@
         "properties": {
           "user_id": {
             "type": "string",
-            "example": "EMP002"
+            "example": "EMP002",
+            "description": "Optional login ID. Omit to auto-generate EMP001, EMP002, …"
           },
           "username": {
             "type": "string",
@@ -3757,7 +3757,7 @@
     "/api/shops/employees": {
       "post": {
         "summary": "Create an employee at a shop or warehouse",
-        "description": "**Seller:** employee is always assigned to the seller's `location_id`\n(body `location_id` is ignored). Seller must have a location.\n**Admin:** body `location_id` is required (WAREHOUSE or SHOP).\nNew employees are active and verified (can log in immediately).\n",
+        "description": "**Seller:** employee is always assigned to the seller's `location_id`\n(body `location_id` is ignored). Seller must have a location.\n**Admin:** body `location_id` is required (WAREHOUSE or SHOP).\nNew employees are active and verified (can log in immediately).\n`user_id` is optional — omit to auto-generate EMP001, EMP002, …\n",
         "tags": [
           "Shops"
         ],

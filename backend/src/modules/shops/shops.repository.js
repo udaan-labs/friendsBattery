@@ -114,6 +114,14 @@ class ShopsRepository {
     return rows.map((r) => r.code);
   }
 
+  async findUserIdsByPrefix(prefix) {
+    const rows = await prisma.user.findMany({
+      where: { userId: { startsWith: prefix } },
+      select: { userId: true },
+    });
+    return rows.map((r) => r.userId);
+  }
+
   /**
    * Active locations for admin assignment (warehouse + shops).
    * @param {{ type?: 'SHOP'|'WAREHOUSE' }} [filter]

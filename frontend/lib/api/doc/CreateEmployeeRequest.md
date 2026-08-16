@@ -8,7 +8,7 @@ import 'package:friends_battery_api/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**userId** | **String** |  | 
+**userId** | **String** | Optional login ID. Omit to auto-generate EMP001, EMP002, … | [optional] 
 **username** | **String** |  | 
 **userNumber** | **String** | 10-digit mobile | 
 **password** | **String** |  | 

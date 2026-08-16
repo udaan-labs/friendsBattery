@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/utils/app_formatters.dart';
 import '../../../shared/inventory/providers/inventory_provider.dart';
 import '../../../shared/staff/providers/staff_providers.dart';
@@ -22,6 +24,7 @@ class ShopDetailBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isSuperAdmin = ref.watch(authProvider).role == UserRole.superAdmin;
     final staffAsync = ref.watch(locationStaffProvider(locationId));
 
     return RefreshIndicator(
@@ -69,6 +72,12 @@ class ShopDetailBody extends ConsumerWidget {
                     members: leads,
                     emptyLabel: 'No admin or seller at this shop',
                     showRoleChip: true,
+                    addLabel: 'Add admin',
+                    onAdd: isSuperAdmin
+                        ? () => context.push(
+                              '/admin/add-admin?locationId=$locationId',
+                            )
+                        : null,
                   ),
                   const SizedBox(height: 12),
                   StaffMemberGroup(

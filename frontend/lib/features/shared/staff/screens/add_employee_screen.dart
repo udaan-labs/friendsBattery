@@ -64,7 +64,7 @@ class _AddEmployeeScreenState extends ConsumerState<AddEmployeeScreen> {
     final password = _passwordController.text;
     final confirm = _confirmPasswordController.text;
 
-    if (userId.isEmpty || username.isEmpty || number.isEmpty || password.isEmpty) {
+    if (username.isEmpty || number.isEmpty || password.isEmpty) {
       context.showErrorSnackBar('Fill all required fields');
       return;
     }
@@ -88,7 +88,7 @@ class _AddEmployeeScreenState extends ConsumerState<AddEmployeeScreen> {
     setState(() => _submitting = true);
     try {
       await ref.read(staffRepositoryProvider).createEmployee(
-            userId: userId,
+            userId: userId.isEmpty ? null : userId,
             username: username,
             userNumber: number,
             password: password,
@@ -219,7 +219,7 @@ class _AddEmployeeScreenState extends ConsumerState<AddEmployeeScreen> {
                       enabled: !_submitting,
                       decoration: const InputDecoration(
                         labelText: 'User ID',
-                        hintText: 'e.g. EMP002',
+                        hintText: 'Empty = auto EMP001',
                       ),
                     ),
                     const SizedBox(height: 16),

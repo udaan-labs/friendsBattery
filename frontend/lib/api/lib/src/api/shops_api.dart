@@ -199,7 +199,7 @@ class ShopsApi {
   }
 
   /// Create an employee at a shop or warehouse
-  /// **Seller:** employee is always assigned to the seller&#39;s &#x60;location_id&#x60; (body &#x60;location_id&#x60; is ignored). Seller must have a location. **Admin:** body &#x60;location_id&#x60; is required (WAREHOUSE or SHOP). New employees are active and verified (can log in immediately). 
+  /// **Seller:** employee is always assigned to the seller&#39;s &#x60;location_id&#x60; (body &#x60;location_id&#x60; is ignored). Seller must have a location. **Admin:** body &#x60;location_id&#x60; is required (WAREHOUSE or SHOP). New employees are active and verified (can log in immediately). &#x60;user_id&#x60; is optional — omit to auto-generate EMP001, EMP002, … 
   ///
   /// Parameters:
   /// * [createEmployeeRequest] 

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/utils/app_formatters.dart';
 import '../../../shared/inventory/providers/inventory_provider.dart';
 import '../../../shared/staff/providers/staff_providers.dart';
@@ -24,6 +26,7 @@ class WarehouseDetailBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isSuperAdmin = ref.watch(authProvider).role == UserRole.superAdmin;
     final staffAsync = ref.watch(locationStaffProvider(locationId));
 
     return RefreshIndicator(
@@ -58,13 +61,32 @@ class WarehouseDetailBody extends ConsumerWidget {
                 ),
               ],
             ),
-            data: (data) => StaffMemberGroup(
-              title: 'Admins',
-              icon: Icons.admin_panel_settings_outlined,
-              color: const Color(0xFF7C3AED),
-              members: data.admins?.toList() ?? [],
-              emptyLabel: 'No admin at this warehouse',
-              showRoleChip: true,
+            data: (data) => Column(
+              children: [
+                StaffMemberGroup(
+                  title: 'Admins',
+                  icon: Icons.admin_panel_settings_outlined,
+                  color: const Color(0xFF7C3AED),
+                  members: data.admins?.toList() ?? [],
+                  emptyLabel: 'No admin at this warehouse',
+                  showRoleChip: true,
+                  addLabel: 'Add admin',
+                  onAdd: isSuperAdmin
+                      ? () => context.push(
+                            '/admin/add-admin?locationId=$locationId',
+                          )
+                      : null,
+                ),
+                const SizedBox(height: 12),
+                StaffMemberGroup(
+                  title: 'Employees',
+                  icon: Icons.badge_rounded,
+                  color: const Color(0xFF2563EB),
+                  members: data.employees?.toList() ?? [],
+                  emptyLabel: 'No employees at this warehouse',
+                  showRoleChip: true,
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 16),

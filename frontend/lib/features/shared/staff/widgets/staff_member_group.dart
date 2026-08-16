@@ -11,6 +11,8 @@ class StaffMemberGroup extends StatelessWidget {
     required this.members,
     required this.emptyLabel,
     this.showRoleChip = false,
+    this.onAdd,
+    this.addLabel,
   });
 
   final String title;
@@ -19,6 +21,8 @@ class StaffMemberGroup extends StatelessWidget {
   final List<ShopStaffMember> members;
   final String emptyLabel;
   final bool showRoleChip;
+  final VoidCallback? onAdd;
+  final String? addLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -43,14 +47,26 @@ class StaffMemberGroup extends StatelessWidget {
             children: [
               Icon(icon, size: 20, color: color),
               const SizedBox(width: 8),
-              Text(
-                '$title (${members.length})',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                  color: color,
+              Expanded(
+                child: Text(
+                  '$title (${members.length})',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: color,
+                  ),
                 ),
               ),
+              if (onAdd != null)
+                TextButton.icon(
+                  onPressed: onAdd,
+                  icon: const Icon(Icons.person_add_alt_1, size: 18),
+                  label: Text(addLabel!),
+                  style: TextButton.styleFrom(
+                    foregroundColor: color,
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: 10),

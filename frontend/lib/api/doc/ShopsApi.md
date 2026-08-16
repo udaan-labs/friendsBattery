@@ -109,7 +109,7 @@ Name | Type | Description  | Notes
 
 Create an employee at a shop or warehouse
 
-**Seller:** employee is always assigned to the seller's `location_id` (body `location_id` is ignored). Seller must have a location. **Admin:** body `location_id` is required (WAREHOUSE or SHOP). New employees are active and verified (can log in immediately). 
+**Seller:** employee is always assigned to the seller's `location_id` (body `location_id` is ignored). Seller must have a location. **Admin:** body `location_id` is required (WAREHOUSE or SHOP). New employees are active and verified (can log in immediately). `user_id` is optional — omit to auto-generate EMP001, EMP002, … 
 
 ### Example
 ```dart

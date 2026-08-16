@@ -43,7 +43,7 @@ const viewEmployeeSchema = z.object({
 // Schema for POST /shops/employees
 const createEmployeeSchema = z.object({
   body: z.object({
-    user_id: z.string().min(1).max(50),
+    user_id: z.string().max(50).optional(),
     username: z.string().min(1).max(100),
     user_number: z.string().regex(/^\d{10}$/, 'Mobile number must be exactly 10 digits'),
     password: z.string().min(6).max(100),

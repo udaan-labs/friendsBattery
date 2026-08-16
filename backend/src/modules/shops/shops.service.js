@@ -3,6 +3,7 @@ const shopsRepository = require('./shops.repository');
 const authRepository = require('../auth/auth.repository');
 const ROLES = require('../../shared/constants/roles');
 const { httpError } = require('../../shared/utils/http-error');
+const { titleName } = require('../../shared/utils/title-name');
 const { assertAccess } = require('../../shared/utils/access.util');
 const orgEventsRepository = require('../../shared/org-events.repository');
 const {
@@ -424,6 +425,16 @@ class ShopsService {
     return this._mapLocationItem(updated);
   }
 
+  async nextEmployeeUserId() {
+    const ids = await shopsRepository.findUserIdsByPrefix('EMP');
+    let max = 0;
+    for (const id of ids) {
+      const m = String(id).match(/^EMP(\d+)$/i);
+      if (m) max = Math.max(max, parseInt(m[1], 10));
+    }
+    return `EMP${String(max + 1).padStart(3, '0')}`;
+  }
+
   /**
    * Create EMPLOYEE at a location.
    * - SELLER: always own location_id (client location_id ignored); parent → Admin (seller.parentId) or seller
@@ -434,13 +445,16 @@ class ShopsService {
    */
   async createEmployee(actor, body) {
     const {
-      user_id,
-      username,
       user_number,
       password,
       employee_role_id,
       location_id,
     } = body;
+    const username = titleName(body.username);
+    if (!username) {
+      throw httpError(400, 'Username is required');
+    }
+    const user_id = body.user_id?.trim() || (await this.nextEmployeeUserId());
 
     let locationId;
     let shopName;

@@ -58,7 +58,7 @@ class StaffRepository {
   }
 
   Future<void> createEmployee({
-    required String userId,
+    String? userId,
     required String username,
     required String userNumber,
     required String password,
@@ -67,7 +67,7 @@ class StaffRepository {
   }) async {
     try {
       final body = CreateEmployeeRequest((b) {
-        b.userId = userId;
+        if (userId != null && userId.isNotEmpty) b.userId = userId;
         b.username = username;
         b.userNumber = userNumber;
         b.password = password;

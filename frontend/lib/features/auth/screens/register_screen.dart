@@ -20,11 +20,13 @@ class RegisterScreen extends ConsumerStatefulWidget {
   final bool isAdminFlow;
   /// Super Admin creates shop Admin (mutually exclusive with seller flow).
   final bool isCreateAdmin;
+  final int? initialLocationId;
 
   const RegisterScreen({
     super.key,
     this.isAdminFlow = false,
     this.isCreateAdmin = false,
+    this.initialLocationId,
   });
 
   @override
@@ -40,7 +42,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
-  int? _selectedShopLocationId;
+  late int? _selectedShopLocationId = widget.initialLocationId;
   String? _mobileError;
 
   static String _titleName(String value) {
@@ -97,10 +99,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
 
-    if (needsShop && _shopNameController.text.trim().isEmpty) {
-      context.showErrorSnackBar('Shop name is required');
-      return;
-    }
+    final shopName = _shopNameController.text.trim();
 
     if (widget.isCreateAdmin) {
       final ok = await showDialog<bool>(
@@ -108,7 +107,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         builder: (ctx) => AlertDialog(
           title: const Text('Add this admin?'),
           content: Text(
-            'Create admin ${_userIdController.text.trim()} at ${_shopNameController.text.trim()}?',
+            'Create admin ${_userIdController.text.trim()} at ${shopName.isEmpty ? 'this location' : shopName}?',
           ),
           actions: [
             TextButton(
@@ -134,7 +133,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           userId: _userIdController.text.trim(),
           username: username,
           userNumber: number,
-          shopName: _shopNameController.text.trim(),
+          shopName: shopName,
           password: _passwordController.text,
           locationId: _selectedShopLocationId,
         );
@@ -143,7 +142,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           userId: _userIdController.text.trim(),
           username: username,
           userNumber: number,
-          shopName: _shopNameController.text.trim(),
+          shopName: shopName,
           password: _passwordController.text,
           locationId: widget.isAdminFlow ? _selectedShopLocationId : null,
         );
@@ -208,9 +207,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final shopTitle = widget.isCreateAdmin
         ? 'Select shop or warehouse'
         : 'Select shop for this seller';
-    final shopHint = widget.isCreateAdmin
-        ? 'Required. One admin per location.'
-        : 'Required. One seller per shop.';
 
     return Container(
       width: double.infinity,
@@ -239,11 +235,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            shopHint,
-            style: const TextStyle(fontSize: 12, color: Color(0xFF545F73)),
-          ),
+          if (!widget.isCreateAdmin) ...[
+            const SizedBox(height: 4),
+            const Text(
+              'Required. One seller per shop.',
+              style: TextStyle(fontSize: 12, color: Color(0xFF545F73)),
+            ),
+          ],
           const SizedBox(height: 12),
           shopsAsync.when(
             data: (shops) {

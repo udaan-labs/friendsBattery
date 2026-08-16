@@ -11,7 +11,7 @@ part 'create_employee_request.g.dart';
 /// CreateEmployeeRequest
 ///
 /// Properties:
-/// * [userId] 
+/// * [userId] - Optional login ID. Omit to auto-generate EMP001, EMP002, …
 /// * [username] 
 /// * [userNumber] - 10-digit mobile
 /// * [password] 
@@ -19,8 +19,9 @@ part 'create_employee_request.g.dart';
 /// * [locationId] - Required for admin (warehouse or shop). Ignored for seller.
 @BuiltValue()
 abstract class CreateEmployeeRequest implements Built<CreateEmployeeRequest, CreateEmployeeRequestBuilder> {
+  /// Optional login ID. Omit to auto-generate EMP001, EMP002, …
   @BuiltValueField(wireName: r'user_id')
-  String get userId;
+  String? get userId;
 
   @BuiltValueField(wireName: r'username')
   String get username;
@@ -63,11 +64,13 @@ class _$CreateEmployeeRequestSerializer implements PrimitiveSerializer<CreateEmp
     CreateEmployeeRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'user_id';
-    yield serializers.serialize(
-      object.userId,
-      specifiedType: const FullType(String),
-    );
+    if (object.userId != null) {
+      yield r'user_id';
+      yield serializers.serialize(
+        object.userId,
+        specifiedType: const FullType(String),
+      );
+    }
     yield r'username';
     yield serializers.serialize(
       object.username,

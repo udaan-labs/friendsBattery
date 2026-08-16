@@ -823,9 +823,13 @@ module.exports = {
   },
   CreateEmployeeRequest: {
     type: 'object',
-    required: ['user_id', 'username', 'user_number', 'password'],
+    required: ['username', 'user_number', 'password'],
     properties: {
-      user_id: { type: 'string', example: 'EMP002' },
+      user_id: {
+        type: 'string',
+        example: 'EMP002',
+        description: 'Optional login ID. Omit to auto-generate EMP001, EMP002, …',
+      },
       username: { type: 'string', example: 'Ravi Kumar' },
       user_number: { type: 'string', example: '9876543210', description: '10-digit mobile' },
       password: { type: 'string', format: 'password', minLength: 6 },

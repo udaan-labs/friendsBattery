@@ -8,7 +8,7 @@ part of 'create_employee_request.dart';
 
 class _$CreateEmployeeRequest extends CreateEmployeeRequest {
   @override
-  final String userId;
+  final String? userId;
   @override
   final String username;
   @override
@@ -25,7 +25,7 @@ class _$CreateEmployeeRequest extends CreateEmployeeRequest {
   ]) => (CreateEmployeeRequestBuilder()..update(updates))._build();
 
   _$CreateEmployeeRequest._({
-    required this.userId,
+    this.userId,
     required this.username,
     required this.userNumber,
     required this.password,
@@ -143,11 +143,7 @@ class CreateEmployeeRequestBuilder
     final _$result =
         _$v ??
         _$CreateEmployeeRequest._(
-          userId: BuiltValueNullFieldError.checkNotNull(
-            userId,
-            r'CreateEmployeeRequest',
-            'userId',
-          ),
+          userId: userId,
           username: BuiltValueNullFieldError.checkNotNull(
             username,
             r'CreateEmployeeRequest',
