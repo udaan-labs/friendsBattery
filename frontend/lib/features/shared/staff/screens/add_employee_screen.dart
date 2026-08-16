@@ -4,6 +4,7 @@ import 'package:friends_battery_api/friends_battery_api.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../shared/utils/app_formatters.dart';
+import '../../../../shared/utils/password.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
 import '../../../../theme/app_theme.dart';
@@ -45,6 +46,17 @@ class _AddEmployeeScreenState extends ConsumerState<AddEmployeeScreen> {
   void initState() {
     super.initState();
     _selectedLocationId = widget.initialLocationId;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _prefillUserId());
+  }
+
+  Future<void> _prefillUserId() async {
+    try {
+      final id = await ref.read(staffRepositoryProvider).nextEmployeeUserId();
+      if (!mounted || _userIdController.text.isNotEmpty) return;
+      _userIdController.text = id;
+    } catch (_) {
+      // POST still auto-gens if the field stays empty
+    }
   }
 
   @override
@@ -72,8 +84,9 @@ class _AddEmployeeScreenState extends ConsumerState<AddEmployeeScreen> {
       context.showErrorSnackBar('Mobile number must be exactly 10 digits');
       return;
     }
-    if (password.length < 6) {
-      context.showErrorSnackBar('Password must be at least 6 characters');
+    final passwordError = validateStrongPassword(password);
+    if (passwordError != null) {
+      context.showErrorSnackBar(passwordError);
       return;
     }
     if (password != confirm) {
@@ -219,7 +232,8 @@ class _AddEmployeeScreenState extends ConsumerState<AddEmployeeScreen> {
                       enabled: !_submitting,
                       decoration: const InputDecoration(
                         labelText: 'User ID',
-                        hintText: 'Empty = auto EMP001',
+                        hintText: 'EMP001',
+                        helperText: 'Auto-filled. You can edit it.',
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -273,6 +287,8 @@ class _AddEmployeeScreenState extends ConsumerState<AddEmployeeScreen> {
                       obscureText: _obscurePassword,
                       decoration: InputDecoration(
                         labelText: 'Password',
+                        helperText:
+                            '8+ chars, 1 uppercase, 1 special character',
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword

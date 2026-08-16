@@ -132,6 +132,8 @@ export 'package:friends_battery_api/src/model/login_response.dart';
 export 'package:friends_battery_api/src/model/login_user.dart';
 export 'package:friends_battery_api/src/model/login_user_employee_role.dart';
 export 'package:friends_battery_api/src/model/login_user_location.dart';
+export 'package:friends_battery_api/src/model/next_employee_user_id_data.dart';
+export 'package:friends_battery_api/src/model/next_employee_user_id_response.dart';
 export 'package:friends_battery_api/src/model/product.dart';
 export 'package:friends_battery_api/src/model/product_config_item.dart';
 export 'package:friends_battery_api/src/model/product_created.dart';

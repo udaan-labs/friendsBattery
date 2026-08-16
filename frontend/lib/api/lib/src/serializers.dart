@@ -122,6 +122,8 @@ import 'package:friends_battery_api/src/model/login_response.dart';
 import 'package:friends_battery_api/src/model/login_user.dart';
 import 'package:friends_battery_api/src/model/login_user_employee_role.dart';
 import 'package:friends_battery_api/src/model/login_user_location.dart';
+import 'package:friends_battery_api/src/model/next_employee_user_id_data.dart';
+import 'package:friends_battery_api/src/model/next_employee_user_id_response.dart';
 import 'package:friends_battery_api/src/model/product.dart';
 import 'package:friends_battery_api/src/model/product_config_item.dart';
 import 'package:friends_battery_api/src/model/product_created.dart';
@@ -297,6 +299,8 @@ part 'serializers.g.dart';
   LoginUser,
   LoginUserEmployeeRole,
   LoginUserLocation,
+  NextEmployeeUserIdData,
+  NextEmployeeUserIdResponse,
   Product,
   ProductConfigItem,
   ProductCreated,

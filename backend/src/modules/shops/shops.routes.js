@@ -395,6 +395,33 @@ router.post(
 
 /**
  * @swagger
+ * /api/shops/employees/next-user-id:
+ *   get:
+ *     summary: Preview next auto-generated employee user_id (EMP001, EMP002, …)
+ *     tags: [Shops]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Next unused EMP### login id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NextEmployeeUserIdResponse'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Admin or Seller only
+ */
+router.get(
+  '/employees/next-user-id',
+  authenticate,
+  requireAdminOrSeller,
+  shopsController.nextEmployeeUserId
+);
+
+/**
+ * @swagger
  * /api/shops/employees/{employeeId}:
  *   get:
  *     summary: Admin view one employee (profile + check-in/check-out only)

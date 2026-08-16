@@ -99,6 +99,19 @@ class ShopsController {
   }
 
   /**
+   * GET /api/shops/employees/next-user-id
+   * Preview next EMP### so the add-employee form can show it.
+   */
+  async nextEmployeeUserId(req, res) {
+    try {
+      const user_id = await shopsService.nextEmployeeUserId();
+      return successResponse(res, 200, 'Next employee user id', { user_id });
+    } catch (error) {
+      return handleRouteError(res, error, 'Next Employee User Id Error:');
+    }
+  }
+
+  /**
    * POST /api/shops/employees
    * Admin or seller creates an EMPLOYEE at a location.
    */

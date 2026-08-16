@@ -115,6 +115,8 @@ doc/LoginResponse.md
 doc/LoginUser.md
 doc/LoginUserEmployeeRole.md
 doc/LoginUserLocation.md
+doc/NextEmployeeUserIdData.md
+doc/NextEmployeeUserIdResponse.md
 doc/Product.md
 doc/ProductConfigItem.md
 doc/ProductCreated.md
@@ -316,6 +318,8 @@ lib/src/model/login_response.dart
 lib/src/model/login_user.dart
 lib/src/model/login_user_employee_role.dart
 lib/src/model/login_user_location.dart
+lib/src/model/next_employee_user_id_data.dart
+lib/src/model/next_employee_user_id_response.dart
 lib/src/model/product.dart
 lib/src/model/product_config_item.dart
 lib/src/model/product_created.dart
@@ -381,3 +385,5 @@ lib/src/model/verify_product_response.dart
 lib/src/model/verify_product_unit.dart
 lib/src/serializers.dart
 pubspec.yaml
+test/next_employee_user_id_data_test.dart
+test/next_employee_user_id_response_test.dart

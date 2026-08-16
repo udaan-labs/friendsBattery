@@ -57,6 +57,15 @@ class StaffRepository {
     return [for (final l in data) if (l.id != null) l];
   }
 
+  Future<String> nextEmployeeUserId() async {
+    final response = await _shops.apiShopsEmployeesNextUserIdGet();
+    final id = response.data?.data?.userId;
+    if (id == null || id.isEmpty) {
+      throw Exception(response.data?.message ?? 'Failed to load next user id');
+    }
+    return id;
+  }
+
   Future<void> createEmployee({
     String? userId,
     required String username,

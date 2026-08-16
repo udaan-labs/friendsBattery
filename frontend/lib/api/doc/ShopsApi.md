@@ -11,6 +11,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**apiShopsEmployeeRolesGet**](ShopsApi.md#apishopsemployeerolesget) | **GET** /api/shops/employee-roles | List job titles for employees (Manager, Cashier, …)
 [**apiShopsEmployeesEmployeeIdGet**](ShopsApi.md#apishopsemployeesemployeeidget) | **GET** /api/shops/employees/{employeeId} | Admin view one employee (profile + check-in/check-out only)
+[**apiShopsEmployeesNextUserIdGet**](ShopsApi.md#apishopsemployeesnextuseridget) | **GET** /api/shops/employees/next-user-id | Preview next auto-generated employee user_id (EMP001, EMP002, …)
 [**apiShopsEmployeesPost**](ShopsApi.md#apishopsemployeespost) | **POST** /api/shops/employees | Create an employee at a shop or warehouse
 [**apiShopsLocationsGet**](ShopsApi.md#apishopslocationsget) | **GET** /api/shops/locations | List active locations (warehouse + shops)
 [**apiShopsLocationsLocationIdPatch**](ShopsApi.md#apishopslocationslocationidpatch) | **PATCH** /api/shops/locations/{locationId} | Update a shop or warehouse name and map location
@@ -92,6 +93,43 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**AdminEmployeeDetailResponse**](AdminEmployeeDetailResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiShopsEmployeesNextUserIdGet**
+> NextEmployeeUserIdResponse apiShopsEmployeesNextUserIdGet()
+
+Preview next auto-generated employee user_id (EMP001, EMP002, …)
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getShopsApi();
+
+try {
+    final response = api.apiShopsEmployeesNextUserIdGet();
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling ShopsApi->apiShopsEmployeesNextUserIdGet: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**NextEmployeeUserIdResponse**](NextEmployeeUserIdResponse.md)
 
 ### Authorization
 

@@ -832,7 +832,14 @@ module.exports = {
       },
       username: { type: 'string', example: 'Ravi Kumar' },
       user_number: { type: 'string', example: '9876543210', description: '10-digit mobile' },
-      password: { type: 'string', format: 'password', minLength: 6 },
+      password: {
+        type: 'string',
+        format: 'password',
+        minLength: 8,
+        description:
+          'Min 8 characters, at least one uppercase letter and one special character',
+        example: 'Passw0rd!',
+      },
       employee_role_id: {
         type: 'integer',
         nullable: true,
@@ -886,6 +893,20 @@ module.exports = {
       success: { type: 'boolean' },
       message: { type: 'string' },
       data: { $ref: '#/components/schemas/CreatedEmployee' },
+    },
+  },
+  NextEmployeeUserIdData: {
+    type: 'object',
+    properties: {
+      user_id: { type: 'string', example: 'EMP001' },
+    },
+  },
+  NextEmployeeUserIdResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean' },
+      message: { type: 'string' },
+      data: { $ref: '#/components/schemas/NextEmployeeUserIdData' },
     },
   },
   EmployeeRoleItem: {

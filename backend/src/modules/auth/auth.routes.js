@@ -52,7 +52,9 @@ const ROLES = require('../../shared/constants/roles');
  *               password:
  *                 type: string
  *                 format: password
- *                 example: password123
+ *                 minLength: 8
+ *                 description: Min 8 characters, one uppercase, one special character
+ *                 example: Passw0rd!
  *               location_id:
  *                 type: integer
  *                 description: Optional SHOP location id (assign seller to a shop)
@@ -114,6 +116,9 @@ router.post('/register', authenticate, requireSuperAdminOrAdmin, validateRegiste
  *               password:
  *                 type: string
  *                 format: password
+ *                 minLength: 8
+ *                 description: Min 8 characters, one uppercase, one special character
+ *                 example: Passw0rd!
  *               location_id:
  *                 type: integer
  *                 description: Optional SHOP or WAREHOUSE location for this admin

@@ -5,6 +5,7 @@ import 'package:friends_battery_api/friends_battery_api.dart';
 import 'package:go_router/go_router.dart';
 import '../../../theme/app_theme.dart';
 import '../../../shared/utils/app_formatters.dart';
+import '../../../shared/utils/password.dart';
 import '../../../shared/widgets/responsive_helper.dart';
 import '../providers/auth_controller.dart';
 import '../../../core/state/data_sync.dart';
@@ -84,6 +85,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
 
+    final passwordError = validateStrongPassword(_passwordController.text);
+    if (passwordError != null) {
+      context.showErrorSnackBar(passwordError);
+      return;
+    }
     if (_passwordController.text != _confirmPasswordController.text) {
       context.showErrorSnackBar('Passwords do not match');
       return;
@@ -245,6 +251,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           const SizedBox(height: 12),
           shopsAsync.when(
             data: (shops) {
+              if (widget.initialLocationId != null &&
+                  _shopNameController.text.isEmpty) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (!mounted || _shopNameController.text.isNotEmpty) return;
+                  _selectShop(widget.initialLocationId, shops);
+                });
+              }
               if (shops.isEmpty) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -490,6 +503,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       enabled: !isLoading,
                       decoration: InputDecoration(
                         labelText: 'Password',
+                        helperText:
+                            '8+ chars, 1 uppercase, 1 special character',
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword

@@ -136,6 +136,8 @@ Serializers _$serializers =
           ..add(LoginUserLocation.serializer)
           ..add(LoginUserLocationTypeEnum.serializer)
           ..add(LoginUserRoleEnum.serializer)
+          ..add(NextEmployeeUserIdData.serializer)
+          ..add(NextEmployeeUserIdResponse.serializer)
           ..add(Product.serializer)
           ..add(ProductConfigItem.serializer)
           ..add(ProductCreated.serializer)

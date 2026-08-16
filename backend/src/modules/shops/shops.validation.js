@@ -1,4 +1,5 @@
 const { z } = require('zod');
+const { strongPassword } = require('../../shared/utils/password');
 
 /**
  * Shops Validation
@@ -46,7 +47,7 @@ const createEmployeeSchema = z.object({
     user_id: z.string().max(50).optional(),
     username: z.string().min(1).max(100),
     user_number: z.string().regex(/^\d{10}$/, 'Mobile number must be exactly 10 digits'),
-    password: z.string().min(6).max(100),
+    password: strongPassword,
     employee_role_id: z.coerce.number().int().positive().optional().nullable(),
     /** Admin only — seller location is taken from the authenticated seller. */
     location_id: z.coerce.number().int().positive().optional().nullable(),

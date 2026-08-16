@@ -1,5 +1,6 @@
 const { errorResponse } = require('../../shared/utils/response');
 const { z } = require('zod');
+const { strongPassword } = require('../../shared/utils/password');
 
 // To match exact validation requirements while using Zod:
 const registerSchema = z.object({
@@ -7,7 +8,7 @@ const registerSchema = z.object({
   username: z.string().min(1),
   user_number: z.string().regex(/^\d{10}$/, 'Mobile number must be exactly 10 digits'),
   shop_name: z.string().min(1),
-  password: z.string().min(1),
+  password: strongPassword,
   /** Optional shop location — assign seller to an existing SHOP */
   location_id: z.coerce.number().int().positive().optional().nullable(),
 });
@@ -41,7 +42,7 @@ const validateRegister = (req, res, next) => {
     return errorResponse(
       res,
       400,
-      msg && msg.includes('digits')
+      msg && (msg.includes('digits') || msg.includes('Password'))
         ? msg
         : 'user_id, username, user_number, shop_name and password are required',
     );
