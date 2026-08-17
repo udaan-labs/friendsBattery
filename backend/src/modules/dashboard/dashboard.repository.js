@@ -75,6 +75,11 @@ function formatOrgActivity(e) {
       subtitle: [name, job, place].filter(Boolean).join(' • '),
       icon: 'person_add',
     },
+    EMPLOYEE_TRANSFERRED: {
+      title: `${who} moved employee`,
+      subtitle: [name, place].filter(Boolean).join(' • '),
+      icon: 'person_add',
+    },
     USER_DEACTIVATED: { title: `${who} deactivated account`, subtitle: name, icon: 'person_off' },
     USER_ACTIVATED: { title: `${who} activated account`, subtitle: name, icon: 'person_add' },
   };

@@ -12,7 +12,6 @@ Name | Type | Description | Notes
 **userId** | **String** |  | [optional] 
 **userName** | **String** |  | [optional] 
 **role** | **String** |  | [optional] 
-**userNumber** | **String** |  | [optional] 
 **isActive** | **bool** |  | [optional] 
 **location** | [**AccountUserLocation**](AccountUserLocation.md) |  | [optional] 
 

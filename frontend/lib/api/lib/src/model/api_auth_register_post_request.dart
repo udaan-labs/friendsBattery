@@ -15,7 +15,7 @@ part 'api_auth_register_post_request.g.dart';
 /// * [username] 
 /// * [userNumber] - Exactly 10 digits
 /// * [shopName] 
-/// * [password] 
+/// * [password] - Min 8 characters, one uppercase, one special character
 /// * [locationId] - Optional SHOP location id (assign seller to a shop)
 @BuiltValue()
 abstract class ApiAuthRegisterPostRequest implements Built<ApiAuthRegisterPostRequest, ApiAuthRegisterPostRequestBuilder> {
@@ -32,6 +32,7 @@ abstract class ApiAuthRegisterPostRequest implements Built<ApiAuthRegisterPostRe
   @BuiltValueField(wireName: r'shop_name')
   String get shopName;
 
+  /// Min 8 characters, one uppercase, one special character
   @BuiltValueField(wireName: r'password')
   String get password;
 

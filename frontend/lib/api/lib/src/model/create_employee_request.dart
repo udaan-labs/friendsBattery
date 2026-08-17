@@ -14,7 +14,7 @@ part 'create_employee_request.g.dart';
 /// * [userId] - Optional login ID. Omit to auto-generate EMP001, EMP002, …
 /// * [username] 
 /// * [userNumber] - 10-digit mobile
-/// * [password] 
+/// * [password] - Min 8 characters, at least one uppercase letter and one special character
 /// * [employeeRoleId] - Optional job title id from GET /api/shops/employee-roles
 /// * [locationId] - Required for admin (warehouse or shop). Ignored for seller.
 @BuiltValue()
@@ -30,6 +30,7 @@ abstract class CreateEmployeeRequest implements Built<CreateEmployeeRequest, Cre
   @BuiltValueField(wireName: r'user_number')
   String get userNumber;
 
+  /// Min 8 characters, at least one uppercase letter and one special character
   @BuiltValueField(wireName: r'password')
   String get password;
 

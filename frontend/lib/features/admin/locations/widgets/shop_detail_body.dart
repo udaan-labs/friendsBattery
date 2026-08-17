@@ -80,6 +80,14 @@ class ShopDetailBody extends ConsumerWidget {
                         isActive: next,
                       )
                   : null;
+              final onMove = isSuperAdmin
+                  ? (ShopStaffMember m) => moveLocationEmployee(
+                        context,
+                        ref,
+                        locationId: locationId,
+                        member: m,
+                      )
+                  : null;
               return Column(
                 children: [
                   PeopleSearchField(
@@ -117,6 +125,7 @@ class ShopDetailBody extends ConsumerWidget {
                         : 'No match for this search',
                     showRoleChip: true,
                     onToggleActive: onToggle,
+                    onMove: onMove,
                   ),
                 ],
               );

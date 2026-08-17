@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 **userId** | **String** | Optional login ID. Omit to auto-generate EMP001, EMP002, … | [optional] 
 **username** | **String** |  | 
 **userNumber** | **String** | 10-digit mobile | 
-**password** | **String** |  | 
+**password** | **String** | Min 8 characters, at least one uppercase letter and one special character | 
 **employeeRoleId** | **int** | Optional job title id from GET /api/shops/employee-roles | [optional] 
 **locationId** | **int** | Required for admin (warehouse or shop). Ignored for seller. | [optional] 
 

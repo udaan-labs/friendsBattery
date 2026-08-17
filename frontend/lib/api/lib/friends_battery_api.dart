@@ -192,6 +192,8 @@ export 'package:friends_battery_api/src/model/shipment_item.dart';
 export 'package:friends_battery_api/src/model/shop_staff_data.dart';
 export 'package:friends_battery_api/src/model/shop_staff_member.dart';
 export 'package:friends_battery_api/src/model/shop_staff_response.dart';
+export 'package:friends_battery_api/src/model/transfer_employee_request.dart';
+export 'package:friends_battery_api/src/model/transfer_employee_response.dart';
 export 'package:friends_battery_api/src/model/transfer_inventory_count.dart';
 export 'package:friends_battery_api/src/model/update_location_request.dart';
 export 'package:friends_battery_api/src/model/update_location_response.dart';

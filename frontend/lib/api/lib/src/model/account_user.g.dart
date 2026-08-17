@@ -81,8 +81,6 @@ class _$AccountUser extends AccountUser {
   @override
   final AccountUserRoleEnum? role;
   @override
-  final String? userNumber;
-  @override
   final bool? isActive;
   @override
   final AccountUserLocation? location;
@@ -95,7 +93,6 @@ class _$AccountUser extends AccountUser {
     this.userId,
     this.userName,
     this.role,
-    this.userNumber,
     this.isActive,
     this.location,
   }) : super._();
@@ -114,7 +111,6 @@ class _$AccountUser extends AccountUser {
         userId == other.userId &&
         userName == other.userName &&
         role == other.role &&
-        userNumber == other.userNumber &&
         isActive == other.isActive &&
         location == other.location;
   }
@@ -126,7 +122,6 @@ class _$AccountUser extends AccountUser {
     _$hash = $jc(_$hash, userId.hashCode);
     _$hash = $jc(_$hash, userName.hashCode);
     _$hash = $jc(_$hash, role.hashCode);
-    _$hash = $jc(_$hash, userNumber.hashCode);
     _$hash = $jc(_$hash, isActive.hashCode);
     _$hash = $jc(_$hash, location.hashCode);
     _$hash = $jf(_$hash);
@@ -140,7 +135,6 @@ class _$AccountUser extends AccountUser {
           ..add('userId', userId)
           ..add('userName', userName)
           ..add('role', role)
-          ..add('userNumber', userNumber)
           ..add('isActive', isActive)
           ..add('location', location))
         .toString();
@@ -166,10 +160,6 @@ class AccountUserBuilder implements Builder<AccountUser, AccountUserBuilder> {
   AccountUserRoleEnum? get role => _$this._role;
   set role(AccountUserRoleEnum? role) => _$this._role = role;
 
-  String? _userNumber;
-  String? get userNumber => _$this._userNumber;
-  set userNumber(String? userNumber) => _$this._userNumber = userNumber;
-
   bool? _isActive;
   bool? get isActive => _$this._isActive;
   set isActive(bool? isActive) => _$this._isActive = isActive;
@@ -191,7 +181,6 @@ class AccountUserBuilder implements Builder<AccountUser, AccountUserBuilder> {
       _userId = $v.userId;
       _userName = $v.userName;
       _role = $v.role;
-      _userNumber = $v.userNumber;
       _isActive = $v.isActive;
       _location = $v.location?.toBuilder();
       _$v = null;
@@ -222,7 +211,6 @@ class AccountUserBuilder implements Builder<AccountUser, AccountUserBuilder> {
             userId: userId,
             userName: userName,
             role: role,
-            userNumber: userNumber,
             isActive: isActive,
             location: _location?.build(),
           );

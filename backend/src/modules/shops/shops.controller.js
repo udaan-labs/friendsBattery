@@ -132,6 +132,28 @@ class ShopsController {
   }
 
   /**
+   * PATCH /api/shops/employees/:employeeId/location
+   * Super Admin: move an employee to another shop or warehouse.
+   */
+  async transferEmployee(req, res) {
+    try {
+      const { employeeId } = req.params;
+      const data = await shopsService.transferEmployee(
+        {
+          id: req.user.id,
+          role: req.user.role,
+          locationId: req.user.locationId ?? null,
+        },
+        Number(employeeId),
+        Number(req.body.location_id)
+      );
+      return successResponse(res, 200, 'Employee moved successfully', data);
+    } catch (error) {
+      return handleRouteError(res, error, 'Transfer Employee Error:');
+    }
+  }
+
+  /**
    * GET /api/shops/my-staff — seller only, own shop location.
    */
   async getMyStaff(req, res) {

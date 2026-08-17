@@ -895,6 +895,24 @@ module.exports = {
       data: { $ref: '#/components/schemas/CreatedEmployee' },
     },
   },
+  TransferEmployeeRequest: {
+    type: 'object',
+    required: ['location_id'],
+    properties: {
+      location_id: {
+        type: 'integer',
+        description: 'Destination shop or warehouse id',
+      },
+    },
+  },
+  TransferEmployeeResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean' },
+      message: { type: 'string' },
+      data: { $ref: '#/components/schemas/CreatedEmployee' },
+    },
+  },
   NextEmployeeUserIdData: {
     type: 'object',
     properties: {

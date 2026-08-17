@@ -3,7 +3,6 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -12,20 +11,11 @@ part 'account_user_location.g.dart';
 /// AccountUserLocation
 ///
 /// Properties:
-/// * [id] 
 /// * [name] 
-/// * [type] 
 @BuiltValue()
 abstract class AccountUserLocation implements Built<AccountUserLocation, AccountUserLocationBuilder> {
-  @BuiltValueField(wireName: r'id')
-  int? get id;
-
   @BuiltValueField(wireName: r'name')
   String? get name;
-
-  @BuiltValueField(wireName: r'type')
-  AccountUserLocationTypeEnum? get type;
-  // enum typeEnum {  WAREHOUSE,  SHOP,  };
 
   AccountUserLocation._();
 
@@ -50,25 +40,11 @@ class _$AccountUserLocationSerializer implements PrimitiveSerializer<AccountUser
     AccountUserLocation object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    if (object.id != null) {
-      yield r'id';
-      yield serializers.serialize(
-        object.id,
-        specifiedType: const FullType(int),
-      );
-    }
     if (object.name != null) {
       yield r'name';
       yield serializers.serialize(
         object.name,
         specifiedType: const FullType(String),
-      );
-    }
-    if (object.type != null) {
-      yield r'type';
-      yield serializers.serialize(
-        object.type,
-        specifiedType: const FullType(AccountUserLocationTypeEnum),
       );
     }
   }
@@ -94,26 +70,12 @@ class _$AccountUserLocationSerializer implements PrimitiveSerializer<AccountUser
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
-          result.id = valueDes;
-          break;
         case r'name':
           final valueDes = serializers.deserialize(
             value,
             specifiedType: const FullType(String),
           ) as String;
           result.name = valueDes;
-          break;
-        case r'type':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(AccountUserLocationTypeEnum),
-          ) as AccountUserLocationTypeEnum;
-          result.type = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -142,20 +104,5 @@ class _$AccountUserLocationSerializer implements PrimitiveSerializer<AccountUser
     );
     return result.build();
   }
-}
-
-class AccountUserLocationTypeEnum extends EnumClass {
-
-  @BuiltValueEnumConst(wireName: r'WAREHOUSE')
-  static const AccountUserLocationTypeEnum WAREHOUSE = _$accountUserLocationTypeEnum_WAREHOUSE;
-  @BuiltValueEnumConst(wireName: r'SHOP')
-  static const AccountUserLocationTypeEnum SHOP = _$accountUserLocationTypeEnum_SHOP;
-
-  static Serializer<AccountUserLocationTypeEnum> get serializer => _$accountUserLocationTypeEnumSerializer;
-
-  const AccountUserLocationTypeEnum._(String name): super(name);
-
-  static BuiltSet<AccountUserLocationTypeEnum> get values => _$accountUserLocationTypeEnumValues;
-  static AccountUserLocationTypeEnum valueOf(String name) => _$accountUserLocationTypeEnumValueOf(name);
 }
 

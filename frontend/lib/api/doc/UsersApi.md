@@ -18,7 +18,7 @@ Method | HTTP request | Description
 
 List admins, sellers, and employees
 
-Super Admin only. Excludes SUPER_ADMIN. Optional role filter.
+Super Admin only. Filter by ADMIN, SELLER, or EMPLOYEE.
 
 ### Example
 ```dart
@@ -39,7 +39,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **role** | **String**|  | [optional] 
+ **role** | **String**|  | 
 
 ### Return type
 

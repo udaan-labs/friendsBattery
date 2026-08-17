@@ -6,6 +6,7 @@ const {
   shopStaffSchema,
   locationStaffSchema,
   viewEmployeeSchema,
+  transferEmployeeSchema,
   createEmployeeSchema,
   listLocationsSchema,
   createLocationSchema,
@@ -16,7 +17,9 @@ const {
   requireAdmin,
   requireSeller,
   requireAdminOrSeller,
+  requireRole,
 } = require('../../shared/middleware/role.middleware');
+const ROLES = require('../../shared/constants/roles');
 const { validateRequest } = require('../../shared/middleware/validation.middleware');
 
 /**
@@ -465,6 +468,56 @@ router.get(
   requireAdmin,
   validateRequest(viewEmployeeSchema),
   shopsController.viewEmployee
+);
+
+/**
+ * @swagger
+ * /api/shops/employees/{employeeId}/location:
+ *   patch:
+ *     summary: Move an employee to another shop or warehouse
+ *     description: |
+ *       Super Admin only. Updates `users.location_id` (and parent/shop name).
+ *       Destination must be active and must not already have an employee.
+ *       Employee must be checked out first. Inventory stays at the old location.
+ *     tags: [Shops]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: employeeId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/TransferEmployeeRequest'
+ *     responses:
+ *       200:
+ *         description: Employee moved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TransferEmployeeResponse'
+ *       400:
+ *         description: Same location, inactive dest, or employee is checked in
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Super Admin only
+ *       404:
+ *         description: Employee not found
+ *       409:
+ *         description: Destination already has an employee
+ */
+router.patch(
+  '/employees/:employeeId/location',
+  authenticate,
+  requireRole(ROLES.SUPER_ADMIN),
+  validateRequest(transferEmployeeSchema),
+  shopsController.transferEmployee
 );
 
 router.get(

@@ -1755,6 +1755,32 @@
           }
         }
       },
+      "TransferEmployeeRequest": {
+        "type": "object",
+        "required": [
+          "location_id"
+        ],
+        "properties": {
+          "location_id": {
+            "type": "integer",
+            "description": "Destination shop or warehouse id"
+          }
+        }
+      },
+      "TransferEmployeeResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/CreatedEmployee"
+          }
+        }
+      },
       "NextEmployeeUserIdData": {
         "type": "object",
         "properties": {
@@ -4115,6 +4141,67 @@
           },
           "404": {
             "description": "Employee not found (or user is not EMPLOYEE)"
+          }
+        }
+      }
+    },
+    "/api/shops/employees/{employeeId}/location": {
+      "patch": {
+        "summary": "Move an employee to another shop or warehouse",
+        "description": "Super Admin only. Updates `users.location_id` (and parent/shop name).\nDestination must be active and must not already have an employee.\nEmployee must be checked out first. Inventory stays at the old location.\n",
+        "tags": [
+          "Shops"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employeeId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferEmployeeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Employee moved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferEmployeeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Same location, inactive dest, or employee is checked in"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Super Admin only"
+          },
+          "404": {
+            "description": "Employee not found"
+          },
+          "409": {
+            "description": "Destination already has an employee"
           }
         }
       }

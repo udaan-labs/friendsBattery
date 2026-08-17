@@ -570,6 +570,81 @@ class ShopsService {
   }
 
   /**
+   * Super Admin: move EMPLOYEE to another shop or warehouse.
+   * @param {{ id: number, role: string }} actor
+   * @param {number} employeeId
+   * @param {number} locationId
+   */
+  async transferEmployee(actor, employeeId, locationId) {
+    const attendanceRepository = require('../attendance/attendance.repository');
+    const employee = await shopsRepository.findEmployeeById(employeeId);
+    if (!employee) {
+      throw httpError(404, 'Employee not found');
+    }
+    assertAccess(actor, { kind: 'user', target: employee });
+
+    const dest = await shopsRepository.findLocationById(locationId);
+    if (!dest || dest.isActive === false) {
+      throw httpError(400, 'Location not found or inactive');
+    }
+
+    const fromLocationId =
+      employee.locationId != null ? Number(employee.locationId) : null;
+    const toLocationId = Number(dest.id);
+    if (fromLocationId === toLocationId) {
+      throw httpError(400, 'Already at this location');
+    }
+
+    const open = await attendanceRepository.findOpenAttendance(employee.id);
+    if (open) {
+      throw httpError(400, 'Check this employee out before moving them');
+    }
+
+    const taken = await authRepository.findUserByLocationAndRole(
+      toLocationId,
+      ROLES.EMPLOYEE,
+    );
+    if (taken) {
+      throw httpError(409, 'This location already has an employee');
+    }
+
+    let parentId = Number(actor.id);
+    if (dest.type === 'SHOP') {
+      const destUsers = await shopsRepository.findUsersByLocationId(toLocationId);
+      const destAdmin = destUsers.find(
+        (u) => u.role === ROLES.ADMIN && u.isActive !== false
+      );
+      if (destAdmin) parentId = Number(destAdmin.id);
+    }
+
+    await shopsRepository.updateUserLocationId(
+      employee.id,
+      toLocationId,
+      dest.name,
+      parentId
+    );
+
+    const fromName = employee.location?.name || employee.shopName || null;
+    await orgEventsRepository.create({
+      action: 'EMPLOYEE_TRANSFERRED',
+      actorId: actor.id,
+      entityType: 'user',
+      entityId: employee.id,
+      payload: {
+        username: employee.userName,
+        location_name: [fromName, dest.name].filter(Boolean).join(' → '),
+      },
+    });
+
+    return {
+      ...this._mapStaffUser(employee),
+      location_id: toLocationId,
+      location: this._mapLocationBrief(dest),
+      created_at: employee.createdAt,
+    };
+  }
+
+  /**
    * Admin: view one employee + only employee actions (check-in / check-out).
    * No sales, shipments, inventory, seller stats.
    * @param {number} employeeId

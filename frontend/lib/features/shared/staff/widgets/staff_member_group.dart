@@ -15,6 +15,7 @@ class StaffMemberGroup extends StatelessWidget {
     this.onAdd,
     this.addLabel,
     this.onToggleActive,
+    this.onMove,
   });
 
   final String title;
@@ -25,7 +26,9 @@ class StaffMemberGroup extends StatelessWidget {
   final bool showRoleChip;
   final VoidCallback? onAdd;
   final String? addLabel;
-  final Future<void> Function(ShopStaffMember member, bool isActive)? onToggleActive;
+  final Future<void> Function(ShopStaffMember member, bool isActive)?
+      onToggleActive;
+  final Future<void> Function(ShopStaffMember member)? onMove;
 
   @override
   Widget build(BuildContext context) {
@@ -85,6 +88,7 @@ class StaffMemberGroup extends StatelessWidget {
                 accent: color,
                 showRoleChip: showRoleChip,
                 onToggleActive: onToggleActive,
+                onMove: onMove,
               ),
             ),
         ],
@@ -99,6 +103,7 @@ class _Tile extends StatelessWidget {
     required this.accent,
     required this.showRoleChip,
     this.onToggleActive,
+    this.onMove,
   });
 
   final ShopStaffMember member;
@@ -106,8 +111,9 @@ class _Tile extends StatelessWidget {
   final bool showRoleChip;
   final Future<void> Function(ShopStaffMember member, bool isActive)?
       onToggleActive;
+  final Future<void> Function(ShopStaffMember member)? onMove;
 
-  Future<void> _onTap(BuildContext context) async {
+  Future<void> _toggle(BuildContext context) async {
     final cb = onToggleActive;
     if (cb == null) return;
     final active = member.isActive != false;
@@ -127,14 +133,13 @@ class _Tile extends StatelessWidget {
     final roleLabel = member.role?.name ?? member.role?.toString() ?? '';
     final active = member.isActive != false;
     final canToggle = onToggleActive != null && member.id != null;
+    final canMove = onMove != null && member.id != null;
+    final hasMenu = canToggle || canMove;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: InkWell(
-        onTap: canToggle ? () => _onTap(context) : null,
-        borderRadius: BorderRadius.circular(8),
-        child: Row(
-          children: [
+      child: Row(
+        children: [
           CircleAvatar(
             radius: 18,
             backgroundColor: accent.withValues(alpha: 0.12),
@@ -195,8 +200,26 @@ class _Tile extends StatelessWidget {
                   ),
               ],
             ),
+          if (hasMenu)
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert, size: 20),
+              onSelected: (value) async {
+                if (value == 'move') await onMove!(member);
+                if (value == 'toggle' && context.mounted) {
+                  await _toggle(context);
+                }
+              },
+              itemBuilder: (ctx) => [
+                if (canMove)
+                  const PopupMenuItem(value: 'move', child: Text('Move')),
+                if (canToggle)
+                  PopupMenuItem(
+                    value: 'toggle',
+                    child: Text(active ? 'Mark inactive' : 'Mark active'),
+                  ),
+              ],
+            ),
         ],
-        ),
       ),
     );
   }

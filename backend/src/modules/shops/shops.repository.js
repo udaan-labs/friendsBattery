@@ -23,11 +23,17 @@ class ShopsRepository {
     return prisma.user.findMany({ where });
   }
 
-  /** Set user's primary location (shop Admin first shop). */
-  async updateUserLocationId(userId, locationId) {
+  /** Set user's primary location (shop Admin first shop / employee move). */
+  async updateUserLocationId(userId, locationId, shopName, parentId) {
     return prisma.user.update({
       where: { id: BigInt(userId) },
-      data: { locationId: BigInt(locationId) },
+      data: {
+        locationId: BigInt(locationId),
+        ...(shopName !== undefined ? { shopName } : {}),
+        ...(parentId !== undefined
+          ? { parentId: parentId != null ? BigInt(parentId) : null }
+          : {}),
+      },
       select: { id: true, locationId: true },
     });
   }

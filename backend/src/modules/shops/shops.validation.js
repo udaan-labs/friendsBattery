@@ -41,6 +41,16 @@ const viewEmployeeSchema = z.object({
     .default({}),
 });
 
+// Schema for PATCH /shops/employees/:employeeId/location
+const transferEmployeeSchema = z.object({
+  params: z.object({
+    employeeId: z.string().regex(/^\d+$/).transform(Number),
+  }),
+  body: z.object({
+    location_id: z.coerce.number().int().positive(),
+  }),
+});
+
 // Schema for POST /shops/employees
 const createEmployeeSchema = z.object({
   body: z.object({
@@ -137,6 +147,7 @@ module.exports = {
   shopStaffSchema,
   locationStaffSchema,
   viewEmployeeSchema,
+  transferEmployeeSchema,
   createEmployeeSchema,
   listLocationsSchema,
   createLocationSchema,

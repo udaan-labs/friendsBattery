@@ -180,6 +180,8 @@ doc/ShopStaffData.md
 doc/ShopStaffMember.md
 doc/ShopStaffResponse.md
 doc/ShopsApi.md
+doc/TransferEmployeeRequest.md
+doc/TransferEmployeeResponse.md
 doc/TransferInventoryCount.md
 doc/TransfersApi.md
 doc/UpdateLocationRequest.md
@@ -385,6 +387,8 @@ lib/src/model/shipment_item.dart
 lib/src/model/shop_staff_data.dart
 lib/src/model/shop_staff_member.dart
 lib/src/model/shop_staff_response.dart
+lib/src/model/transfer_employee_request.dart
+lib/src/model/transfer_employee_response.dart
 lib/src/model/transfer_inventory_count.dart
 lib/src/model/update_location_request.dart
 lib/src/model/update_location_response.dart
@@ -399,10 +403,5 @@ lib/src/model/verify_product_response.dart
 lib/src/model/verify_product_unit.dart
 lib/src/serializers.dart
 pubspec.yaml
-test/account_user_location_test.dart
-test/account_user_test.dart
-test/account_users_response_test.dart
-test/set_account_active_data_test.dart
-test/set_account_active_request_test.dart
-test/set_account_active_response_test.dart
-test/users_api_test.dart
+test/transfer_employee_request_test.dart
+test/transfer_employee_response_test.dart

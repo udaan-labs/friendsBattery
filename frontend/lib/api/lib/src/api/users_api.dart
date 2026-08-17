@@ -22,7 +22,7 @@ class UsersApi {
   const UsersApi(this._dio, this._serializers);
 
   /// List admins, sellers, and employees
-  /// Super Admin only. Excludes SUPER_ADMIN. Optional role filter.
+  /// Super Admin only. Filter by ADMIN, SELLER, or EMPLOYEE.
   ///
   /// Parameters:
   /// * [role] 
@@ -36,7 +36,7 @@ class UsersApi {
   /// Returns a [Future] containing a [Response] with a [AccountUsersResponse] as data
   /// Throws [DioException] if API call or serialization fails
   Future<Response<AccountUsersResponse>> apiUsersGet({ 
-    String? role,
+    required String role,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -64,7 +64,7 @@ class UsersApi {
     );
 
     final _queryParameters = <String, dynamic>{
-      if (role != null) r'role': encodeQueryParameter(_serializers, role, const FullType(String)),
+      r'role': encodeQueryParameter(_serializers, role, const FullType(String)),
     };
 
     final _response = await _dio.request<Object>(

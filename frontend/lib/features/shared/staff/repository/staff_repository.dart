@@ -66,6 +66,25 @@ class StaffRepository {
     return id;
   }
 
+  Future<void> transferEmployee({
+    required int id,
+    required int locationId,
+  }) async {
+    try {
+      await _shops.apiShopsEmployeesEmployeeIdLocationPatch(
+        employeeId: id,
+        transferEmployeeRequest:
+            TransferEmployeeRequest((b) => b.locationId = locationId),
+      );
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      if (data is Map && data['message'] != null) {
+        throw Exception(data['message'].toString());
+      }
+      rethrow;
+    }
+  }
+
   Future<void> createEmployee({
     String? userId,
     required String username,

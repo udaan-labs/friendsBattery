@@ -17,7 +17,6 @@ part 'account_user.g.dart';
 /// * [userId] 
 /// * [userName] 
 /// * [role] 
-/// * [userNumber] 
 /// * [isActive] 
 /// * [location] 
 @BuiltValue()
@@ -34,9 +33,6 @@ abstract class AccountUser implements Built<AccountUser, AccountUserBuilder> {
   @BuiltValueField(wireName: r'role')
   AccountUserRoleEnum? get role;
   // enum roleEnum {  ADMIN,  SELLER,  EMPLOYEE,  };
-
-  @BuiltValueField(wireName: r'user_number')
-  String? get userNumber;
 
   @BuiltValueField(wireName: r'is_active')
   bool? get isActive;
@@ -93,13 +89,6 @@ class _$AccountUserSerializer implements PrimitiveSerializer<AccountUser> {
       yield serializers.serialize(
         object.role,
         specifiedType: const FullType(AccountUserRoleEnum),
-      );
-    }
-    if (object.userNumber != null) {
-      yield r'user_number';
-      yield serializers.serialize(
-        object.userNumber,
-        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.isActive != null) {
@@ -166,14 +155,6 @@ class _$AccountUserSerializer implements PrimitiveSerializer<AccountUser> {
             specifiedType: const FullType(AccountUserRoleEnum),
           ) as AccountUserRoleEnum;
           result.role = valueDes;
-          break;
-        case r'user_number':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.userNumber = valueDes;
           break;
         case r'is_active':
           final valueDes = serializers.deserialize(
