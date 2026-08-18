@@ -7,7 +7,6 @@ import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/utils/app_formatters.dart';
 import '../../../shared/inventory/providers/inventory_provider.dart';
 import '../../../shared/staff/providers/staff_providers.dart';
-import '../../../shared/staff/widgets/people_search_field.dart';
 import '../../../shared/staff/widgets/staff_member_group.dart';
 import 'location_header_card.dart';
 import 'location_staff_actions.dart';
@@ -26,9 +25,10 @@ class ShopDetailBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isSuperAdmin = ref.watch(authProvider).role == UserRole.superAdmin;
+    final role = ref.watch(authProvider).role;
+    final isSuperAdmin = role == UserRole.superAdmin;
+    final canMove = isSuperAdmin || role == UserRole.admin;
     final staffAsync = ref.watch(locationStaffProvider(locationId));
-    final staffQuery = ref.watch(locationStaffQueryProvider(locationId));
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -63,14 +63,10 @@ class ShopDetailBody extends ConsumerWidget {
             ),
             data: (data) {
               final admins = data.admins?.toList() ?? [];
-              final leads = (admins.isNotEmpty
-                      ? admins
-                      : (data.sellers?.toList() ?? []))
-                  .where((m) => staffMatchesQuery(m, staffQuery))
-                  .toList();
-              final employees = (data.employees?.toList() ?? [])
-                  .where((m) => staffMatchesQuery(m, staffQuery))
-                  .toList();
+              final leads = admins.isNotEmpty
+                  ? admins
+                  : (data.sellers?.toList() ?? []);
+              final employees = data.employees?.toList() ?? [];
               final onToggle = isSuperAdmin
                   ? (ShopStaffMember m, bool next) => setLocationStaffActive(
                         context,
@@ -80,7 +76,7 @@ class ShopDetailBody extends ConsumerWidget {
                         isActive: next,
                       )
                   : null;
-              final onMove = isSuperAdmin
+              final onMove = canMove
                   ? (ShopStaffMember m) => moveLocationEmployee(
                         context,
                         ref,
@@ -90,21 +86,12 @@ class ShopDetailBody extends ConsumerWidget {
                   : null;
               return Column(
                 children: [
-                  PeopleSearchField(
-                    hint: 'Search admin or employee…',
-                    onChanged: (v) => ref
-                        .read(locationStaffQueryProvider(locationId).notifier)
-                        .state = v,
-                  ),
-                  const SizedBox(height: 12),
                   StaffMemberGroup(
                     title: 'Admin / seller',
                     icon: Icons.storefront_rounded,
                     color: const Color(0xFF006B2C),
                     members: leads,
-                    emptyLabel: staffQuery.trim().isEmpty
-                        ? 'No admin or seller at this shop'
-                        : 'No match for this search',
+                    emptyLabel: 'No admin or seller at this shop',
                     showRoleChip: true,
                     addLabel: 'Add admin',
                     onAdd: isSuperAdmin
@@ -113,6 +100,7 @@ class ShopDetailBody extends ConsumerWidget {
                             )
                         : null,
                     onToggleActive: onToggle,
+                    onMove: onMove,
                   ),
                   const SizedBox(height: 12),
                   StaffMemberGroup(
@@ -120,10 +108,12 @@ class ShopDetailBody extends ConsumerWidget {
                     icon: Icons.badge_rounded,
                     color: const Color(0xFF2563EB),
                     members: employees,
-                    emptyLabel: staffQuery.trim().isEmpty
-                        ? 'No employees at this shop'
-                        : 'No match for this search',
+                    emptyLabel: 'No employees at this shop',
                     showRoleChip: true,
+                    addLabel: 'Add',
+                    onAdd: () => context.push(
+                      '/admin/add-employee?locationId=$locationId',
+                    ),
                     onToggleActive: onToggle,
                     onMove: onMove,
                   ),

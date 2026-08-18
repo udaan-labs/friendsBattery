@@ -403,5 +403,3 @@ lib/src/model/verify_product_response.dart
 lib/src/model/verify_product_unit.dart
 lib/src/serializers.dart
 pubspec.yaml
-test/transfer_employee_request_test.dart
-test/transfer_employee_response_test.dart

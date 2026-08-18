@@ -65,21 +65,18 @@ class LocationDetailScreen extends ConsumerWidget {
         ],
       ),
 
-      floatingActionButton:
-          (staffAsync.valueOrNull?.employees?.isNotEmpty ?? false)
-              ? null
-              : FloatingActionButton.extended(
-                  onPressed: () async {
-                    await context.push(
-                      '/admin/add-employee?locationId=$locationId',
-                    );
-                    ref.invalidate(locationStaffProvider(locationId));
-                  },
-                  backgroundColor: const Color(0xFF006B2C),
-                  foregroundColor: Colors.white,
-                  icon: const Icon(Icons.person_add_alt_1),
-                  label: const Text('Add employee'),
-                ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          await context.push(
+            '/admin/add-employee?locationId=$locationId',
+          );
+          ref.invalidate(locationStaffProvider(locationId));
+        },
+        backgroundColor: const Color(0xFF006B2C),
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.person_add_alt_1),
+        label: const Text('Add employee'),
+      ),
       body: isWarehouse
           ? WarehouseDetailBody(locationId: locationId, cached: cached)
           : ShopDetailBody(locationId: locationId, cached: cached),

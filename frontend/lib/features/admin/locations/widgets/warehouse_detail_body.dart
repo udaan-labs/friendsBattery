@@ -7,7 +7,6 @@ import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/utils/app_formatters.dart';
 import '../../../shared/inventory/providers/inventory_provider.dart';
 import '../../../shared/staff/providers/staff_providers.dart';
-import '../../../shared/staff/widgets/people_search_field.dart';
 import '../../../shared/staff/widgets/staff_member_group.dart';
 import '../providers/locations_providers.dart';
 import 'location_header_card.dart';
@@ -28,9 +27,10 @@ class WarehouseDetailBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isSuperAdmin = ref.watch(authProvider).role == UserRole.superAdmin;
+    final role = ref.watch(authProvider).role;
+    final isSuperAdmin = role == UserRole.superAdmin;
+    final canMove = isSuperAdmin || role == UserRole.admin;
     final staffAsync = ref.watch(locationStaffProvider(locationId));
-    final staffQuery = ref.watch(locationStaffQueryProvider(locationId));
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -74,7 +74,7 @@ class WarehouseDetailBody extends ConsumerWidget {
                         isActive: next,
                       )
                   : null;
-              final onMove = isSuperAdmin
+              final onMove = canMove
                   ? (ShopStaffMember m) => moveLocationEmployee(
                         context,
                         ref,
@@ -84,23 +84,12 @@ class WarehouseDetailBody extends ConsumerWidget {
                   : null;
               return Column(
                 children: [
-                  PeopleSearchField(
-                    hint: 'Search admin or employee…',
-                    onChanged: (v) => ref
-                        .read(locationStaffQueryProvider(locationId).notifier)
-                        .state = v,
-                  ),
-                  const SizedBox(height: 12),
                   StaffMemberGroup(
                     title: 'Admins',
                     icon: Icons.admin_panel_settings_outlined,
                     color: const Color(0xFF7C3AED),
-                    members: (data.admins?.toList() ?? [])
-                        .where((m) => staffMatchesQuery(m, staffQuery))
-                        .toList(),
-                    emptyLabel: staffQuery.trim().isEmpty
-                        ? 'No admin at this warehouse'
-                        : 'No match for this search',
+                    members: data.admins?.toList() ?? [],
+                    emptyLabel: 'No admin at this warehouse',
                     showRoleChip: true,
                     addLabel: 'Add admin',
                     onAdd: isSuperAdmin
@@ -109,19 +98,22 @@ class WarehouseDetailBody extends ConsumerWidget {
                             )
                         : null,
                     onToggleActive: onToggle,
+                    onMove: onMove,
                   ),
                   const SizedBox(height: 12),
                   StaffMemberGroup(
                     title: 'Employees',
                     icon: Icons.badge_rounded,
                     color: const Color(0xFF2563EB),
-                    members: (data.employees?.toList() ?? [])
-                        .where((m) => staffMatchesQuery(m, staffQuery))
-                        .toList(),
-                    emptyLabel: staffQuery.trim().isEmpty
-                        ? 'No employees at this warehouse'
-                        : 'No match for this search',
+                    members: data.employees?.toList() ?? [],
+                    emptyLabel: 'No employees at this warehouse',
                     showRoleChip: true,
+                    addLabel: 'Add',
+                    onAdd: isSuperAdmin
+                        ? () => context.push(
+                              '/admin/add-employee?locationId=$locationId',
+                            )
+                        : null,
                     onToggleActive: onToggle,
                     onMove: onMove,
                   ),

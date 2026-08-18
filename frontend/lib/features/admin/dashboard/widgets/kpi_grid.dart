@@ -54,13 +54,16 @@ class KpiGrid extends ConsumerWidget {
     }) {
       if (isSuperAdmin) {
         return [
-          card('TODAY\'S SALES', sales, 'Transactions',
-              Icons.trending_up_outlined,
+          card('TODAY\'S SALES', sales, 'Shops & warehouses',
+              Icons.point_of_sale_outlined,
               onTap: () => context.push('/admin/sales')),
           card('PRODUCTS', productCount, 'In catalog', Icons.inventory_2_outlined,
               onTap: () => context.push('/admin/products')),
           card('LOCATIONS', locations, 'Shops & warehouses', Icons.location_city_outlined,
               onTap: () => context.push('/admin/locations')),
+          card('ADMINS', admins, 'Shop & warehouse',
+              Icons.admin_panel_settings_outlined,
+              onTap: () => context.push('/admin/accounts')),
         ];
       }
       return [
@@ -76,68 +79,31 @@ class KpiGrid extends ConsumerWidget {
       ];
     }
 
-
     Widget layout(List<Widget> items) {
-      if (isDesktop) {
-        return Padding(
-          padding: EdgeInsets.symmetric(horizontal: padding, vertical: 8),
-          child: GridView.count(
-            crossAxisCount: items.length.clamp(1, 4),
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 2.0,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            children: items,
-          ),
-        );
-      }
-      final gap = isSmall ? 6.0 : 8.0;
       return Padding(
         padding: EdgeInsets.symmetric(horizontal: padding, vertical: 8),
-        child: Column(
-          children: [
-            Row(children: [
-              Expanded(child: items[0]),
-              SizedBox(width: gap),
-              Expanded(child: items[1]),
-            ]),
-            if (items.length >= 3) ...[
-              SizedBox(height: gap),
-              if (items.length >= 4)
-                Row(children: [
-                  Expanded(child: items[2]),
-                  SizedBox(width: gap),
-                  Expanded(child: items[3]),
-                ])
-              else
-                items[2],
-            ],
-          ],
+        child: GridView.count(
+          crossAxisCount: isDesktop ? items.length.clamp(1, 4) : 2,
+          crossAxisSpacing: isSmall ? 8 : 12,
+          mainAxisSpacing: isSmall ? 8 : 12,
+          childAspectRatio: isDesktop ? 2.0 : 1.7,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          children: items,
         ),
       );
-
     }
 
-    return kpiData.when(
-      data: (s) => layout(cards(
-        stock: '${s.totalStock ?? 0}',
-        sales: '${s.todaySales ?? 0}',
-        sellers: '${s.totalSellers ?? 0}',
-        shipments: '${s.pendingShipments ?? 0}',
-        locations: '${s.totalLocations ?? 0}',
-        admins: '${s.totalAdmins ?? 0}',
-      )),
-      loading: () => layout(cards(
-        stock: '--',
-        sales: '--',
-        sellers: '--',
-        shipments: '--',
-        locations: '--',
-        admins: '--',
-      )),
-      error: (_, __) => const SizedBox.shrink(),
-    );
+    final s = kpiData.valueOrNull;
+    String v(int? n) => s == null ? '--' : '${n ?? 0}';
+    return layout(cards(
+      stock: v(s?.totalStock),
+      sales: v(s?.todaySales),
+      sellers: v(s?.totalSellers),
+      shipments: v(s?.pendingShipments),
+      locations: v(s?.totalLocations),
+      admins: v(s?.totalAdmins),
+    ));
   }
 }
 
@@ -162,9 +128,9 @@ class _KpiCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconSize = isSmall ? 14.0 : 16.0;
-    final valueSize = isSmall ? 16.0 : 18.0;
-    final titleSize = isSmall ? 8.0 : 9.0;
+    final iconSize = isSmall ? 16.0 : 18.0;
+    final valueSize = isSmall ? 20.0 : 22.0;
+    final titleSize = isSmall ? 11.0 : 12.0;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),

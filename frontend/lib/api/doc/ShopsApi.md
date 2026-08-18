@@ -11,7 +11,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**apiShopsEmployeeRolesGet**](ShopsApi.md#apishopsemployeerolesget) | **GET** /api/shops/employee-roles | List job titles for employees (Manager, Cashier, …)
 [**apiShopsEmployeesEmployeeIdGet**](ShopsApi.md#apishopsemployeesemployeeidget) | **GET** /api/shops/employees/{employeeId} | Admin view one employee (profile + check-in/check-out only)
-[**apiShopsEmployeesEmployeeIdLocationPatch**](ShopsApi.md#apishopsemployeesemployeeidlocationpatch) | **PATCH** /api/shops/employees/{employeeId}/location | Move an employee to another shop or warehouse
+[**apiShopsEmployeesEmployeeIdLocationPatch**](ShopsApi.md#apishopsemployeesemployeeidlocationpatch) | **PATCH** /api/shops/employees/{employeeId}/location | Move an admin or employee to another shop or warehouse
 [**apiShopsEmployeesNextUserIdGet**](ShopsApi.md#apishopsemployeesnextuseridget) | **GET** /api/shops/employees/next-user-id | Preview next auto-generated employee user_id (EMP001, EMP002, …)
 [**apiShopsEmployeesPost**](ShopsApi.md#apishopsemployeespost) | **POST** /api/shops/employees | Create an employee at a shop or warehouse
 [**apiShopsLocationsGet**](ShopsApi.md#apishopslocationsget) | **GET** /api/shops/locations | List active locations (warehouse + shops)
@@ -109,9 +109,9 @@ Name | Type | Description  | Notes
 # **apiShopsEmployeesEmployeeIdLocationPatch**
 > TransferEmployeeResponse apiShopsEmployeesEmployeeIdLocationPatch(employeeId, transferEmployeeRequest)
 
-Move an employee to another shop or warehouse
+Move an admin or employee to another shop or warehouse
 
-Super Admin only. Updates `users.location_id` (and parent/shop name). Destination must be active and must not already have an employee. Employee must be checked out first. Inventory stays at the old location. 
+Super Admin or shop Admin. ADMIN or EMPLOYEE only. Updates `users.location_id` (and parent/shop name). Shop Admin: person must be in their shop. Dest must be active. Employee dest must not already have an employee; employee must be checked out first. Inventory stays at the old location. 
 
 ### Example
 ```dart

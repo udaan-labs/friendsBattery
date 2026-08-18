@@ -201,8 +201,8 @@ class ShopsApi {
     );
   }
 
-  /// Move an employee to another shop or warehouse
-  /// Super Admin only. Updates &#x60;users.location_id&#x60; (and parent/shop name). Destination must be active and must not already have an employee. Employee must be checked out first. Inventory stays at the old location. 
+  /// Move an admin or employee to another shop or warehouse
+  /// Super Admin or shop Admin. ADMIN or EMPLOYEE only. Updates &#x60;users.location_id&#x60; (and parent/shop name). Shop Admin: person must be in their shop. Dest must be active. Employee dest must not already have an employee; employee must be checked out first. Inventory stays at the old location. 
   ///
   /// Parameters:
   /// * [employeeId] 

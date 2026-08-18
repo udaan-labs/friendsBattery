@@ -48,8 +48,8 @@ class StaffRepository {
     return [for (final r in data) if (r.id != null) r];
   }
 
-  Future<List<LocationItem>> listLocations() async {
-    final response = await _shops.apiShopsLocationsGet();
+  Future<List<LocationItem>> listLocations({String? type}) async {
+    final response = await _shops.apiShopsLocationsGet(type: type);
     final data = response.data?.data;
     if (data == null) {
       throw Exception(response.data?.message ?? 'Failed to load locations');
@@ -77,6 +77,7 @@ class StaffRepository {
             TransferEmployeeRequest((b) => b.locationId = locationId),
       );
     } on DioException catch (e) {
+      if (e.response?.statusCode == 200) return;
       final data = e.response?.data;
       if (data is Map && data['message'] != null) {
         throw Exception(data['message'].toString());

@@ -4147,8 +4147,8 @@
     },
     "/api/shops/employees/{employeeId}/location": {
       "patch": {
-        "summary": "Move an employee to another shop or warehouse",
-        "description": "Super Admin only. Updates `users.location_id` (and parent/shop name).\nDestination must be active and must not already have an employee.\nEmployee must be checked out first. Inventory stays at the old location.\n",
+        "summary": "Move an admin or employee to another shop or warehouse",
+        "description": "Super Admin or shop Admin. ADMIN or EMPLOYEE only. Updates `users.location_id`\n(and parent/shop name). Shop Admin: person must be in their shop. Dest must be\nactive. Employee dest must not already have an employee; employee must be\nchecked out first. Inventory stays at the old location.\n",
         "tags": [
           "Shops"
         ],
@@ -4195,10 +4195,10 @@
             "description": "Unauthorized"
           },
           "403": {
-            "description": "Super Admin only"
+            "description": "Super Admin or shop Admin; employee out of shop Admin scope"
           },
           "404": {
-            "description": "Employee not found"
+            "description": "Admin or employee not found"
           },
           "409": {
             "description": "Destination already has an employee"

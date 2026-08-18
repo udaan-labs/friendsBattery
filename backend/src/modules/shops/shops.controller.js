@@ -133,7 +133,7 @@ class ShopsController {
 
   /**
    * PATCH /api/shops/employees/:employeeId/location
-   * Super Admin: move an employee to another shop or warehouse.
+   * Super Admin or shop Admin: move an admin or employee to another shop or warehouse.
    */
   async transferEmployee(req, res) {
     try {
@@ -147,7 +147,7 @@ class ShopsController {
         Number(employeeId),
         Number(req.body.location_id)
       );
-      return successResponse(res, 200, 'Employee moved successfully', data);
+      return successResponse(res, 200, 'Moved successfully', data);
     } catch (error) {
       return handleRouteError(res, error, 'Transfer Employee Error:');
     }

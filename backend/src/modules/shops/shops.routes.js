@@ -17,9 +17,7 @@ const {
   requireAdmin,
   requireSeller,
   requireAdminOrSeller,
-  requireRole,
 } = require('../../shared/middleware/role.middleware');
-const ROLES = require('../../shared/constants/roles');
 const { validateRequest } = require('../../shared/middleware/validation.middleware');
 
 /**
@@ -474,11 +472,12 @@ router.get(
  * @swagger
  * /api/shops/employees/{employeeId}/location:
  *   patch:
- *     summary: Move an employee to another shop or warehouse
+ *     summary: Move an admin or employee to another shop or warehouse
  *     description: |
- *       Super Admin only. Updates `users.location_id` (and parent/shop name).
- *       Destination must be active and must not already have an employee.
- *       Employee must be checked out first. Inventory stays at the old location.
+ *       Super Admin or shop Admin. ADMIN or EMPLOYEE only. Updates `users.location_id`
+ *       (and parent/shop name). Shop Admin: person must be in their shop. Dest must be
+ *       active. Employee dest must not already have an employee; employee must be
+ *       checked out first. Inventory stays at the old location.
  *     tags: [Shops]
  *     security:
  *       - bearerAuth: []
@@ -506,16 +505,16 @@ router.get(
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Super Admin only
+ *         description: Super Admin or shop Admin; employee out of shop Admin scope
  *       404:
- *         description: Employee not found
+ *         description: Admin or employee not found
  *       409:
  *         description: Destination already has an employee
  */
 router.patch(
   '/employees/:employeeId/location',
   authenticate,
-  requireRole(ROLES.SUPER_ADMIN),
+  requireAdmin,
   validateRequest(transferEmployeeSchema),
   shopsController.transferEmployee
 );

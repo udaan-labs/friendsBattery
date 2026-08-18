@@ -133,7 +133,11 @@ class _Tile extends StatelessWidget {
     final roleLabel = member.role?.name ?? member.role?.toString() ?? '';
     final active = member.isActive != false;
     final canToggle = onToggleActive != null && member.id != null;
-    final canMove = onMove != null && member.id != null;
+    final role = member.role;
+    final canMove = onMove != null &&
+        member.id != null &&
+        (role == ShopStaffMemberRoleEnum.ADMIN ||
+            role == ShopStaffMemberRoleEnum.EMPLOYEE);
     final hasMenu = canToggle || canMove;
 
     return Padding(

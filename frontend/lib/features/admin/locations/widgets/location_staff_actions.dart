@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 
+import '../../../../shared/widgets/snackbar_helper.dart';
 import '../../../auth/widgets/admin_location_picker.dart';
 import '../../../shared/staff/providers/staff_providers.dart';
 import '../../accounts/providers/accounts_providers.dart';
@@ -23,7 +24,7 @@ Future<void> setLocationStaffActive(
     ref.invalidate(locationStaffProvider(locationId));
   } catch (e) {
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+    context.showFriendlyError(e);
   }
 }
 
@@ -35,16 +36,16 @@ Future<void> moveLocationEmployee(
 }) async {
   final id = member.id;
   if (id == null) return;
-  final locations = await ref.read(locationsListProvider.future);
+  final repo = ref.read(staffRepositoryProvider);
+  final shops = await repo.listLocations(type: 'SHOP');
+  final warehouses = await repo.listLocations(type: 'WAREHOUSE');
   if (!context.mounted) return;
   final dests = [
-    for (final l in locations)
+    for (final l in [...shops, ...warehouses])
       if (l.id != null && l.id != locationId) l,
   ];
   if (dests.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('No other location to move to')),
-    );
+    context.showInfoSnackBar('No other location to move to');
     return;
   }
   LocationItem? dest;
@@ -61,14 +62,12 @@ Future<void> moveLocationEmployee(
           id: id,
           locationId: destId,
         );
-    ref.invalidate(locationStaffProvider(locationId));
     ref.invalidate(locationStaffProvider(destId));
+    await ref.refresh(locationStaffProvider(locationId).future);
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Employee moved')),
-    );
+    context.showSuccessSnackBar('Moved');
   } catch (e) {
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+    context.showFriendlyError(e);
   }
 }

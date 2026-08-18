@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import 'package:go_router/go_router.dart';
@@ -39,6 +40,7 @@ class _AddEmployeeScreenState extends ConsumerState<AddEmployeeScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
   bool _submitting = false;
+  String? _mobileError;
   int? _selectedLocationId;
   int? _selectedRoleId;
 
@@ -69,6 +71,16 @@ class _AddEmployeeScreenState extends ConsumerState<AddEmployeeScreen> {
     super.dispose();
   }
 
+  static String? _mobileLengthError(String value) {
+    if (value.length < 10) {
+      return 'Mobile number cannot be less than 10 digits';
+    }
+    if (value.length > 10) {
+      return 'Mobile number cannot be more than 10 digits';
+    }
+    return null;
+  }
+
   Future<void> _submit() async {
     final userId = _userIdController.text.trim();
     final username = _usernameController.text.trim();
@@ -80,8 +92,10 @@ class _AddEmployeeScreenState extends ConsumerState<AddEmployeeScreen> {
       context.showErrorSnackBar('Fill all required fields');
       return;
     }
-    if (!RegExp(r'^\d{10}$').hasMatch(number)) {
-      context.showErrorSnackBar('Mobile number must be exactly 10 digits');
+    final mobileError = _mobileLengthError(number);
+    if (mobileError != null) {
+      setState(() => _mobileError = mobileError);
+      context.showErrorSnackBar(mobileError);
       return;
     }
     final passwordError = validateStrongPassword(password);
@@ -246,11 +260,18 @@ class _AddEmployeeScreenState extends ConsumerState<AddEmployeeScreen> {
                     TextField(
                       controller: _userNumberController,
                       enabled: !_submitting,
-                      keyboardType: TextInputType.phone,
-                      decoration: const InputDecoration(
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      decoration: InputDecoration(
                         labelText: 'Mobile number',
                         hintText: '10 digits',
+                        errorText: _mobileError,
                       ),
+                      onChanged: (v) {
+                        setState(() => _mobileError = _mobileLengthError(v));
+                      },
                     ),
                     const SizedBox(height: 16),
                     rolesAsync.when(

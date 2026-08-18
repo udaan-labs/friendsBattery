@@ -80,6 +80,11 @@ function formatOrgActivity(e) {
       subtitle: [name, place].filter(Boolean).join(' • '),
       icon: 'person_add',
     },
+    ADMIN_TRANSFERRED: {
+      title: `${who} moved admin`,
+      subtitle: [name, place].filter(Boolean).join(' • '),
+      icon: 'person_add',
+    },
     USER_DEACTIVATED: { title: `${who} deactivated account`, subtitle: name, icon: 'person_off' },
     USER_ACTIVATED: { title: `${who} activated account`, subtitle: name, icon: 'person_add' },
   };
@@ -125,29 +130,21 @@ class DashboardRepository {
     const endOfToday = new Date();
     endOfToday.setHours(23, 59, 59, 999);
 
+    const soldToday = {
+      soldAt: { gte: startOfToday, lte: endOfToday },
+    };
+
     const [count, sumResult] = await Promise.all([
-      prisma.salesTransaction.count({
-        where: {
-          soldAt: {
-            gte: startOfToday,
-            lte: endOfToday
-          }
-        }
-      }),
+      prisma.salesTransaction.count({ where: soldToday }),
       prisma.salesTransaction.aggregate({
         _sum: { sellPrice: true },
-        where: {
-          soldAt: {
-            gte: startOfToday,
-            lte: endOfToday
-          }
-        }
-      })
+        where: soldToday,
+      }),
     ]);
 
     return {
       count,
-      amount: Number(sumResult._sum.sellPrice || 0)
+      amount: Number(sumResult._sum.sellPrice || 0),
     };
   }
 

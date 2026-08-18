@@ -283,8 +283,8 @@ class ShopsService {
   async listLocations(filter = {}, actor) {
     const scope = resolveAdminShopScope(actor || {});
     if (scope?.kind === 'shop') {
-      if (filter.type === 'WAREHOUSE') {
-        const rows = await shopsRepository.findActiveLocations({ type: 'WAREHOUSE' });
+      if (filter.type === 'WAREHOUSE' || filter.type === 'SHOP') {
+        const rows = await shopsRepository.findActiveLocations({ type: filter.type });
         return rows.map((loc) => this._mapLocationItem(loc));
       }
       if (scope.locationId == null) return [];
@@ -570,18 +570,21 @@ class ShopsService {
   }
 
   /**
-   * Super Admin: move EMPLOYEE to another shop or warehouse.
+   * Super Admin or shop Admin: move ADMIN or EMPLOYEE to another shop or warehouse.
    * @param {{ id: number, role: string }} actor
-   * @param {number} employeeId
+   * @param {number} staffId
    * @param {number} locationId
    */
-  async transferEmployee(actor, employeeId, locationId) {
+  async transferEmployee(actor, staffId, locationId) {
     const attendanceRepository = require('../attendance/attendance.repository');
-    const employee = await shopsRepository.findEmployeeById(employeeId);
-    if (!employee) {
-      throw httpError(404, 'Employee not found');
+    const user = await shopsRepository.findEmployeeById(staffId, [
+      ROLES.ADMIN,
+      ROLES.EMPLOYEE,
+    ]);
+    if (!user) {
+      throw httpError(404, 'User not found');
     }
-    assertAccess(actor, { kind: 'user', target: employee });
+    assertAccess(actor, { kind: 'user', target: user });
 
     const dest = await shopsRepository.findLocationById(locationId);
     if (!dest || dest.isActive === false) {
@@ -589,59 +592,59 @@ class ShopsService {
     }
 
     const fromLocationId =
-      employee.locationId != null ? Number(employee.locationId) : null;
+      user.locationId != null ? Number(user.locationId) : null;
     const toLocationId = Number(dest.id);
     if (fromLocationId === toLocationId) {
       throw httpError(400, 'Already at this location');
     }
 
-    const open = await attendanceRepository.findOpenAttendance(employee.id);
-    if (open) {
-      throw httpError(400, 'Check this employee out before moving them');
-    }
-
-    const taken = await authRepository.findUserByLocationAndRole(
-      toLocationId,
-      ROLES.EMPLOYEE,
-    );
-    if (taken) {
-      throw httpError(409, 'This location already has an employee');
-    }
-
-    let parentId = Number(actor.id);
-    if (dest.type === 'SHOP') {
-      const destUsers = await shopsRepository.findUsersByLocationId(toLocationId);
-      const destAdmin = destUsers.find(
-        (u) => u.role === ROLES.ADMIN && u.isActive !== false
+    let parentId;
+    if (user.role === ROLES.EMPLOYEE) {
+      const open = await attendanceRepository.findOpenAttendance(user.id);
+      if (open) {
+        throw httpError(400, 'Check this employee out before moving them');
+      }
+      const taken = await authRepository.findUserByLocationAndRole(
+        toLocationId,
+        ROLES.EMPLOYEE,
       );
-      if (destAdmin) parentId = Number(destAdmin.id);
+      if (taken) {
+        throw httpError(409, 'This location already has an employee');
+      }
+      parentId = Number(actor.id);
+      if (dest.type === 'SHOP') {
+        const destUsers = await shopsRepository.findUsersByLocationId(toLocationId);
+        const destAdmin = destUsers.find(
+          (u) => u.role === ROLES.ADMIN && u.isActive !== false
+        );
+        if (destAdmin) parentId = Number(destAdmin.id);
+      }
+    } else {
+      parentId =
+        user.parentId != null ? Number(user.parentId) : Number(actor.id);
     }
 
     await shopsRepository.updateUserLocationId(
-      employee.id,
+      user.id,
       toLocationId,
       dest.name,
       parentId
     );
 
-    const fromName = employee.location?.name || employee.shopName || null;
+    const fromName = user.location?.name || user.shopName || null;
     await orgEventsRepository.create({
-      action: 'EMPLOYEE_TRANSFERRED',
+      action:
+        user.role === ROLES.ADMIN ? 'ADMIN_TRANSFERRED' : 'EMPLOYEE_TRANSFERRED',
       actorId: actor.id,
       entityType: 'user',
-      entityId: employee.id,
+      entityId: user.id,
       payload: {
-        username: employee.userName,
+        username: user.userName,
         location_name: [fromName, dest.name].filter(Boolean).join(' → '),
       },
     });
 
-    return {
-      ...this._mapStaffUser(employee),
-      location_id: toLocationId,
-      location: this._mapLocationBrief(dest),
-      created_at: employee.createdAt,
-    };
+    return { id: Number(user.id) };
   }
 
   /**

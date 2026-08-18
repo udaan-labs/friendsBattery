@@ -261,13 +261,14 @@ class ShopsRepository {
   }
 
   /**
-   * Single EMPLOYEE user by id (admin view). Never returns ADMIN/SELLER.
+   * Single staff user by id. Default EMPLOYEE only (admin view).
+   * Pass roles `['ADMIN','EMPLOYEE']` for move.
    */
-  async findEmployeeById(employeeId) {
+  async findEmployeeById(employeeId, roles = ['EMPLOYEE']) {
     return prisma.user.findFirst({
       where: {
         id: BigInt(employeeId),
-        role: 'EMPLOYEE',
+        role: { in: roles },
       },
       include: {
         location: {
