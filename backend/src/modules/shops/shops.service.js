@@ -570,15 +570,14 @@ class ShopsService {
   }
 
   /**
-   * Super Admin or shop Admin: move ADMIN or EMPLOYEE to another shop or warehouse.
-   * @param {{ id: number, role: string }} actor
-   * @param {number} staffId
-   * @param {number} locationId
+   * Super Admin or shop Admin: move ADMIN, SELLER, or EMPLOYEE.
+   * Seller dest must be SHOP. Inventory stays.
    */
   async transferEmployee(actor, staffId, locationId) {
     const attendanceRepository = require('../attendance/attendance.repository');
     const user = await shopsRepository.findEmployeeById(staffId, [
       ROLES.ADMIN,
+      ROLES.SELLER,
       ROLES.EMPLOYEE,
     ]);
     if (!user) {
@@ -589,6 +588,9 @@ class ShopsService {
     const dest = await shopsRepository.findLocationById(locationId);
     if (!dest || dest.isActive === false) {
       throw httpError(400, 'Location not found or inactive');
+    }
+    if (user.role === ROLES.SELLER && dest.type !== 'SHOP') {
+      throw httpError(400, 'Sellers can only move to a shop');
     }
 
     const fromLocationId =
@@ -611,6 +613,12 @@ class ShopsService {
       if (taken) {
         throw httpError(409, 'This location already has an employee');
       }
+    }
+
+    if (user.role === ROLES.ADMIN) {
+      parentId =
+        user.parentId != null ? Number(user.parentId) : Number(actor.id);
+    } else {
       parentId = Number(actor.id);
       if (dest.type === 'SHOP') {
         const destUsers = await shopsRepository.findUsersByLocationId(toLocationId);
@@ -619,9 +627,6 @@ class ShopsService {
         );
         if (destAdmin) parentId = Number(destAdmin.id);
       }
-    } else {
-      parentId =
-        user.parentId != null ? Number(user.parentId) : Number(actor.id);
     }
 
     await shopsRepository.updateUserLocationId(
@@ -633,8 +638,7 @@ class ShopsService {
 
     const fromName = user.location?.name || user.shopName || null;
     await orgEventsRepository.create({
-      action:
-        user.role === ROLES.ADMIN ? 'ADMIN_TRANSFERRED' : 'EMPLOYEE_TRANSFERRED',
+      action: `${user.role}_TRANSFERRED`,
       actorId: actor.id,
       entityType: 'user',
       entityId: user.id,

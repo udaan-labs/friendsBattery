@@ -12,7 +12,7 @@ import 'location_header_card.dart';
 import 'location_staff_actions.dart';
 import 'location_stock_section.dart';
 
-/// Shop: header + admin/seller/employee + stock.
+/// Shop: header + seller/employee + stock.
 class ShopDetailBody extends ConsumerWidget {
   const ShopDetailBody({
     super.key,
@@ -62,7 +62,6 @@ class ShopDetailBody extends ConsumerWidget {
               ],
             ),
             data: (data) {
-              final admins = data.admins?.toList() ?? [];
               final sellers = data.sellers?.toList() ?? [];
               final employees = data.employees?.toList() ?? [];
               final onToggle = isSuperAdmin
@@ -85,17 +84,6 @@ class ShopDetailBody extends ConsumerWidget {
               return Column(
                 children: [
                   StaffMemberGroup(
-                    title: 'Admins',
-                    icon: Icons.admin_panel_settings_outlined,
-                    color: const Color(0xFF7C3AED),
-                    members: admins,
-                    emptyLabel: 'No admin at this shop',
-                    showRoleChip: true,
-                    onToggleActive: onToggle,
-                    onMove: onMove,
-                  ),
-                  const SizedBox(height: 12),
-                  StaffMemberGroup(
                     title: 'Sellers',
                     icon: Icons.storefront_rounded,
                     color: const Color(0xFF006B2C),
@@ -103,11 +91,9 @@ class ShopDetailBody extends ConsumerWidget {
                     emptyLabel: 'No seller at this shop',
                     showRoleChip: true,
                     addLabel: 'Add seller',
-                    onAdd: sellers.isEmpty
-                        ? () => context.push(
-                              '/admin/add-seller?locationId=$locationId',
-                            )
-                        : null,
+                    onAdd: () => context.push(
+                      '/admin/add-seller?locationId=$locationId',
+                    ),
                     onToggleActive: onToggle,
                     onMove: onMove,
                   ),

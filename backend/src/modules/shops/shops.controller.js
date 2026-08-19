@@ -133,7 +133,7 @@ class ShopsController {
 
   /**
    * PATCH /api/shops/employees/:employeeId/location
-   * Super Admin or shop Admin: move an admin or employee to another shop or warehouse.
+   * Super Admin or shop Admin: move an admin, seller, or employee.
    */
   async transferEmployee(req, res) {
     try {

@@ -147,13 +147,6 @@ class AuthService {
       }
     }
 
-    if (locationId != null) {
-      const taken = await authRepository.findUserByLocationAndRole(locationId, ROLES.SELLER);
-      if (taken) {
-        throw httpError(409, 'This shop already has a seller');
-      }
-    }
-
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(password, saltRounds);
 

@@ -38,7 +38,9 @@ Future<void> moveLocationEmployee(
   if (id == null) return;
   final repo = ref.read(staffRepositoryProvider);
   final shops = await repo.listLocations(type: 'SHOP');
-  final warehouses = await repo.listLocations(type: 'WAREHOUSE');
+  final warehouses = member.role == ShopStaffMemberRoleEnum.SELLER
+      ? const <LocationItem>[]
+      : await repo.listLocations(type: 'WAREHOUSE');
   if (!context.mounted) return;
   final dests = [
     for (final l in [...shops, ...warehouses])

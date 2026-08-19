@@ -251,7 +251,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           if (_asSeller) ...[
             const SizedBox(height: 4),
             const Text(
-              'One seller per shop.',
+              'Assign this seller to a shop.',
               style: TextStyle(fontSize: 12, color: Color(0xFF545F73)),
             ),
           ],

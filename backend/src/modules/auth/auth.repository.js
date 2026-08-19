@@ -27,7 +27,7 @@ class AuthRepository {
     });
   }
 
-  /** One SELLER / EMPLOYEE per location. */
+  /** One EMPLOYEE per location. */
   async findUserByLocationAndRole(locationId, role) {
     return prisma.user.findFirst({
       where: {
