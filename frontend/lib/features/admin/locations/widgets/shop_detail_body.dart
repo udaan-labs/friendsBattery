@@ -63,9 +63,7 @@ class ShopDetailBody extends ConsumerWidget {
             ),
             data: (data) {
               final admins = data.admins?.toList() ?? [];
-              final leads = admins.isNotEmpty
-                  ? admins
-                  : (data.sellers?.toList() ?? []);
+              final sellers = data.sellers?.toList() ?? [];
               final employees = data.employees?.toList() ?? [];
               final onToggle = isSuperAdmin
                   ? (ShopStaffMember m, bool next) => setLocationStaffActive(
@@ -87,16 +85,27 @@ class ShopDetailBody extends ConsumerWidget {
               return Column(
                 children: [
                   StaffMemberGroup(
-                    title: 'Admin / seller',
+                    title: 'Admins',
+                    icon: Icons.admin_panel_settings_outlined,
+                    color: const Color(0xFF7C3AED),
+                    members: admins,
+                    emptyLabel: 'No admin at this shop',
+                    showRoleChip: true,
+                    onToggleActive: onToggle,
+                    onMove: onMove,
+                  ),
+                  const SizedBox(height: 12),
+                  StaffMemberGroup(
+                    title: 'Sellers',
                     icon: Icons.storefront_rounded,
                     color: const Color(0xFF006B2C),
-                    members: leads,
-                    emptyLabel: 'No admin or seller at this shop',
+                    members: sellers,
+                    emptyLabel: 'No seller at this shop',
                     showRoleChip: true,
-                    addLabel: 'Add admin',
-                    onAdd: isSuperAdmin
+                    addLabel: 'Add seller',
+                    onAdd: sellers.isEmpty
                         ? () => context.push(
-                              '/admin/add-admin?locationId=$locationId',
+                              '/admin/add-seller?locationId=$locationId',
                             )
                         : null,
                     onToggleActive: onToggle,

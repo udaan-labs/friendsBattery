@@ -28,14 +28,17 @@
             "id": "cdc2b3bd10d1d582",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "canvas",
               "state": {
-                "file": "flows.md",
-                "mode": "source",
-                "source": false
+                "file": "User Roles & Capabilities Flow.canvas",
+                "viewState": {
+                  "x": 1223.594802602977,
+                  "y": 533.1446522697215,
+                  "zoom": -1.5386948971619507
+                }
               },
-              "icon": "lucide-file",
-              "title": "flows"
+              "icon": "lucide-layout-dashboard",
+              "title": "User Roles & Capabilities Flow"
             }
           }
         ],
@@ -205,10 +208,10 @@
   },
   "active": "cdc2b3bd10d1d582",
   "lastOpenFiles": [
-    "User Roles & Capabilities Flow.canvas",
-    "flows.md",
-    "Role Chain Workflow.md",
     "User Roles & Capabilities Flow.md",
+    "flows.md",
+    "User Roles & Capabilities Flow.canvas",
+    "Role Chain Workflow.md",
     "Role Chain Workflow.canvas",
     "Product and Shipment Flows.canvas",
     "Login Flow.canvas",

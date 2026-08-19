@@ -14,9 +14,8 @@ import '../../admin/locations/providers/locations_providers.dart';
 import '../../shared/staff/providers/staff_providers.dart';
 import '../widgets/admin_location_picker.dart';
 
-/// Admin Add Seller (`isAdminFlow: true`) or Super Admin Add Admin (`isCreateAdmin: true`).
-/// Shop list: GET /api/shops/locations?type=SHOP
-/// Seller: POST /api/auth/register · Admin: POST /api/auth/register-admin
+/// Add seller (`isAdminFlow`) or add admin (`isCreateAdmin`).
+/// Shop → POST /api/auth/register (SELLER). Warehouse → register-admin (ADMIN).
 class RegisterScreen extends ConsumerStatefulWidget {
   final bool isAdminFlow;
   /// Super Admin creates shop Admin (mutually exclusive with seller flow).
@@ -44,7 +43,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   late int? _selectedShopLocationId = widget.initialLocationId;
+  LocationItemTypeEnum? _selectedType;
   String? _mobileError;
+
+  bool get _asSeller =>
+      widget.isAdminFlow || _selectedType == LocationItemTypeEnum.SHOP;
 
   static String _titleName(String value) {
     return value
@@ -98,8 +101,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final needsShop = widget.isAdminFlow || widget.isCreateAdmin;
     if (needsShop && _selectedShopLocationId == null) {
       context.showErrorSnackBar(
-        widget.isCreateAdmin
-            ? 'Select a shop or warehouse for this admin'
+        widget.isCreateAdmin && !_asSeller
+            ? 'Select a shop or warehouse'
             : 'Select a shop for this seller',
       );
       return;
@@ -107,7 +110,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     final shopName = _shopNameController.text.trim();
 
-    if (widget.isCreateAdmin) {
+    if (widget.isCreateAdmin && !_asSeller) {
       final ok = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -134,8 +137,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       final username = _titleName(_usernameController.text);
       _usernameController.text = username;
       final notifier = ref.read(authControllerProvider.notifier);
-      if (widget.isCreateAdmin) {
-        await notifier.registerAdmin(
+      if (_asSeller) {
+        await notifier.register(
           userId: _userIdController.text.trim(),
           username: username,
           userNumber: number,
@@ -144,28 +147,28 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           locationId: _selectedShopLocationId,
         );
       } else {
-        await notifier.register(
+        await notifier.registerAdmin(
           userId: _userIdController.text.trim(),
           username: username,
           userNumber: number,
           shopName: shopName,
           password: _passwordController.text,
-          locationId: widget.isAdminFlow ? _selectedShopLocationId : null,
+          locationId: _selectedShopLocationId,
         );
       }
 
       if (mounted) {
         context.showSuccessSnackBar(
-          widget.isCreateAdmin
-              ? 'Admin created for that location and can log in immediately.'
-              : widget.isAdminFlow
-                  ? 'Seller created at selected shop (inactive until activated).'
+          _asSeller
+              ? 'Seller created at selected shop (inactive until activated).'
+              : widget.isCreateAdmin
+                  ? 'Admin created for that location and can log in immediately.'
                   : 'Registration successful.',
         );
-        if (widget.isAdminFlow) {
+        if (_asSeller) {
           DataSync.afterSellerMutation(ref);
         }
-        if (widget.isCreateAdmin && _selectedShopLocationId != null) {
+        if (_selectedShopLocationId != null) {
           ref.invalidate(locationStaffProvider(_selectedShopLocationId!));
         }
         context.pop();
@@ -177,7 +180,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   void _selectShop(int? id, List<LocationItem> shops) {
     if (id == null) {
-      setState(() => _selectedShopLocationId = null);
+      setState(() {
+        _selectedShopLocationId = null;
+        _selectedType = null;
+      });
       return;
     }
     LocationItem? shop;
@@ -189,6 +195,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
     setState(() {
       _selectedShopLocationId = id;
+      _selectedType = shop?.type;
       if (shop != null) {
         _shopNameController.text = shop.name ?? shop.code ?? '';
       }
@@ -241,10 +248,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
             ],
           ),
-          if (!widget.isCreateAdmin) ...[
+          if (_asSeller) ...[
             const SizedBox(height: 4),
             const Text(
-              'Required. One seller per shop.',
+              'One seller per shop.',
               style: TextStyle(fontSize: 12, color: Color(0xFF545F73)),
             ),
           ],
@@ -384,10 +391,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
-          widget.isCreateAdmin
-              ? 'Add Admin'
-              : widget.isAdminFlow
-                  ? 'Add Seller'
+          _asSeller
+              ? 'Add Seller'
+              : widget.isCreateAdmin
+                  ? 'Add Admin'
                   : 'Sign Up',
         ),
         leading: IconButton(
@@ -419,10 +426,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                widget.isCreateAdmin
-                    ? 'Create Shop or Warehouse Admin'
-                    : widget.isAdminFlow
-                        ? 'Create Seller Account'
+                _asSeller
+                    ? 'Create Seller Account'
+                    : widget.isCreateAdmin
+                        ? 'Create Admin'
                         : 'Create Account',
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -487,14 +494,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     const SizedBox(height: 16),
                     TextField(
                       controller: _shopNameController,
-                      enabled: !isLoading && !widget.isCreateAdmin,
+                      enabled: !isLoading && (!widget.isCreateAdmin || _asSeller),
                       decoration: InputDecoration(
-                        labelText: widget.isCreateAdmin
-                            ? 'Location name'
-                            : 'Shop Name',
-                        helperText: widget.isCreateAdmin
-                            ? 'Change location with the picker above'
-                            : 'Filled when you pick a shop; editable',
+                        labelText: _asSeller ? 'Shop Name' : 'Location name',
+                        helperText: _asSeller
+                            ? 'Filled when you pick a shop; editable'
+                            : 'Change location with the picker above',
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -555,10 +560,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : Text(
-                              widget.isCreateAdmin
-                                  ? 'Add Admin'
-                                  : widget.isAdminFlow
-                                      ? 'Add Seller'
+                              _asSeller
+                                  ? 'Add Seller'
+                                  : widget.isCreateAdmin
+                                      ? 'Add Admin'
                                       : 'Sign Up',
                               style: const TextStyle(
                                 fontFamily: 'Inter',

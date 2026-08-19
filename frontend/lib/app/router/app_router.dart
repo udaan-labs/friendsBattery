@@ -173,7 +173,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/admin/add-seller',
-            builder: (context, state) => const RegisterScreen(isAdminFlow: true),
+            builder: (context, state) => RegisterScreen(
+              isAdminFlow: true,
+              initialLocationId: int.tryParse(
+                state.uri.queryParameters['locationId'] ?? '',
+              ),
+            ),
           ),
           GoRoute(
             path: '/admin/add-admin',

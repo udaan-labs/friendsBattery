@@ -5,13 +5,13 @@
 		{"id":"step_2","type":"text","text":"### 2️⃣ Stock Inwarding\n- **Actor:** Super Admin\n- Register physical battery serial numbers into central `product_units` table.\n- Units initially placed in `WAREHOUSE` location.","x":960,"y":-100,"width":400,"height":240,"color":"6"},
 		{"id":"node_sa","type":"text","text":"## 👑 1. SUPER ADMIN\n**Org Root (`parent_id`: `null`)**\n- Global Warehouses & Shops\n- Product Models & Catalog\n- Global Stock & Staff GPS\n- All-Location Sales Reports","x":-170,"y":-100,"width":360,"height":240,"color":"6"},
 		{"id":"step_3","type":"text","text":"### 3️⃣ Dispatch & Shipment\n- **Actor:** Super Admin\n- Create shipment to transfer battery serial units from Central WH to target Shop Location.\n- Status: `IN_TRANSIT`","x":1640,"y":-100,"width":400,"height":240,"color":"6"},
-		{"id":"step_5","type":"text","text":"### 5️⃣ Shift Start & Counter Prep\n- **Actor:** Employee / Seller\n- Employee performs **GPS Check-In** (`employee_attendance`).\n- System validates location radius.\n- Ready to serve counter customers.","x":560,"y":480,"width":400,"height":240,"color":"3"},
-		{"id":"step_6","type":"text","text":"### 6️⃣ Customer Sale & Bill Generation\n- **Actors:** Admin / Seller / Employee\n- Select Battery Serial Number.\n- Configure Bill Extras:\n  - 🔄 Old Scrap Trade-In\n  - 🛠️ Mechanic Pricing Tier\n  - 🔌 Charging / Jumpstart / Inverter\n  - 🔄 Rental Deposit & Refund","x":1440,"y":600,"width":400,"height":270,"color":"2"},
-		{"id":"step_4","type":"text","text":"### 4️⃣ Shipment Acceptance & Stock Assignment\n- **Actor:** Admin / Seller\n- Admin accepts incoming shipment at Shop.\n- Units updated to Shop Location & assigned `ownerId` to Shop Admin / Seller.","x":1360,"y":285,"width":400,"height":240,"color":"4"},
 		{"id":"node_seller","type":"text","text":"## 💼 3. SELLER\n**Seller Scope (`parent_id`: Admin)**\n- Manage Own Serial Inventory\n- Accept Admin Shipments\n- Process Customer Bills & Returns\n- Services, Scrap & WhatsApp OTP","x":-80,"y":720,"width":360,"height":240,"color":"5"},
-		{"id":"node_emp","type":"text","text":"## 👷 4. EMPLOYEE\n**Shift Staff (`current_location_id`)**\n- Daily Check-In / Check-Out (GPS)\n- Read-Only Shop Stock & Shipments\n- Create Counter Bills\n- No Shipment Accept / Ownership Change","x":400,"y":1070,"width":360,"height":240,"color":"3"},
-		{"id":"step_7","type":"text","text":"### 7️⃣ Ledger Recording & Invoice Delivery\n- **System Action:**\n  - 📝 Append-Only Ledger Entry added to `inventory_transactions`.\n  - 🔋 Unit status set to `SOLD`.\n  - 📲 Send PDF Invoice via WhatsApp with OTP.\n  - 🖨️ Print physical thermal receipt.","x":960,"y":990,"width":400,"height":320,"color":"1"},
-		{"id":"node_admin","type":"text","text":"## 🛡️ 2. ADMIN\n**Shop Admin (`parent_id`: SA)**\n- Manage Assigned Shop & Staff\n- Accept Super Admin Shipments\n- Assign Stock to Sellers\n- Shop Sales & Reports","x":-80,"y":285,"width":360,"height":240,"color":"4"}
+		{"id":"node_admin","type":"text","text":"## 🛡️ 2. ADMIN\n**Shop Admin (`parent_id`: SA)**\n- Manage Assigned Shop & Staff\n- Accept Super Admin Shipments\n- Assign Stock to Sellers\n- Shop Sales & Reports","x":-80,"y":285,"width":360,"height":240,"color":"4"},
+		{"id":"step_4","type":"text","text":"### 4️⃣ Shipment Acceptance & Stock Assignment\n- **Actor:** Admin / Seller\n- Admin accepts incoming shipment at Shop.\n- Units updated to Shop Location & assigned `ownerId` to Shop Admin / Seller.","x":1080,"y":240,"width":400,"height":240,"color":"4"},
+		{"id":"step_5","type":"text","text":"### 5️⃣ Shift Start & Counter Prep\n- **Actor:** Employee / Seller\n- Employee performs **GPS Check-In** (`employee_attendance`).\n- System validates location radius.\n- Ready to serve counter customers.","x":380,"y":480,"width":400,"height":240,"color":"3"},
+		{"id":"step_7","type":"text","text":"### 7️⃣ Ledger Recording & Invoice Delivery\n- **System Action:**\n  - 📝 Append-Only Ledger Entry added to `inventory_transactions`.\n  - 🔋 Unit status set to `SOLD`.\n  - 📲 Send PDF Invoice via WhatsApp with OTP.\n  - 🖨️ Print physical thermal receipt.","x":1080,"y":960,"width":400,"height":320,"color":"1"},
+		{"id":"step_6","type":"text","text":"### 6️⃣ Customer Sale & Bill Generation\n- **Actors:** Admin / Seller / Employee\n- Select Battery Serial Number.\n- Configure Bill Extras:\n  - 🔄 Old Scrap Trade-In\n  - 🛠️ Mechanic Pricing Tier\n  - 🔌 Charging / Jumpstart / Inverter\n  - 🔄 Rental Deposit & Refund","x":1280,"y":570,"width":400,"height":270,"color":"2"},
+		{"id":"node_emp","type":"text","text":"## 👷 4. EMPLOYEE\n**Shift Staff (`current_location_id`)**\n- Daily Check-In / Check-Out (GPS)\n- Read-Only Shop Stock & Shipments\n- Create Counter Bills\n- No Shipment Accept / Ownership Change","x":600,"y":1040,"width":360,"height":280,"color":"3"}
 	],
 	"edges":[
 		{"id":"e_sa_to_admin","fromNode":"node_sa","fromSide":"bottom","toNode":"node_admin","toSide":"top","label":"Supervises & Assigns"},
@@ -25,7 +25,7 @@
 		{"id":"e_emp_step5","fromNode":"node_emp","fromSide":"top","toNode":"step_5","toSide":"bottom","label":"Checks In"},
 		{"id":"e_seller_step6","fromNode":"node_seller","fromSide":"right","toNode":"step_6","toSide":"left","label":"Applies Rates"},
 		{"id":"e_step5_step6","fromNode":"step_5","fromSide":"right","toNode":"step_6","toSide":"left","label":"5. Order Request"},
-		{"id":"e_step6_step7","fromNode":"step_6","fromSide":"bottom","toNode":"step_7","toSide":"right","label":"6. Payment Completed"},
+		{"id":"e_step6_step7","fromNode":"step_6","fromSide":"right","toNode":"step_7","toSide":"right","label":"6. Payment Completed"},
 		{"id":"e_admin_step4","fromNode":"node_admin","fromSide":"right","toNode":"step_4","toSide":"left","label":"Receives Stock"}
 	]
 }
