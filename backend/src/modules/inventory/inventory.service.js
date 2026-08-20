@@ -47,6 +47,8 @@ class InventoryService {
       assertAccess(actor || { id: userId, role, locationId }, {
         kind: 'location',
         locationId: Number(location.id),
+        warehouseId:
+          location.warehouseId != null ? Number(location.warehouseId) : null,
       });
       unitScope = { currentLocationId: BigInt(location.id) };
     } else {

@@ -29,7 +29,7 @@ class WarehouseDetailBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final role = ref.watch(authProvider).role;
     final isSuperAdmin = role == UserRole.superAdmin;
-    final canMove = isSuperAdmin || role == UserRole.admin;
+    final canMove = isSuperAdmin;
     final staffAsync = ref.watch(locationStaffProvider(locationId));
 
     return RefreshIndicator(
@@ -84,23 +84,23 @@ class WarehouseDetailBody extends ConsumerWidget {
                   : null;
               return Column(
                 children: [
-                  StaffMemberGroup(
-                    title: 'Admins',
-                    icon: Icons.admin_panel_settings_outlined,
-                    color: const Color(0xFF7C3AED),
-                    members: data.admins?.toList() ?? [],
-                    emptyLabel: 'No admin at this warehouse',
-                    showRoleChip: true,
-                    addLabel: 'Add admin',
-                    onAdd: isSuperAdmin
-                        ? () => context.push(
-                              '/admin/add-admin?locationId=$locationId',
-                            )
-                        : null,
-                    onToggleActive: onToggle,
-                    onMove: onMove,
-                  ),
-                  const SizedBox(height: 12),
+                  if (isSuperAdmin) ...[
+                    StaffMemberGroup(
+                      title: 'Admins',
+                      icon: Icons.admin_panel_settings_outlined,
+                      color: const Color(0xFF7C3AED),
+                      members: data.admins?.toList() ?? [],
+                      emptyLabel: 'No admin at this warehouse',
+                      showRoleChip: true,
+                      addLabel: 'Add admin',
+                      onAdd: () => context.push(
+                        '/admin/add-admin?locationId=$locationId',
+                      ),
+                      onToggleActive: onToggle,
+                      onMove: onMove,
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                   StaffMemberGroup(
                     title: 'Employees',
                     icon: Icons.badge_rounded,

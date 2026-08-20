@@ -5,10 +5,11 @@ const { isSuperAdmin, isAdmin } = require('./role.util');
  * Org vs own-shop scope for Super Admin / shop Admin.
  *
  * - SUPER_ADMIN → { kind: 'org' }
- * - ADMIN → { kind: 'shop', adminId, locationId | null }  // users.location_id
+ * - ADMIN → { kind: 'shop', adminId, locationId | null, locationType }
  * - other → null
  *
- * Staff tree = parent_id = admin (or same location_id).
+ * Staff tree = parent_id = admin, same location_id, or (warehouse admin)
+ * sellers at shops with location.warehouse_id = warehouse.
  */
 function resolveAdminShopScope(user) {
   if (!user || !user.role) return null;
@@ -18,20 +19,25 @@ function resolveAdminShopScope(user) {
       user.locationId != null && user.locationId !== ''
         ? Number(user.locationId)
         : null;
+    const locationType = user.location?.type || null;
     return {
       kind: 'shop',
       adminId: Number(user.id),
       locationId: Number.isFinite(locationId) ? locationId : null,
+      locationType,
     };
   }
   return null;
 }
 
-/** parentId = admin, optionally same locationId */
+/** parentId = admin, same location, or shops under warehouse */
 function _shopOr(scope) {
   const or = [{ parentId: BigInt(scope.adminId) }];
   if (scope.locationId != null) {
     or.push({ locationId: BigInt(scope.locationId) });
+    if (scope.locationType === 'WAREHOUSE') {
+      or.push({ location: { warehouseId: BigInt(scope.locationId) } });
+    }
   }
   return or;
 }
@@ -66,6 +72,29 @@ function isUserInShopScope(target, scope) {
   ) {
     return true;
   }
+  if (
+    scope.locationType === 'WAREHOUSE' &&
+    scope.locationId != null &&
+    target.location?.warehouseId != null &&
+    Number(target.location.warehouseId) === Number(scope.locationId)
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/** Own location, or (warehouse admin) a shop whose warehouse_id is this warehouse. */
+function isLocationInShopScope(loc, scope) {
+  if (!scope || scope.kind === 'org') return true;
+  if (!loc || scope.kind !== 'shop' || scope.locationId == null) return false;
+  if (Number(loc.id) === Number(scope.locationId)) return true;
+  if (
+    scope.locationType === 'WAREHOUSE' &&
+    loc.warehouseId != null &&
+    Number(loc.warehouseId) === Number(scope.locationId)
+  ) {
+    return true;
+  }
   return false;
 }
 
@@ -90,6 +119,7 @@ module.exports = {
   sellerWhereForShopScope,
   staffUserWhereForShopScope,
   isUserInShopScope,
+  isLocationInShopScope,
   resolveShopSellerIds,
 };
 
@@ -101,7 +131,22 @@ if (require.main === module) {
   });
   assert.deepStrictEqual(
     resolveAdminShopScope({ role: 'ADMIN', id: 5, locationId: 9 }),
-    { kind: 'shop', adminId: 5, locationId: 9 }
+    { kind: 'shop', adminId: 5, locationId: 9, locationType: null }
+  );
+  assert.deepStrictEqual(
+    resolveAdminShopScope({
+      role: 'ADMIN',
+      id: 5,
+      locationId: 9,
+      location: { type: 'WAREHOUSE' },
+    }),
+    { kind: 'shop', adminId: 5, locationId: 9, locationType: 'WAREHOUSE' }
+  );
+  assert.ok(
+    isUserInShopScope(
+      { id: 10, parentId: 99, locationId: 2, location: { warehouseId: 9 } },
+      { kind: 'shop', adminId: 5, locationId: 9, locationType: 'WAREHOUSE' }
+    )
   );
   assert.strictEqual(resolveAdminShopScope({ role: 'SELLER', id: 2 }), null);
   assert.ok(
@@ -114,6 +159,18 @@ if (require.main === module) {
     !isUserInShopScope(
       { id: 10, parentId: 99, locationId: 1 },
       { kind: 'shop', adminId: 5, locationId: 9 }
+    )
+  );
+  assert.ok(
+    isLocationInShopScope(
+      { id: 2, warehouseId: 9 },
+      { kind: 'shop', adminId: 5, locationId: 9, locationType: 'WAREHOUSE' }
+    )
+  );
+  assert.ok(
+    !isLocationInShopScope(
+      { id: 3, warehouseId: 8 },
+      { kind: 'shop', adminId: 5, locationId: 9, locationType: 'WAREHOUSE' }
     )
   );
   console.log('shop-scope self-check ok');

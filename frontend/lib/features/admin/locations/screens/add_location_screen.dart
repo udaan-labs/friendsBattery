@@ -89,7 +89,13 @@ class _AddLocationScreenState extends ConsumerState<AddLocationScreen> {
 
     final isSuperAdmin = ref.read(authProvider).role == UserRole.superAdmin;
     final type = isSuperAdmin ? _type : 'SHOP';
-    if (type == 'SHOP' && _warehouseId == null) {
+    var warehouseId = _warehouseId;
+    if (type == 'SHOP' && warehouseId == null && !isSuperAdmin) {
+      final whs =
+          ref.read(locationsByTypeProvider('WAREHOUSE')).valueOrNull ?? [];
+      if (whs.length == 1) warehouseId = whs.first.id;
+    }
+    if (type == 'SHOP' && warehouseId == null) {
       context.showErrorSnackBar('Pick a warehouse for this shop');
       return;
     }
@@ -106,7 +112,7 @@ class _AddLocationScreenState extends ConsumerState<AddLocationScreen> {
             code: _previewCode(ref, type),
             name: name,
             type: type,
-            warehouseId: type == 'SHOP' ? _warehouseId : null,
+            warehouseId: type == 'SHOP' ? warehouseId : null,
             address: _addressController.text.trim(),
             phone: _phoneController.text.trim(),
             latitude: _latitude,
@@ -233,7 +239,7 @@ class _AddLocationScreenState extends ConsumerState<AddLocationScreen> {
                     if (_isShop) ...[
                       _WarehousePicker(
                         value: _warehouseId,
-                        enabled: !_submitting,
+                        enabled: isSuperAdmin && !_submitting,
                         onChanged: (v) => setState(() => _warehouseId = v),
                       ),
                       const SizedBox(height: 16),
@@ -358,10 +364,11 @@ class _WarehousePicker extends ConsumerWidget {
             style: TextStyle(color: AppTheme.error),
           );
         }
-        final ok = value != null && rows.any((w) => w.id == value);
+        final only = !enabled && rows.length == 1 ? rows.first.id : value;
+        final ok = only != null && rows.any((w) => w.id == only);
         return DropdownButtonFormField<int>(
           // ignore: deprecated_member_use
-          value: ok ? value : null,
+          value: ok ? only : null,
           decoration: const InputDecoration(labelText: 'Warehouse'),
           items: [
             for (final w in rows)

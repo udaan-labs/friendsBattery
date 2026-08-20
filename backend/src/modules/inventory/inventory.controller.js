@@ -29,11 +29,7 @@ class InventoryController {
         includeOutOfStock,
         locationId,
         filterLocationId: location_id ?? null,
-        actor: {
-          id: userId,
-          role,
-          locationId,
-        },
+        actor: req.user,
       });
 
       // Return standardized success response

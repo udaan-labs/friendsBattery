@@ -290,10 +290,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                   body: Center(child: Text('Invalid location')),
                 );
               }
-              return LocationDetailScreen(
-                locationId: id,
-                title: state.uri.queryParameters['name'],
-              );
+              return LocationDetailScreen(locationId: id);
             },
           ),
           // Legacy redirects (old bookmarks / deep links).

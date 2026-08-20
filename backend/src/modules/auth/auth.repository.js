@@ -27,17 +27,6 @@ class AuthRepository {
     });
   }
 
-  /** One EMPLOYEE per location. */
-  async findUserByLocationAndRole(locationId, role) {
-    return prisma.user.findFirst({
-      where: {
-        locationId: BigInt(locationId),
-        role,
-      },
-      select: { id: true, userId: true, role: true },
-    });
-  }
-
   async createUser(userData) {
     return await prisma.user.create({
       data: userData,
@@ -52,7 +41,14 @@ class AuthRepository {
         type: { in: types },
         isActive: true,
       },
-      select: { id: true, code: true, name: true, type: true, isActive: true },
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        type: true,
+        isActive: true,
+        warehouseId: true,
+      },
     });
   }
 

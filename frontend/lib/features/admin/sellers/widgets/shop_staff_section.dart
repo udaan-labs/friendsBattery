@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../shared/providers/auth_provider.dart';
 import '../../../shared/staff/providers/staff_providers.dart';
 import '../../../shared/staff/widgets/staff_member_group.dart';
 
@@ -16,7 +17,11 @@ class ShopStaffSection extends ConsumerWidget {
     final staffAsync = ref.watch(shopStaffProvider(sellerId));
 
     return staffAsync.when(
-      data: (data) => _StaffBody(data: data, sellerId: sellerId),
+      data: (data) => _StaffBody(
+        data: data,
+        sellerId: sellerId,
+        showAdmins: ref.watch(authProvider).role == UserRole.superAdmin,
+      ),
       loading: () => const Padding(
         padding: EdgeInsets.symmetric(vertical: 16),
         child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
@@ -49,8 +54,13 @@ class ShopStaffSection extends ConsumerWidget {
 class _StaffBody extends StatelessWidget {
   final ShopStaffData data;
   final int sellerId;
+  final bool showAdmins;
 
-  const _StaffBody({required this.data, required this.sellerId});
+  const _StaffBody({
+    required this.data,
+    required this.sellerId,
+    required this.showAdmins,
+  });
 
   void _openAddEmployee(BuildContext context) {
     final locationId = data.location?.id;
@@ -72,7 +82,9 @@ class _StaffBody extends StatelessWidget {
     final sellers = data.sellers?.toList() ?? [];
     final employees = data.employees?.toList() ?? [];
     final noLocation = location == null;
-    final empty = admins.isEmpty && sellers.isEmpty && employees.isEmpty;
+    final empty = sellers.isEmpty &&
+        employees.isEmpty &&
+        (!showAdmins || admins.isEmpty);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,18 +127,20 @@ class _StaffBody extends StatelessWidget {
           _EmptyCard(
             icon: Icons.groups_outlined,
             title: 'No team at this shop',
-            subtitle: 'No admin, sellers, or employees yet.',
+            subtitle: 'No sellers or employees yet.',
           )
         else ...[
-          StaffMemberGroup(
-            title: 'Admins',
-            icon: Icons.admin_panel_settings_outlined,
-            color: const Color(0xFF7C3AED),
-            members: admins,
-            emptyLabel: 'No admin at this shop',
-            showRoleChip: true,
-          ),
-          const SizedBox(height: 12),
+          if (showAdmins) ...[
+            StaffMemberGroup(
+              title: 'Admins',
+              icon: Icons.admin_panel_settings_outlined,
+              color: const Color(0xFF7C3AED),
+              members: admins,
+              emptyLabel: 'No admin at this shop',
+              showRoleChip: true,
+            ),
+            const SizedBox(height: 12),
+          ],
           StaffMemberGroup(
             title: 'Sellers',
             icon: Icons.storefront_rounded,

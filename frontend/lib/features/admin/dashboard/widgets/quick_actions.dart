@@ -22,12 +22,13 @@ class QuickActions extends ConsumerWidget {
           icon: Icons.point_of_sale_outlined,
           route: '/admin/sales',
         ),
-      _ActionItemData(
-        title: 'Add Product',
-        subtitle: 'Name, model, or configure',
-        icon: Icons.add_circle_outline_rounded,
-        route: '/admin/add-product',
-      ),
+      if (isSuperAdmin)
+        _ActionItemData(
+          title: 'Add Product',
+          subtitle: 'Name, model, or configure',
+          icon: Icons.add_circle_outline_rounded,
+          route: '/admin/add-product',
+        ),
 
       if (!isSuperAdmin) ...[
         _ActionItemData(

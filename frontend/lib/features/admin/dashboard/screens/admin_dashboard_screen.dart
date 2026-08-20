@@ -210,16 +210,17 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     title: 'Dashboard',
                     tabId: 'dashboard',
                   ),
-                  _buildDrawerItem(
-                    icon: Icons.price_change_outlined,
-                    activeIcon: Icons.price_change,
-                    title: 'Configure Product',
-                    tabId: 'configure_product',
-                    onTap: () {
-                      context.pop();
-                      context.push('/admin/add-product/configure');
-                    },
-                  ),
+                  if (isSuperAdmin)
+                    _buildDrawerItem(
+                      icon: Icons.price_change_outlined,
+                      activeIcon: Icons.price_change,
+                      title: 'Configure Product',
+                      tabId: 'configure_product',
+                      onTap: () {
+                        context.pop();
+                        context.push('/admin/add-product/configure');
+                      },
+                    ),
                   // Super Admin owns catalog only — no personal inventory screen.
                   if (!isSuperAdmin)
                     _buildDrawerItem(

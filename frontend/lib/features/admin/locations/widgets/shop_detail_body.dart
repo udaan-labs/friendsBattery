@@ -27,7 +27,7 @@ class ShopDetailBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final role = ref.watch(authProvider).role;
     final isSuperAdmin = role == UserRole.superAdmin;
-    final canMove = isSuperAdmin || role == UserRole.admin;
+    final canMove = isSuperAdmin;
     final staffAsync = ref.watch(locationStaffProvider(locationId));
 
     return RefreshIndicator(

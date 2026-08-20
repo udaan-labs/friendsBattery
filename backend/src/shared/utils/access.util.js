@@ -1,6 +1,10 @@
 const { httpError } = require('./http-error');
 const { isSuperAdmin, isAdmin, isSeller, isEmployee } = require('./role.util');
-const { resolveAdminShopScope, isUserInShopScope } = require('./shop-scope.util');
+const {
+  resolveAdminShopScope,
+  isUserInShopScope,
+  isLocationInShopScope,
+} = require('./shop-scope.util');
 
 /**
  * IDOR hard rules (enforce in services after loading the row).
@@ -79,7 +83,22 @@ function assertAccess(actor, claim) {
       if (actor.locationId != null && sameId(claim.locationId, actor.locationId)) {
         return;
       }
-      if (isAdmin(actor) && claim.inShop === true) return;
+      if (isAdmin(actor)) {
+        const scope = resolveAdminShopScope(actor);
+        if (
+          scope &&
+          isLocationInShopScope(
+            {
+              id: claim.locationId,
+              warehouseId: claim.warehouseId,
+            },
+            scope
+          )
+        ) {
+          return;
+        }
+        if (claim.inShop === true) return;
+      }
       deny();
       return;
 
@@ -101,6 +120,16 @@ if (require.main === module) {
   assertAccess(seller, { kind: 'sale', sellerId: 10 });
   assertAccess(seller, { kind: 'owned', ownerId: 10 });
   assertAccess(seller, { kind: 'self', userId: 10 });
+  const whAdmin = {
+    id: 5,
+    role: 'ADMIN',
+    locationId: 9,
+    location: { type: 'WAREHOUSE' },
+  };
+  assertAccess(whAdmin, { kind: 'location', locationId: 21, warehouseId: 9 });
+  assert.throws(() =>
+    assertAccess(whAdmin, { kind: 'location', locationId: 21, warehouseId: 8 })
+  );
   assertAccess(admin, {
     kind: 'user',
     target: { id: 10, parentId: 5, locationId: 3 },

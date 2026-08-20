@@ -119,8 +119,9 @@ class AuthService {
 
     let locationId = null;
     let resolvedShopName = shop_name;
+    let locName = null;
 
-    // Shop Admin: always own shop (client location_id ignored; location from auth middleware)
+    // Shop Admin: own shop. Warehouse admin: shop under this warehouse (body location_id).
     if (actor?.role === ROLES.ADMIN) {
       if (actor.locationId == null) {
         throw httpError(
@@ -128,13 +129,32 @@ class AuthService {
           'Your account has no shop location. Create or assign a shop before adding sellers.'
         );
       }
-      const location = await authRepository.findActiveLocation(actor.locationId);
-      if (!location) {
-        throw httpError(400, 'Shop location not found or inactive (must be type SHOP)');
+      const actorLoc = await authRepository.findActiveLocation(actor.locationId, [
+        'SHOP',
+        'WAREHOUSE',
+      ]);
+      if (!actorLoc) {
+        throw httpError(400, 'Your location is not found or inactive');
       }
-      locationId = Number(location.id);
-      if (!resolvedShopName || !String(resolvedShopName).trim()) {
-        resolvedShopName = location.name;
+      if (actorLoc.type === 'WAREHOUSE') {
+        if (location_id == null) {
+          throw httpError(400, 'Select a shop under your warehouse for this seller');
+        }
+        const shop = await authRepository.findActiveLocation(location_id, ['SHOP']);
+        if (!shop) {
+          throw httpError(400, 'Shop location not found or inactive (must be type SHOP)');
+        }
+        if (
+          shop.warehouseId == null ||
+          Number(shop.warehouseId) !== Number(actorLoc.id)
+        ) {
+          throw httpError(403, 'Shop is not under your warehouse');
+        }
+        locationId = Number(shop.id);
+        locName = shop.name;
+      } else {
+        locationId = Number(actorLoc.id);
+        locName = actorLoc.name;
       }
     } else if (location_id != null) {
       const location = await authRepository.findActiveLocation(location_id);
@@ -142,9 +162,10 @@ class AuthService {
         throw httpError(400, 'Shop location not found or inactive (must be type SHOP)');
       }
       locationId = Number(location.id);
-      if (!resolvedShopName || !String(resolvedShopName).trim()) {
-        resolvedShopName = location.name;
-      }
+      locName = location.name;
+    }
+    if (!resolvedShopName || !String(resolvedShopName).trim()) {
+      resolvedShopName = locName;
     }
 
     const saltRounds = 10;

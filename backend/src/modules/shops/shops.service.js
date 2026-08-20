@@ -10,6 +10,7 @@ const {
   resolveAdminShopScope,
   sellerWhereForShopScope,
   isUserInShopScope,
+  isLocationInShopScope,
 } = require('../../shared/utils/shop-scope.util');
 
 /**
@@ -255,7 +256,8 @@ class ShopsService {
   async getStaffByLocationId(locationId, actor) {
     const scope = resolveAdminShopScope(actor || {});
     if (scope?.kind === 'shop') {
-      if (scope.locationId == null || Number(locationId) !== Number(scope.locationId)) {
+      const loc = await shopsRepository.findLocationById(locationId);
+      if (!loc || !isLocationInShopScope(loc, scope)) {
         throw httpError(403, 'Forbidden: not your shop location');
       }
     }
@@ -276,21 +278,28 @@ class ShopsService {
   }
 
   /**
-   * SA: all active locations. Shop Admin: own SHOP only.
+   * SA: all active locations. Shop Admin: own SHOP. Warehouse admin: warehouse + child shops.
    * @param {{ type?: 'SHOP'|'WAREHOUSE' }} [filter]
    * @param {{ id: number, role: string, locationId?: number|null }} [actor]
    */
   async listLocations(filter = {}, actor) {
     const scope = resolveAdminShopScope(actor || {});
     if (scope?.kind === 'shop') {
-      if (filter.type === 'WAREHOUSE' || filter.type === 'SHOP') {
-        const rows = await shopsRepository.findActiveLocations({ type: filter.type });
-        return rows.map((loc) => this._mapLocationItem(loc));
-      }
       if (scope.locationId == null) return [];
       const loc = await shopsRepository.findLocationById(scope.locationId);
       if (!loc || loc.isActive === false) return [];
+      if (loc.type === 'WAREHOUSE') {
+        const shops = await shopsRepository.findActiveLocations({
+          type: 'SHOP',
+          warehouseId: Number(loc.id),
+        });
+        const mappedShops = shops.map((s) => this._mapLocationItem(s));
+        if (filter.type === 'WAREHOUSE') return [this._mapLocationItem(loc)];
+        if (filter.type === 'SHOP') return mappedShops;
+        return [this._mapLocationItem(loc), ...mappedShops];
+      }
       if (loc.type !== 'SHOP') return [];
+      if (filter.type === 'WAREHOUSE') return [];
       return [this._mapLocationItem(loc)];
     }
     const rows = await shopsRepository.findActiveLocations(filter);
@@ -328,9 +337,8 @@ class ShopsService {
 
   /**
    * Create location.
-   * SA: SHOP or WAREHOUSE. Shop Admin: SHOP only; one primary shop via location_id.
-   * @param {object} body
-   * @param {{ id: number, role: string, locationId?: number|null }} [actor]
+   * SA: SHOP or WAREHOUSE. Warehouse admin: SHOP under own warehouse only (body warehouse_id ignored).
+   * Shop Admin: SHOP only; one primary shop via location_id.
    */
   async createLocation(body, actor) {
     const scope = resolveAdminShopScope(actor || {});
@@ -338,10 +346,10 @@ class ShopsService {
 
     if (scope?.kind === 'shop') {
       if (type === 'WAREHOUSE') {
-        throw httpError(403, 'Shop Admin can only create shops, not warehouses');
+        throw httpError(403, 'Cannot create warehouses');
       }
       type = 'SHOP';
-      if (scope.locationId != null) {
+      if (scope.locationType !== 'WAREHOUSE' && scope.locationId != null) {
         throw httpError(
           400,
           'You already have a shop. Super Admin can create additional shops.'
@@ -358,7 +366,12 @@ class ShopsService {
 
     let warehouseId = null;
     if (type === 'SHOP') {
-      const wh = await shopsRepository.findLocationById(body.warehouse_id);
+      // Warehouse admin: own warehouse only. Never trust body.warehouse_id.
+      const requestedWh =
+        scope?.kind === 'shop' && scope.locationType === 'WAREHOUSE'
+          ? scope.locationId
+          : body.warehouse_id;
+      const wh = await shopsRepository.findLocationById(requestedWh);
       if (!wh || wh.isActive === false || wh.type !== 'WAREHOUSE') {
         throw httpError(400, 'warehouse_id must be an active warehouse');
       }
@@ -404,7 +417,14 @@ class ShopsService {
       throw httpError(404, 'Location not found');
     }
 
-    assertAccess(actor || {}, { kind: 'location', locationId: Number(loc.id) });
+    const scope = resolveAdminShopScope(actor || {});
+    if (scope?.kind === 'shop') {
+      if (!isLocationInShopScope(loc, scope)) {
+        throw httpError(403, 'Forbidden: not your shop location');
+      }
+    } else {
+      assertAccess(actor || {}, { kind: 'location', locationId: Number(loc.id) });
+    }
 
     const updated = await shopsRepository.updateLocation(loc.id, {
       name: body.name,
@@ -475,18 +495,27 @@ class ShopsService {
       // EMPLOYEE → Admin chain: prefer seller's parent Admin, else seller
       parentId = seller.parentId != null ? Number(seller.parentId) : Number(seller.id);
     } else if (actor.role === ROLES.ADMIN || actor.role === ROLES.SUPER_ADMIN) {
-      // Shop Admin: force own shop location (client location_id ignored)
       if (actor.role === ROLES.ADMIN) {
-        const admin = await shopsRepository.findUserById(actor.id);
-        if (!admin || admin.locationId == null) {
+        const scope = resolveAdminShopScope(actor);
+        if (!scope?.locationId) {
           throw httpError(
             400,
             'Your account has no shop location. Create or assign a shop before adding employees.'
           );
         }
-        locationId = Number(admin.locationId);
-        const location = await shopsRepository.findLocationById(locationId);
-        shopName = location?.name || admin.shopName || null;
+        let destId = scope.locationId;
+        if (scope.locationType === 'WAREHOUSE' && location_id != null) {
+          destId = Number(location_id);
+        }
+        const location = await shopsRepository.findLocationById(destId);
+        if (!location || location.isActive === false) {
+          throw httpError(400, 'Location not found or inactive');
+        }
+        if (!isLocationInShopScope(location, scope)) {
+          throw httpError(403, 'Location is not under your warehouse');
+        }
+        locationId = Number(location.id);
+        shopName = location.name;
         parentId = Number(actor.id);
       } else {
         if (location_id == null) {
@@ -512,14 +541,6 @@ class ShopsService {
         throw httpError(400, 'Invalid employee_role_id');
       }
       employeeRoleId = Number(er.id);
-    }
-
-    const employeeTaken = await authRepository.findUserByLocationAndRole(
-      locationId,
-      ROLES.EMPLOYEE,
-    );
-    if (employeeTaken) {
-      throw httpError(409, 'This location already has an employee');
     }
 
     if (await authRepository.findUserByUserId(user_id)) {
@@ -589,6 +610,10 @@ class ShopsService {
     if (!dest || dest.isActive === false) {
       throw httpError(400, 'Location not found or inactive');
     }
+    const destScope = resolveAdminShopScope(actor);
+    if (destScope?.kind === 'shop' && !isLocationInShopScope(dest, destScope)) {
+      throw httpError(403, 'Location is not under your warehouse');
+    }
     if (user.role === ROLES.SELLER && dest.type !== 'SHOP') {
       throw httpError(400, 'Sellers can only move to a shop');
     }
@@ -605,13 +630,6 @@ class ShopsService {
       const open = await attendanceRepository.findOpenAttendance(user.id);
       if (open) {
         throw httpError(400, 'Check this employee out before moving them');
-      }
-      const taken = await authRepository.findUserByLocationAndRole(
-        toLocationId,
-        ROLES.EMPLOYEE,
-      );
-      if (taken) {
-        throw httpError(409, 'This location already has an employee');
       }
     }
 

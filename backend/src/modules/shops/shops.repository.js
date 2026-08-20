@@ -51,7 +51,14 @@ class ShopsRepository {
       },
       include: {
         location: {
-          select: { id: true, code: true, name: true, type: true, isActive: true },
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            type: true,
+            isActive: true,
+            warehouseId: true,
+          },
         },
       },
     });
@@ -136,6 +143,9 @@ class ShopsRepository {
     const where = { isActive: true };
     if (filter.type) {
       where.type = filter.type;
+    }
+    if (filter.warehouseId != null) {
+      where.warehouseId = BigInt(filter.warehouseId);
     }
     return prisma.location.findMany({
       where,

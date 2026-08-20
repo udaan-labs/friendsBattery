@@ -20,11 +20,7 @@ class ShopsController {
    */
   async getSellers(req, res) {
     try {
-      const sellers = await shopsService.getSellers({
-        id: req.user.id,
-        role: req.user.role,
-        locationId: req.user.locationId ?? null,
-      });
+      const sellers = await shopsService.getSellers(req.user);
 
       return successResponse(res, 200, 'Sellers fetched successfully', sellers);
     } catch (error) {
@@ -45,11 +41,11 @@ class ShopsController {
       const { sellerId } = req.params;
       const { includeOutOfStock } = req.query;
 
-      const seller = await shopsService.viewSeller(Number(sellerId), includeOutOfStock, {
-        id: req.user.id,
-        role: req.user.role,
-        locationId: req.user.locationId ?? null,
-      });
+      const seller = await shopsService.viewSeller(
+        Number(sellerId),
+        includeOutOfStock,
+        req.user
+      );
 
       return successResponse(res, 200, 'Seller fetched successfully', seller);
     } catch (error) {
@@ -64,11 +60,7 @@ class ShopsController {
   async getShopStaff(req, res) {
     try {
       const { sellerId } = req.params;
-      const data = await shopsService.getShopStaffBySellerId(Number(sellerId), {
-        id: req.user.id,
-        role: req.user.role,
-        locationId: req.user.locationId ?? null,
-      });
+      const data = await shopsService.getShopStaffBySellerId(Number(sellerId), req.user);
       return successResponse(res, 200, 'Shop staff fetched successfully', data);
     } catch (error) {
       return handleRouteError(res, error, 'Get Shop Staff Error:');
@@ -86,11 +78,7 @@ class ShopsController {
       const data = await shopsService.viewEmployee(
         Number(employeeId),
         { limit },
-        {
-          id: req.user.id,
-          role: req.user.role,
-          locationId: req.user.locationId ?? null,
-        }
+        req.user
       );
       return successResponse(res, 200, 'Employee fetched successfully', data);
     } catch (error) {
@@ -117,14 +105,7 @@ class ShopsController {
    */
   async createEmployee(req, res) {
     try {
-      const data = await shopsService.createEmployee(
-        {
-          id: req.user.id,
-          role: req.user.role,
-          locationId: req.user.locationId ?? null,
-        },
-        req.body
-      );
+      const data = await shopsService.createEmployee(req.user, req.body);
       return successResponse(res, 201, 'Employee created successfully', data);
     } catch (error) {
       return handleRouteError(res, error, 'Create Employee Error:');
@@ -139,11 +120,7 @@ class ShopsController {
     try {
       const { employeeId } = req.params;
       const data = await shopsService.transferEmployee(
-        {
-          id: req.user.id,
-          role: req.user.role,
-          locationId: req.user.locationId ?? null,
-        },
+        req.user,
         Number(employeeId),
         Number(req.body.location_id)
       );
@@ -172,11 +149,7 @@ class ShopsController {
   async getLocationStaff(req, res) {
     try {
       const { locationId } = req.params;
-      const data = await shopsService.getStaffByLocationId(Number(locationId), {
-        id: req.user.id,
-        role: req.user.role,
-        locationId: req.user.locationId ?? null,
-      });
+      const data = await shopsService.getStaffByLocationId(Number(locationId), req.user);
       return successResponse(res, 200, 'Shop staff fetched successfully', data);
     } catch (error) {
       return handleRouteError(res, error, 'Get Location Staff Error:');
@@ -201,11 +174,7 @@ class ShopsController {
   async listLocations(req, res) {
     try {
       const type = req.query?.type;
-      const data = await shopsService.listLocations(type ? { type } : {}, {
-        id: req.user.id,
-        role: req.user.role,
-        locationId: req.user.locationId ?? null,
-      });
+      const data = await shopsService.listLocations(type ? { type } : {}, req.user);
       return successResponse(res, 200, 'Locations fetched successfully', data);
     } catch (error) {
       return handleRouteError(res, error, 'List Locations Error:');
@@ -217,11 +186,7 @@ class ShopsController {
    */
   async createLocation(req, res) {
     try {
-      const data = await shopsService.createLocation(req.body, {
-        id: req.user.id,
-        role: req.user.role,
-        locationId: req.user.locationId ?? null,
-      });
+      const data = await shopsService.createLocation(req.body, req.user);
       return successResponse(res, 201, 'Location created successfully', data);
     } catch (error) {
       return handleRouteError(res, error, 'Create Location Error:');
@@ -237,11 +202,7 @@ class ShopsController {
       const data = await shopsService.updateLocation(
         Number(locationId),
         req.body,
-        {
-          id: req.user.id,
-          role: req.user.role,
-          locationId: req.user.locationId ?? null,
-        }
+        req.user
       );
       return successResponse(res, 200, 'Location updated successfully', data);
     } catch (error) {

@@ -70,14 +70,14 @@ class _LocationsListScreenState extends ConsumerState<LocationsListScreen> {
           },
         ),
         title: Text(
-          isSuperAdmin ? 'Locations' : 'My shop',
+          isSuperAdmin ? 'Locations' : 'All shops',
           style: const TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.bold,
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final created = await context.push<bool>('/admin/locations/add');
           if (created == true) {
@@ -87,8 +87,7 @@ class _LocationsListScreenState extends ConsumerState<LocationsListScreen> {
         },
         backgroundColor: AppTheme.primary,
         foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text('Add location'),
+        child: const Icon(Icons.add),
       ),
       body: Column(
         children: [
@@ -98,7 +97,9 @@ class _LocationsListScreenState extends ConsumerState<LocationsListScreen> {
               controller: _searchController,
               onChanged: (v) => setState(() => _query = v),
               decoration: InputDecoration(
-                hintText: 'Search shop or warehouse…',
+                hintText: isSuperAdmin
+                    ? 'Search shop or warehouse…'
+                    : 'Search shops…',
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _query.isEmpty
                     ? null
@@ -154,13 +155,18 @@ class _LocationsListScreenState extends ConsumerState<LocationsListScreen> {
           Expanded(
             child: async.when(
               data: (rows) {
-                final filtered = _filter(rows);
-                if (rows.isEmpty) {
+                final shopsOnly = isSuperAdmin
+                    ? rows
+                    : rows
+                        .where((e) => e.type == LocationItemTypeEnum.SHOP)
+                        .toList(growable: false);
+                final filtered = _filter(shopsOnly);
+                if (shopsOnly.isEmpty) {
                   return _EmptyState(
-                    title: isSuperAdmin ? 'No locations yet' : 'No shop yet',
+                    title: isSuperAdmin ? 'No locations yet' : 'No shops yet',
                     subtitle: isSuperAdmin
                         ? 'Add a shop or warehouse. Same form — pick the type.'
-                        : 'Add your shop to get started.',
+                        : 'Tap + to add a shop.',
                   );
                 }
                 if (filtered.isEmpty) {
@@ -293,15 +299,7 @@ class _LocationCard extends StatelessWidget {
   void _openDetail(BuildContext context) {
     final id = item.id;
     if (id == null) return;
-    final name = item.name;
-    context.push(
-      Uri(
-        path: '/admin/locations/$id',
-        queryParameters: {
-          if (name != null && name.isNotEmpty) 'name': name,
-        },
-      ).toString(),
-    );
+    context.push('/admin/locations/$id');
   }
 
   @override

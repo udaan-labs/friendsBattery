@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 import '../../../shared/products/providers/product_catalog_providers.dart';
+import '../../locations/providers/locations_providers.dart';
 import '../providers/dashboard_providers.dart';
 
 class KpiGrid extends ConsumerWidget {
@@ -44,10 +45,15 @@ class KpiGrid extends ConsumerWidget {
       );
     }
 
+    final shopCount = ref.watch(locationsByTypeProvider('SHOP')).when(
+          data: (rows) => '${rows.length}',
+          loading: () => '--',
+          error: (_, __) => '--',
+        );
+
     List<Widget> cards({
       required String stock,
       required String sales,
-      required String sellers,
       required String shipments,
       required String locations,
       required String admins,
@@ -72,8 +78,8 @@ class KpiGrid extends ConsumerWidget {
         card(isDesktop ? 'TOTAL SALES' : 'TODAY\'S SALES', sales, 'Transactions',
             Icons.trending_up_outlined,
             onTap: () => context.push('/admin/sales')),
-        card('TOTAL SELLERS', sellers, 'Active', Icons.group_outlined,
-            onTap: () => context.push('/admin/sellers')),
+        card('TOTAL SHOPS', shopCount, 'Active', Icons.storefront_outlined,
+            onTap: () => context.push('/admin/locations')),
         card('PENDING SHIPMENTS', shipments, 'In transit', Icons.local_shipping_outlined,
             onTap: () => context.push('/admin/shipments')),
       ];
@@ -99,7 +105,6 @@ class KpiGrid extends ConsumerWidget {
     return layout(cards(
       stock: v(s?.totalStock),
       sales: v(s?.todaySales),
-      sellers: v(s?.totalSellers),
       shipments: v(s?.pendingShipments),
       locations: v(s?.totalLocations),
       admins: v(s?.totalAdmins),

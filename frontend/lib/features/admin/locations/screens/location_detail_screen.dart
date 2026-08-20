@@ -13,13 +13,9 @@ class LocationDetailScreen extends ConsumerWidget {
   const LocationDetailScreen({
     super.key,
     required this.locationId,
-    this.title,
   });
 
   final int locationId;
-
-  /// Optional name for the app bar while staff loads (from list navigation).
-  final String? title;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -42,7 +38,7 @@ class LocationDetailScreen extends ConsumerWidget {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          cached?.name ?? title ?? 'Location Details',
+          isWarehouse ? 'Warehouse Details' : 'Shop Details',
           style: const TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.bold,

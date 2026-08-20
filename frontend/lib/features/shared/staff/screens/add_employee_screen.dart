@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/utils/app_formatters.dart';
 import '../../../../shared/utils/password.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
@@ -148,6 +149,8 @@ class _AddEmployeeScreenState extends ConsumerState<AddEmployeeScreen> {
     final rolesAsync = ref.watch(employeeRolesProvider);
     final locationsAsync =
         widget.isAdmin ? ref.watch(locationsListProvider) : null;
+    final lockLocation =
+        ref.watch(authProvider).role != UserRole.superAdmin;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FB),
@@ -179,8 +182,8 @@ class _AddEmployeeScreenState extends ConsumerState<AddEmployeeScreen> {
               const SizedBox(height: 12),
               Text(
                 widget.isAdmin
-                    ? 'One employee per warehouse or shop'
-                    : 'One employee per shop',
+                    ? 'Add an employee at a warehouse or shop'
+                    : 'Add an employee at this shop',
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 16, color: Color(0xFF545F73)),
               ),
@@ -212,6 +215,24 @@ class _AddEmployeeScreenState extends ConsumerState<AddEmployeeScreen> {
                           }
                           final selectedOk = _selectedLocationId != null &&
                               locations.any((l) => l.id == _selectedLocationId);
+                          if (lockLocation) {
+                            LocationItem? loc;
+                            for (final l in locations) {
+                              if (l.id == _selectedLocationId) {
+                                loc = l;
+                                break;
+                              }
+                            }
+                            return TextFormField(
+                              enabled: false,
+                              initialValue:
+                                  loc != null ? _locationLabel(loc) : '',
+                              decoration: const InputDecoration(
+                                labelText: 'Location (warehouse or shop)',
+                                helperText: 'Fixed to this location',
+                              ),
+                            );
+                          }
                           return DropdownButtonFormField<int>(
                             // ignore: deprecated_member_use — controlled field needs value
                             value: selectedOk ? _selectedLocationId : null,

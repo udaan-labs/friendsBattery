@@ -108,15 +108,7 @@ class _ShopRow extends ConsumerWidget {
           borderRadius: BorderRadius.circular(16),
           onTap: id == null
               ? null
-              : () => context.push(
-                    Uri(
-                      path: '/admin/locations/$id',
-                      queryParameters: {
-                        if (shop.name != null && shop.name!.isNotEmpty)
-                          'name': shop.name!,
-                      },
-                    ).toString(),
-                  ),
+              : () => context.push('/admin/locations/$id'),
           child: Padding(
             padding: const EdgeInsets.all(14),
             child: Row(

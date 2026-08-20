@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import 'package:go_router/go_router.dart';
+import '../../../shared/providers/auth_provider.dart';
 import '../../../theme/app_theme.dart';
 import '../../../shared/utils/app_formatters.dart';
 import '../../../shared/utils/password.dart';
@@ -213,13 +214,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   /// Shop picker for seller; shop + warehouse picker for create-admin.
-  Widget _buildShopSection(bool formLoading) {
+  Widget _buildShopSection(bool formLoading, {required bool lockShop}) {
     final shopsAsync = widget.isCreateAdmin
         ? ref.watch(allLocationsProvider)
         : ref.watch(locationsByTypeProvider('SHOP'));
     final shopTitle = widget.isCreateAdmin
         ? 'Select shop or warehouse'
-        : 'Select shop for this seller';
+        : lockShop
+            ? 'Shop'
+            : 'Select shop for this seller';
 
     return Container(
       width: double.infinity,
@@ -248,7 +251,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
             ],
           ),
-          if (_asSeller) ...[
+          if (_asSeller && !lockShop) ...[
             const SizedBox(height: 4),
             const Text(
               'Assign this seller to a shop.',
@@ -305,6 +308,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       final id = s.id;
                       if (id != null) _selectShop(id, [s]);
                     },
+                  ),
+                );
+              }
+
+              if (lockShop) {
+                return TextField(
+                  enabled: false,
+                  controller: _shopNameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Shop *',
+                    helperText: 'Fixed to this shop',
+                    filled: true,
+                    fillColor: Colors.white,
+                    prefixIcon: Icon(Icons.store),
                   ),
                 );
               }
@@ -386,6 +403,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
     final isLoading = authState.isLoading;
+    final lockShop = !widget.isCreateAdmin &&
+        ref.watch(authProvider).role != UserRole.superAdmin;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -443,7 +462,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
               // Shop first — cannot miss this block
               if (widget.isAdminFlow || widget.isCreateAdmin) ...[
-                _buildShopSection(isLoading),
+                _buildShopSection(isLoading, lockShop: lockShop),
                 const SizedBox(height: 16),
               ],
 
@@ -491,17 +510,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         setState(() => _mobileError = _mobileLengthError(v));
                       },
                     ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _shopNameController,
-                      enabled: !isLoading && (!widget.isCreateAdmin || _asSeller),
-                      decoration: InputDecoration(
-                        labelText: _asSeller ? 'Shop Name' : 'Location name',
-                        helperText: _asSeller
-                            ? 'Filled when you pick a shop; editable'
-                            : 'Change location with the picker above',
+                    if (!lockShop) ...[
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _shopNameController,
+                        enabled:
+                            !isLoading && (!widget.isCreateAdmin || _asSeller),
+                        decoration: InputDecoration(
+                          labelText: _asSeller ? 'Shop Name' : 'Location name',
+                          helperText: _asSeller
+                              ? 'Filled when you pick a shop; editable'
+                              : 'Change location with the picker above',
+                        ),
                       ),
-                    ),
+                    ],
                     const SizedBox(height: 16),
                     TextField(
                       controller: _passwordController,
