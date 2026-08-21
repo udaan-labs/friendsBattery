@@ -1,6 +1,8 @@
 const dashboardRepository = require('./dashboard.repository');
-const { successResponse } = require('../../shared/utils/response');
+const { prisma } = require('../../config/db');
+const { successResponse, errorResponse } = require('../../shared/utils/response');
 const { handleRouteError } = require('../../shared/utils/handle-route-error');
+const { resolveActivityScopeFilter } = require('../../shared/utils/shop-scope.util');
 
 function parseQueryDate(value) {
   if (typeof value !== 'string' || !value) return null;
@@ -68,7 +70,9 @@ class DashboardController {
 
   async getRecentActivity(req, res) {
     try {
-      const activity = await dashboardRepository.getRecentActivity();
+      const scoped = await resolveActivityScopeFilter(prisma, req.user);
+      if (!scoped) return errorResponse(res, 403, 'Forbidden: Admin access required');
+      const activity = await dashboardRepository.getRecentActivity(scoped.filter);
       return successResponse(res, 200, 'Recent activity retrieved successfully', activity);
     } catch (error) {
       return handleRouteError(res, error, 'Error in DashboardController.getRecentActivity:');
@@ -77,6 +81,8 @@ class DashboardController {
 
   async getActivityHistory(req, res) {
     try {
+      const scoped = await resolveActivityScopeFilter(prisma, req.user);
+      if (!scoped) return errorResponse(res, 403, 'Forbidden: Admin access required');
       const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 20));
       const cursor = typeof req.query.cursor === 'string' ? req.query.cursor : null;
       const fromDate = parseQueryDate(req.query.from_date);
@@ -86,6 +92,7 @@ class DashboardController {
         limit,
         fromDate,
         toDate,
+        scopeFilter: scoped.filter,
       });
 
       return res.status(200).json({

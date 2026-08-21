@@ -51,6 +51,7 @@ router.get(
  * /api/dashboard/recent-activity:
  *   get:
  *     summary: Get recent activity feed (Admin only)
+ *     description: SUPER_ADMIN sees org-wide activity. Shop/warehouse ADMIN sees only own warehouse/shop plus sellers and employees under them.
  *     tags: [Dashboard]
  *     security:
  *       - bearerAuth: []
@@ -74,6 +75,7 @@ router.get(
  * /api/dashboard/activity-history:
  *   get:
  *     summary: Get paginated activity history (Admin only)
+ *     description: Same scope as recent-activity. SUPER_ADMIN org-wide; ADMIN own warehouse/shop tree only.
  *     tags: [Dashboard]
  *     security:
  *       - bearerAuth: []

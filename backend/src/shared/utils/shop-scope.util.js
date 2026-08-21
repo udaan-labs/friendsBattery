@@ -114,6 +114,59 @@ async function resolveShopSellerIds(prisma, scope) {
   return [...sellers.map((s) => s.id), BigInt(scope.adminId)];
 }
 
+/** Self + ADMIN/SELLER/EMPLOYEE in shop/warehouse tree. null = org. */
+async function resolveShopActorIds(prisma, scope) {
+  if (!scope || scope.kind === 'org') return null;
+  if (scope.kind !== 'shop') return [];
+
+  const users = await prisma.user.findMany({
+    where: {
+      role: { in: [ROLES.ADMIN, ROLES.SELLER, ROLES.EMPLOYEE] },
+      OR: _shopOr(scope),
+    },
+    select: { id: true },
+  });
+  const ids = users.map((u) => u.id);
+  ids.push(BigInt(scope.adminId));
+  return [...new Set(ids)];
+}
+
+/** Own location + shops under warehouse. null = org. */
+async function resolveShopLocationIds(prisma, scope) {
+  if (!scope || scope.kind === 'org') return null;
+  if (scope.kind !== 'shop') return [];
+  if (scope.locationId == null) return [];
+
+  const locId = BigInt(scope.locationId);
+  const ids = [locId];
+  if (scope.locationType === 'WAREHOUSE') {
+    const shops = await prisma.location.findMany({
+      where: { warehouseId: locId },
+      select: { id: true },
+    });
+    for (const s of shops) ids.push(s.id);
+  }
+  return ids;
+}
+
+/** null = not admin. { filter: null } = org-wide. Else SQL scope for activity feed. */
+async function resolveActivityScopeFilter(prisma, user) {
+  const scope = resolveAdminShopScope(user);
+  if (!scope) return null;
+  if (scope.kind === 'org') return { filter: null };
+  const [actorIds, locationIds] = await Promise.all([
+    resolveShopActorIds(prisma, scope),
+    resolveShopLocationIds(prisma, scope),
+  ]);
+  return {
+    filter: {
+      actorIds: actorIds || [],
+      locationIds: locationIds || [],
+      adminId: BigInt(scope.adminId),
+    },
+  };
+}
+
 module.exports = {
   resolveAdminShopScope,
   sellerWhereForShopScope,
@@ -121,6 +174,9 @@ module.exports = {
   isUserInShopScope,
   isLocationInShopScope,
   resolveShopSellerIds,
+  resolveShopActorIds,
+  resolveShopLocationIds,
+  resolveActivityScopeFilter,
 };
 
 // Minimal self-check: node backend/src/shared/utils/shop-scope.util.js
@@ -173,5 +229,42 @@ if (require.main === module) {
       { kind: 'shop', adminId: 5, locationId: 9, locationType: 'WAREHOUSE' }
     )
   );
-  console.log('shop-scope self-check ok');
+  (async () => {
+    const fakePrisma = {
+      user: {
+        findMany: async ({ where }) => {
+          assert.ok(where.role.in.includes('ADMIN'));
+          assert.ok(where.role.in.includes('SELLER'));
+          assert.ok(where.role.in.includes('EMPLOYEE'));
+          return [{ id: 99n }, { id: 10n }];
+        },
+      },
+      location: {
+        findMany: async () => [{ id: 2n }],
+      },
+    };
+    const whScope = {
+      kind: 'shop',
+      adminId: 5,
+      locationId: 9,
+      locationType: 'WAREHOUSE',
+    };
+    assert.strictEqual(await resolveShopActorIds(fakePrisma, { kind: 'org' }), null);
+    const actors = await resolveShopActorIds(fakePrisma, whScope);
+    assert.ok(actors.some((id) => id === 5n));
+    assert.ok(actors.some((id) => id === 99n));
+    const locs = await resolveShopLocationIds(fakePrisma, whScope);
+    assert.ok(locs.some((id) => id === 9n) && locs.some((id) => id === 2n));
+    const org = await resolveActivityScopeFilter(fakePrisma, { role: 'SUPER_ADMIN', id: 1 });
+    assert.deepStrictEqual(org, { filter: null });
+    const wh = await resolveActivityScopeFilter(fakePrisma, {
+      role: 'ADMIN',
+      id: 5,
+      locationId: 9,
+      location: { type: 'WAREHOUSE' },
+    });
+    assert.ok(wh.filter.actorIds.some((id) => id === 99n));
+    assert.ok(wh.filter.actorIds.some((id) => id === 5n));
+    console.log('shop-scope self-check ok');
+  })();
 }

@@ -50,6 +50,28 @@ function formatCatalogActivity(e) {
   };
 }
 
+function formatInventoryActivity(t, qty) {
+  const who = t.toUser?.shopName || t.toUser?.userName || t.fromUser?.shopName || t.fromUser?.userName || 'Admin';
+  const name = t.productUnit?.product?.productName?.name || 'Product';
+  const model = t.productUnit?.product?.productModel?.name;
+  const product = model ? `${name} ${model}` : name;
+  const n = Math.max(1, Number(qty) || 1);
+  const units = `${n} unit${n === 1 ? '' : 's'}`;
+  const map = {
+    RECEIVED: { title: `${who} added ${product}`, icon: 'inventory_2' },
+    TRANSFERRED: { title: `${who} transferred ${product}`, icon: 'local_shipping' },
+    SHIPPED: { title: `${who} shipped ${product}`, icon: 'local_shipping' },
+  };
+  const row = map[t.action] || { title: `${who} updated ${product}`, icon: 'inventory_2' };
+  return {
+    type: 'inventory',
+    title: row.title,
+    subtitle: units,
+    time: t.timestamp.toISOString(),
+    icon: row.icon,
+  };
+}
+
 function formatOrgActivity(e) {
   const who = e.actor?.shopName || e.actor?.userName || 'Admin';
   const name = e.payload?.name || e.payload?.username || e.payload?.user_id || 'record';
@@ -326,8 +348,9 @@ class DashboardRepository {
     const returnIds = rawActivities.filter(a => a.type === 'return').map(a => BigInt(a.id));
     const catalogIds = rawActivities.filter(a => a.type === 'catalog').map(a => BigInt(a.id));
     const orgIds = rawActivities.filter(a => a.type === 'org').map(a => BigInt(a.id));
+    const inventoryIds = rawActivities.filter(a => a.type === 'inventory').map(a => BigInt(a.id));
 
-    const [shipments, sales, returns, catalogEvents, orgEvents] = await Promise.all([
+    const [shipments, sales, returns, catalogEvents, orgEvents, inventoryRows] = await Promise.all([
       shipmentIds.length > 0 ? prisma.newShipment.findMany({
         where: { id: { in: shipmentIds } },
         include: {
@@ -366,7 +389,25 @@ class DashboardRepository {
         include: {
           actor: { select: { userName: true, shopName: true } },
         }
-      }) : Promise.resolve([])
+      }) : Promise.resolve([]),
+      inventoryIds.length > 0 ? prisma.inventoryTransaction.findMany({
+        where: { id: { in: inventoryIds } },
+        include: {
+          fromUser: { select: { userName: true, shopName: true } },
+          toUser: { select: { userName: true, shopName: true } },
+          productUnit: {
+            select: {
+              serialNumber: true,
+              product: {
+                select: {
+                  productName: { select: { name: true } },
+                  productModel: { select: { name: true } },
+                },
+              },
+            },
+          },
+        },
+      }) : Promise.resolve([]),
     ]);
 
     // Map to rich activity objects
@@ -380,6 +421,7 @@ class DashboardRepository {
     const returnsMap = new Map(returns.map(r => [r.id.toString(), r]));
     const catalogMap = new Map(catalogEvents.map(e => [e.id.toString(), e]));
     const orgMap = new Map(orgEvents.map(e => [e.id.toString(), e]));
+    const inventoryMap = new Map(inventoryRows.map(e => [e.id.toString(), e]));
 
     for (const raw of rawActivities) {
       if (raw.type === 'shipment') {
@@ -425,6 +467,11 @@ class DashboardRepository {
         if (e) {
           activities.push(formatOrgActivity(e));
         }
+      } else if (raw.type === 'inventory') {
+        const t = inventoryMap.get(raw.id.toString());
+        if (t) {
+          activities.push(formatInventoryActivity(t, raw.qty));
+        }
       }
     }
 
@@ -433,20 +480,84 @@ class DashboardRepository {
   }
 
   /**
+   * Union of activity sources. scopeFilter null = org-wide (SUPER_ADMIN).
+   * @param {{ actorIds: bigint[], locationIds: bigint[], adminId: bigint }|null} scopeFilter
+   */
+  _activityFeed(scopeFilter) {
+    const inventorySelect = Prisma.sql`
+      SELECT 'inventory' AS type, MIN(it.id) AS id, MAX(it.timestamp) AS time, COUNT(*)::int AS qty
+      FROM inventory_transactions it
+      INNER JOIN product_units pu ON pu.id = it.product_unit_id
+      WHERE it.action IN ('RECEIVED', 'TRANSFERRED', 'SHIPPED')
+    `;
+    const inventoryGroup = Prisma.sql`
+      GROUP BY it.action, pu.product_id, it.to_user_id, date_trunc('minute', it.timestamp)
+    `;
+
+    if (!scopeFilter) {
+      return Prisma.sql`
+        SELECT 'shipment' AS type, id, created_at AS time, 1::int AS qty FROM shipments
+        UNION ALL
+        SELECT 'sale' AS type, id, sold_at AS time, 1::int AS qty FROM sales_transactions
+        UNION ALL
+        SELECT 'return' AS type, id, created_at AS time, 1::int AS qty FROM return_products
+        UNION ALL
+        SELECT 'catalog' AS type, id, created_at AS time, 1::int AS qty FROM product_catalog_events
+        UNION ALL
+        SELECT 'org' AS type, id, created_at AS time, 1::int AS qty FROM org_events
+        UNION ALL
+        ${inventorySelect}
+        ${inventoryGroup}
+      `;
+    }
+
+    const actorIn = () =>
+      Prisma.join(scopeFilter.actorIds.map((id) => Prisma.sql`${id}`));
+    const locIn =
+      scopeFilter.locationIds && scopeFilter.locationIds.length > 0
+        ? () => Prisma.join(scopeFilter.locationIds.map((id) => Prisma.sql`${id}`))
+        : null;
+    const invLoc = locIn
+      ? Prisma.sql`OR it.to_location_id IN (${locIn()}) OR it.from_location_id IN (${locIn()})`
+      : Prisma.empty;
+
+    return Prisma.sql`
+      SELECT 'shipment' AS type, id, created_at AS time, 1::int AS qty FROM shipments
+      WHERE seller_id IN (${actorIn()}) OR created_by_admin_id = ${scopeFilter.adminId}
+      UNION ALL
+      SELECT 'sale' AS type, id, sold_at AS time, 1::int AS qty FROM sales_transactions
+      WHERE seller_id IN (${actorIn()})
+      UNION ALL
+      SELECT 'return' AS type, id, created_at AS time, 1::int AS qty FROM return_products
+      WHERE return_by IN (${actorIn()}) OR return_to IN (${actorIn()})
+      UNION ALL
+      SELECT 'catalog' AS type, id, created_at AS time, 1::int AS qty FROM product_catalog_events
+      WHERE actor_id IN (${actorIn()})
+      UNION ALL
+      SELECT 'org' AS type, id, created_at AS time, 1::int AS qty FROM org_events
+      WHERE actor_id IN (${actorIn()})
+      UNION ALL
+      ${inventorySelect}
+        AND (
+          it.to_user_id IN (${actorIn()}) OR it.from_user_id IN (${actorIn()})
+          ${invLoc}
+        )
+      ${inventoryGroup}
+    `;
+  }
+
+  /**
    * Get the 10 most recent activities (shipments, sales, returns combined).
+   * @param {{ actorIds: bigint[], locationIds: bigint[], adminId: bigint }|null} [scopeFilter]
    * @returns {Promise<Array>}
    */
-  async getRecentActivity() {
+  async getRecentActivity(scopeFilter = null) {
+    if (scopeFilter && (!scopeFilter.actorIds || scopeFilter.actorIds.length === 0)) {
+      return [];
+    }
+    const feed = this._activityFeed(scopeFilter);
     const rawActivities = await prisma.$queryRaw`
-      SELECT 'shipment' AS type, id, created_at AS time FROM shipments
-      UNION ALL
-      SELECT 'sale' AS type, id, sold_at AS time FROM sales_transactions
-      UNION ALL
-      SELECT 'return' AS type, id, created_at AS time FROM return_products
-      UNION ALL
-      SELECT 'catalog' AS type, id, created_at AS time FROM product_catalog_events
-      UNION ALL
-      SELECT 'org' AS type, id, created_at AS time FROM org_events
+      SELECT type, id, time, qty FROM (${feed}) AS combined
       ORDER BY time DESC
       LIMIT 10 OFFSET 0
     `;
@@ -457,23 +568,22 @@ class DashboardRepository {
   /**
    * Cursor-paginated activities (newest first).
    * Cursor is opaque: `${isoTime}|${type}|${id}`
-   * @param {{ cursor?: string|null, limit?: number, fromDate?: Date|null, toDate?: Date|null }} opts
+   * @param {{ cursor?: string|null, limit?: number, fromDate?: Date|null, toDate?: Date|null, scopeFilter?: object|null }} opts
    * @returns {Promise<{data: Array, nextCursor: string|null, hasNextPage: boolean}>}
    */
-  async getActivityHistory({ cursor = null, limit = 20, fromDate = null, toDate = null } = {}) {
+  async getActivityHistory({
+    cursor = null,
+    limit = 20,
+    fromDate = null,
+    toDate = null,
+    scopeFilter = null,
+  } = {}) {
+    if (scopeFilter && (!scopeFilter.actorIds || scopeFilter.actorIds.length === 0)) {
+      return { data: [], nextCursor: null, hasNextPage: false };
+    }
     const take = limit + 1;
     const parsed = parseActivityCursor(cursor);
-    const feed = Prisma.sql`
-      SELECT 'shipment' AS type, id, created_at AS time FROM shipments
-      UNION ALL
-      SELECT 'sale' AS type, id, sold_at AS time FROM sales_transactions
-      UNION ALL
-      SELECT 'return' AS type, id, created_at AS time FROM return_products
-      UNION ALL
-      SELECT 'catalog' AS type, id, created_at AS time FROM product_catalog_events
-      UNION ALL
-      SELECT 'org' AS type, id, created_at AS time FROM org_events
-    `;
+    const feed = this._activityFeed(scopeFilter);
     const clauses = [];
     if (fromDate) clauses.push(Prisma.sql`time >= ${fromDate}`);
     if (toDate) clauses.push(Prisma.sql`time <= ${toDate}`);
@@ -488,7 +598,7 @@ class DashboardRepository {
       : Prisma.empty;
 
     const rawActivities = await prisma.$queryRaw`
-      SELECT type, id, time FROM (${feed}) AS combined
+      SELECT type, id, time, qty FROM (${feed}) AS combined
       ${where}
       ORDER BY time DESC, type DESC, id DESC
       LIMIT ${take}
