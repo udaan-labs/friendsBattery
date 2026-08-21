@@ -10,7 +10,7 @@ const {
 
 /**
  * Admin → Seller stock transfer (serial-based).
- * Uses existing product_units only — does not invent serials.
+ * Uses existing product_units only — does not invent units.
  */
 class ShipmentsService {
   /**
@@ -29,27 +29,28 @@ class ShipmentsService {
       }
     }
 
-    // Flatten + normalize serials; reject duplicates in the request itself
     const allSerials = [];
+    const perItemSerials = [];
     for (const item of data.items) {
+      const serials = [];
       for (const raw of item.serial_numbers) {
         const serial = String(raw).trim();
         if (!serial) {
           throw httpError(400, 'Serial number cannot be empty');
         }
+        serials.push(serial);
         allSerials.push(serial);
       }
+      perItemSerials.push(serials);
     }
 
-    const uniqueSerials = new Set(allSerials);
-    if (uniqueSerials.size !== allSerials.length) {
+    if (new Set(allSerials).size !== allSerials.length) {
       throw httpError(400, 'Duplicate serial numbers in the transfer request');
     }
 
-    // Resolve products and units for every line item
-    const resolvedItems = []; // { product, units: ProductUnit[] }
-
-    for (const item of data.items) {
+    const resolvedItems = [];
+    for (let i = 0; i < data.items.length; i++) {
+      const item = data.items[i];
       const product = await prisma.product.findFirst({
         where: {
           productNameId: BigInt(item.product_name_id),
@@ -67,31 +68,9 @@ class ShipmentsService {
         );
       }
 
-      const serials = item.serial_numbers.map((s) => String(s).trim());
-
-      // Units owned by this admin (SA or shop Admin) — not any ADMIN role pool
-      const units = await prisma.productUnit.findMany({
-        where: {
-          serialNumber: { in: serials },
-          productId: product.id,
-          status: 'AVAILABLE',
-          ownerId: BigInt(adminId),
-        },
-      });
-
-      if (units.length !== serials.length) {
-        const found = new Set(units.map((u) => u.serialNumber));
-        const missing = serials.filter((s) => !found.has(s));
-        throw httpError(400, 
-          missing.length
-            ? `Serial number(s) unavailable or not in admin inventory: ${missing.join(', ')}`
-            : 'One or more serial numbers are unavailable'
-        );
-      }
-
       resolvedItems.push({
         product,
-        units,
+        serials: perItemSerials[i],
         pricePerPiece: item.price_per_piece,
       });
     }

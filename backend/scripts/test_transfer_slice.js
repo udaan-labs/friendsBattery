@@ -39,6 +39,7 @@ async function main() {
       where: { productId: product.id, status: 'AVAILABLE', owner: { role: 'ADMIN' } },
     });
 
+    const actorAdminId = Number(unit.ownerId);
     console.log(`1) Successful transfer of serial=${serial}`);
     const result = await shipmentsService.createShipment(
       {
@@ -51,7 +52,7 @@ async function main() {
           },
         ],
       },
-      Number(admin.id)
+      actorAdminId
     );
 
     assert(result.transferredUnits === 1, 'transferredUnits === 1');
@@ -92,7 +93,7 @@ async function main() {
             },
           ],
         },
-        Number(admin.id)
+        actorAdminId
       );
     } catch (e) {
       dupFailed = true;
@@ -102,10 +103,15 @@ async function main() {
     assert(dupFailed, 'duplicate transfer must fail');
   }
 
-  console.log('3) Missing serial → expect fail');
+  console.log('3) More scanned serials than available units → expect fail (tx rollback)');
   {
     const product = await prisma.product.findFirst();
     assert(product, 'need a product row');
+    const available = await prisma.productUnit.count({
+      where: { productId: product.id, status: 'AVAILABLE', ownerId: admin.id },
+    });
+    const stamp = Date.now();
+    const serials = Array.from({ length: available + 1 }, (_, i) => `DOES-NOT-EXIST-${stamp}-${i}`);
     let failed = false;
     try {
       await shipmentsService.createShipment(
@@ -115,7 +121,7 @@ async function main() {
             {
               product_name_id: Number(product.productNameId),
               product_model_id: Number(product.productModelId),
-              serial_numbers: ['DOES-NOT-EXIST-SERIAL-XYZ'],
+              serial_numbers: serials,
             },
           ],
         },
@@ -126,7 +132,7 @@ async function main() {
       assert(e.statusCode === 400, '400 for missing serial');
       console.log(`   OK (${e.message})\n`);
     }
-    assert(failed, 'missing serial must fail');
+    assert(failed, 'over-scan must fail');
   }
 
   console.log('4) Invalid seller → expect fail');
@@ -166,6 +172,47 @@ async function main() {
       assert(still.ownerType === 'ADMIN' || Number(still.ownerId) === Number(admin.id), 'unit still admin-owned');
       console.log('5) Rollback on failure — unit unchanged: OK\n');
     }
+  }
+
+  console.log('6) Unknown serial does not rewrite a STK- placeholder');
+  {
+    const product = await prisma.product.findFirst();
+    assert(product, 'need a product row');
+    const placeholder = await prisma.productUnit.create({
+      data: {
+        productId: product.id,
+        ownerId: admin.id,
+        serialNumber: `STK-${Date.now()}-nobind`,
+        status: 'AVAILABLE',
+        ownerType: 'ADMIN',
+      },
+    });
+    const fake = `NOT-IN-STOCK-${Date.now()}`;
+    let failed = false;
+    try {
+      await shipmentsService.createShipment(
+        {
+          sellerId: Number(seller.id),
+          items: [
+            {
+              product_name_id: Number(product.productNameId),
+              product_model_id: Number(product.productModelId),
+              serial_numbers: [fake],
+            },
+          ],
+        },
+        Number(placeholder.ownerId)
+      );
+    } catch (e) {
+      failed = true;
+      assert(e.statusCode === 400, `status ${e.statusCode}`);
+      console.log(`   OK (${e.message})\n`);
+    }
+    assert(failed, 'unknown serial must fail');
+    const still = await prisma.productUnit.findUnique({ where: { id: placeholder.id } });
+    assert(still.serialNumber === placeholder.serialNumber, 'placeholder serial unchanged');
+    assert(Number(still.ownerId) === Number(admin.id), 'placeholder still admin');
+    await prisma.productUnit.delete({ where: { id: placeholder.id } });
   }
 
   console.log('All transfer slice tests passed.');

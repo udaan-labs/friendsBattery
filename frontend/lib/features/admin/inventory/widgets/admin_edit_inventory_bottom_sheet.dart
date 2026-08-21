@@ -22,7 +22,6 @@ class AdminEditInventoryBottomSheet extends ConsumerStatefulWidget {
 
 class _AdminEditInventoryBottomSheetState extends ConsumerState<AdminEditInventoryBottomSheet> {
   final _formKey = GlobalKey<FormState>();
-  final _quantityController = TextEditingController();
   final _removeQuantityController = TextEditingController();
   final _minPriceController = TextEditingController();
   final _minAdminQuantityController = TextEditingController();
@@ -42,7 +41,6 @@ class _AdminEditInventoryBottomSheetState extends ConsumerState<AdminEditInvento
 
   @override
   void dispose() {
-    _quantityController.dispose();
     _removeQuantityController.dispose();
     _minPriceController.dispose();
     _minAdminQuantityController.dispose();
@@ -57,21 +55,18 @@ class _AdminEditInventoryBottomSheetState extends ConsumerState<AdminEditInvento
 
     try {
       final repo = ref.read(sharedInventoryRepositoryProvider);
-      final quantityToAdd = int.tryParse(_quantityController.text) ?? 0;
       final quantityToRemove = int.tryParse(_removeQuantityController.text) ?? 0;
       final minPrice = num.tryParse(_minPriceController.text);
       final minAdminQty = int.tryParse(_minAdminQuantityController.text);
       final minSellerQty = int.tryParse(_minSellerQuantityController.text);
 
-      if (quantityToAdd > 0 ||
-          minPrice != null ||
+      if (minPrice != null ||
           minAdminQty != null ||
           minSellerQty != null ||
           _onSale != widget.item.onSale) {
         await repo.updateStock(
           productNameId: widget.item.productNameId,
           productModelId: widget.item.productModelId,
-          quantity: quantityToAdd > 0 ? quantityToAdd : null,
           minSellPrice: minPrice,
           minUnitCountAdmin: minAdminQty,
           minUnitCountSeller: minSellerQty,
@@ -180,29 +175,6 @@ class _AdminEditInventoryBottomSheetState extends ConsumerState<AdminEditInvento
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Add Quantity',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                ),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _quantityController,
-                  keyboardType: TextInputType.number,
-                  enabled: _isEditing,
-                  decoration: InputDecoration(
-                    hintText: 'Enter units to add (optional)',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  ),
-                  validator: (value) {
-                    if (value != null && value.isNotEmpty) {
-                      final val = int.tryParse(value);
-                      if (val == null || val < 0) return 'Enter a valid positive number';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
                 const Text(
                   'Remove Quantity',
                   style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),

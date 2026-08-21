@@ -1617,7 +1617,13 @@ module.exports = {
     properties: {
       productNameId: { type: 'integer' },
       productModelId: { type: 'integer' },
-      quantity: { type: 'integer', description: 'Units to add; optional when only updating price/flags' },
+      quantity: { type: 'integer', description: 'Units to add as STK- placeholders; optional when only updating price/flags. Do not send with serial_numbers.' },
+      serial_numbers: {
+        type: 'array',
+        maxItems: 500,
+        items: { type: 'string', minLength: 1, maxLength: 100 },
+        description: 'Scanned serials to add as units. Quantity = length. Do not send with quantity.',
+      },
       minSellPrice: { type: 'number' },
       minUnitCountAdmin: { type: 'integer' },
       minUnitCountSeller: { type: 'integer' },

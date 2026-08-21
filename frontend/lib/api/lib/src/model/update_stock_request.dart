@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -13,7 +14,8 @@ part 'update_stock_request.g.dart';
 /// Properties:
 /// * [productNameId] 
 /// * [productModelId] 
-/// * [quantity] - Units to add; optional when only updating price/flags
+/// * [quantity] - Units to add as STK- placeholders; optional when only updating price/flags. Do not send with serial_numbers.
+/// * [serialNumbers] - Scanned serials to add as units. Quantity = length. Do not send with quantity.
 /// * [minSellPrice] 
 /// * [minUnitCountAdmin] 
 /// * [minUnitCountSeller] 
@@ -27,9 +29,13 @@ abstract class UpdateStockRequest implements Built<UpdateStockRequest, UpdateSto
   @BuiltValueField(wireName: r'productModelId')
   int get productModelId;
 
-  /// Units to add; optional when only updating price/flags
+  /// Units to add as STK- placeholders; optional when only updating price/flags. Do not send with serial_numbers.
   @BuiltValueField(wireName: r'quantity')
   int? get quantity;
+
+  /// Scanned serials to add as units. Quantity = length. Do not send with quantity.
+  @BuiltValueField(wireName: r'serial_numbers')
+  BuiltList<String>? get serialNumbers;
 
   @BuiltValueField(wireName: r'minSellPrice')
   num? get minSellPrice;
@@ -85,6 +91,13 @@ class _$UpdateStockRequestSerializer implements PrimitiveSerializer<UpdateStockR
       yield serializers.serialize(
         object.quantity,
         specifiedType: const FullType(int),
+      );
+    }
+    if (object.serialNumbers != null) {
+      yield r'serial_numbers';
+      yield serializers.serialize(
+        object.serialNumbers,
+        specifiedType: const FullType(BuiltList, [FullType(String)]),
       );
     }
     if (object.minSellPrice != null) {
@@ -165,6 +178,13 @@ class _$UpdateStockRequestSerializer implements PrimitiveSerializer<UpdateStockR
             specifiedType: const FullType(int),
           ) as int;
           result.quantity = valueDes;
+          break;
+        case r'serial_numbers':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(String)]),
+          ) as BuiltList<String>;
+          result.serialNumbers.replace(valueDes);
           break;
         case r'minSellPrice':
           final valueDes = serializers.deserialize(

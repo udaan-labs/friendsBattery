@@ -14,6 +14,8 @@ class _$UpdateStockRequest extends UpdateStockRequest {
   @override
   final int? quantity;
   @override
+  final BuiltList<String>? serialNumbers;
+  @override
   final num? minSellPrice;
   @override
   final int? minUnitCountAdmin;
@@ -32,6 +34,7 @@ class _$UpdateStockRequest extends UpdateStockRequest {
     required this.productNameId,
     required this.productModelId,
     this.quantity,
+    this.serialNumbers,
     this.minSellPrice,
     this.minUnitCountAdmin,
     this.minUnitCountSeller,
@@ -54,6 +57,7 @@ class _$UpdateStockRequest extends UpdateStockRequest {
         productNameId == other.productNameId &&
         productModelId == other.productModelId &&
         quantity == other.quantity &&
+        serialNumbers == other.serialNumbers &&
         minSellPrice == other.minSellPrice &&
         minUnitCountAdmin == other.minUnitCountAdmin &&
         minUnitCountSeller == other.minUnitCountSeller &&
@@ -67,6 +71,7 @@ class _$UpdateStockRequest extends UpdateStockRequest {
     _$hash = $jc(_$hash, productNameId.hashCode);
     _$hash = $jc(_$hash, productModelId.hashCode);
     _$hash = $jc(_$hash, quantity.hashCode);
+    _$hash = $jc(_$hash, serialNumbers.hashCode);
     _$hash = $jc(_$hash, minSellPrice.hashCode);
     _$hash = $jc(_$hash, minUnitCountAdmin.hashCode);
     _$hash = $jc(_$hash, minUnitCountSeller.hashCode);
@@ -82,6 +87,7 @@ class _$UpdateStockRequest extends UpdateStockRequest {
           ..add('productNameId', productNameId)
           ..add('productModelId', productModelId)
           ..add('quantity', quantity)
+          ..add('serialNumbers', serialNumbers)
           ..add('minSellPrice', minSellPrice)
           ..add('minUnitCountAdmin', minUnitCountAdmin)
           ..add('minUnitCountSeller', minUnitCountSeller)
@@ -108,6 +114,12 @@ class UpdateStockRequestBuilder
   int? _quantity;
   int? get quantity => _$this._quantity;
   set quantity(int? quantity) => _$this._quantity = quantity;
+
+  ListBuilder<String>? _serialNumbers;
+  ListBuilder<String> get serialNumbers =>
+      _$this._serialNumbers ??= ListBuilder<String>();
+  set serialNumbers(ListBuilder<String>? serialNumbers) =>
+      _$this._serialNumbers = serialNumbers;
 
   num? _minSellPrice;
   num? get minSellPrice => _$this._minSellPrice;
@@ -141,6 +153,7 @@ class UpdateStockRequestBuilder
       _productNameId = $v.productNameId;
       _productModelId = $v.productModelId;
       _quantity = $v.quantity;
+      _serialNumbers = $v.serialNumbers?.toBuilder();
       _minSellPrice = $v.minSellPrice;
       _minUnitCountAdmin = $v.minUnitCountAdmin;
       _minUnitCountSeller = $v.minUnitCountSeller;
@@ -165,26 +178,43 @@ class UpdateStockRequestBuilder
   UpdateStockRequest build() => _build();
 
   _$UpdateStockRequest _build() {
-    final _$result =
-        _$v ??
-        _$UpdateStockRequest._(
-          productNameId: BuiltValueNullFieldError.checkNotNull(
-            productNameId,
-            r'UpdateStockRequest',
-            'productNameId',
-          ),
-          productModelId: BuiltValueNullFieldError.checkNotNull(
-            productModelId,
-            r'UpdateStockRequest',
-            'productModelId',
-          ),
-          quantity: quantity,
-          minSellPrice: minSellPrice,
-          minUnitCountAdmin: minUnitCountAdmin,
-          minUnitCountSeller: minUnitCountSeller,
-          onSale: onSale,
-          locationId: locationId,
+    _$UpdateStockRequest _$result;
+    try {
+      _$result =
+          _$v ??
+          _$UpdateStockRequest._(
+            productNameId: BuiltValueNullFieldError.checkNotNull(
+              productNameId,
+              r'UpdateStockRequest',
+              'productNameId',
+            ),
+            productModelId: BuiltValueNullFieldError.checkNotNull(
+              productModelId,
+              r'UpdateStockRequest',
+              'productModelId',
+            ),
+            quantity: quantity,
+            serialNumbers: _serialNumbers?.build(),
+            minSellPrice: minSellPrice,
+            minUnitCountAdmin: minUnitCountAdmin,
+            minUnitCountSeller: minUnitCountSeller,
+            onSale: onSale,
+            locationId: locationId,
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'serialNumbers';
+        _serialNumbers?.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+          r'UpdateStockRequest',
+          _$failedField,
+          e.toString(),
         );
+      }
+      rethrow;
+    }
     replace(_$result);
     return _$result;
   }

@@ -2734,9 +2734,11 @@
           "serial_numbers": {
             "type": "array",
             "minItems": 1,
+            "maxItems": 500,
             "items": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 100
             }
           },
           "price_per_piece": {
@@ -3128,7 +3130,17 @@
           },
           "quantity": {
             "type": "integer",
-            "description": "Units to add; optional when only updating price/flags"
+            "description": "Units to add as STK- placeholders; optional when only updating price/flags. Do not send with serial_numbers."
+          },
+          "serial_numbers": {
+            "type": "array",
+            "maxItems": 500,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "description": "Scanned serials to add as units. Quantity = length. Do not send with quantity."
           },
           "minSellPrice": {
             "type": "number"
@@ -4147,8 +4159,8 @@
     },
     "/api/shops/employees/{employeeId}/location": {
       "patch": {
-        "summary": "Move an admin or employee to another shop or warehouse",
-        "description": "Super Admin or shop Admin. ADMIN or EMPLOYEE only. Updates `users.location_id`\n(and parent/shop name). Shop Admin: person must be in their shop. Dest must be\nactive. Employee dest must not already have an employee; employee must be\nchecked out first. Inventory stays at the old location.\n",
+        "summary": "Move an admin, seller, or employee",
+        "description": "Super Admin or shop Admin. ADMIN, SELLER, or EMPLOYEE. Updates `users.location_id`\n(and parent/shop name). Shop Admin: person must be in their shop. Dest must be\nactive. Seller dest must be a shop. Employee must be checked out first.\nInventory stays at the old location.\n",
         "tags": [
           "Shops"
         ],
@@ -4198,10 +4210,7 @@
             "description": "Super Admin or shop Admin; employee out of shop Admin scope"
           },
           "404": {
-            "description": "Admin or employee not found"
-          },
-          "409": {
-            "description": "Destination already has an employee"
+            "description": "Staff user not found"
           }
         }
       }

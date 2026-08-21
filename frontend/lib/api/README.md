@@ -117,7 +117,7 @@ Class | Method | HTTP request | Description
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiShipmentsShipmentIdAcceptPost**](doc/ShipmentsApi.md#apishipmentsshipmentidacceptpost) | **POST** /api/shipments/{shipmentId}/accept | Accept a pending shipment (Seller only)
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsEmployeeRolesGet**](doc/ShopsApi.md#apishopsemployeerolesget) | **GET** /api/shops/employee-roles | List job titles for employees (Manager, Cashier, …)
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsEmployeesEmployeeIdGet**](doc/ShopsApi.md#apishopsemployeesemployeeidget) | **GET** /api/shops/employees/{employeeId} | Admin view one employee (profile + check-in/check-out only)
-[*ShopsApi*](doc/ShopsApi.md) | [**apiShopsEmployeesEmployeeIdLocationPatch**](doc/ShopsApi.md#apishopsemployeesemployeeidlocationpatch) | **PATCH** /api/shops/employees/{employeeId}/location | Move an admin or employee to another shop or warehouse
+[*ShopsApi*](doc/ShopsApi.md) | [**apiShopsEmployeesEmployeeIdLocationPatch**](doc/ShopsApi.md#apishopsemployeesemployeeidlocationpatch) | **PATCH** /api/shops/employees/{employeeId}/location | Move an admin, seller, or employee
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsEmployeesNextUserIdGet**](doc/ShopsApi.md#apishopsemployeesnextuseridget) | **GET** /api/shops/employees/next-user-id | Preview next auto-generated employee user_id (EMP001, EMP002, …)
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsEmployeesPost**](doc/ShopsApi.md#apishopsemployeespost) | **POST** /api/shops/employees | Create an employee at a shop or warehouse
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsLocationsGet**](doc/ShopsApi.md#apishopslocationsget) | **GET** /api/shops/locations | List active locations (warehouse + shops)

@@ -138,6 +138,7 @@ class SharedInventoryRepository {
     required int productNameId,
     required int productModelId,
     int? quantity,
+    List<String>? serialNumbers,
     num? minSellPrice,
     int? minUnitCountAdmin,
     int? minUnitCountSeller,
@@ -148,6 +149,7 @@ class SharedInventoryRepository {
       b.productNameId = productNameId;
       b.productModelId = productModelId;
       if (quantity != null) b.quantity = quantity;
+      if (serialNumbers != null) b.serialNumbers.replace(serialNumbers);
       if (minSellPrice != null) b.minSellPrice = minSellPrice;
       if (minUnitCountAdmin != null) b.minUnitCountAdmin = minUnitCountAdmin;
       if (minUnitCountSeller != null) b.minUnitCountSeller = minUnitCountSeller;

@@ -9,8 +9,9 @@ const createShipmentSchema = z.object({
           product_name_id: z.coerce.number().int().positive('Product Name ID must be a positive integer'),
           product_model_id: z.coerce.number().int().positive('Product Model ID must be a positive integer'),
           serial_numbers: z
-            .array(z.string().trim().min(1, 'Serial number cannot be empty'))
-            .min(1, 'At least one serial number is required'),
+            .array(z.string().trim().min(1, 'Serial number cannot be empty').max(100))
+            .min(1, 'At least one serial number is required')
+            .max(500),
           price_per_piece: z.coerce.number().nonnegative('Price per piece must be non-negative').optional(),
         })
       )

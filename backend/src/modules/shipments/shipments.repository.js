@@ -2,6 +2,30 @@ const { prisma } = require('../../config/db');
 const { getDefaultWarehouseId, getUserLocationId } = require('../../shared/utils/location.util');
 const { httpError } = require('../../shared/utils/http-error');
 
+async function resolveUnitsForSerials(tx, { productId, adminId, serials, claimedIds }) {
+  const ownerId = BigInt(adminId);
+  const existing = await tx.productUnit.findMany({
+    where: {
+      serialNumber: { in: serials },
+      productId,
+      status: 'AVAILABLE',
+      ownerId,
+      ...(claimedIds.length ? { id: { notIn: claimedIds } } : {}),
+    },
+  });
+  const bySerial = new Map(existing.map((u) => [u.serialNumber, u]));
+  const units = [];
+  for (const serial of serials) {
+    const u = bySerial.get(serial);
+    if (!u) {
+      throw httpError(400, `Serial number(s) unavailable or not in admin inventory: ${serial}`);
+    }
+    claimedIds.push(u.id);
+    units.push(u);
+  }
+  return units;
+}
+
 const SHIPMENT_DETAIL_INCLUDE = {
   seller: {
     select: {
@@ -37,15 +61,28 @@ class ShipmentsRepository {
   }
 
   /**
-   * Atomic admin → seller serial transfer.
-   * @param {{ sellerId: number, adminId: number, resolvedItems: Array<{ product, units }> }} data
+   * Atomic admin → seller serial transfer. Serials must already exist on admin units.
+   * @param {{ sellerId: number, adminId: number, resolvedItems: Array<{ product, serials: string[] }> }} data
    */
   async transferUnitsToSeller(data) {
     const { sellerId, adminId, resolvedItems } = data;
-    const allUnits = resolvedItems.flatMap((r) => r.units);
-    const transferredCount = allUnits.length;
 
     return prisma.$transaction(async (tx) => {
+      const claimedIds = [];
+      const boundItems = [];
+      for (const r of resolvedItems) {
+        const units = await resolveUnitsForSerials(tx, {
+          productId: r.product.id,
+          adminId,
+          serials: r.serials,
+          claimedIds,
+        });
+        boundItems.push({ ...r, units });
+      }
+
+      const allUnits = boundItems.flatMap((r) => r.units);
+      const transferredCount = allUnits.length;
+
       // 1. Lock units: re-check status inside TX to prevent race
       const unitIds = allUnits.map((u) => u.id);
       // Must match createShipment lookup: units owned by this actor (SA or shop Admin)
@@ -75,7 +112,7 @@ class ShipmentsRepository {
           status: 'ACCEPTED',
           acceptedAt: new Date(),
           items: {
-            create: resolvedItems.flatMap((r) =>
+            create: boundItems.flatMap((r) =>
               r.units.map((unit) => ({
                 productNameId: r.product.productNameId,
                 productModelId: r.product.productModelId,
@@ -116,7 +153,7 @@ class ShipmentsRepository {
 
       // 5. Keep denormalized product.stockQuantity roughly in sync (admin pool)
       const byProduct = new Map();
-      for (const r of resolvedItems) {
+      for (const r of boundItems) {
         const pid = Number(r.product.id);
         byProduct.set(pid, (byProduct.get(pid) || 0) + r.units.length);
       }
@@ -130,7 +167,7 @@ class ShipmentsRepository {
       // 6. Updated inventory counts for response
       const inventory = [];
       for (const [productId, transferred] of byProduct.entries()) {
-        const product = resolvedItems.find((r) => Number(r.product.id) === productId)?.product;
+        const product = boundItems.find((r) => Number(r.product.id) === productId)?.product;
         const [adminRemaining, sellerCount] = await Promise.all([
           tx.productUnit.count({
             where: {

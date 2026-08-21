@@ -115,9 +115,9 @@ class ShipmentRepository {
   ShipmentRepository({required FriendsBatteryApi api}) : _api = api;
 
   ShipmentsApi get _shipments => _api.getShipmentsApi();
-  InventoryApi get _inventory => _api.getInventoryApi();
   ShopsApi get _shops => _api.getShopsApi();
   ProductsApi get _products => _api.getProductsApi();
+  InventoryApi get _inventory => _api.getInventoryApi();
 
   Future<List<ShipmentSummaryModel>> getShipments() async {
     final response = await _shipments.apiShipmentsGet();
@@ -225,19 +225,6 @@ class ShipmentRepository {
     );
   }
 
-  Future<List<String>> getAvailableSerials({
-    required int productNameId,
-    required int productModelId,
-  }) async {
-    final response = await _inventory.apiInventoryAvailableSerialsGet(
-      productNameId: productNameId,
-      productModelId: productModelId,
-    );
-    final data = response.data?.data;
-    if (data == null) return [];
-    return data.toList();
-  }
-
   /// Seller accept legacy PENDING shipment.
   Future<void> acceptShipment(int shipmentId) async {
     await _shipments.apiShipmentsShipmentIdAcceptPost(shipmentId: shipmentId);
@@ -246,6 +233,17 @@ class ShipmentRepository {
   /// Products grouped by name for transfer form dropdowns.
   Future<List<InventoryProductNameGroup>> getInventoryProducts() async {
     final response = await _products.apiProductsInventoryProductsGet();
+    return response.data?.data?.toList() ?? [];
+  }
+
+  Future<List<String>> getAvailableSerials({
+    required int productNameId,
+    required int productModelId,
+  }) async {
+    final response = await _inventory.apiInventoryAvailableSerialsGet(
+      productNameId: productNameId,
+      productModelId: productModelId,
+    );
     return response.data?.data?.toList() ?? [];
   }
 }

@@ -357,7 +357,7 @@ class InventoryService {
    * @param {object} payload
    * @param {{ role?: string, locationId?: number|null }} [actor]
    */
-  async updateStock(adminId, { productNameId, productModelId, quantity, minSellPrice, minUnitCountAdmin, minUnitCountSeller, onSale, location_id }, actor = {}) {
+  async updateStock(adminId, { productNameId, productModelId, quantity, serial_numbers, minSellPrice, minUnitCountAdmin, minUnitCountSeller, onSale, location_id }, actor = {}) {
     const role = actor.role;
     const actorLocationId = actor.locationId != null ? Number(actor.locationId) : null;
 
@@ -402,6 +402,11 @@ class InventoryService {
       resolvedLocationId = loc.id;
     }
 
+    const serials = Array.isArray(serial_numbers)
+      ? serial_numbers.map((s) => String(s).trim()).filter(Boolean)
+      : [];
+    const addCount = serials.length > 0 ? serials.length : (quantity || 0);
+
     return prisma.$transaction(async (tx) => {
       // Find or create product
       let product = await tx.product.findFirst({
@@ -419,7 +424,7 @@ class InventoryService {
             productModelId: BigInt(productModelId),
             minPrice: minSellPrice !== undefined ? minSellPrice : 0,
             onSale: onSale !== undefined ? onSale : false,
-            stockQuantity: quantity ?? 0,
+            stockQuantity: addCount,
             minUnitCountAdmin: minUnitCountAdmin !== undefined ? minUnitCountAdmin : 0,
             minUnitCountSeller: minUnitCountSeller !== undefined ? minUnitCountSeller : 0
           }
@@ -429,7 +434,7 @@ class InventoryService {
         product = await tx.product.update({
           where: { id: product.id },
           data: {
-            ...(quantity ? { stockQuantity: { increment: quantity } } : {}),
+            ...(addCount ? { stockQuantity: { increment: addCount } } : {}),
             ...(minSellPrice !== undefined ? { minPrice: minSellPrice } : {}),
             ...(onSale !== undefined ? { onSale } : {}),
             ...(minUnitCountAdmin !== undefined ? { minUnitCountAdmin } : {}),
@@ -439,19 +444,54 @@ class InventoryService {
       }
 
       let placedLocationId = resolvedLocationId;
-      if (quantity && quantity > 0) {
+      if (addCount > 0) {
         if (!placedLocationId) {
           placedLocationId =
             (await getUserLocationId(adminId, tx)) || (await getDefaultWarehouseId(tx));
         }
-        const unitsData = Array.from({ length: quantity }).map(() => ({
-          productId: product.id,
-          ownerId: adminId,
-          serialNumber: `STK-${Date.now()}-${crypto.randomUUID()}`,
-          status: 'AVAILABLE',
-          ...(placedLocationId ? { currentLocationId: placedLocationId } : {}),
-        }));
-        await inventoryRepository.createInventory(unitsData, tx);
+        const loc = placedLocationId ? { currentLocationId: placedLocationId } : {};
+        if (serials.length) {
+          const taken = await tx.productUnit.findFirst({
+            where: { serialNumber: { in: serials } },
+            select: { serialNumber: true },
+          });
+          if (taken) {
+            throw httpError(400, `Serial number already exists: ${taken.serialNumber}`);
+          }
+        }
+        const unitsData = serials.length
+          ? serials.map((serialNumber) => ({
+              productId: product.id,
+              ownerId: adminId,
+              serialNumber,
+              status: 'AVAILABLE',
+              ...loc,
+            }))
+          : Array.from({ length: addCount }).map(() => ({
+              productId: product.id,
+              ownerId: adminId,
+              serialNumber: `STK-${Date.now()}-${crypto.randomUUID()}`,
+              status: 'AVAILABLE',
+              ...loc,
+            }));
+        let createdUnits;
+        try {
+          createdUnits = await inventoryRepository.createInventory(unitsData, tx);
+        } catch (err) {
+          if (err.code === 'P2002') {
+            throw httpError(400, 'Serial number already exists');
+          }
+          throw err;
+        }
+        await inventoryRepository.createInventoryTransaction(
+          createdUnits.map((unit) => ({
+            productUnitId: unit.id,
+            toUserId: BigInt(adminId),
+            action: 'RECEIVED',
+            ...(placedLocationId ? { toLocationId: placedLocationId } : {}),
+          })),
+          tx
+        );
       }
 
       return {

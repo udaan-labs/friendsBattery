@@ -10,7 +10,8 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **productNameId** | **int** |  | 
 **productModelId** | **int** |  | 
-**quantity** | **int** | Units to add; optional when only updating price/flags | [optional] 
+**quantity** | **int** | Units to add as STK- placeholders; optional when only updating price/flags. Do not send with serial_numbers. | [optional] 
+**serialNumbers** | **BuiltList&lt;String&gt;** | Scanned serials to add as units. Quantity = length. Do not send with quantity. | [optional] 
 **minSellPrice** | **num** |  | [optional] 
 **minUnitCountAdmin** | **int** |  | [optional] 
 **minUnitCountSeller** | **int** |  | [optional] 

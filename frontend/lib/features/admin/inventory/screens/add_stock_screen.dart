@@ -10,6 +10,7 @@ import '../../../../shared/widgets/snackbar_helper.dart';
 import '../../../shared/inventory/providers/inventory_provider.dart';
 import '../../../shared/products/providers/product_catalog_providers.dart';
 import '../../locations/providers/locations_providers.dart';
+import '../../../../shared/widgets/serial_scan_field.dart';
 
 class AddStockScreen extends ConsumerStatefulWidget {
   const AddStockScreen({super.key});
@@ -20,8 +21,9 @@ class AddStockScreen extends ConsumerStatefulWidget {
 
 class _AddStockScreenState extends ConsumerState<AddStockScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _quantityController = TextEditingController();
   final _minPriceController = TextEditingController();
+  final _manualSerialController = TextEditingController();
+  final List<String> _scannedSerials = [];
 
   bool _isSubmitting = false;
 
@@ -32,9 +34,22 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
 
   @override
   void dispose() {
-    _quantityController.dispose();
     _minPriceController.dispose();
+    _manualSerialController.dispose();
     super.dispose();
+  }
+
+  void _tryAddSerial(String raw) {
+    final serial = raw.trim();
+    if (serial.isEmpty) return;
+    if (_scannedSerials.contains(serial)) {
+      context.showErrorSnackBar('Serial number already added');
+      return;
+    }
+    setState(() {
+      _scannedSerials.add(serial);
+      _manualSerialController.clear();
+    });
   }
 
   Future<void> _submit() async {
@@ -43,13 +58,8 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
       context.showErrorSnackBar('Please select Product Name and Product Model');
       return;
     }
-    if (_quantityController.text.trim().isEmpty) {
-      context.showErrorSnackBar('Please enter a quantity');
-      return;
-    }
-    final quantity = int.tryParse(_quantityController.text.trim());
-    if (quantity == null || quantity <= 0) {
-      context.showErrorSnackBar('Quantity must be a positive number');
+    if (_scannedSerials.isEmpty) {
+      context.showErrorSnackBar('Scan at least one serial number');
       return;
     }
 
@@ -66,7 +76,7 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
       await repo.updateStock(
         productNameId: int.parse(_selectedProductNameId!),
         productModelId: int.parse(_selectedProductModelId!),
-        quantity: quantity,
+        serialNumbers: List<String>.from(_scannedSerials),
         minSellPrice: minPrice,
         // Shop Admin: omit — backend forces own shop location
         locationId: isSuperAdmin ? _selectedWarehouseId : null,
@@ -213,6 +223,7 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
                                       setState(() {
                                         _selectedProductNameId = id;
                                         _selectedProductModelId = null;
+                                        _scannedSerials.clear();
                                       });
                                     },
                                   ),
@@ -279,7 +290,10 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
                                       items: productModels
                                           .map((m) => DropdownMenuItem(value: m.id, child: Text(m.name)))
                                           .toList(),
-                                      onChanged: (id) => setState(() => _selectedProductModelId = id),
+                                      onChanged: (id) => setState(() {
+                                        _selectedProductModelId = id;
+                                        _scannedSerials.clear();
+                                      }),
                                     ),
                             ),
                           const SizedBox(height: 20),
@@ -424,27 +438,12 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
                             const SizedBox(height: 20),
                           ],
 
-                          const Text(
-                            'Quantity',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                          ),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: _quantityController,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              hintText: 'Enter quantity to add',
-                            ),
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return 'Please enter a quantity';
-                              }
-                              final parsed = int.tryParse(value);
-                              if (parsed == null || parsed <= 0) {
-                                return 'Quantity must be a positive number';
-                              }
-                              return null;
-                            },
+                          SerialScanField(
+                            serials: _scannedSerials,
+                            manualController: _manualSerialController,
+                            enabled: _selectedProductModelId != null,
+                            onAdd: _tryAddSerial,
+                            onRemove: (s) => setState(() => _scannedSerials.remove(s)),
                           ),
                           const SizedBox(height: 20),
 
