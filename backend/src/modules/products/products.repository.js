@@ -157,25 +157,6 @@ class ProductsRepository {
   }
 
   /**
-   * Find products that the admin has stock for (stockQuantity > 0)
-   */
-  async findAdminInventoryProducts() {
-    return prisma.product.findMany({
-      where: {
-        stockQuantity: { gt: 0 }
-      },
-      include: {
-        productName: true,
-        productModel: true
-      },
-      orderBy: [
-        { productName: { name: 'asc' } },
-        { productModel: { name: 'asc' } }
-      ]
-    });
-  }
-
-  /**
    * Find products that have available (AVAILABLE) units matching unitScope.
    * unitScope: e.g. { ownerId } for seller or { currentLocationId } for employee.
    */

@@ -134,7 +134,9 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
       for (final item in inventoryList) {
         final productName = item.productName ?? '';
         final productNameId = item.productNameId?.toString() ?? '';
-        if (productName.isNotEmpty && productNameId.isNotEmpty) {
+        final models = item.models?.toList() ?? const [];
+        final hasStock = models.any((m) => (m.availableQuantity ?? 0) > 0);
+        if (productName.isNotEmpty && productNameId.isNotEmpty && hasStock) {
           namesList.add({'id': productNameId, 'name': productName});
         }
       }
@@ -165,6 +167,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
 
     final List<Map<String, String>> models = [];
     for (final m in group?.models?.toList() ?? const <InventoryProductModelOption>[]) {
+      if ((m.availableQuantity ?? 0) <= 0) continue;
       models.add({
         'id': m.productModelId?.toString() ?? '',
         'name': m.productModel ?? '',

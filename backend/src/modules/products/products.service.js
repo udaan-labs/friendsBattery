@@ -1,7 +1,6 @@
 const productsRepository = require('./products.repository');
 const { resolveUnitScope } = require('../inventory/inventory.scope');
 const { httpError } = require('../../shared/utils/http-error');
-const { isAdminLikeRole } = require('../../shared/utils/role.util');
 
 /** First letter upper; rest unchanged. "amaron" → "Amaron". */
 function capitalizeFirst(name) {
@@ -155,24 +154,22 @@ class ProductsService {
   }
 
   /**
-   * Get products available in the authenticated user's inventory.
-   * Admin: product stockQuantity. Seller: owner_id. Employee: current_location_id.
+   * Get products with AVAILABLE units in the actor's inventory scope.
+   * SUPER_ADMIN/ADMIN: owner scope. Seller: owner_id. Employee: current_location_id.
    */
   async getInventoryProducts(userId, role) {
-    let products;
-    if (isAdminLikeRole(role)) {
-      products = await productsRepository.findAdminInventoryProducts();
-    } else {
-      const unitScope = await resolveUnitScope(userId, role);
-      if (!unitScope) {
-        return [];
-      }
-      products = await productsRepository.findInventoryProducts(unitScope);
+    const unitScope = await resolveUnitScope(userId, role);
+    if (!unitScope) {
+      return [];
     }
+    const products = await productsRepository.findInventoryProducts(unitScope);
 
     const groupedMap = new Map();
 
     for (const product of products) {
+      const availableQuantity = product._count.units;
+      if (!availableQuantity) continue;
+
       const nameKey = product.productName.name;
       if (!groupedMap.has(nameKey)) {
         groupedMap.set(nameKey, {
@@ -181,10 +178,6 @@ class ProductsService {
           models: []
         });
       }
-
-      const availableQuantity = isAdminLikeRole(role)
-        ? Number(product.stockQuantity)
-        : product._count.units;
 
       groupedMap.get(nameKey).models.push({
         id: Number(product.id),
