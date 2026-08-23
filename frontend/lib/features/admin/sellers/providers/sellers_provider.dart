@@ -41,3 +41,34 @@ final sellersProvider = FutureProvider<List<SellerData>>((ref) async {
     );
   }).toList();
 });
+
+class EmployeeStaffData {
+  final ShopStaffMember member;
+  final LocationItem? location;
+
+  EmployeeStaffData({
+    required this.member,
+    this.location,
+  });
+}
+
+final allEmployeesProvider = FutureProvider<List<EmployeeStaffData>>((ref) async {
+  final repo = ref.watch(apiClientProvider).getShopsApi();
+  final locationsResponse = await repo.apiShopsLocationsGet();
+  final locations = locationsResponse.data?.data?.toList() ?? <LocationItem>[];
+
+  final results = await Future.wait(locations.map((loc) async {
+    final locId = loc.id;
+    if (locId == null) return <EmployeeStaffData>[];
+    try {
+      final res = await repo.apiShopsLocationsLocationIdStaffGet(locationId: locId);
+      final employees = res.data?.data?.employees?.toList() ?? <ShopStaffMember>[];
+      return employees.map((emp) => EmployeeStaffData(member: emp, location: loc)).toList();
+    } catch (_) {
+      return <EmployeeStaffData>[];
+    }
+  }));
+
+  final seen = <int>{};
+  return results.expand((e) => e).where((e) => e.member.id != null && seen.add(e.member.id!)).toList();
+});

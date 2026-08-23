@@ -17,13 +17,6 @@ class QuickActions extends ConsumerWidget {
     final actions = <_ActionItemData>[
       if (isSuperAdmin)
         _ActionItemData(
-          title: 'View Sales',
-          subtitle: 'Today, week, month, year, date',
-          icon: Icons.point_of_sale_outlined,
-          route: '/admin/sales',
-        ),
-      if (isSuperAdmin)
-        _ActionItemData(
           title: 'Add Product',
           subtitle: 'Name, model, or configure',
           icon: Icons.add_circle_outline_rounded,
@@ -59,18 +52,10 @@ class QuickActions extends ConsumerWidget {
           route: '/admin/accounts',
         ),
       _ActionItemData(
-        title: 'Sellers',
-        subtitle: 'List sellers · add accounts',
+        title: 'Staff',
+        subtitle: 'Sellers & employees across shops',
         icon: Icons.people_outline_rounded,
         route: '/admin/sellers',
-      ),
-      _ActionItemData(
-        title: isSuperAdmin ? 'Locations' : 'My shop',
-        subtitle: isSuperAdmin
-            ? 'Shops & warehouses · add / search'
-            : 'View or add your shop',
-        icon: Icons.location_city_outlined,
-        route: '/admin/locations',
       ),
       if (!isSuperAdmin) ...[
         _ActionItemData(
@@ -90,18 +75,6 @@ class QuickActions extends ConsumerWidget {
           subtitle: 'Deposit out · fee + refund in',
           icon: Icons.battery_charging_full,
           route: '/admin/battery-rent',
-        ),
-        _ActionItemData(
-          title: 'View Sales',
-          subtitle: 'Browse all sales transactions',
-          icon: Icons.point_of_sale_outlined,
-          route: '/admin/sales',
-        ),
-        _ActionItemData(
-          title: 'Shipments',
-          subtitle: 'Track stock transfers',
-          icon: Icons.local_shipping_outlined,
-          route: '/admin/shipments',
         ),
       ],
       _ActionItemData(

@@ -3,7 +3,7 @@
 **Role chain:** `SUPER ADMIN → ADMIN → SELLER → EMPLOYEE`  
 One stream at a time. Work **down** the chain.  
 `- [ ]` todo · `- [x]` done.  
-**Next:** §6 Hardening / ops.
+**Next:** §1 Super Admin.
 
 ```text
 SUPER ADMIN     all WH + shops · stock any WH · adjust any shop · PDF/GPS all · sell/accept
@@ -24,6 +24,12 @@ Completed sections and baseline tasks are archived with timestamps/numbers in [c
 ## Completed Sections & Archive
 
 Finished sections (§0 through §5) are archived with numbers (`#1` through `#6`) and timestamps in [completed_tasks.md](file:///c:/Users/DELL/dev/friendsBattery/docs/completed_tasks.md).
+
+---
+
+## 1. Super Admin
+
+- [ ] Super Admin: Change password of Admin, Seller, or Employee using employee ID or mobile number  
 
 ---
 
