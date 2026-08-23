@@ -23,7 +23,7 @@ class DashboardApi {
   const DashboardApi(this._dio, this._serializers);
 
   /// Get paginated activity history (Admin only)
-  /// 
+  /// Same scope as recent-activity. SUPER_ADMIN org-wide; ADMIN own warehouse/shop tree only.
   ///
   /// Parameters:
   /// * [cursor] - Opaque cursor from previous page (pagination.nextCursor)
@@ -118,7 +118,7 @@ class DashboardApi {
   }
 
   /// Get recent activity feed (Admin only)
-  /// 
+  /// SUPER_ADMIN sees org-wide activity. Shop/warehouse ADMIN sees only own warehouse/shop plus sellers and employees under them.
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation

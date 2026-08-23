@@ -3,7 +3,7 @@ const router = express.Router();
 const usersController = require('./users.controller');
 const { listAccountsSchema, setActiveSchema } = require('./users.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
-const { requireRole } = require('../../shared/middleware/role.middleware');
+const { requireRole, requireSuperAdminOrAdmin } = require('../../shared/middleware/role.middleware');
 const { validateRequest } = require('../../shared/middleware/validation.middleware');
 const ROLES = require('../../shared/constants/roles');
 
@@ -55,7 +55,7 @@ router.get(
  * /api/users/{id}/active:
  *   patch:
  *     summary: Activate or deactivate an admin, seller, or employee
- *     description: Super Admin only. Inactive users cannot log in or use the API. Cannot change self or SUPER_ADMIN.
+ *     description: Super Admin or Admin. Inactive users cannot log in or use the API. Cannot change self or out-of-scope accounts.
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
@@ -90,7 +90,7 @@ router.get(
 router.patch(
   '/:id/active',
   authenticate,
-  requireRole(ROLES.SUPER_ADMIN),
+  requireSuperAdminOrAdmin,
   validateRequest(setActiveSchema),
   usersController.setActive
 );

@@ -3,16 +3,17 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import 'package:go_router/go_router.dart';
-import '../../../shared/providers/auth_provider.dart';
-import '../../../theme/app_theme.dart';
+
+import '../../../core/network/api_client_provider.dart';
+import '../../../core/state/data_sync.dart';
 import '../../../shared/utils/app_formatters.dart';
 import '../../../shared/utils/password.dart';
 import '../../../shared/widgets/responsive_helper.dart';
-import '../providers/auth_controller.dart';
-import '../../../core/state/data_sync.dart';
 import '../../../shared/widgets/snackbar_helper.dart';
+import '../../../theme/app_theme.dart';
 import '../../admin/locations/providers/locations_providers.dart';
 import '../../shared/staff/providers/staff_providers.dart';
+import '../providers/auth_controller.dart';
 import '../widgets/admin_location_picker.dart';
 
 /// Add seller (`isAdminFlow`) or add admin (`isCreateAdmin`).
@@ -46,6 +47,23 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   late int? _selectedShopLocationId = widget.initialLocationId;
   LocationItemTypeEnum? _selectedType;
   String? _mobileError;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _prefillUserId());
+  }
+
+  Future<void> _prefillUserId() async {
+    try {
+      final res = await ref.read(apiClientProvider).getShopsApi().apiShopsSellersNextUserIdGet();
+      final id = res.data?.data?.userId;
+      if (!mounted || _userIdController.text.isNotEmpty || id == null) return;
+      _userIdController.text = id;
+    } catch (_) {
+      // POST still auto-gens if left empty
+    }
+  }
 
   bool get _asSeller =>
       widget.isAdminFlow || _selectedType == LocationItemTypeEnum.SHOP;
@@ -403,8 +421,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
     final isLoading = authState.isLoading;
-    final lockShop = !widget.isCreateAdmin &&
-        ref.watch(authProvider).role != UserRole.superAdmin;
+    final lockShop = widget.initialLocationId != null;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -485,7 +502,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     TextField(
                       controller: _userIdController,
                       enabled: !isLoading,
-                      decoration: const InputDecoration(labelText: 'User ID'),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                      ],
+                      decoration: const InputDecoration(
+                        labelText: 'User ID',
+                        hintText: 'SELL001',
+                        helperText: 'Auto-filled single word ID. No spaces.',
+                      ),
                     ),
                     const SizedBox(height: 16),
                     TextField(

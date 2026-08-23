@@ -20,6 +20,7 @@ Method | HTTP request | Description
 [**apiShopsLocationsPost**](ShopsApi.md#apishopslocationspost) | **POST** /api/shops/locations | Create a shop or warehouse location
 [**apiShopsMyStaffGet**](ShopsApi.md#apishopsmystaffget) | **GET** /api/shops/my-staff | Seller — staff at own shop location
 [**apiShopsSellersGet**](ShopsApi.md#apishopssellersget) | **GET** /api/shops/sellers | Return all sellers
+[**apiShopsSellersNextUserIdGet**](ShopsApi.md#apishopssellersnextuseridget) | **GET** /api/shops/sellers/next-user-id | Preview next auto-generated seller user_id (SEL001, SEL002, …)
 [**apiShopsSellersSellerIdGet**](ShopsApi.md#apishopssellersselleridget) | **GET** /api/shops/sellers/{sellerId} | Return one seller
 [**apiShopsSellersSellerIdStaffGet**](ShopsApi.md#apishopssellersselleridstaffget) | **GET** /api/shops/sellers/{sellerId}/staff | Sellers and employees at the same shop location as this seller
 
@@ -467,6 +468,43 @@ This endpoint does not need any parameter.
 ### Return type
 
 [**SellersListResponse**](SellersListResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiShopsSellersNextUserIdGet**
+> NextEmployeeUserIdResponse apiShopsSellersNextUserIdGet()
+
+Preview next auto-generated seller user_id (SEL001, SEL002, …)
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getShopsApi();
+
+try {
+    final response = api.apiShopsSellersNextUserIdGet();
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling ShopsApi->apiShopsSellersNextUserIdGet: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**NextEmployeeUserIdResponse**](NextEmployeeUserIdResponse.md)
 
 ### Authorization
 

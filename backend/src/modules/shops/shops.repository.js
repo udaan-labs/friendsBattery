@@ -15,7 +15,6 @@ class ShopsRepository {
   async findSellers(scopeFilter = null) {
     const where = {
       role: 'SELLER',
-      isActive: true,
     };
     if (scopeFilter?.OR) {
       where.OR = scopeFilter.OR;

@@ -455,6 +455,16 @@ class ShopsService {
     return `EMP${String(max + 1).padStart(3, '0')}`;
   }
 
+  async nextSellerUserId() {
+    const ids = await shopsRepository.findUserIdsByPrefix('SELL');
+    let max = 0;
+    for (const id of ids) {
+      const m = String(id).match(/^SELL(\d+)$/i);
+      if (m) max = Math.max(max, parseInt(m[1], 10));
+    }
+    return `SELL${String(max + 1).padStart(3, '0')}`;
+  }
+
   /**
    * Create EMPLOYEE at a location.
    * - SELLER: always own location_id (client location_id ignored); parent → Admin (seller.parentId) or seller
@@ -474,7 +484,14 @@ class ShopsService {
     if (!username) {
       throw httpError(400, 'Username is required');
     }
-    const user_id = body.user_id?.trim() || (await this.nextEmployeeUserId());
+    let user_id = body.user_id?.trim();
+    if (user_id) {
+      if (/\s/.test(user_id)) {
+        throw httpError(400, 'User ID cannot contain spaces (must be a single word)');
+      }
+    } else {
+      user_id = await this.nextEmployeeUserId();
+    }
 
     let locationId;
     let shopName;
@@ -504,7 +521,7 @@ class ShopsService {
           );
         }
         let destId = scope.locationId;
-        if (scope.locationType === 'WAREHOUSE' && location_id != null) {
+        if (location_id != null) {
           destId = Number(location_id);
         }
         const location = await shopsRepository.findLocationById(destId);

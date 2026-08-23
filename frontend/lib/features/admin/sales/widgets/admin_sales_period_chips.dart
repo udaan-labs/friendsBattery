@@ -14,6 +14,18 @@ class AdminSalesPeriodChips extends ConsumerWidget {
       initialDate: state.customDate ?? now,
       firstDate: DateTime(2020),
       lastDate: now,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppTheme.primary,
+              onPrimary: Colors.white,
+              onSurface: Color(0xFF0F172A),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null) {
       ref.read(adminSalesHistoryProvider.notifier).setCustomDate(picked);
@@ -27,7 +39,7 @@ class AdminSalesPeriodChips extends ConsumerWidget {
     return Container(
       color: Colors.white,
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
@@ -41,20 +53,20 @@ class AdminSalesPeriodChips extends ConsumerWidget {
                   onSelected: (_) => p == AdminSalesPeriod.custom
                       ? _pickDate(context, ref)
                       : ref.read(adminSalesHistoryProvider.notifier).setPeriod(p),
-                  selectedColor: const Color(0xFFE8F5E9),
+                  selectedColor: AppTheme.primary,
+                  backgroundColor: const Color(0xFFF1F5F9),
+                  showCheckmark: false,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                   labelStyle: TextStyle(
-                    color: state.period == p
-                        ? AppTheme.primary
-                        : const Color(0xFF586377),
-                    fontWeight: state.period == p
-                        ? FontWeight.w600
-                        : FontWeight.normal,
+                    color: state.period == p ? Colors.white : const Color(0xFF475569),
+                    fontWeight: state.period == p ? FontWeight.bold : FontWeight.w500,
                     fontSize: 13,
                   ),
                   side: BorderSide(
-                    color: state.period == p
-                        ? AppTheme.primary
-                        : const Color(0xFFECEEF0),
+                    color: state.period == p ? AppTheme.primary : const Color(0xFFE2E8F0),
                   ),
                 ),
               ),
@@ -64,3 +76,4 @@ class AdminSalesPeriodChips extends ConsumerWidget {
     );
   }
 }
+

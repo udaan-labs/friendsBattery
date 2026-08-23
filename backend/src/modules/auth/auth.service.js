@@ -8,6 +8,7 @@ const { httpError } = require('../../shared/utils/http-error');
 const { titleName } = require('../../shared/utils/title-name');
 const orgEventsRepository = require('../../shared/org-events.repository');
 const otpService = require('../otp/otp.service');
+const shopsService = require('../shops/shops.service');
 
 class AuthService {
   /**
@@ -16,6 +17,12 @@ class AuthService {
    */
   async registerAdmin({ user_id, username, user_number, shop_name, password, location_id, actor }) {
     username = titleName(username);
+    if (user_id) {
+      user_id = user_id.trim();
+      if (/\s/.test(user_id)) {
+        throw httpError(400, 'User ID cannot contain spaces (must be a single word)');
+      }
+    }
     if (!actor || actor.role !== ROLES.SUPER_ADMIN) {
       throw httpError(403, 'Only Super Admin can create Admins');
     }
@@ -101,6 +108,14 @@ class AuthService {
    */
   async registerUser({ user_id, username, user_number, shop_name, password, location_id, actor }) {
     username = titleName(username);
+    if (!user_id || !user_id.trim()) {
+      user_id = await shopsService.nextSellerUserId();
+    } else {
+      user_id = user_id.trim();
+      if (/\s/.test(user_id)) {
+        throw httpError(400, 'User ID cannot contain spaces (must be a single word)');
+      }
+    }
     // Check constraints sequentially to return specific error messages
     const existingUserId = await authRepository.findUserByUserId(user_id);
     if (existingUserId) {

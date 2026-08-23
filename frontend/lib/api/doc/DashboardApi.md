@@ -20,6 +20,8 @@ Method | HTTP request | Description
 
 Get paginated activity history (Admin only)
 
+Same scope as recent-activity. SUPER_ADMIN org-wide; ADMIN own warehouse/shop tree only.
+
 ### Example
 ```dart
 import 'package:friends_battery_api/api.dart';
@@ -66,6 +68,8 @@ Name | Type | Description  | Notes
 > RecentActivityResponse apiDashboardRecentActivityGet()
 
 Get recent activity feed (Admin only)
+
+SUPER_ADMIN sees org-wide activity. Shop/warehouse ADMIN sees only own warehouse/shop plus sellers and employees under them.
 
 ### Example
 ```dart

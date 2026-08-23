@@ -21,7 +21,22 @@ class UsersRepository {
   findById(id) {
     return prisma.user.findUnique({
       where: { id: BigInt(id) },
-      select: { id: true, userId: true, role: true, isActive: true },
+      select: {
+        id: true,
+        userId: true,
+        userName: true,
+        role: true,
+        isActive: true,
+        parentId: true,
+        locationId: true,
+        location: {
+          select: {
+            id: true,
+            name: true,
+            warehouseId: true,
+          },
+        },
+      },
     });
   }
 

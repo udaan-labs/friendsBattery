@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../shared/providers/auth_provider.dart';
+import '../../../../core/state/data_sync.dart';
 import '../../../../shared/utils/app_formatters.dart';
 import '../../../../shared/utils/password.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
@@ -124,6 +124,7 @@ class _AddEmployeeScreenState extends ConsumerState<AddEmployeeScreen> {
             locationId: widget.isAdmin ? _selectedLocationId : null,
           );
 
+      DataSync.afterStaffMutation(ref);
       ref.invalidate(sellerMyStaffProvider);
       if (widget.sellerIdForRefresh != null) {
         ref.invalidate(shopStaffProvider(widget.sellerIdForRefresh!));
@@ -149,8 +150,7 @@ class _AddEmployeeScreenState extends ConsumerState<AddEmployeeScreen> {
     final rolesAsync = ref.watch(employeeRolesProvider);
     final locationsAsync =
         widget.isAdmin ? ref.watch(locationsListProvider) : null;
-    final lockLocation =
-        ref.watch(authProvider).role != UserRole.superAdmin;
+    final lockLocation = widget.initialLocationId != null;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FB),
@@ -265,10 +265,13 @@ class _AddEmployeeScreenState extends ConsumerState<AddEmployeeScreen> {
                     TextField(
                       controller: _userIdController,
                       enabled: !_submitting,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                      ],
                       decoration: const InputDecoration(
                         labelText: 'User ID',
                         hintText: 'EMP001',
-                        helperText: 'Auto-filled. You can edit it.',
+                        helperText: 'Auto-filled single word ID. No spaces.',
                       ),
                     ),
                     const SizedBox(height: 16),

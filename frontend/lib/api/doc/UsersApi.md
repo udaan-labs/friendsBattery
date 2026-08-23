@@ -61,7 +61,7 @@ Name | Type | Description  | Notes
 
 Activate or deactivate an admin, seller, or employee
 
-Super Admin only. Inactive users cannot log in or use the API. Cannot change self or SUPER_ADMIN.
+Super Admin or Admin. Inactive users cannot log in or use the API. Cannot change self or out-of-scope accounts.
 
 ### Example
 ```dart

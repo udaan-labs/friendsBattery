@@ -3,6 +3,7 @@ const authRepository = require('../auth/auth.repository');
 const orgEventsRepository = require('../../shared/org-events.repository');
 const ROLES = require('../../shared/constants/roles');
 const { httpError } = require('../../shared/utils/http-error');
+const { assertAccess } = require('../../shared/utils/access.util');
 
 const STAFF_ROLES = new Set([ROLES.ADMIN, ROLES.SELLER, ROLES.EMPLOYEE]);
 
@@ -32,6 +33,7 @@ class UsersService {
     if (!STAFF_ROLES.has(user.role)) {
       throw httpError(403, 'Cannot change this account');
     }
+    assertAccess(actor, { kind: 'user', target: user });
 
     const updated = await usersRepository.setActive(id, isActive);
 

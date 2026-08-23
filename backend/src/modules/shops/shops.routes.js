@@ -64,6 +64,33 @@ router.get(
 
 /**
  * @swagger
+ * /api/shops/sellers/next-user-id:
+ *   get:
+ *     summary: Preview next auto-generated seller user_id (SEL001, SEL002, …)
+ *     tags: [Shops]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Next unused SEL### login id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NextEmployeeUserIdResponse'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Admin only
+ */
+router.get(
+  '/sellers/next-user-id',
+  authenticate,
+  requireAdmin,
+  shopsController.nextSellerUserId
+);
+
+/**
+ * @swagger
  * /api/shops/sellers/{sellerId}:
  *   get:
  *     summary: Return one seller

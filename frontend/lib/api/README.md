@@ -126,6 +126,7 @@ Class | Method | HTTP request | Description
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsLocationsPost**](doc/ShopsApi.md#apishopslocationspost) | **POST** /api/shops/locations | Create a shop or warehouse location
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsMyStaffGet**](doc/ShopsApi.md#apishopsmystaffget) | **GET** /api/shops/my-staff | Seller — staff at own shop location
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsSellersGet**](doc/ShopsApi.md#apishopssellersget) | **GET** /api/shops/sellers | Return all sellers
+[*ShopsApi*](doc/ShopsApi.md) | [**apiShopsSellersNextUserIdGet**](doc/ShopsApi.md#apishopssellersnextuseridget) | **GET** /api/shops/sellers/next-user-id | Preview next auto-generated seller user_id (SEL001, SEL002, …)
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsSellersSellerIdGet**](doc/ShopsApi.md#apishopssellersselleridget) | **GET** /api/shops/sellers/{sellerId} | Return one seller
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsSellersSellerIdStaffGet**](doc/ShopsApi.md#apishopssellersselleridstaffget) | **GET** /api/shops/sellers/{sellerId}/staff | Sellers and employees at the same shop location as this seller
 [*TransfersApi*](doc/TransfersApi.md) | [**apiTransfersGet**](doc/TransfersApi.md#apitransfersget) | **GET** /api/transfers | Return all shipments (Admin gets all, Seller gets own)

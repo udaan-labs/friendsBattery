@@ -4,7 +4,10 @@ const { strongPassword } = require('../../shared/utils/password');
 
 // To match exact validation requirements while using Zod:
 const registerSchema = z.object({
-  user_id: z.string().min(1),
+  user_id: z
+    .string()
+    .min(1)
+    .refine((s) => !/\s/.test(s.trim()), { message: 'User ID cannot contain spaces' }),
   username: z.string().min(1),
   user_number: z.string().regex(/^\d{10}$/, 'Mobile number must be exactly 10 digits'),
   shop_name: z.string().min(1),
