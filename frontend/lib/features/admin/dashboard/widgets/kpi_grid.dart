@@ -92,7 +92,7 @@ class KpiGrid extends ConsumerWidget {
           crossAxisCount: isDesktop ? items.length.clamp(1, 4) : 2,
           crossAxisSpacing: isSmall ? 8 : 12,
           mainAxisSpacing: isSmall ? 8 : 12,
-          childAspectRatio: isDesktop ? 2.0 : 1.7,
+          childAspectRatio: isDesktop ? 2.0 : (isSmall ? 1.45 : 1.55),
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           children: items,
