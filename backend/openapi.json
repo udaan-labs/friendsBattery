@@ -4247,7 +4247,7 @@
     "/api/shipments": {
       "post": {
         "summary": "Transfer stock serials from admin to seller (Admin only)",
-        "description": "Moves existing AVAILABLE admin-owned product units to the seller immediately.\nCreates shipment record (status ACCEPTED), inventory_transactions (TRANSFERRED),\nand returns updated inventory counts.\n",
+        "description": "Marks existing AVAILABLE admin-owned product units as IN_SHIPMENT.\nCreates shipment record (status PENDING) and inventory_transactions (SHIPPED).\nOwnership moves to seller when seller accepts the shipment.\n",
         "tags": [
           "Shipments"
         ],

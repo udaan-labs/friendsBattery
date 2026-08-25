@@ -100,7 +100,7 @@ class ShipmentsRepository {
         );
       }
 
-      // 2. Shipment record (completed immediately — ownership moves now)
+      // 2. Shipment record (created in PENDING status until seller accepts)
       const count = await tx.newShipment.count();
       const shipmentNumber = `SHP-${100 + count + 1}`;
 
@@ -109,8 +109,8 @@ class ShipmentsRepository {
           shipmentNumber,
           sellerId: BigInt(sellerId),
           createdByAdminId: BigInt(adminId),
-          status: 'ACCEPTED',
-          acceptedAt: new Date(),
+          status: 'PENDING',
+          acceptedAt: null,
           items: {
             create: boundItems.flatMap((r) =>
               r.units.map((unit) => ({
@@ -128,24 +128,21 @@ class ShipmentsRepository {
       const fromLoc = await getDefaultWarehouseId(tx);
       const toLoc = await getUserLocationId(sellerId, tx);
 
-      // 3. Ownership → seller (+ shop location when seller has one)
+      // 3. Set unit status to IN_SHIPMENT (ownership stays with admin until seller accepts)
       await tx.productUnit.updateMany({
         where: { id: { in: unitIds } },
         data: {
-          ownerId: BigInt(sellerId),
-          ownerType: 'SELLER',
-          status: 'AVAILABLE',
-          ...(toLoc ? { currentLocationId: toLoc } : {}),
+          status: 'IN_SHIPMENT',
         },
       });
 
-      // 4. Immutable ledger (inventory movement + audit trail)
+      // 4. Immutable ledger (inventory movement audit trail: SHIPPED)
       await tx.inventoryTransaction.createMany({
         data: unitIds.map((productUnitId) => ({
           productUnitId,
           fromUserId: BigInt(adminId),
           toUserId: BigInt(sellerId),
-          action: 'TRANSFERRED',
+          action: 'SHIPPED',
           ...(fromLoc ? { fromLocationId: fromLoc } : {}),
           ...(toLoc ? { toLocationId: toLoc } : {}),
         })),
@@ -410,7 +407,7 @@ class ShipmentsRepository {
           const locked = await tx.productUnit.findMany({
             where: {
               id: { in: productUnitIds },
-              status: 'AVAILABLE',
+              status: { in: ['IN_SHIPMENT', 'AVAILABLE'] },
               ownerId: adminOwnerId,
             },
             select: { id: true },
@@ -428,8 +425,6 @@ class ShipmentsRepository {
           await tx.productUnit.updateMany({
             where: {
               id: { in: lockedIds },
-              status: 'AVAILABLE',
-              ownerId: adminOwnerId,
             },
             data: {
               ownerId: BigInt(sellerId),
