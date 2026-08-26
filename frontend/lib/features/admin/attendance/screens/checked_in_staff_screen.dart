@@ -20,6 +20,7 @@ class _CheckedInStaffScreenState extends ConsumerState<CheckedInStaffScreen> {
   bool _isSearching = false;
   String _query = '';
   bool _showMap = false;
+  CheckedInStaffItem? _focusedStaff;
 
   @override
   void dispose() {
@@ -46,13 +47,19 @@ class _CheckedInStaffScreenState extends ConsumerState<CheckedInStaffScreen> {
                   border: InputBorder.none,
                 ),
               )
-            : const Text('Checked-in staff'),
+            : Text(_focusedStaff != null
+                ? 'Location: ${_focusedStaff?.employee?.userName ?? "Staff"}'
+                : 'Checked-in staff'),
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: const Color(0xFF191C1E),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () {
+            if (_focusedStaff != null) {
+              setState(() => _focusedStaff = null);
+              return;
+            }
             if (_isSearching) {
               setState(() {
                 _isSearching = false;
@@ -138,7 +145,24 @@ class _CheckedInStaffScreenState extends ConsumerState<CheckedInStaffScreen> {
             );
           }
           if (_showMap) {
-            return _CheckedInMap(rows: filtered);
+            return Stack(
+              children: [
+                _CheckedInMap(rows: filtered, focusedItem: _focusedStaff),
+                if (_focusedStaff != null)
+                  Positioned(
+                    top: 16,
+                    left: 16,
+                    child: FloatingActionButton.extended(
+                      heroTag: 'show_all_staff',
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xFF1E293B),
+                      onPressed: () => setState(() => _focusedStaff = null),
+                      icon: const Icon(Icons.layers_rounded, color: Color(0xFF006B2C)),
+                      label: const Text('Show All Staff on Map'),
+                    ),
+                  ),
+              ],
+            );
           }
           return RefreshIndicator(
             onRefresh: () async => ref.invalidate(checkedInStaffProvider),
@@ -161,6 +185,14 @@ class _CheckedInStaffScreenState extends ConsumerState<CheckedInStaffScreen> {
                     side: const BorderSide(color: Color(0xFFECEEF0)),
                   ),
                   child: ListTile(
+                    onTap: hasGps
+                        ? () {
+                            setState(() {
+                              _focusedStaff = r;
+                              _showMap = true;
+                            });
+                          }
+                        : null,
                     leading: CircleAvatar(
                       backgroundColor: const Color(0xFFE8F5E9),
                       child: Icon(
@@ -176,6 +208,21 @@ class _CheckedInStaffScreenState extends ConsumerState<CheckedInStaffScreen> {
                       '$loc\nIn since $when'
                       '${hasGps ? '\nGPS: ${r.checkInLat!.toStringAsFixed(5)}, ${r.checkInLng!.toStringAsFixed(5)}' : ''}',
                     ),
+                    trailing: hasGps
+                        ? TextButton.icon(
+                            onPressed: () {
+                              setState(() {
+                                _focusedStaff = r;
+                                _showMap = true;
+                              });
+                            },
+                            icon: const Icon(Icons.my_location_rounded, size: 18, color: Color(0xFF006B2C)),
+                            label: const Text(
+                              'Map',
+                              style: TextStyle(color: Color(0xFF006B2C), fontWeight: FontWeight.bold),
+                            ),
+                          )
+                        : null,
                     isThreeLine: true,
                   ),
                 );
@@ -189,28 +236,69 @@ class _CheckedInStaffScreenState extends ConsumerState<CheckedInStaffScreen> {
 }
 
 class _CheckedInMap extends StatelessWidget {
-  const _CheckedInMap({required this.rows});
+  const _CheckedInMap({required this.rows, this.focusedItem});
 
   final List<CheckedInStaffItem> rows;
+  final CheckedInStaffItem? focusedItem;
 
   @override
   Widget build(BuildContext context) {
     final markers = <Marker>[];
     LatLng? center;
+
+    if (focusedItem != null &&
+        focusedItem!.checkInLat != null &&
+        focusedItem!.checkInLng != null) {
+      center = LatLng(
+        focusedItem!.checkInLat!.toDouble(),
+        focusedItem!.checkInLng!.toDouble(),
+      );
+    }
+
     for (final r in rows) {
       final lat = r.checkInLat;
       final lng = r.checkInLng;
       if (lat == null || lng == null) continue;
       final point = LatLng(lat.toDouble(), lng.toDouble());
       center ??= point;
+      final name = r.employee?.userName ?? 'Staff #${r.employeeId}';
+      final isFocused = focusedItem != null && r.id == focusedItem!.id;
+
       markers.add(
         Marker(
           point: point,
-          width: 40,
-          height: 40,
-          child: Tooltip(
-            message: r.employee?.userName ?? 'Staff',
-            child: const Icon(Icons.location_on, color: Color(0xFF006B2C), size: 36),
+          width: isFocused ? 140 : 120,
+          height: isFocused ? 70 : 60,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isFocused ? const Color(0xFF006B2C) : const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(8),
+                  border: isFocused ? Border.all(color: Colors.amber, width: 2) : null,
+                  boxShadow: const [
+                    BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2)),
+                  ],
+                ),
+                child: Text(
+                  name,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: isFocused ? 12 : 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ),
+              Icon(
+                Icons.location_on,
+                color: isFocused ? Colors.amber : const Color(0xFF006B2C),
+                size: isFocused ? 34 : 28,
+              ),
+            ],
           ),
         ),
       );
