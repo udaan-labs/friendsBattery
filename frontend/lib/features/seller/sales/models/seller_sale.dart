@@ -12,6 +12,8 @@ class SellerSale {
   final DateTime soldAt;
   final String? customerName;
   final String? customerPhone;
+  final String saleType;
+  final String? scrapSerial;
 
   SellerSale({
     required this.id,
@@ -23,5 +25,7 @@ class SellerSale {
     required this.soldAt,
     this.customerName,
     this.customerPhone,
+    this.saleType = 'NORMAL',
+    this.scrapSerial,
   });
 }

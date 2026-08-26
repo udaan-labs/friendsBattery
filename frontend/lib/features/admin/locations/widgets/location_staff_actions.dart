@@ -65,7 +65,7 @@ Future<void> moveLocationEmployee(
           locationId: destId,
         );
     ref.invalidate(locationStaffProvider(destId));
-    await ref.refresh(locationStaffProvider(locationId).future);
+    final _ = ref.refresh(locationStaffProvider(locationId));
     if (!context.mounted) return;
     context.showSuccessSnackBar('Moved');
   } catch (e) {

@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const usersRepository = require('./users.repository');
 const authRepository = require('../auth/auth.repository');
 const orgEventsRepository = require('../../shared/org-events.repository');
@@ -54,6 +55,35 @@ class UsersService {
       user_id: updated.userId,
       role: updated.role,
       is_active: updated.isActive,
+    };
+  }
+
+  async changePassword(actor, id, newPassword) {
+    const user = await usersRepository.findById(id);
+    if (!user) throw httpError(404, 'User not found');
+    if (Number(user.id) === Number(actor.id)) {
+      throw httpError(403, 'Cannot change your own password here');
+    }
+    if (!STAFF_ROLES.has(user.role)) {
+      throw httpError(403, 'Cannot change password for this account');
+    }
+    assertAccess(actor, { kind: 'user', target: user });
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    const updated = await usersRepository.updatePassword(id, passwordHash);
+
+    await orgEventsRepository.create({
+      action: 'USER_PASSWORD_CHANGED',
+      actorId: actor.id,
+      entityType: 'USER',
+      entityId: user.id,
+      payload: { user_id: user.userId, role: user.role },
+    });
+
+    return {
+      id: Number(updated.id),
+      user_id: updated.userId,
+      role: updated.role,
     };
   }
 }

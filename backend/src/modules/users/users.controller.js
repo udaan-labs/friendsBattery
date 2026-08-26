@@ -20,6 +20,15 @@ class UsersController {
       return handleRouteError(res, error, 'Set Account Active Error:');
     }
   }
+
+  async changePassword(req, res) {
+    try {
+      const data = await usersService.changePassword(req.user, req.params.id, req.body.password);
+      return successResponse(res, 200, 'Password updated successfully', data);
+    } catch (error) {
+      return handleRouteError(res, error, 'Change Password Error:');
+    }
+  }
 }
 
 module.exports = new UsersController();

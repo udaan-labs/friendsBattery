@@ -28,11 +28,7 @@ class DataSync {
     ref.invalidate(kpiProvider);
     ref.invalidate(recentActivityProvider);
 
-    if (productId != null) {
-      ref.invalidate(sharedInventoryProductDetailProvider(productId));
-    } else {
-      ref.invalidate(sharedInventoryProductDetailProvider);
-    }
+    ref.invalidate(sharedInventoryProductDetailProvider);
   }
 
   /// Same as [afterInventoryMutation] but awaits Super Admin list re-fetch.

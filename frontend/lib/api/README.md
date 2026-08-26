@@ -89,6 +89,7 @@ Class | Method | HTTP request | Description
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryProductIdGet**](doc/InventoryApi.md#apiinventoryproductidget) | **GET** /api/inventory/{productId} | Return one inventory item
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryScanForSaleGet**](doc/InventoryApi.md#apiinventoryscanforsaleget) | **GET** /api/inventory/scan-for-sale | Scan serial for sale (owner stock; EMPLOYEE &#x3D; location stock)
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryTransferPost**](doc/InventoryApi.md#apiinventorytransferpost) | **POST** /api/inventory/transfer | Transfer inventory from admin to seller
+[*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryUnitSerialNumberDelete**](doc/InventoryApi.md#apiinventoryunitserialnumberdelete) | **DELETE** /api/inventory/unit/{serialNumber} | Remove a specific serial number unit from inventory (Admin only)
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryUpdateStockPost**](doc/InventoryApi.md#apiinventoryupdatestockpost) | **POST** /api/inventory/update-stock | Update admin&#39;s own inventory stock (Admin only)
 [*ProductUnitsApi*](doc/ProductUnitsApi.md) | [**apiProductUnitsVerifyPost**](doc/ProductUnitsApi.md#apiproductunitsverifypost) | **POST** /api/product-units/verify | Verify a product unit by serial or QR
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsInventoryProductsGet**](doc/ProductsApi.md#apiproductsinventoryproductsget) | **GET** /api/products/inventory-products | Get products in the authenticated user&#39;s inventory
@@ -136,6 +137,7 @@ Class | Method | HTTP request | Description
 [*TransfersApi*](doc/TransfersApi.md) | [**apiTransfersShipmentIdReceivePatch**](doc/TransfersApi.md#apitransfersshipmentidreceivepatch) | **PATCH** /api/transfers/{shipmentId}/receive | Seller receives and confirms a shipment delivery
 [*UsersApi*](doc/UsersApi.md) | [**apiUsersGet**](doc/UsersApi.md#apiusersget) | **GET** /api/users | List admins, sellers, and employees
 [*UsersApi*](doc/UsersApi.md) | [**apiUsersIdActivePatch**](doc/UsersApi.md#apiusersidactivepatch) | **PATCH** /api/users/{id}/active | Activate or deactivate an admin, seller, or employee
+[*UsersApi*](doc/UsersApi.md) | [**apiUsersIdPasswordPatch**](doc/UsersApi.md#apiusersidpasswordpatch) | **PATCH** /api/users/{id}/password | Reset or change password for a seller or employee
 
 
 ## Documentation For Models
@@ -197,6 +199,9 @@ Class | Method | HTTP request | Description
  - [AttendanceRecord](doc/AttendanceRecord.md)
  - [AttendanceStatusData](doc/AttendanceStatusData.md)
  - [AvailableSerialsResponse](doc/AvailableSerialsResponse.md)
+ - [ChangePasswordData](doc/ChangePasswordData.md)
+ - [ChangePasswordRequest](doc/ChangePasswordRequest.md)
+ - [ChangePasswordResponse](doc/ChangePasswordResponse.md)
  - [CreateEmployeeRequest](doc/CreateEmployeeRequest.md)
  - [CreateEmployeeResponse](doc/CreateEmployeeResponse.md)
  - [CreateLocationRequest](doc/CreateLocationRequest.md)

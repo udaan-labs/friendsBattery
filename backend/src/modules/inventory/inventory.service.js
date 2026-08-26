@@ -96,7 +96,12 @@ class InventoryService {
    * Output: Inventory item details
    */
   async getInventoryItem(userId, role, productId, locationId) {
-    const unitScope = await resolveUnitScope(userId, role, locationId);
+    const loc = (locationId != null && isAdminLikeRole(role))
+      ? await shopsRepository.findLocationById(locationId)
+      : null;
+    const unitScope = loc
+      ? { currentLocationId: BigInt(loc.id) }
+      : await resolveUnitScope(userId, role, locationId);
     if (!unitScope) {
       throw httpError(404, 'Inventory item not found');
     }
@@ -113,15 +118,15 @@ class InventoryService {
       product_model_id: Number(product.productModelId),
       brand: product.productName?.name || '',
       model: product.productModel?.name || '',
-      quantity: product._count.units,
+      quantity: product._count?.units ?? 0,
       min_price: Number(product.minPrice),
       offer_price: product.offerPrice ? Number(product.offerPrice) : null,
       min_unit_count_seller: Number(product.minUnitCountSeller),
       min_unit_count_admin: Number(product.minUnitCountAdmin),
       on_sale: product.onSale,
       is_low_stock: isAdminLikeRole(role)
-        ? product._count.units <= Number(product.minUnitCountAdmin)
-        : product._count.units <= Number(product.minUnitCountSeller),
+        ? (product._count?.units ?? 0) <= Number(product.minUnitCountAdmin)
+        : (product._count?.units ?? 0) <= Number(product.minUnitCountSeller),
       serial_numbers: product.units?.map(u => u.serialNumber) || []
     };
   }
@@ -744,6 +749,25 @@ class InventoryService {
       productModel: unit.product.productModel.name,
       minSellPrice: Number(unit.product.minPrice),
     };
+  }
+
+  /**
+   * Remove a specific serial number unit from inventory (Admin / Super Admin only).
+   */
+  async removeUnit(serialNumber, actor) {
+    if (!isAdminLikeRole(actor.role)) {
+      throw httpError(403, 'Only Admins can remove inventory units');
+    }
+
+    const cleanSerial = serialNumber ? serialNumber.trim() : '';
+    const unit = await inventoryRepository.findUnitBySerial(cleanSerial);
+
+    if (!unit || unit.status !== 'AVAILABLE') {
+      throw httpError(404, 'Available inventory unit not found for this serial number');
+    }
+
+    await inventoryRepository.removeUnit(unit.id, BigInt(actor.id));
+    return { success: true, message: `Serial number ${cleanSerial} removed from inventory` };
   }
 }
 

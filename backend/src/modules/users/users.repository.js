@@ -52,6 +52,18 @@ class UsersRepository {
       },
     });
   }
+
+  updatePassword(id, passwordHash) {
+    return prisma.user.update({
+      where: { id: BigInt(id) },
+      data: { passwordHash },
+      select: {
+        id: true,
+        userId: true,
+        role: true,
+      },
+    });
+  }
 }
 
 module.exports = new UsersRepository();

@@ -16,6 +16,7 @@ class StaffMemberGroup extends StatelessWidget {
     this.addLabel,
     this.onToggleActive,
     this.onMove,
+    this.onChangePassword,
   });
 
   final String title;
@@ -29,6 +30,7 @@ class StaffMemberGroup extends StatelessWidget {
   final Future<void> Function(ShopStaffMember member, bool isActive)?
       onToggleActive;
   final Future<void> Function(ShopStaffMember member)? onMove;
+  final Future<void> Function(ShopStaffMember member)? onChangePassword;
 
   @override
   Widget build(BuildContext context) {
@@ -89,6 +91,7 @@ class StaffMemberGroup extends StatelessWidget {
                 showRoleChip: showRoleChip,
                 onToggleActive: onToggleActive,
                 onMove: onMove,
+                onChangePassword: onChangePassword,
               ),
             ),
         ],
@@ -104,6 +107,7 @@ class _Tile extends StatelessWidget {
     required this.showRoleChip,
     this.onToggleActive,
     this.onMove,
+    this.onChangePassword,
   });
 
   final ShopStaffMember member;
@@ -112,6 +116,7 @@ class _Tile extends StatelessWidget {
   final Future<void> Function(ShopStaffMember member, bool isActive)?
       onToggleActive;
   final Future<void> Function(ShopStaffMember member)? onMove;
+  final Future<void> Function(ShopStaffMember member)? onChangePassword;
 
   Future<void> _toggle(BuildContext context) async {
     final cb = onToggleActive;
@@ -134,7 +139,8 @@ class _Tile extends StatelessWidget {
     final active = member.isActive != false;
     final canToggle = onToggleActive != null && member.id != null;
     final canMove = onMove != null && member.id != null;
-    final hasMenu = canToggle || canMove;
+    final canChangePassword = onChangePassword != null && member.id != null;
+    final hasMenu = canToggle || canMove || canChangePassword;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -204,18 +210,51 @@ class _Tile extends StatelessWidget {
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert, size: 20),
               onSelected: (value) async {
-                if (value == 'move') await onMove!(member);
-                if (value == 'toggle' && context.mounted) {
+                if (value == 'change_password') {
+                  await onChangePassword!(member);
+                } else if (value == 'move') {
+                  await onMove!(member);
+                } else if (value == 'toggle' && context.mounted) {
                   await _toggle(context);
                 }
               },
               itemBuilder: (ctx) => [
+                if (canChangePassword)
+                  const PopupMenuItem(
+                    value: 'change_password',
+                    child: Row(
+                      children: [
+                        Icon(Icons.key_rounded, size: 18, color: Color(0xFF64748B)),
+                        SizedBox(width: 8),
+                        Text('Change Password'),
+                      ],
+                    ),
+                  ),
                 if (canMove)
-                  const PopupMenuItem(value: 'move', child: Text('Move')),
+                  const PopupMenuItem(
+                    value: 'move',
+                    child: Row(
+                      children: [
+                        Icon(Icons.swap_horiz_rounded, size: 18, color: Color(0xFF64748B)),
+                        SizedBox(width: 8),
+                        Text('Move Location'),
+                      ],
+                    ),
+                  ),
                 if (canToggle)
                   PopupMenuItem(
                     value: 'toggle',
-                    child: Text(active ? 'Mark inactive' : 'Mark active'),
+                    child: Row(
+                      children: [
+                        Icon(
+                          active ? Icons.block_rounded : Icons.check_circle_outline_rounded,
+                          size: 18,
+                          color: active ? const Color(0xFFBA1A1A) : const Color(0xFF006B2C),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(active ? 'Mark inactive' : 'Mark active'),
+                      ],
+                    ),
                   ),
               ],
             ),

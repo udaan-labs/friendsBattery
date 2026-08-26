@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:friends_battery_api/src/model/admin_sale_shipment.dart';
+import 'package:built_collection/built_collection.dart';
 import 'package:friends_battery_api/src/model/sale_customer.dart';
 import 'package:friends_battery_api/src/model/sale_product.dart';
 import 'package:friends_battery_api/src/model/sale_seller.dart';
@@ -21,6 +22,12 @@ part 'admin_sale_record.g.dart';
 /// * [sellPrice] 
 /// * [serialNumber] 
 /// * [vehicleNumber] 
+/// * [saleType] 
+/// * [scrapSerial] 
+/// * [serviceType] 
+/// * [rentStatus] 
+/// * [deposit] 
+/// * [place] 
 /// * [seller] 
 /// * [customer] 
 /// * [product] 
@@ -44,6 +51,25 @@ abstract class AdminSaleRecord implements Built<AdminSaleRecord, AdminSaleRecord
 
   @BuiltValueField(wireName: r'vehicle_number')
   String? get vehicleNumber;
+
+  @BuiltValueField(wireName: r'sale_type')
+  AdminSaleRecordSaleTypeEnum? get saleType;
+  // enum saleTypeEnum {  NORMAL,  SCRAP,  MECHANIC,  SERVICE,  RENT,  };
+
+  @BuiltValueField(wireName: r'scrap_serial')
+  String? get scrapSerial;
+
+  @BuiltValueField(wireName: r'service_type')
+  String? get serviceType;
+
+  @BuiltValueField(wireName: r'rent_status')
+  String? get rentStatus;
+
+  @BuiltValueField(wireName: r'deposit')
+  num? get deposit;
+
+  @BuiltValueField(wireName: r'place')
+  String? get place;
 
   @BuiltValueField(wireName: r'seller')
   SaleSeller? get seller;
@@ -119,6 +145,48 @@ class _$AdminSaleRecordSerializer implements PrimitiveSerializer<AdminSaleRecord
       yield r'vehicle_number';
       yield serializers.serialize(
         object.vehicleNumber,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.saleType != null) {
+      yield r'sale_type';
+      yield serializers.serialize(
+        object.saleType,
+        specifiedType: const FullType(AdminSaleRecordSaleTypeEnum),
+      );
+    }
+    if (object.scrapSerial != null) {
+      yield r'scrap_serial';
+      yield serializers.serialize(
+        object.scrapSerial,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.serviceType != null) {
+      yield r'service_type';
+      yield serializers.serialize(
+        object.serviceType,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.rentStatus != null) {
+      yield r'rent_status';
+      yield serializers.serialize(
+        object.rentStatus,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.deposit != null) {
+      yield r'deposit';
+      yield serializers.serialize(
+        object.deposit,
+        specifiedType: const FullType.nullable(num),
+      );
+    }
+    if (object.place != null) {
+      yield r'place';
+      yield serializers.serialize(
+        object.place,
         specifiedType: const FullType.nullable(String),
       );
     }
@@ -216,6 +284,53 @@ class _$AdminSaleRecordSerializer implements PrimitiveSerializer<AdminSaleRecord
           if (valueDes == null) continue;
           result.vehicleNumber = valueDes;
           break;
+        case r'sale_type':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(AdminSaleRecordSaleTypeEnum),
+          ) as AdminSaleRecordSaleTypeEnum;
+          result.saleType = valueDes;
+          break;
+        case r'scrap_serial':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.scrapSerial = valueDes;
+          break;
+        case r'service_type':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.serviceType = valueDes;
+          break;
+        case r'rent_status':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.rentStatus = valueDes;
+          break;
+        case r'deposit':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(num),
+          ) as num?;
+          if (valueDes == null) continue;
+          result.deposit = valueDes;
+          break;
+        case r'place':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.place = valueDes;
+          break;
         case r'seller':
           final valueDes = serializers.deserialize(
             value,
@@ -271,5 +386,26 @@ class _$AdminSaleRecordSerializer implements PrimitiveSerializer<AdminSaleRecord
     );
     return result.build();
   }
+}
+
+class AdminSaleRecordSaleTypeEnum extends EnumClass {
+
+  @BuiltValueEnumConst(wireName: r'NORMAL')
+  static const AdminSaleRecordSaleTypeEnum NORMAL = _$adminSaleRecordSaleTypeEnum_NORMAL;
+  @BuiltValueEnumConst(wireName: r'SCRAP')
+  static const AdminSaleRecordSaleTypeEnum SCRAP = _$adminSaleRecordSaleTypeEnum_SCRAP;
+  @BuiltValueEnumConst(wireName: r'MECHANIC')
+  static const AdminSaleRecordSaleTypeEnum MECHANIC = _$adminSaleRecordSaleTypeEnum_MECHANIC;
+  @BuiltValueEnumConst(wireName: r'SERVICE')
+  static const AdminSaleRecordSaleTypeEnum SERVICE = _$adminSaleRecordSaleTypeEnum_SERVICE;
+  @BuiltValueEnumConst(wireName: r'RENT')
+  static const AdminSaleRecordSaleTypeEnum RENT = _$adminSaleRecordSaleTypeEnum_RENT;
+
+  static Serializer<AdminSaleRecordSaleTypeEnum> get serializer => _$adminSaleRecordSaleTypeEnumSerializer;
+
+  const AdminSaleRecordSaleTypeEnum._(String name): super(name);
+
+  static BuiltSet<AdminSaleRecordSaleTypeEnum> get values => _$adminSaleRecordSaleTypeEnumValues;
+  static AdminSaleRecordSaleTypeEnum valueOf(String name) => _$adminSaleRecordSaleTypeEnumValueOf(name);
 }
 

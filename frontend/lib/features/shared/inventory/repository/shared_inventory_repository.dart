@@ -108,27 +108,42 @@ class SharedInventoryRepository {
     }
   }
 
-  Future<InventoryProductDetailModel> getProductDetail(int productId) async {
+  Future<InventoryProductDetailModel> getProductDetail(int productId, {int? locationId}) async {
     try {
-      final response = await _inventory.apiInventoryProductIdGet(
-        productId: productId,
+      final response = await _api.dio.get<Map<String, dynamic>>(
+        '/api/inventory/$productId',
+        queryParameters: {
+          if (locationId != null) 'location_id': locationId,
+        },
       );
-      final d = response.data?.data;
-      if (d == null) {
+      final rawData = response.data?['data'];
+      if (rawData == null || rawData is! Map<String, dynamic>) {
         throw Exception('Invalid response format');
       }
 
       return InventoryProductDetailModel(
-        productId: d.productId ?? 0,
-        productModel: d.model ?? 'N/A',
-        productName: d.brand ?? 'N/A',
-        quantity: d.quantity ?? 0,
-        minPrice: (d.minPrice ?? 0).toDouble(),
-        isLowStock: d.isLowStock ?? false,
-        serialNumbers: d.serialNumbers?.toList() ?? const [],
+        productId: rawData['product_id'] as int? ?? 0,
+        productModel: rawData['model'] as String? ?? 'N/A',
+        productName: rawData['brand'] as String? ?? 'N/A',
+        quantity: rawData['quantity'] as int? ?? 0,
+        minPrice: ((rawData['min_price'] ?? 0) as num).toDouble(),
+        isLowStock: rawData['is_low_stock'] as bool? ?? false,
+        serialNumbers: (rawData['serial_numbers'] as List<dynamic>?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            const [],
       );
     } catch (e) {
       throw Exception('Failed to fetch product detail: $e');
+    }
+  }
+
+  /// Admin remove a serial number unit from inventory.
+  Future<void> removeSerialUnit(String serialNumber) async {
+    try {
+      await _api.dio.delete<void>('/api/inventory/unit/$serialNumber');
+    } catch (e) {
+      throw Exception('Failed to remove unit: $e');
     }
   }
 

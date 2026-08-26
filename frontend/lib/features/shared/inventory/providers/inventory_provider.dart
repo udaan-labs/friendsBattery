@@ -51,9 +51,11 @@ final sharedInventoryProvider = FutureProvider<PaginatedInventoryResponse>((ref)
   return result;
 });
 
-final sharedInventoryProductDetailProvider = FutureProvider.family<InventoryProductDetailModel, int>((ref, productId) async {
+final sharedInventoryProductDetailProvider =
+    FutureProvider.family<InventoryProductDetailModel, ({int productId, int? locationId})>(
+        (ref, arg) async {
   final repository = ref.watch(sharedInventoryRepositoryProvider);
-  return repository.getProductDetail(productId);
+  return repository.getProductDetail(arg.productId, locationId: arg.locationId);
 });
 
 /// SA/Admin: available units physically at this shop/warehouse.

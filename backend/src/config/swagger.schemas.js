@@ -624,6 +624,12 @@ module.exports = {
       sell_price: { type: 'number' },
       serial_number: { type: 'string' },
       vehicle_number: { type: 'string', nullable: true },
+      sale_type: { type: 'string', enum: ['NORMAL', 'SCRAP', 'MECHANIC', 'SERVICE', 'RENT'] },
+      scrap_serial: { type: 'string', nullable: true },
+      service_type: { type: 'string', nullable: true },
+      rent_status: { type: 'string', nullable: true },
+      deposit: { type: 'number', nullable: true },
+      place: { type: 'string', nullable: true },
       sold_at: { type: 'string', format: 'date-time' },
       quantity: { type: 'integer' },
       customer: { $ref: '#/components/schemas/SaleCustomer' },
@@ -679,6 +685,12 @@ module.exports = {
       sell_price: { type: 'number' },
       serial_number: { type: 'string' },
       vehicle_number: { type: 'string', nullable: true },
+      sale_type: { type: 'string', enum: ['NORMAL', 'SCRAP', 'MECHANIC', 'SERVICE', 'RENT'] },
+      scrap_serial: { type: 'string', nullable: true },
+      service_type: { type: 'string', nullable: true },
+      rent_status: { type: 'string', nullable: true },
+      deposit: { type: 'number', nullable: true },
+      place: { type: 'string', nullable: true },
       seller: { $ref: '#/components/schemas/SaleSeller' },
       customer: { $ref: '#/components/schemas/SaleCustomer' },
       product: { $ref: '#/components/schemas/SaleProduct' },
@@ -1730,6 +1742,29 @@ module.exports = {
       success: { type: 'boolean' },
       message: { type: 'string' },
       data: { $ref: '#/components/schemas/SetAccountActiveData' },
+    },
+  },
+  ChangePasswordRequest: {
+    type: 'object',
+    required: ['password'],
+    properties: {
+      password: { type: 'string', minLength: 6 },
+    },
+  },
+  ChangePasswordData: {
+    type: 'object',
+    properties: {
+      id: { type: 'integer' },
+      user_id: { type: 'string' },
+      role: { type: 'string', enum: ['ADMIN', 'SELLER', 'EMPLOYEE'] },
+    },
+  },
+  ChangePasswordResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean' },
+      message: { type: 'string' },
+      data: { $ref: '#/components/schemas/ChangePasswordData' },
     },
   }
 };

@@ -15,19 +15,20 @@ const authenticate = async (req, res, next) => {
 
   const authId = req.headers['authid'] || req.headers['auth_id'] || req.headers['auth-id'];
 
-  if (!token || !authId) {
-    return errorResponse(res, 401, 'Unauthorized: Both auth-id and auth-key headers are required');
+  if (!token) {
+    return errorResponse(res, 401, 'Unauthorized: Authentication token is required');
   }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    // Decode auth-id (Base64) to verify it belongs to the user
-    const decodedAuthIdStr = Buffer.from(authId, 'base64').toString('ascii');
-    const [dbId] = decodedAuthIdStr.split(':');
+    if (authId) {
+      const decodedAuthIdStr = Buffer.from(authId, 'base64').toString('ascii');
+      const [dbId] = decodedAuthIdStr.split(':');
 
-    if (String(decoded.id) !== String(dbId)) {
-      return errorResponse(res, 401, 'Unauthorized: auth-id does not match the auth-key');
+      if (String(decoded.id) !== String(dbId)) {
+        return errorResponse(res, 401, 'Unauthorized: auth-id does not match the auth-key');
+      }
     }
 
     // Load user + location + employee role from DB (source of truth)

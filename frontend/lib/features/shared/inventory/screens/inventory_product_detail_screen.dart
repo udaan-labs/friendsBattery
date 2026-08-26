@@ -7,17 +7,24 @@ import '../../../../shared/providers/auth_provider.dart';
 
 class InventoryProductDetailScreen extends ConsumerWidget {
   final int productId;
+  final int? locationId;
 
   const InventoryProductDetailScreen({
     super.key,
     required this.productId,
+    this.locationId,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final productState = ref.watch(sharedInventoryProductDetailProvider(productId));
-    // Employees: stock only — no money fields (MVP: no sales for employees).
-    final showPrice = ref.watch(authProvider).role != UserRole.employee;
+    final productState = ref.watch(
+      sharedInventoryProductDetailProvider(
+        (productId: productId, locationId: locationId),
+      ),
+    );
+    final role = ref.watch(authProvider).role;
+    final showPrice = role != UserRole.employee;
+    final isAdmin = role == UserRole.admin || role == UserRole.superAdmin;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FB),
@@ -160,6 +167,17 @@ class InventoryProductDetailScreen extends ConsumerWidget {
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
+                                    if (isAdmin) ...[
+                                      const SizedBox(width: 6),
+                                      InkWell(
+                                        onTap: () => _confirmRemoveSerial(context, ref, serial),
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: const Padding(
+                                          padding: EdgeInsets.all(2),
+                                          child: Icon(Icons.close_rounded, size: 16, color: Color(0xFFBA1A1A)),
+                                        ),
+                                      ),
+                                    ],
                                   ],
                                 ),
                               );
@@ -180,7 +198,11 @@ class InventoryProductDetailScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               const Text('Failed to load product details.'),
               TextButton(
-                onPressed: () => ref.invalidate(sharedInventoryProductDetailProvider(productId)),
+                onPressed: () => ref.invalidate(
+                  sharedInventoryProductDetailProvider(
+                    (productId: productId, locationId: locationId),
+                  ),
+                ),
                 child: const Text('Retry'),
               ),
             ],
@@ -188,6 +210,57 @@ class InventoryProductDetailScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmRemoveSerial(
+    BuildContext context,
+    WidgetRef ref,
+    String serial,
+  ) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Remove Serial Number'),
+        content: Text('Are you sure you want to remove unit "$serial" from inventory?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: const Color(0xFFBA1A1A)),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+
+    if (ok == true && context.mounted) {
+      try {
+        await ref.read(sharedInventoryRepositoryProvider).removeSerialUnit(serial);
+        ref.invalidate(
+          sharedInventoryProductDetailProvider(
+            (productId: productId, locationId: locationId),
+          ),
+        );
+        ref.invalidate(sharedInventoryProvider);
+        if (locationId != null) {
+          ref.invalidate(locationInventoryProvider(locationId!));
+        }
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Serial number $serial removed from inventory')),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to remove unit: $e'), backgroundColor: Colors.red),
+          );
+        }
+      }
+    }
   }
 
   Widget _buildStatItem({

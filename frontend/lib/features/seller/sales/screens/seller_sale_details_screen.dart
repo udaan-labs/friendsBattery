@@ -196,12 +196,24 @@ class SellerSaleDetailsScreen extends ConsumerWidget {
   }
 
   Widget _buildSaleInfo(BuildContext context, SellerSale sale, String formattedDate) {
+    final typeLabel = switch (sale.saleType.toUpperCase()) {
+      'SCRAP' => 'Scrap Trade-in',
+      'MECHANIC' => 'Mechanic (B2B)',
+      _ => 'Normal Sale',
+    };
+
     return _buildSectionCard(
       context: context,
       title: 'Transaction Details',
       icon: Icons.receipt_long_outlined,
       children: [
         _buildInfoRow('Sale ID', '#${sale.id}'),
+        const Divider(height: 24, color: Color(0xFFF1F5F9)),
+        _buildInfoRow('Bill Type', typeLabel),
+        if (sale.scrapSerial != null && sale.scrapSerial!.isNotEmpty) ...[
+          const Divider(height: 24, color: Color(0xFFF1F5F9)),
+          _buildInfoRow('Scrap Serial', sale.scrapSerial!),
+        ],
         const Divider(height: 24, color: Color(0xFFF1F5F9)),
         _buildInfoRow('Date', formattedDate),
         const Divider(height: 24, color: Color(0xFFF1F5F9)),

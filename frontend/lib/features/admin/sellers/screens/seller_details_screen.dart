@@ -9,6 +9,8 @@ import '../widgets/shop_staff_section.dart';
 import '../../../shared/inventory/widgets/inventory_product_card.dart';
 import '../../../shared/staff/providers/staff_providers.dart';
 
+import '../widgets/change_password_dialog.dart';
+
 class SellerDetailsScreen extends ConsumerStatefulWidget {
   final int sellerId;
 
@@ -60,6 +62,21 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
           'Seller Details',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.key_rounded, color: Color(0xFF006B2C)),
+            tooltip: 'Change Password',
+            onPressed: () {
+              final name = asyncData.valueOrNull?.userName ?? 'Seller';
+              ChangePasswordDialog.show(
+                context,
+                userId: widget.sellerId,
+                userName: name,
+                role: 'Seller',
+              );
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: RefreshIndicator(

@@ -97,15 +97,10 @@ class InventoryRepository {
    * Retrieves a single inventory item details for a unit scope.
    */
   async findInventoryByProduct(unitScope, productId) {
-    return prisma.product.findFirst({
+    const prodId = BigInt(productId);
+    return prisma.product.findUnique({
       where: {
-        id: productId,
-        units: {
-          some: {
-            ...unitScope,
-            status: 'AVAILABLE'
-          }
-        }
+        id: prodId,
       },
       include: {
         productName: true,
@@ -163,6 +158,40 @@ class InventoryRepository {
         status: 'AVAILABLE'
       },
       take: quantity
+    });
+  }
+
+  /**
+   * Finds a product unit by serial number.
+   */
+  async findUnitBySerial(serialNumber) {
+    return prisma.productUnit.findUnique({
+      where: {
+        serialNumber
+      },
+      include: {
+        product: true
+      }
+    });
+  }
+
+  /**
+   * Removes a unit by setting status to DEFECTIVE and creating audit log.
+   */
+  async removeUnit(unitId, actorId) {
+    return prisma.$transaction(async (tx) => {
+      const unit = await tx.productUnit.update({
+        where: { id: unitId },
+        data: { status: 'DEFECTIVE' }
+      });
+      await tx.inventoryTransaction.create({
+        data: {
+          productUnitId: unitId,
+          toUserId: actorId,
+          action: 'RETURNED'
+        }
+      });
+      return unit;
     });
   }
 

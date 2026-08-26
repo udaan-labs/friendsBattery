@@ -82,7 +82,7 @@ class LocationStockSection extends ConsumerWidget {
                 item: item,
                 index: e.key + 1,
                 onTap: () =>
-                    context.push('/shared/inventory/${item.productId}'),
+                    context.push('/shared/inventory/${item.productId}?locationId=$locationId'),
               );
             }),
           ],

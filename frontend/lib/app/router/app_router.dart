@@ -529,10 +529,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/shared/inventory/:productId',
         builder: (context, state) {
           final id = int.tryParse(state.pathParameters['productId'] ?? '');
+          final locationId =
+              int.tryParse(state.uri.queryParameters['locationId'] ?? '');
           if (id == null) {
             return const Scaffold(body: Center(child: Text('Invalid product')));
           }
-          return InventoryProductDetailScreen(productId: id);
+          return InventoryProductDetailScreen(
+            productId: id,
+            locationId: locationId,
+          );
         },
       ),
     ],

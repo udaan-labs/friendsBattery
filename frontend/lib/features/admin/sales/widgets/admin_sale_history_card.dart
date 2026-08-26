@@ -78,20 +78,27 @@ class AdminSaleHistoryCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        '#${sale.id}',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF64748B),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildSaleTypeBadge(sale.saleType),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            '#${sale.id}',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
@@ -156,6 +163,67 @@ class AdminSaleHistoryCard extends StatelessWidget {
                       ),
                     ],
                   ),
+                  if (sale.scrapSerial != null && sale.scrapSerial!.isNotEmpty) ...[
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Divider(height: 1, thickness: 1, color: Color(0xFFE2E8F0)),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _MetaItem(
+                            icon: Icons.recycling_rounded,
+                            label: 'Scrap Trade-in Serial',
+                            value: sale.scrapSerial!,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  if (sale.place != null && sale.place!.isNotEmpty) ...[
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Divider(height: 1, thickness: 1, color: Color(0xFFE2E8F0)),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _MetaItem(
+                            icon: Icons.location_on_outlined,
+                            label: 'Service Location / Site',
+                            value: sale.place!,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  if (sale.rentStatus != null) ...[
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Divider(height: 1, thickness: 1, color: Color(0xFFE2E8F0)),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _MetaItem(
+                            icon: Icons.assignment_return_outlined,
+                            label: 'Rental Status',
+                            value: sale.rentStatus!,
+                          ),
+                        ),
+                        if (sale.deposit != null) ...[
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _MetaItem(
+                              icon: Icons.account_balance_wallet_outlined,
+                              label: 'Deposit Paid',
+                              value: '₹${sale.deposit!.toStringAsFixed(0)}',
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -212,9 +280,13 @@ class AdminSaleHistoryCard extends StatelessWidget {
                       color: const Color(0xFFF1F5F9),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Text(
-                      'Direct Sale',
-                      style: TextStyle(
+                    child: Text(
+                      sale.saleType == 'SERVICE'
+                          ? 'Service Bill'
+                          : sale.saleType == 'RENT'
+                              ? 'Rent Bill'
+                              : 'Direct Sale',
+                      style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
                         color: Color(0xFF64748B),
@@ -224,6 +296,33 @@ class AdminSaleHistoryCard extends StatelessWidget {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSaleTypeBadge(String saleType) {
+    final (label, bg, fg) = switch (saleType.toUpperCase()) {
+      'SERVICE' => ('SERVICE BILL', const Color(0xFFF3E8FF), const Color(0xFF7E22CE)),
+      'RENT' => ('BATTERY RENT', const Color(0xFFE0F2FE), const Color(0xFF0369A1)),
+      'SCRAP' => ('SCRAP', const Color(0xFFFFF7ED), const Color(0xFFC2410C)),
+      'MECHANIC' => ('MECHANIC', const Color(0xFFEFF6FF), const Color(0xFF1D4ED8)),
+      _ => ('NORMAL', const Color(0xFFF0FDF4), const Color(0xFF15803D)),
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: fg.withValues(alpha: 0.2)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          color: fg,
         ),
       ),
     );

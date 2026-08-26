@@ -15,4 +15,13 @@ const setActiveSchema = z.object({
   }),
 });
 
-module.exports = { listAccountsSchema, setActiveSchema };
+const changePasswordSchema = z.object({
+  params: z.object({
+    id: z.string().regex(/^\d+$/).transform(Number),
+  }),
+  body: z.object({
+    password: z.string().min(6, 'Password must be at least 6 characters long'),
+  }),
+});
+
+module.exports = { listAccountsSchema, setActiveSchema, changePasswordSchema };

@@ -11,6 +11,8 @@ const { isSuperAdmin, isAdmin } = require('./role.util');
  * Staff tree = parent_id = admin, same location_id, or (warehouse admin)
  * sellers at shops with location.warehouse_id = warehouse.
  */
+
+
 function resolveAdminShopScope(user) {
   if (!user || !user.role) return null;
   if (isSuperAdmin(user)) return { kind: 'org' };
@@ -20,26 +22,55 @@ function resolveAdminShopScope(user) {
         ? Number(user.locationId)
         : null;
     const locationType = user.location?.type || null;
+    const warehouseId =
+      user.location?.warehouseId != null ? Number(user.location.warehouseId) : null;
     return {
       kind: 'shop',
       adminId: Number(user.id),
       locationId: Number.isFinite(locationId) ? locationId : null,
       locationType,
+      warehouseId: Number.isFinite(warehouseId) ? warehouseId : null,
     };
   }
   return null;
 }
 
-/** parentId = admin, same location, or shops under warehouse */
+/** parentId = admin, same location, or shops under warehouse network */
 function _shopOr(scope) {
   const or = [{ parentId: BigInt(scope.adminId) }];
   if (scope.locationId != null) {
     or.push({ locationId: BigInt(scope.locationId) });
-    if (scope.locationType === 'WAREHOUSE') {
-      or.push({ location: { warehouseId: BigInt(scope.locationId) } });
-    }
+  }
+
+  const effectiveWarehouseId =
+    scope.locationType === 'WAREHOUSE' ? scope.locationId : scope.warehouseId;
+
+  if (effectiveWarehouseId != null) {
+    const whId = BigInt(effectiveWarehouseId);
+    or.push({ locationId: whId });
+    or.push({ location: { warehouseId: whId } });
   }
   return or;
+}
+
+async function _resolveEffectiveScope(prisma, scope) {
+  if (!scope || scope.kind !== 'shop' || scope.locationId == null) {
+    return scope;
+  }
+  if (!scope.locationType || (scope.locationType === 'SHOP' && scope.warehouseId == null)) {
+    const loc = await prisma.location.findUnique({
+      where: { id: BigInt(scope.locationId) },
+      select: { type: true, warehouseId: true },
+    });
+    if (loc) {
+      return {
+        ...scope,
+        locationType: loc.type,
+        warehouseId: loc.warehouseId != null ? Number(loc.warehouseId) : scope.warehouseId,
+      };
+    }
+  }
+  return scope;
 }
 
 /**
@@ -72,11 +103,12 @@ function isUserInShopScope(target, scope) {
   ) {
     return true;
   }
+  const effectiveWarehouseId =
+    scope.locationType === 'WAREHOUSE' ? scope.locationId : scope.warehouseId;
   if (
-    scope.locationType === 'WAREHOUSE' &&
-    scope.locationId != null &&
+    effectiveWarehouseId != null &&
     target.location?.warehouseId != null &&
-    Number(target.location.warehouseId) === Number(scope.locationId)
+    Number(target.location.warehouseId) === Number(effectiveWarehouseId)
   ) {
     return true;
   }
@@ -88,10 +120,12 @@ function isLocationInShopScope(loc, scope) {
   if (!scope || scope.kind === 'org') return true;
   if (!loc || scope.kind !== 'shop' || scope.locationId == null) return false;
   if (Number(loc.id) === Number(scope.locationId)) return true;
+  const effectiveWarehouseId =
+    scope.locationType === 'WAREHOUSE' ? scope.locationId : scope.warehouseId;
   if (
-    scope.locationType === 'WAREHOUSE' &&
+    effectiveWarehouseId != null &&
     loc.warehouseId != null &&
-    Number(loc.warehouseId) === Number(scope.locationId)
+    Number(loc.warehouseId) === Number(effectiveWarehouseId)
   ) {
     return true;
   }
@@ -103,15 +137,7 @@ function isLocationInShopScope(loc, scope) {
  * null = org (no filter). Includes inactive sellers (history must stay visible).
  */
 async function resolveShopSellerIds(prisma, scope) {
-  if (!scope || scope.kind === 'org') return null;
-  if (scope.kind !== 'shop') return [];
-
-  const where = sellerWhereForShopScope(scope);
-  const sellers = await prisma.user.findMany({
-    where,
-    select: { id: true },
-  });
-  return [...sellers.map((s) => s.id), BigInt(scope.adminId)];
+  return resolveShopActorIds(prisma, scope);
 }
 
 /** Self + ADMIN/SELLER/EMPLOYEE in shop/warehouse tree. null = org. */
@@ -119,15 +145,17 @@ async function resolveShopActorIds(prisma, scope) {
   if (!scope || scope.kind === 'org') return null;
   if (scope.kind !== 'shop') return [];
 
+  const effectiveScope = await _resolveEffectiveScope(prisma, scope);
+
   const users = await prisma.user.findMany({
     where: {
       role: { in: [ROLES.ADMIN, ROLES.SELLER, ROLES.EMPLOYEE] },
-      OR: _shopOr(scope),
+      OR: _shopOr(effectiveScope),
     },
     select: { id: true },
   });
   const ids = users.map((u) => u.id);
-  ids.push(BigInt(scope.adminId));
+  ids.push(BigInt(effectiveScope.adminId));
   return [...new Set(ids)];
 }
 
@@ -137,9 +165,10 @@ async function resolveShopLocationIds(prisma, scope) {
   if (scope.kind !== 'shop') return [];
   if (scope.locationId == null) return [];
 
-  const locId = BigInt(scope.locationId);
+  const effectiveScope = await _resolveEffectiveScope(prisma, scope);
+  const locId = BigInt(effectiveScope.locationId);
   const ids = [locId];
-  if (scope.locationType === 'WAREHOUSE') {
+  if (effectiveScope.locationType === 'WAREHOUSE') {
     const shops = await prisma.location.findMany({
       where: { warehouseId: locId },
       select: { id: true },

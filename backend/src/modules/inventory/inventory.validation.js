@@ -22,6 +22,17 @@ const getInventorySchema = z.object({
 const getInventoryItemSchema = z.object({
   params: z.object({
     productId: z.string().regex(/^\d+$/).transform(Number)
+  }),
+  query: z.object({
+    location_id: z.string().regex(/^\d+$/).transform(Number).optional(),
+    locationId: z.string().regex(/^\d+$/).transform(Number).optional(),
+  }).optional()
+});
+
+// Schema for DELETE /inventory/unit/:serialNumber
+const removeUnitSchema = z.object({
+  params: z.object({
+    serialNumber: z.string().trim().min(1, { message: 'Serial number is required' })
   })
 });
 
@@ -132,5 +143,6 @@ module.exports = {
   updateStockSchema,
   getProductDetailsSchema,
   getAvailableSerialsSchema,
-  getInventoryDetailsSchema
+  getInventoryDetailsSchema,
+  removeUnitSchema
 };

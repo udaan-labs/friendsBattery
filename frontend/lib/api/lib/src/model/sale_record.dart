@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:built_collection/built_collection.dart';
 import 'package:friends_battery_api/src/model/sale_customer.dart';
 import 'package:friends_battery_api/src/model/sale_product.dart';
 import 'package:friends_battery_api/src/model/sale_seller.dart';
@@ -20,6 +21,12 @@ part 'sale_record.g.dart';
 /// * [sellPrice] 
 /// * [serialNumber] 
 /// * [vehicleNumber] 
+/// * [saleType] 
+/// * [scrapSerial] 
+/// * [serviceType] 
+/// * [rentStatus] 
+/// * [deposit] 
+/// * [place] 
 /// * [soldAt] 
 /// * [quantity] 
 /// * [customer] 
@@ -44,6 +51,25 @@ abstract class SaleRecord implements Built<SaleRecord, SaleRecordBuilder> {
 
   @BuiltValueField(wireName: r'vehicle_number')
   String? get vehicleNumber;
+
+  @BuiltValueField(wireName: r'sale_type')
+  SaleRecordSaleTypeEnum? get saleType;
+  // enum saleTypeEnum {  NORMAL,  SCRAP,  MECHANIC,  SERVICE,  RENT,  };
+
+  @BuiltValueField(wireName: r'scrap_serial')
+  String? get scrapSerial;
+
+  @BuiltValueField(wireName: r'service_type')
+  String? get serviceType;
+
+  @BuiltValueField(wireName: r'rent_status')
+  String? get rentStatus;
+
+  @BuiltValueField(wireName: r'deposit')
+  num? get deposit;
+
+  @BuiltValueField(wireName: r'place')
+  String? get place;
 
   @BuiltValueField(wireName: r'sold_at')
   DateTime? get soldAt;
@@ -122,6 +148,48 @@ class _$SaleRecordSerializer implements PrimitiveSerializer<SaleRecord> {
       yield r'vehicle_number';
       yield serializers.serialize(
         object.vehicleNumber,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.saleType != null) {
+      yield r'sale_type';
+      yield serializers.serialize(
+        object.saleType,
+        specifiedType: const FullType(SaleRecordSaleTypeEnum),
+      );
+    }
+    if (object.scrapSerial != null) {
+      yield r'scrap_serial';
+      yield serializers.serialize(
+        object.scrapSerial,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.serviceType != null) {
+      yield r'service_type';
+      yield serializers.serialize(
+        object.serviceType,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.rentStatus != null) {
+      yield r'rent_status';
+      yield serializers.serialize(
+        object.rentStatus,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.deposit != null) {
+      yield r'deposit';
+      yield serializers.serialize(
+        object.deposit,
+        specifiedType: const FullType.nullable(num),
+      );
+    }
+    if (object.place != null) {
+      yield r'place';
+      yield serializers.serialize(
+        object.place,
         specifiedType: const FullType.nullable(String),
       );
     }
@@ -226,6 +294,53 @@ class _$SaleRecordSerializer implements PrimitiveSerializer<SaleRecord> {
           if (valueDes == null) continue;
           result.vehicleNumber = valueDes;
           break;
+        case r'sale_type':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(SaleRecordSaleTypeEnum),
+          ) as SaleRecordSaleTypeEnum;
+          result.saleType = valueDes;
+          break;
+        case r'scrap_serial':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.scrapSerial = valueDes;
+          break;
+        case r'service_type':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.serviceType = valueDes;
+          break;
+        case r'rent_status':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.rentStatus = valueDes;
+          break;
+        case r'deposit':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(num),
+          ) as num?;
+          if (valueDes == null) continue;
+          result.deposit = valueDes;
+          break;
+        case r'place':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.place = valueDes;
+          break;
         case r'sold_at':
           final valueDes = serializers.deserialize(
             value,
@@ -288,5 +403,26 @@ class _$SaleRecordSerializer implements PrimitiveSerializer<SaleRecord> {
     );
     return result.build();
   }
+}
+
+class SaleRecordSaleTypeEnum extends EnumClass {
+
+  @BuiltValueEnumConst(wireName: r'NORMAL')
+  static const SaleRecordSaleTypeEnum NORMAL = _$saleRecordSaleTypeEnum_NORMAL;
+  @BuiltValueEnumConst(wireName: r'SCRAP')
+  static const SaleRecordSaleTypeEnum SCRAP = _$saleRecordSaleTypeEnum_SCRAP;
+  @BuiltValueEnumConst(wireName: r'MECHANIC')
+  static const SaleRecordSaleTypeEnum MECHANIC = _$saleRecordSaleTypeEnum_MECHANIC;
+  @BuiltValueEnumConst(wireName: r'SERVICE')
+  static const SaleRecordSaleTypeEnum SERVICE = _$saleRecordSaleTypeEnum_SERVICE;
+  @BuiltValueEnumConst(wireName: r'RENT')
+  static const SaleRecordSaleTypeEnum RENT = _$saleRecordSaleTypeEnum_RENT;
+
+  static Serializer<SaleRecordSaleTypeEnum> get serializer => _$saleRecordSaleTypeEnumSerializer;
+
+  const SaleRecordSaleTypeEnum._(String name): super(name);
+
+  static BuiltSet<SaleRecordSaleTypeEnum> get values => _$saleRecordSaleTypeEnumValues;
+  static SaleRecordSaleTypeEnum valueOf(String name) => _$saleRecordSaleTypeEnumValueOf(name);
 }
 

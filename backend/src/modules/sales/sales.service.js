@@ -72,7 +72,7 @@ class SalesService {
       id: Number(sale.id),
       product_id: Number(sale.productId),
       product_unit_id: Number(sale.productUnitId),
-      sell_price: sale.sellPrice,
+      sell_price: Number(sale.sellPrice),
       serial_number: sale.serialNumber,
       vehicle_number: sale.vehicleNumber,
       sale_type: sale.saleType || 'NORMAL',
@@ -338,29 +338,36 @@ class SalesService {
     }
 
     const filters = {
+      sellerId,
       searchCustomer,
       searchSerial,
+      search: searchCustomer || searchSerial,
       fromDate,
       toDate,
     };
 
-    const pagination = { skip, take };
+    const [sales, serviceBills, batteryRents] = await Promise.all([
+      salesRepository.getSalesHistoryBySeller(sellerId, filters, { skip: 0, take: 200 }),
+      salesRepository.getAdminServiceBills(filters),
+      salesRepository.getAdminBatteryRents(filters),
+    ]);
 
-    const sales = await salesRepository.getSalesHistoryBySeller(
-      sellerId,
-      filters,
-      pagination
-    );
-    const total = await salesRepository.countSalesHistoryBySeller(sellerId, filters);
+    const formattedSales = sales.map(this._formatSale);
+    const formattedServiceBills = serviceBills.map(this._formatServiceBill);
+    const formattedRents = batteryRents.map(this._formatBatteryRent);
 
-    const totalPages = Math.ceil(total / limit);
+    const combined = [...formattedSales, ...formattedServiceBills, ...formattedRents];
+    combined.sort((a, b) => new Date(b.sold_at) - new Date(a.sold_at));
+
+    const total = combined.length;
+    const paginatedData = combined.slice(skip, skip + take);
 
     return {
-      data: sales.map(this._formatSale),
-      total: total,
-      page: page,
-      limit: limit,
-      total_pages: totalPages,
+      data: paginatedData,
+      total,
+      page,
+      limit,
+      total_pages: Math.ceil(total / limit) || 1,
     };
   }
 
@@ -373,9 +380,11 @@ class SalesService {
       id: Number(sale.id),
       sold_at: sale.soldAt,
       quantity: 1,
-      sell_price: sale.sellPrice,
+      sell_price: Number(sale.sellPrice),
       serial_number: sale.serialNumber,
       vehicle_number: sale.vehicleNumber,
+      sale_type: sale.saleType || 'NORMAL',
+      scrap_serial: sale.scrapSerial || null,
       seller: sale.seller
         ? {
             id: Number(sale.seller.id),
@@ -421,6 +430,80 @@ class SalesService {
     return base;
   }
 
+  _formatServiceBill(bill) {
+    return {
+      id: Number(bill.id),
+      sold_at: bill.createdAt,
+      quantity: 1,
+      sell_price: Number(bill.amount),
+      serial_number: bill.vehicleNumber || bill.place || 'N/A',
+      vehicle_number: bill.vehicleNumber || null,
+      sale_type: 'SERVICE',
+      service_type: bill.serviceType,
+      place: bill.place || null,
+      scrap_serial: null,
+      rent_status: null,
+      deposit: null,
+      seller: bill.seller
+        ? {
+            id: Number(bill.seller.id),
+            user_name: bill.seller.userName,
+            shop_name: bill.seller.shopName,
+          }
+        : null,
+      customer: bill.customer
+        ? {
+            id: Number(bill.customer.id),
+            name: bill.customer.name,
+            phone: bill.customer.phone,
+          }
+        : null,
+      product: {
+        product_name: 'Service Bill',
+        product_model: bill.serviceType ? bill.serviceType.replace(/_/g, ' ') : 'Service',
+        category: 'Service',
+      },
+      shipment: null,
+    };
+  }
+
+  _formatBatteryRent(rent) {
+    return {
+      id: Number(rent.id),
+      sold_at: rent.rentedAt,
+      quantity: 1,
+      sell_price: Number(rent.deposit),
+      serial_number: rent.serialNumber,
+      vehicle_number: null,
+      sale_type: 'RENT',
+      rent_status: rent.status,
+      deposit: Number(rent.deposit),
+      service_type: null,
+      scrap_serial: null,
+      place: null,
+      seller: rent.seller
+        ? {
+            id: Number(rent.seller.id),
+            user_name: rent.seller.userName,
+            shop_name: rent.seller.shopName,
+          }
+        : null,
+      customer: rent.customer
+        ? {
+            id: Number(rent.customer.id),
+            name: rent.customer.name,
+            phone: rent.customer.phone,
+          }
+        : null,
+      product: {
+        product_name: 'Battery Rent',
+        product_model: `Rent (${rent.status})`,
+        category: 'Rental',
+      },
+      shipment: null,
+    };
+  }
+
   /**
    * Get paginated sales history for Admin — SA all shops; shop Admin own shop.
    * @param {object} query
@@ -438,19 +521,28 @@ class SalesService {
       filters.sellerIds = sellerIds || [];
     }
 
-    const pagination = { skip, take };
-
-    const [sales, total] = await Promise.all([
-      salesRepository.getAdminSalesHistory(filters, pagination),
-      salesRepository.countAdminSalesHistory(filters),
+    const [sales, serviceBills, batteryRents] = await Promise.all([
+      salesRepository.getAdminSalesHistory(filters, { skip: 0, take: 200 }),
+      salesRepository.getAdminServiceBills(filters),
+      salesRepository.getAdminBatteryRents(filters),
     ]);
 
+    const formattedSales = sales.map((s) => this._formatAdminSale(s));
+    const formattedServiceBills = serviceBills.map((b) => this._formatServiceBill(b));
+    const formattedRents = batteryRents.map((r) => this._formatBatteryRent(r));
+
+    const combined = [...formattedSales, ...formattedServiceBills, ...formattedRents];
+    combined.sort((a, b) => new Date(b.sold_at) - new Date(a.sold_at));
+
+    const total = combined.length;
+    const paginatedData = combined.slice(skip, skip + take);
+
     return {
-      data: sales.map((s) => this._formatAdminSale(s)),
+      data: paginatedData,
       total,
       page,
       limit,
-      total_pages: Math.ceil(total / limit),
+      total_pages: Math.ceil(total / limit) || 1,
     };
   }
 }

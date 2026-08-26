@@ -349,8 +349,9 @@ class DashboardRepository {
     const catalogIds = rawActivities.filter(a => a.type === 'catalog').map(a => BigInt(a.id));
     const orgIds = rawActivities.filter(a => a.type === 'org').map(a => BigInt(a.id));
     const inventoryIds = rawActivities.filter(a => a.type === 'inventory').map(a => BigInt(a.id));
+    const serviceBillIds = rawActivities.filter(a => a.type === 'service_bill').map(a => BigInt(a.id));
 
-    const [shipments, sales, returns, catalogEvents, orgEvents, inventoryRows] = await Promise.all([
+    const [shipments, sales, returns, catalogEvents, orgEvents, inventoryRows, serviceBills] = await Promise.all([
       shipmentIds.length > 0 ? prisma.newShipment.findMany({
         where: { id: { in: shipmentIds } },
         include: {
@@ -408,6 +409,13 @@ class DashboardRepository {
           },
         },
       }) : Promise.resolve([]),
+      serviceBillIds.length > 0 ? prisma.serviceBill.findMany({
+        where: { id: { in: serviceBillIds } },
+        include: {
+          seller: { select: { userName: true, shopName: true } },
+          customer: { select: { name: true } }
+        }
+      }) : Promise.resolve([]),
     ]);
 
     // Map to rich activity objects
@@ -422,6 +430,7 @@ class DashboardRepository {
     const catalogMap = new Map(catalogEvents.map(e => [e.id.toString(), e]));
     const orgMap = new Map(orgEvents.map(e => [e.id.toString(), e]));
     const inventoryMap = new Map(inventoryRows.map(e => [e.id.toString(), e]));
+    const serviceBillsMap = new Map(serviceBills.map(b => [b.id.toString(), b]));
 
     for (const raw of rawActivities) {
       if (raw.type === 'shipment') {
@@ -444,6 +453,17 @@ class DashboardRepository {
             subtitle: `${s.product?.productModel?.name || 'Product'} • ₹${Number(s.sellPrice).toFixed(0)}`,
             time: s.soldAt.toISOString(),
             icon: 'point_of_sale'
+          });
+        }
+      } else if (raw.type === 'service_bill') {
+        const b = serviceBillsMap.get(raw.id.toString());
+        if (b) {
+          activities.push({
+            type: 'service_bill',
+            title: `Service Bill by ${b.seller?.shopName || b.seller?.userName || 'Seller'}`,
+            subtitle: `${b.serviceType ? b.serviceType.replace(/_/g, ' ') : 'Service'} • ₹${Number(b.amount).toFixed(0)} • ${b.customer?.name || 'Customer'}`,
+            time: b.createdAt.toISOString(),
+            icon: 'handyman'
           });
         }
       } else if (raw.type === 'return') {
@@ -500,6 +520,8 @@ class DashboardRepository {
         UNION ALL
         SELECT 'sale' AS type, id, sold_at AS time, 1::int AS qty FROM sales_transactions
         UNION ALL
+        SELECT 'service_bill' AS type, id, created_at AS time, 1::int AS qty FROM service_bills
+        UNION ALL
         SELECT 'return' AS type, id, created_at AS time, 1::int AS qty FROM return_products
         UNION ALL
         SELECT 'catalog' AS type, id, created_at AS time, 1::int AS qty FROM product_catalog_events
@@ -526,6 +548,9 @@ class DashboardRepository {
       WHERE seller_id IN (${actorIn()}) OR created_by_admin_id = ${scopeFilter.adminId}
       UNION ALL
       SELECT 'sale' AS type, id, sold_at AS time, 1::int AS qty FROM sales_transactions
+      WHERE seller_id IN (${actorIn()})
+      UNION ALL
+      SELECT 'service_bill' AS type, id, created_at AS time, 1::int AS qty FROM service_bills
       WHERE seller_id IN (${actorIn()})
       UNION ALL
       SELECT 'return' AS type, id, created_at AS time, 1::int AS qty FROM return_products

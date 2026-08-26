@@ -14,20 +14,20 @@ final adminSalesRepositoryProvider = Provider<AdminSalesRepository>((ref) {
 
 /// Period filter for sales report chips.
 enum AdminSalesPeriod {
+  all,
   today,
   week,
   month,
   year,
-  custom,
-  all;
+  custom;
 
   String label(DateTime? customDate) => switch (this) {
+        all => 'All',
         today => 'Today',
         week => 'This week',
         month => 'This month',
         year => 'This year',
         custom => customDate == null ? 'Date' : formatAppDate(customDate),
-        all => 'All',
       };
 }
 
@@ -49,7 +49,7 @@ class AdminSalesHistoryState {
     this.isLoadingMore = false,
     this.error,
     this.searchQuery = '',
-    this.period = AdminSalesPeriod.today,
+    this.period = AdminSalesPeriod.all,
     this.customDate,
     this.currentPage = 1,
     this.totalPages = 1,
@@ -103,15 +103,18 @@ class AdminSalesHistoryNotifier
 
   static const int _pageSize = 10;
 
+  DateTime _endOfDay(DateTime d) => DateTime(d.year, d.month, d.day, 23, 59, 59, 999);
+
   ({String? from, String? to}) _dateRangeFor(AdminSalesPeriod period) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     if (period == AdminSalesPeriod.all) return (from: null, to: null);
     if (period == AdminSalesPeriod.custom) {
       final day = state.customDate ?? today;
-      final start = DateTime(day.year, day.month, day.day);
-      final end = DateTime(day.year, day.month, day.day, 23, 59, 59, 999);
-      return (from: start.toIso8601String(), to: end.toIso8601String());
+      return (
+        from: DateTime(day.year, day.month, day.day).toUtc().toIso8601String(),
+        to: _endOfDay(day).toUtc().toIso8601String(),
+      );
     }
     final start = switch (period) {
       AdminSalesPeriod.today => today,
@@ -120,7 +123,7 @@ class AdminSalesHistoryNotifier
       AdminSalesPeriod.year => DateTime(now.year, 1, 1),
       _ => today,
     };
-    return (from: start.toIso8601String(), to: now.toIso8601String());
+    return (from: start.toUtc().toIso8601String(), to: _endOfDay(now).toUtc().toIso8601String());
   }
 
   Future<void> fetchSales({bool isRefresh = false}) async {

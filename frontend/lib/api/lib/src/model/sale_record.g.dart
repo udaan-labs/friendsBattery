@@ -6,6 +6,85 @@ part of 'sale_record.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const SaleRecordSaleTypeEnum _$saleRecordSaleTypeEnum_NORMAL =
+    const SaleRecordSaleTypeEnum._('NORMAL');
+const SaleRecordSaleTypeEnum _$saleRecordSaleTypeEnum_SCRAP =
+    const SaleRecordSaleTypeEnum._('SCRAP');
+const SaleRecordSaleTypeEnum _$saleRecordSaleTypeEnum_MECHANIC =
+    const SaleRecordSaleTypeEnum._('MECHANIC');
+const SaleRecordSaleTypeEnum _$saleRecordSaleTypeEnum_SERVICE =
+    const SaleRecordSaleTypeEnum._('SERVICE');
+const SaleRecordSaleTypeEnum _$saleRecordSaleTypeEnum_RENT =
+    const SaleRecordSaleTypeEnum._('RENT');
+
+SaleRecordSaleTypeEnum _$saleRecordSaleTypeEnumValueOf(String name) {
+  switch (name) {
+    case 'NORMAL':
+      return _$saleRecordSaleTypeEnum_NORMAL;
+    case 'SCRAP':
+      return _$saleRecordSaleTypeEnum_SCRAP;
+    case 'MECHANIC':
+      return _$saleRecordSaleTypeEnum_MECHANIC;
+    case 'SERVICE':
+      return _$saleRecordSaleTypeEnum_SERVICE;
+    case 'RENT':
+      return _$saleRecordSaleTypeEnum_RENT;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<SaleRecordSaleTypeEnum> _$saleRecordSaleTypeEnumValues =
+    BuiltSet<SaleRecordSaleTypeEnum>(const <SaleRecordSaleTypeEnum>[
+      _$saleRecordSaleTypeEnum_NORMAL,
+      _$saleRecordSaleTypeEnum_SCRAP,
+      _$saleRecordSaleTypeEnum_MECHANIC,
+      _$saleRecordSaleTypeEnum_SERVICE,
+      _$saleRecordSaleTypeEnum_RENT,
+    ]);
+
+Serializer<SaleRecordSaleTypeEnum> _$saleRecordSaleTypeEnumSerializer =
+    _$SaleRecordSaleTypeEnumSerializer();
+
+class _$SaleRecordSaleTypeEnumSerializer
+    implements PrimitiveSerializer<SaleRecordSaleTypeEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'NORMAL': 'NORMAL',
+    'SCRAP': 'SCRAP',
+    'MECHANIC': 'MECHANIC',
+    'SERVICE': 'SERVICE',
+    'RENT': 'RENT',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'NORMAL': 'NORMAL',
+    'SCRAP': 'SCRAP',
+    'MECHANIC': 'MECHANIC',
+    'SERVICE': 'SERVICE',
+    'RENT': 'RENT',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[SaleRecordSaleTypeEnum];
+  @override
+  final String wireName = 'SaleRecordSaleTypeEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    SaleRecordSaleTypeEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  SaleRecordSaleTypeEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => SaleRecordSaleTypeEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$SaleRecord extends SaleRecord {
   @override
   final int? id;
@@ -19,6 +98,18 @@ class _$SaleRecord extends SaleRecord {
   final String? serialNumber;
   @override
   final String? vehicleNumber;
+  @override
+  final SaleRecordSaleTypeEnum? saleType;
+  @override
+  final String? scrapSerial;
+  @override
+  final String? serviceType;
+  @override
+  final String? rentStatus;
+  @override
+  final num? deposit;
+  @override
+  final String? place;
   @override
   final DateTime? soldAt;
   @override
@@ -40,6 +131,12 @@ class _$SaleRecord extends SaleRecord {
     this.sellPrice,
     this.serialNumber,
     this.vehicleNumber,
+    this.saleType,
+    this.scrapSerial,
+    this.serviceType,
+    this.rentStatus,
+    this.deposit,
+    this.place,
     this.soldAt,
     this.quantity,
     this.customer,
@@ -63,6 +160,12 @@ class _$SaleRecord extends SaleRecord {
         sellPrice == other.sellPrice &&
         serialNumber == other.serialNumber &&
         vehicleNumber == other.vehicleNumber &&
+        saleType == other.saleType &&
+        scrapSerial == other.scrapSerial &&
+        serviceType == other.serviceType &&
+        rentStatus == other.rentStatus &&
+        deposit == other.deposit &&
+        place == other.place &&
         soldAt == other.soldAt &&
         quantity == other.quantity &&
         customer == other.customer &&
@@ -79,6 +182,12 @@ class _$SaleRecord extends SaleRecord {
     _$hash = $jc(_$hash, sellPrice.hashCode);
     _$hash = $jc(_$hash, serialNumber.hashCode);
     _$hash = $jc(_$hash, vehicleNumber.hashCode);
+    _$hash = $jc(_$hash, saleType.hashCode);
+    _$hash = $jc(_$hash, scrapSerial.hashCode);
+    _$hash = $jc(_$hash, serviceType.hashCode);
+    _$hash = $jc(_$hash, rentStatus.hashCode);
+    _$hash = $jc(_$hash, deposit.hashCode);
+    _$hash = $jc(_$hash, place.hashCode);
     _$hash = $jc(_$hash, soldAt.hashCode);
     _$hash = $jc(_$hash, quantity.hashCode);
     _$hash = $jc(_$hash, customer.hashCode);
@@ -97,6 +206,12 @@ class _$SaleRecord extends SaleRecord {
           ..add('sellPrice', sellPrice)
           ..add('serialNumber', serialNumber)
           ..add('vehicleNumber', vehicleNumber)
+          ..add('saleType', saleType)
+          ..add('scrapSerial', scrapSerial)
+          ..add('serviceType', serviceType)
+          ..add('rentStatus', rentStatus)
+          ..add('deposit', deposit)
+          ..add('place', place)
           ..add('soldAt', soldAt)
           ..add('quantity', quantity)
           ..add('customer', customer)
@@ -135,6 +250,30 @@ class SaleRecordBuilder implements Builder<SaleRecord, SaleRecordBuilder> {
   set vehicleNumber(String? vehicleNumber) =>
       _$this._vehicleNumber = vehicleNumber;
 
+  SaleRecordSaleTypeEnum? _saleType;
+  SaleRecordSaleTypeEnum? get saleType => _$this._saleType;
+  set saleType(SaleRecordSaleTypeEnum? saleType) => _$this._saleType = saleType;
+
+  String? _scrapSerial;
+  String? get scrapSerial => _$this._scrapSerial;
+  set scrapSerial(String? scrapSerial) => _$this._scrapSerial = scrapSerial;
+
+  String? _serviceType;
+  String? get serviceType => _$this._serviceType;
+  set serviceType(String? serviceType) => _$this._serviceType = serviceType;
+
+  String? _rentStatus;
+  String? get rentStatus => _$this._rentStatus;
+  set rentStatus(String? rentStatus) => _$this._rentStatus = rentStatus;
+
+  num? _deposit;
+  num? get deposit => _$this._deposit;
+  set deposit(num? deposit) => _$this._deposit = deposit;
+
+  String? _place;
+  String? get place => _$this._place;
+  set place(String? place) => _$this._place = place;
+
   DateTime? _soldAt;
   DateTime? get soldAt => _$this._soldAt;
   set soldAt(DateTime? soldAt) => _$this._soldAt = soldAt;
@@ -169,6 +308,12 @@ class SaleRecordBuilder implements Builder<SaleRecord, SaleRecordBuilder> {
       _sellPrice = $v.sellPrice;
       _serialNumber = $v.serialNumber;
       _vehicleNumber = $v.vehicleNumber;
+      _saleType = $v.saleType;
+      _scrapSerial = $v.scrapSerial;
+      _serviceType = $v.serviceType;
+      _rentStatus = $v.rentStatus;
+      _deposit = $v.deposit;
+      _place = $v.place;
       _soldAt = $v.soldAt;
       _quantity = $v.quantity;
       _customer = $v.customer?.toBuilder();
@@ -204,6 +349,12 @@ class SaleRecordBuilder implements Builder<SaleRecord, SaleRecordBuilder> {
             sellPrice: sellPrice,
             serialNumber: serialNumber,
             vehicleNumber: vehicleNumber,
+            saleType: saleType,
+            scrapSerial: scrapSerial,
+            serviceType: serviceType,
+            rentStatus: rentStatus,
+            deposit: deposit,
+            place: place,
             soldAt: soldAt,
             quantity: quantity,
             customer: _customer?.build(),

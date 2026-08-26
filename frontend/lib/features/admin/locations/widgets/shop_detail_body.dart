@@ -8,6 +8,7 @@ import '../../../../shared/utils/app_formatters.dart';
 import '../../../shared/inventory/providers/inventory_provider.dart';
 import '../../../shared/staff/providers/staff_providers.dart';
 import '../../../shared/staff/widgets/staff_member_group.dart';
+import '../../sellers/widgets/change_password_dialog.dart';
 import 'location_header_card.dart';
 import 'location_staff_actions.dart';
 import 'location_stock_section.dart';
@@ -27,7 +28,8 @@ class ShopDetailBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final role = ref.watch(authProvider).role;
     final isSuperAdmin = role == UserRole.superAdmin;
-    final canMove = isSuperAdmin;
+    final isAdmin = role == UserRole.admin || isSuperAdmin;
+    final canMove = isAdmin;
     final staffAsync = ref.watch(locationStaffProvider(locationId));
 
     return RefreshIndicator(
@@ -64,7 +66,7 @@ class ShopDetailBody extends ConsumerWidget {
             data: (data) {
               final sellers = data.sellers?.toList() ?? [];
               final employees = data.employees?.toList() ?? [];
-              final onToggle = isSuperAdmin
+              final onToggle = isAdmin
                   ? (ShopStaffMember m, bool next) => setLocationStaffActive(
                         context,
                         ref,
@@ -81,6 +83,17 @@ class ShopDetailBody extends ConsumerWidget {
                         member: m,
                       )
                   : null;
+              final onChangePassword = isAdmin
+                  ? (ShopStaffMember m) async {
+                      if (m.id == null) return;
+                      await ChangePasswordDialog.show(
+                        context,
+                        userId: m.id!,
+                        userName: m.userName ?? 'Staff Member',
+                        role: m.role?.name ?? 'Staff',
+                      );
+                    }
+                  : null;
               return Column(
                 children: [
                   StaffMemberGroup(
@@ -96,6 +109,7 @@ class ShopDetailBody extends ConsumerWidget {
                     ),
                     onToggleActive: onToggle,
                     onMove: onMove,
+                    onChangePassword: onChangePassword,
                   ),
                   const SizedBox(height: 12),
                   StaffMemberGroup(
@@ -111,6 +125,7 @@ class ShopDetailBody extends ConsumerWidget {
                     ),
                     onToggleActive: onToggle,
                     onMove: onMove,
+                    onChangePassword: onChangePassword,
                   ),
                 ],
               );

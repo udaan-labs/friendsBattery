@@ -18,6 +18,7 @@ Method | HTTP request | Description
 [**apiInventoryProductIdGet**](InventoryApi.md#apiinventoryproductidget) | **GET** /api/inventory/{productId} | Return one inventory item
 [**apiInventoryScanForSaleGet**](InventoryApi.md#apiinventoryscanforsaleget) | **GET** /api/inventory/scan-for-sale | Scan serial for sale (owner stock; EMPLOYEE &#x3D; location stock)
 [**apiInventoryTransferPost**](InventoryApi.md#apiinventorytransferpost) | **POST** /api/inventory/transfer | Transfer inventory from admin to seller
+[**apiInventoryUnitSerialNumberDelete**](InventoryApi.md#apiinventoryunitserialnumberdelete) | **DELETE** /api/inventory/unit/{serialNumber} | Remove a specific serial number unit from inventory (Admin only)
 [**apiInventoryUpdateStockPost**](InventoryApi.md#apiinventoryupdatestockpost) | **POST** /api/inventory/update-stock | Update admin&#39;s own inventory stock (Admin only)
 
 
@@ -297,7 +298,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiInventoryProductIdGet**
-> InventoryItemDetailResponse apiInventoryProductIdGet(productId)
+> InventoryItemDetailResponse apiInventoryProductIdGet(productId, locationId)
 
 Return one inventory item
 
@@ -307,9 +308,10 @@ import 'package:friends_battery_api/api.dart';
 
 final api = FriendsBatteryApi().getInventoryApi();
 final int productId = 56; // int | 
+final int locationId = 56; // int | SA/Admin physical stock at this location
 
 try {
-    final response = api.apiInventoryProductIdGet(productId);
+    final response = api.apiInventoryProductIdGet(productId, locationId);
     print(response);
 } on DioException catch (e) {
     print('Exception when calling InventoryApi->apiInventoryProductIdGet: $e\n');
@@ -321,6 +323,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **productId** | **int**|  | 
+ **locationId** | **int**| SA/Admin physical stock at this location | [optional] 
 
 ### Return type
 
@@ -414,6 +417,46 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: application/json
+ - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiInventoryUnitSerialNumberDelete**
+> apiInventoryUnitSerialNumberDelete(serialNumber)
+
+Remove a specific serial number unit from inventory (Admin only)
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getInventoryApi();
+final String serialNumber = serialNumber_example; // String | 
+
+try {
+    api.apiInventoryUnitSerialNumberDelete(serialNumber);
+} on DioException catch (e) {
+    print('Exception when calling InventoryApi->apiInventoryUnitSerialNumberDelete: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **serialNumber** | **String**|  | 
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

@@ -39,4 +39,15 @@ class AccountsRepository {
       _fromDio(e);
     }
   }
+
+  Future<void> changePassword({required int id, required String newPassword}) async {
+    try {
+      await _users.apiUsersIdPasswordPatch(
+        id: id,
+        changePasswordRequest: ChangePasswordRequest((b) => b.password = newPassword),
+      );
+    } on DioException catch (e) {
+      _fromDio(e);
+    }
+  }
 }

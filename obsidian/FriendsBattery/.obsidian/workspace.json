@@ -4,45 +4,24 @@
     "type": "split",
     "children": [
       {
-        "id": "a4c3a47136c31c20",
+        "id": "dded9991630f6619",
         "type": "tabs",
         "children": [
           {
-            "id": "7611fe0d9fec2637",
+            "id": "ab3804b824cf2c01",
             "type": "leaf",
             "state": {
-              "type": "canvas",
+              "type": "markdown",
               "state": {
-                "file": "User Roles & Capabilities Flow.canvas",
-                "viewState": {
-                  "x": 970.6894663277118,
-                  "y": 1071.3057381391034,
-                  "zoom": -1.3333333333333335
-                }
+                "file": "User Roles & Capabilities Flow.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "lucide-layout-dashboard",
-              "title": "User Roles & Capabilities Flow"
-            }
-          },
-          {
-            "id": "cdc2b3bd10d1d582",
-            "type": "leaf",
-            "state": {
-              "type": "canvas",
-              "state": {
-                "file": "User Roles & Capabilities Flow.canvas",
-                "viewState": {
-                  "x": 1223.594802602977,
-                  "y": 533.1446522697215,
-                  "zoom": -1.5386948971619507
-                }
-              },
-              "icon": "lucide-layout-dashboard",
+              "icon": "lucide-file",
               "title": "User Roles & Capabilities Flow"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -206,15 +185,16 @@
       "bases:Create new base": false
     }
   },
-  "active": "cdc2b3bd10d1d582",
+  "active": "ab3804b824cf2c01",
   "lastOpenFiles": [
-    "User Roles & Capabilities Flow.md",
-    "flows.md",
     "User Roles & Capabilities Flow.canvas",
+    "ponytail.md",
+    "User Roles & Capabilities Flow.md",
     "Role Chain Workflow.md",
     "Role Chain Workflow.canvas",
     "Product and Shipment Flows.canvas",
     "Login Flow.canvas",
+    "flows.md",
     "Login Flow.md",
     "Untitled.canvas",
     "Untitled.base",

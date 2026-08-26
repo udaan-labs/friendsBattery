@@ -46,7 +46,7 @@ class InventoryController {
     try {
       const userId = Number(req.user.id);
       const role = req.user.role;
-      const locationId = req.user.locationId ?? null;
+      const locationId = req.query.location_id ? Number(req.query.location_id) : (req.query.locationId ? Number(req.query.locationId) : (req.user.locationId ?? null));
       const { productId } = req.params;
 
       // Call business layer
@@ -245,6 +245,19 @@ class InventoryController {
       return successResponse(res, 200, 'Product found successfully', productDetails);
     } catch (error) {
       return handleRouteError(res, error, 'Scan For Sale Error:');
+    }
+  }
+
+  /**
+   * Remove a specific serial number unit from inventory.
+   */
+  async removeUnit(req, res) {
+    try {
+      const { serialNumber } = req.params;
+      const result = await inventoryService.removeUnit(serialNumber, req.user);
+      return successResponse(res, 200, 'Unit removed successfully', result);
+    } catch (error) {
+      return handleRouteError(res, error, 'Remove Unit Error:');
     }
   }
 }

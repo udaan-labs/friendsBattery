@@ -20,6 +20,8 @@ class SellerSalesRepository {
       soldAt: s.soldAt ?? DateTime.now(),
       customerName: s.customer?.name,
       customerPhone: s.customer?.phone,
+      saleType: s.saleType?.name ?? 'NORMAL',
+      scrapSerial: s.scrapSerial,
     );
   }
 

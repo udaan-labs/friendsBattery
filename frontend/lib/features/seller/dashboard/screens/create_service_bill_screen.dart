@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
 import '../../sales/providers/seller_sales_provider.dart';
 
@@ -68,6 +70,99 @@ class _CreateServiceBillScreenState
     });
   }
 
+  void _showShareModal(
+    BuildContext context, {
+    required String serviceTypeLabel,
+    required num amount,
+    required String customerName,
+    required String customerNumber,
+    String? vehicleNumber,
+    String? place,
+  }) {
+    final dateStr = DateFormat('MMM dd, yyyy').format(DateTime.now());
+    final shareText = StringBuffer()
+      ..writeln('🧾 *SERVICE RECEIPT*')
+      ..writeln('--------------------------------')
+      ..writeln('📅 Date: $dateStr')
+      ..writeln('👤 Customer: $customerName ($customerNumber)')
+      ..writeln('🛠️ Service: $serviceTypeLabel')
+      ..writeln('💰 Amount Paid: ₹${amount.toStringAsFixed(0)}');
+
+    if (vehicleNumber != null && vehicleNumber.isNotEmpty) {
+      shareText.writeln('🚗 Vehicle: $vehicleNumber');
+    }
+    if (place != null && place.isNotEmpty) {
+      shareText.writeln('📍 Location: $place');
+    }
+    shareText.writeln('--------------------------------');
+    shareText.writeln('Thank you for choosing Friends Battery!');
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                color: Color(0xFFDCFCE7),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.check_circle_rounded, color: Color(0xFF166534), size: 48),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Service Bill Created!',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '₹${amount.toStringAsFixed(0)} for $serviceTypeLabel',
+              style: const TextStyle(fontSize: 15, color: Color(0xFF64748B)),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      if (context.mounted) context.pop();
+                    },
+                    icon: const Icon(Icons.close_rounded),
+                    label: const Text('Done'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () async {
+                      // ignore: deprecated_member_use
+                      await Share.share(shareText.toString(), subject: 'Service Bill Receipt');
+                      if (ctx.mounted) {
+                        Navigator.pop(ctx);
+                        if (context.mounted) context.pop();
+                      }
+                    },
+                    icon: const Icon(Icons.share_rounded),
+                    label: const Text('Share Receipt'),
+                    style: FilledButton.styleFrom(backgroundColor: const Color(0xFF16A34A)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _submit() async {
     if (_isSubmitting) return;
     if (!_formKey.currentState!.validate()) return;
@@ -90,8 +185,17 @@ class _CreateServiceBillScreenState
             place: _needsPlace ? _placeController.text.trim() : null,
           );
       if (!mounted) return;
-      context.showSuccessSnackBar('Service bill created');
-      context.pop();
+      _showShareModal(
+        context,
+        serviceTypeLabel: _serviceLabels[_serviceType] ?? _serviceType,
+        amount: amount,
+        customerName: _customerNameController.text.trim(),
+        customerNumber: _customerMobileController.text.trim(),
+        vehicleNumber: _vehicleNumberController.text.trim().isEmpty
+            ? null
+            : _vehicleNumberController.text.trim(),
+        place: _needsPlace ? _placeController.text.trim() : null,
+      );
     } catch (e) {
       // DioExceptions handled by ApiInterceptor (same as CreateBillScreen)
       if (mounted && e is! DioException) {

@@ -11,6 +11,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**apiUsersGet**](UsersApi.md#apiusersget) | **GET** /api/users | List admins, sellers, and employees
 [**apiUsersIdActivePatch**](UsersApi.md#apiusersidactivepatch) | **PATCH** /api/users/{id}/active | Activate or deactivate an admin, seller, or employee
+[**apiUsersIdPasswordPatch**](UsersApi.md#apiusersidpasswordpatch) | **PATCH** /api/users/{id}/password | Reset or change password for a seller or employee
 
 
 # **apiUsersGet**
@@ -89,6 +90,51 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**SetAccountActiveResponse**](SetAccountActiveResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiUsersIdPasswordPatch**
+> ChangePasswordResponse apiUsersIdPasswordPatch(id, changePasswordRequest)
+
+Reset or change password for a seller or employee
+
+Super Admin or Admin. Super Admin can reset password for any account; Admin can reset for sellers/employees under their shop.
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getUsersApi();
+final int id = 56; // int | 
+final ChangePasswordRequest changePasswordRequest = ; // ChangePasswordRequest | 
+
+try {
+    final response = api.apiUsersIdPasswordPatch(id, changePasswordRequest);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling UsersApi->apiUsersIdPasswordPatch: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **int**|  | 
+ **changePasswordRequest** | [**ChangePasswordRequest**](ChangePasswordRequest.md)|  | 
+
+### Return type
+
+[**ChangePasswordResponse**](ChangePasswordResponse.md)
 
 ### Authorization
 

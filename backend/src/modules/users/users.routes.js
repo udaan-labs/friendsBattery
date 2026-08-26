@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const usersController = require('./users.controller');
-const { listAccountsSchema, setActiveSchema } = require('./users.validation');
+const { listAccountsSchema, setActiveSchema, changePasswordSchema } = require('./users.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
 const { requireRole, requireSuperAdminOrAdmin } = require('../../shared/middleware/role.middleware');
 const { validateRequest } = require('../../shared/middleware/validation.middleware');
@@ -87,12 +87,59 @@ router.get(
  *       404:
  *         description: User not found
  */
+
+
 router.patch(
   '/:id/active',
   authenticate,
   requireSuperAdminOrAdmin,
   validateRequest(setActiveSchema),
   usersController.setActive
+);
+
+/**
+ * @swagger
+ * /api/users/{id}/password:
+ *   patch:
+ *     summary: Reset or change password for a seller or employee
+ *     description: Super Admin or Admin. Super Admin can reset password for any account; Admin can reset for sellers/employees under their shop.
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ChangePasswordRequest'
+ *     responses:
+ *       200:
+ *         description: Password updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ChangePasswordResponse'
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: User not found
+ */
+router.patch(
+  '/:id/password',
+  authenticate,
+  requireSuperAdminOrAdmin,
+  validateRequest(changePasswordSchema),
+  usersController.changePassword
 );
 
 module.exports = router;

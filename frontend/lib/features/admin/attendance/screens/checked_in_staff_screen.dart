@@ -16,7 +16,16 @@ class CheckedInStaffScreen extends ConsumerStatefulWidget {
 }
 
 class _CheckedInStaffScreenState extends ConsumerState<CheckedInStaffScreen> {
+  final _searchController = TextEditingController();
+  bool _isSearching = false;
+  String _query = '';
   bool _showMap = false;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,13 +34,33 @@ class _CheckedInStaffScreenState extends ConsumerState<CheckedInStaffScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FB),
       appBar: AppBar(
-        title: const Text('Checked-in staff'),
+        title: _isSearching
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                onChanged: (val) => setState(() => _query = val),
+                style: const TextStyle(fontSize: 16, color: Color(0xFF191C1E)),
+                decoration: const InputDecoration(
+                  hintText: 'Search employee name or shop…',
+                  hintStyle: TextStyle(fontSize: 14, color: Color(0xFF94A3B8)),
+                  border: InputBorder.none,
+                ),
+              )
+            : const Text('Checked-in staff'),
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: const Color(0xFF191C1E),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () {
+            if (_isSearching) {
+              setState(() {
+                _isSearching = false;
+                _searchController.clear();
+                _query = '';
+              });
+              return;
+            }
             if (context.canPop()) {
               context.pop();
             } else {
@@ -40,6 +69,21 @@ class _CheckedInStaffScreenState extends ConsumerState<CheckedInStaffScreen> {
           },
         ),
         actions: [
+          IconButton(
+            tooltip: _isSearching ? 'Close search' : 'Search staff',
+            icon: Icon(_isSearching ? Icons.close : Icons.search),
+            onPressed: () {
+              setState(() {
+                if (_isSearching) {
+                  _isSearching = false;
+                  _searchController.clear();
+                  _query = '';
+                } else {
+                  _isSearching = true;
+                }
+              });
+            },
+          ),
           IconButton(
             tooltip: _showMap ? 'List view' : 'Map view',
             icon: Icon(_showMap ? Icons.list_rounded : Icons.map_outlined),
@@ -71,26 +115,40 @@ class _CheckedInStaffScreenState extends ConsumerState<CheckedInStaffScreen> {
           ),
         ),
         data: (rows) {
-          if (rows.isEmpty) {
-            return const Center(
+          final q = _query.trim().toLowerCase();
+          final filtered = q.isEmpty
+              ? rows
+              : rows.where((r) {
+                  final name = r.employee?.userName ?? '';
+                  final id = r.employeeId?.toString() ?? '';
+                  final locName = r.location?.name ?? '';
+                  final locCode = r.location?.code ?? '';
+                  final text = '$name $id $locName $locCode'.toLowerCase();
+                  return text.contains(q);
+                }).toList();
+
+          if (filtered.isEmpty) {
+            return Center(
               child: Text(
-                'No employees checked in right now',
-                style: TextStyle(color: Color(0xFF586377)),
+                q.isEmpty
+                    ? 'No employees checked in right now'
+                    : 'No checked-in staff matching "$_query"',
+                style: const TextStyle(color: Color(0xFF586377)),
               ),
             );
           }
           if (_showMap) {
-            return _CheckedInMap(rows: rows);
+            return _CheckedInMap(rows: filtered);
           }
           return RefreshIndicator(
             onRefresh: () async => ref.invalidate(checkedInStaffProvider),
             color: AppTheme.primary,
             child: ListView.separated(
               padding: const EdgeInsets.all(16),
-              itemCount: rows.length,
+              itemCount: filtered.length,
               separatorBuilder: (_, __) => const SizedBox(height: 10),
               itemBuilder: (context, i) {
-                final r = rows[i];
+                final r = filtered[i];
                 final name = r.employee?.userName ?? 'Employee #${r.employeeId}';
                 final loc = r.location?.name ?? r.location?.code ?? '—';
                 final when = r.checkInTime?.toLocal().toString().substring(0, 16) ??

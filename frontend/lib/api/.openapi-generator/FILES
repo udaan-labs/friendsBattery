@@ -61,6 +61,9 @@ doc/AttendanceRecord.md
 doc/AttendanceStatusData.md
 doc/AuthApi.md
 doc/AvailableSerialsResponse.md
+doc/ChangePasswordData.md
+doc/ChangePasswordRequest.md
+doc/ChangePasswordResponse.md
 doc/CreateEmployeeRequest.md
 doc/CreateEmployeeResponse.md
 doc/CreateLocationRequest.md
@@ -276,6 +279,9 @@ lib/src/model/attendance_geo_body.dart
 lib/src/model/attendance_record.dart
 lib/src/model/attendance_status_data.dart
 lib/src/model/available_serials_response.dart
+lib/src/model/change_password_data.dart
+lib/src/model/change_password_request.dart
+lib/src/model/change_password_response.dart
 lib/src/model/create_employee_request.dart
 lib/src/model/create_employee_response.dart
 lib/src/model/create_location_request.dart

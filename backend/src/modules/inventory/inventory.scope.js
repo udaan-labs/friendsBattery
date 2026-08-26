@@ -16,7 +16,7 @@ const ROLES = require('../../shared/constants/roles');
  */
 async function resolveUnitScope(userId, role, locationId = undefined) {
   if (role === ROLES.SUPER_ADMIN) {
-    return { owner: { role: { in: [ROLES.ADMIN, ROLES.SUPER_ADMIN] } } };
+    return {};
   }
 
   if (role === ROLES.ADMIN) {

@@ -71,6 +71,9 @@ import 'package:friends_battery_api/src/model/attendance_geo_body.dart';
 import 'package:friends_battery_api/src/model/attendance_record.dart';
 import 'package:friends_battery_api/src/model/attendance_status_data.dart';
 import 'package:friends_battery_api/src/model/available_serials_response.dart';
+import 'package:friends_battery_api/src/model/change_password_data.dart';
+import 'package:friends_battery_api/src/model/change_password_request.dart';
+import 'package:friends_battery_api/src/model/change_password_response.dart';
 import 'package:friends_battery_api/src/model/create_employee_request.dart';
 import 'package:friends_battery_api/src/model/create_employee_response.dart';
 import 'package:friends_battery_api/src/model/create_location_request.dart';
@@ -256,6 +259,9 @@ part 'serializers.g.dart';
   AttendanceRecord,
   AttendanceStatusData,
   AvailableSerialsResponse,
+  ChangePasswordData,
+  ChangePasswordRequest,
+  ChangePasswordResponse,
   CreateEmployeeRequest,
   CreateEmployeeResponse,
   CreateLocationRequest,

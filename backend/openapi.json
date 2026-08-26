@@ -1224,6 +1224,36 @@
             "type": "string",
             "nullable": true
           },
+          "sale_type": {
+            "type": "string",
+            "enum": [
+              "NORMAL",
+              "SCRAP",
+              "MECHANIC",
+              "SERVICE",
+              "RENT"
+            ]
+          },
+          "scrap_serial": {
+            "type": "string",
+            "nullable": true
+          },
+          "service_type": {
+            "type": "string",
+            "nullable": true
+          },
+          "rent_status": {
+            "type": "string",
+            "nullable": true
+          },
+          "deposit": {
+            "type": "number",
+            "nullable": true
+          },
+          "place": {
+            "type": "string",
+            "nullable": true
+          },
           "sold_at": {
             "type": "string",
             "format": "date-time"
@@ -1337,6 +1367,36 @@
             "type": "string"
           },
           "vehicle_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "sale_type": {
+            "type": "string",
+            "enum": [
+              "NORMAL",
+              "SCRAP",
+              "MECHANIC",
+              "SERVICE",
+              "RENT"
+            ]
+          },
+          "scrap_serial": {
+            "type": "string",
+            "nullable": true
+          },
+          "service_type": {
+            "type": "string",
+            "nullable": true
+          },
+          "rent_status": {
+            "type": "string",
+            "nullable": true
+          },
+          "deposit": {
+            "type": "number",
+            "nullable": true
+          },
+          "place": {
             "type": "string",
             "nullable": true
           },
@@ -3348,6 +3408,51 @@
             "$ref": "#/components/schemas/SetAccountActiveData"
           }
         }
+      },
+      "ChangePasswordRequest": {
+        "type": "object",
+        "required": [
+          "password"
+        ],
+        "properties": {
+          "password": {
+            "type": "string",
+            "minLength": 6
+          }
+        }
+      },
+      "ChangePasswordData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "SELLER",
+              "EMPLOYEE"
+            ]
+          }
+        }
+      },
+      "ChangePasswordResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ChangePasswordData"
+          }
+        }
       }
     },
     "securitySchemes": {
@@ -3451,6 +3556,64 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SetAccountActiveResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+    "/api/users/{id}/password": {
+      "patch": {
+        "summary": "Reset or change password for a seller or employee",
+        "description": "Super Admin or Admin. Super Admin can reset password for any account; Admin can reset for sellers/employees under their shop.",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangePasswordResponse"
                 }
               }
             }
@@ -5912,6 +6075,14 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "in": "query",
+            "name": "location_id",
+            "description": "SA/Admin physical stock at this location",
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "responses": {
@@ -6103,6 +6274,40 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/inventory/unit/{serialNumber}": {
+      "delete": {
+        "summary": "Remove a specific serial number unit from inventory (Admin only)",
+        "tags": [
+          "Inventory"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "serialNumber",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Unit removed successfully"
+          },
+          "403": {
+            "description": "Forbidden (Admin only)"
+          },
+          "404": {
+            "description": "Serial number unit not found or not available"
           }
         }
       }

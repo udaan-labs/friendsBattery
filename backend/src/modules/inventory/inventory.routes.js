@@ -10,7 +10,8 @@ const {
   updateStockSchema,
   getProductDetailsSchema,
   getAvailableSerialsSchema,
-  getInventoryDetailsSchema
+  getInventoryDetailsSchema,
+  removeUnitSchema
 } = require('./inventory.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
 const {
@@ -339,6 +340,11 @@ router.get(
  *         required: true
  *         schema:
  *           type: integer
+ *       - in: query
+ *         name: location_id
+ *         description: SA/Admin physical stock at this location
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
  *         description: Inventory item fetched successfully
@@ -490,4 +496,35 @@ router.post(
   validateRequest(updateStockSchema),
   inventoryController.updateStock
 );
+
+/**
+ * @swagger
+ * /api/inventory/unit/{serialNumber}:
+ *   delete:
+ *     summary: Remove a specific serial number unit from inventory (Admin only)
+ *     tags: [Inventory]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: serialNumber
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Unit removed successfully
+ *       403:
+ *         description: Forbidden (Admin only)
+ *       404:
+ *         description: Serial number unit not found or not available
+ */
+router.delete(
+  '/unit/:serialNumber',
+  authenticate,
+  requireAdmin,
+  validateRequest(removeUnitSchema),
+  inventoryController.removeUnit
+);
+
 module.exports = router;

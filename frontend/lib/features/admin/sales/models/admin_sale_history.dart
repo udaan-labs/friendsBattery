@@ -41,6 +41,13 @@ class AdminSaleHistory {
   final String productModel;
   final String productName;
 
+  final String saleType;
+  final String? scrapSerial;
+  final String? serviceType;
+  final String? rentStatus;
+  final double? deposit;
+  final String? place;
+
   // Shipment (optional)
   final AdminShipmentInfo? shipment;
 
@@ -51,6 +58,12 @@ class AdminSaleHistory {
     required this.sellPrice,
     required this.serialNumber,
     this.vehicleNumber,
+    this.saleType = 'NORMAL',
+    this.scrapSerial,
+    this.serviceType,
+    this.rentStatus,
+    this.deposit,
+    this.place,
     required this.sellerId,
     required this.userName,
     required this.shopName,

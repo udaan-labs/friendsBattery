@@ -3,9 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/state/data_sync.dart';
+import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
+import 'package:friends_battery_api/friends_battery_api.dart';
 import '../../accounts/providers/accounts_providers.dart';
+import '../../locations/widgets/location_staff_actions.dart';
 import '../providers/sellers_provider.dart';
+import '../widgets/change_password_dialog.dart';
 
 class SellersListScreen extends ConsumerStatefulWidget {
   const SellersListScreen({super.key});
@@ -72,6 +76,11 @@ class _SellersListScreenState extends ConsumerState<SellersListScreen> {
                   ),
                 ),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.location_on_outlined, color: Color(0xFF006B2C)),
+              tooltip: 'Checked-in Staff Map',
+              onPressed: () => context.push('/admin/checked-in'),
+            ),
             IconButton(
               icon: Icon(
                 _isSearching ? Icons.close : Icons.search,
@@ -248,119 +257,126 @@ class _SellersTabView extends ConsumerWidget {
               final isVerified = seller.isVerified ?? false;
               final isActive = seller.isActive ?? true;
 
-              return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
+              return Material(
+                color: Colors.transparent,
+                child: InkWell(
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+                  onTap: sellerId != null ? () => context.push('/admin/seller/$sellerId') : null,
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Icon(
-                          Icons.storefront_rounded,
-                          color: Theme.of(context).colorScheme.primary,
-                          size: 28,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Icon(
+                              Icons.storefront_rounded,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 28,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Expanded(
-                                  child: Text(
-                                    seller.userName ?? seller.shopName ?? 'Unknown Seller',
-                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        seller.userName ?? seller.shopName ?? 'Unknown Seller',
+                                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                                    if (isVerified) ...[
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: Colors.green.withValues(alpha: 0.1),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(Icons.verified, color: Colors.green, size: 14),
+                                      ),
+                                    ],
+                                    if (sellerData.hasLowStock == true) ...[
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: Colors.red.withValues(alpha: 0.1),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: const Text('Low Stock', style: TextStyle(color: Colors.red, fontSize: 10, fontWeight: FontWeight.bold)),
+                                      ),
+                                    ],
+                                  ],
                                 ),
-                                if (isVerified) ...[
-                                  const SizedBox(width: 6),
-                                  Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
-                                      color: Colors.green.withValues(alpha: 0.1),
-                                      shape: BoxShape.circle,
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.location_on_outlined, size: 14, color: Color(0xFF64748B)),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        '${seller.shopName ?? 'No Shop Location'} • ${seller.userNumber ?? 'No Phone'}',
+                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                          color: Colors.grey.shade600,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
-                                    child: const Icon(Icons.verified, color: Colors.green, size: 14),
-                                  ),
-                                ],
-                                if (sellerData.hasLowStock == true) ...[
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: Colors.red.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: const Text('Low Stock', style: TextStyle(color: Colors.red, fontSize: 10, fontWeight: FontWeight.bold)),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ],
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${seller.shopName ?? 'No Shop Location'} • ${seller.userNumber ?? 'No Phone'}',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Colors.grey.shade600,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                          ),
                       const SizedBox(width: 8),
                       if (sellerId != null)
-                        Column(
-                          children: [
-                            Switch(
-                              value: isActive,
-                              activeThumbColor: const Color(0xFF006B2C),
-                              onChanged: (val) => _toggleStaffActive(
-                                context,
-                                ref,
-                                id: sellerId,
-                                name: seller.userName ?? seller.shopName ?? 'Seller',
-                                nextActive: val,
-                              ),
-                            ),
-                            Text(
-                              isActive ? 'Active' : 'Inactive',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: isActive ? const Color(0xFF006B2C) : Colors.grey,
-                              ),
-                            ),
-                          ],
+                        _StaffRowActions(
+                          id: sellerId,
+                          name: seller.userName ?? seller.shopName ?? 'Seller',
+                          roleName: 'Seller',
+                          isActive: isActive,
+                          color: const Color(0xFF006B2C),
+                          member: ShopStaffMember(
+                            (b) => b
+                              ..id = sellerId
+                              ..userName = seller.userName ?? seller.shopName ?? 'Seller'
+                              ..role = ShopStaffMemberRoleEnum.SELLER,
+                          ),
                         ),
                     ],
                   ),
                 ),
-              );
+              ),
+            ),
+          );
             },
           ),
         );
@@ -484,15 +500,28 @@ class _EmployeesTabView extends ConsumerWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 4),
-                            Text(
-                              '${location?.name ?? member.shopName ?? 'No Shop Location'} • ${member.userNumber ?? 'No Phone'}',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Colors.grey.shade600,
-                                fontWeight: FontWeight.w500,
-                              ),
+                            Row(
+                              children: [
+                                const Icon(Icons.location_on_outlined, size: 14, color: Color(0xFF64748B)),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    '${location?.name ?? member.shopName ?? 'No Shop Location'} • ${member.userNumber ?? 'No Phone'}',
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Colors.grey.shade600,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 8),
-                            Row(
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 4,
+                              crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -509,16 +538,16 @@ class _EmployeesTabView extends ConsumerWidget {
                                     ),
                                   ),
                                 ),
-                                if (member.userId != null && member.userId!.isNotEmpty) ...[
-                                  const SizedBox(width: 8),
+                                if (member.userId != null && member.userId!.isNotEmpty)
                                   Text(
                                     'ID: ${member.userId}',
                                     style: const TextStyle(
                                       color: Color(0xFF64748B),
                                       fontSize: 12,
                                     ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
                                   ),
-                                ],
                               ],
                             ),
                           ],
@@ -526,28 +555,13 @@ class _EmployeesTabView extends ConsumerWidget {
                       ),
                       const SizedBox(width: 8),
                       if (empId != null)
-                        Column(
-                          children: [
-                            Switch(
-                              value: isActive,
-                              activeThumbColor: const Color(0xFF006B2C),
-                              onChanged: (val) => _toggleStaffActive(
-                                context,
-                                ref,
-                                id: empId,
-                                name: member.userName ?? 'Employee',
-                                nextActive: val,
-                              ),
-                            ),
-                            Text(
-                              isActive ? 'Active' : 'Inactive',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: isActive ? const Color(0xFF006B2C) : Colors.grey,
-                              ),
-                            ),
-                          ],
+                        _StaffRowActions(
+                          id: empId,
+                          name: member.userName ?? 'Employee',
+                          roleName: roleName,
+                          isActive: isActive,
+                          color: const Color(0xFF2563EB),
+                          member: member,
                         ),
                     ],
                   ),
@@ -581,3 +595,76 @@ class _EmployeesTabView extends ConsumerWidget {
     );
   }
 }
+
+class _StaffRowActions extends ConsumerWidget {
+  const _StaffRowActions({
+    required this.id,
+    required this.name,
+    required this.roleName,
+    required this.isActive,
+    required this.color,
+    required this.member,
+  });
+
+  final int id;
+  final String name;
+  final String roleName;
+  final bool isActive;
+  final Color color;
+  final ShopStaffMember member;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isSuperAdmin = ref.watch(authProvider).role == UserRole.superAdmin;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (isSuperAdmin)
+          IconButton(
+            icon: Icon(Icons.swap_horiz_rounded, color: color, size: 20),
+            tooltip: 'Move Location',
+            onPressed: () => moveLocationEmployee(
+              context,
+              ref,
+              locationId: 0,
+              member: member,
+            ),
+          ),
+        IconButton(
+          icon: Icon(Icons.key_rounded, color: color, size: 20),
+          tooltip: 'Change Password',
+          onPressed: () => ChangePasswordDialog.show(
+            context,
+            userId: id,
+            userName: name,
+            role: roleName,
+          ),
+        ),
+        Column(
+          children: [
+            Switch(
+              value: isActive,
+              activeThumbColor: const Color(0xFF006B2C),
+              onChanged: (val) => _toggleStaffActive(
+                context,
+                ref,
+                id: id,
+                name: name,
+                nextActive: val,
+              ),
+            ),
+            Text(
+              isActive ? 'Active' : 'Inactive',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: isActive ? const Color(0xFF006B2C) : Colors.grey,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+

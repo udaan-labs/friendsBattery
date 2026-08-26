@@ -387,24 +387,12 @@ class SalesRepository {
   _buildAdminWhereClause(filters) {
     const { search, sellerId, sellerIds, fromDate, toDate, shipmentStatus } = filters;
 
-    const where = {};
+    const where = this._sellerScopeWhere(filters);
 
-    if (sellerId) {
-      where.sellerId = BigInt(sellerId);
-    } else if (sellerIds && Array.isArray(sellerIds)) {
-      if (sellerIds.length === 0) {
-        // No sellers in shop → empty result
-        where.sellerId = { in: [] };
-      } else {
-        where.sellerId = { in: sellerIds.map((id) => BigInt(id)) };
-      }
-    }
-
-    if (fromDate && toDate) {
-      where.soldAt = {
-        gte: new Date(fromDate),
-        lte: new Date(toDate),
-      };
+    if (fromDate || toDate) {
+      where.soldAt = {};
+      if (fromDate) where.soldAt.gte = new Date(fromDate);
+      if (toDate) where.soldAt.lte = new Date(toDate);
     }
 
     if (search && search.trim().length > 0) {
@@ -496,6 +484,79 @@ class SalesRepository {
   async countAdminSalesHistory(filters) {
     const where = this._buildAdminWhereClause(filters);
     return prisma.salesTransaction.count({ where });
+  }
+
+  /**
+   * Fetch Service Bills for Admin history
+   */
+  _sellerScopeWhere(filters) {
+    const { sellerId, sellerIds } = filters || {};
+    if (sellerId) return { sellerId: BigInt(sellerId) };
+    if (sellerIds && Array.isArray(sellerIds)) {
+      return { sellerId: { in: sellerIds.map((id) => BigInt(id)) } };
+    }
+    return {};
+  }
+
+  /**
+   * Fetch Service Bills for Admin history
+   */
+  async getAdminServiceBills(filters) {
+    const where = this._sellerScopeWhere(filters);
+    if (filters.fromDate || filters.toDate) {
+      where.createdAt = {};
+      if (filters.fromDate) where.createdAt.gte = new Date(filters.fromDate);
+      if (filters.toDate) where.createdAt.lte = new Date(filters.toDate);
+    }
+    if (filters.search && filters.search.trim().length > 0) {
+      const clean = this._sanitizeSearch(filters.search);
+      where.OR = [
+        { customer: { name: { contains: clean, mode: 'insensitive' } } },
+        { seller: { userName: { contains: clean, mode: 'insensitive' } } },
+        { seller: { shopName: { contains: clean, mode: 'insensitive' } } },
+        { vehicleNumber: { contains: clean, mode: 'insensitive' } },
+        { place: { contains: clean, mode: 'insensitive' } },
+      ];
+    }
+    return prisma.serviceBill.findMany({
+      where,
+      include: {
+        customer: true,
+        seller: { select: { id: true, userName: true, shopName: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+  }
+
+  /**
+   * Fetch Battery Rents for Admin history
+   */
+  async getAdminBatteryRents(filters) {
+    const where = this._sellerScopeWhere(filters);
+    if (filters.fromDate || filters.toDate) {
+      where.rentedAt = {};
+      if (filters.fromDate) where.rentedAt.gte = new Date(filters.fromDate);
+      if (filters.toDate) where.rentedAt.lte = new Date(filters.toDate);
+    }
+    if (filters.search && filters.search.trim().length > 0) {
+      const clean = this._sanitizeSearch(filters.search);
+      where.OR = [
+        { customer: { name: { contains: clean, mode: 'insensitive' } } },
+        { seller: { userName: { contains: clean, mode: 'insensitive' } } },
+        { seller: { shopName: { contains: clean, mode: 'insensitive' } } },
+        { serialNumber: { contains: clean, mode: 'insensitive' } },
+      ];
+    }
+    return prisma.batteryRent.findMany({
+      where,
+      include: {
+        customer: true,
+        seller: { select: { id: true, userName: true, shopName: true } },
+      },
+      orderBy: { rentedAt: 'desc' },
+      take: 100,
+    });
   }
 }
 
