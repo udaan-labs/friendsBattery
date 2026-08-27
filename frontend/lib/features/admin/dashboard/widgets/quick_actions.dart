@@ -1,45 +1,87 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 
-class QuickActions extends StatelessWidget {
+class QuickActions extends ConsumerWidget {
   const QuickActions({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isSmall = ResponsiveHelper.isSmallPhone(context);
     final titleSize = isSmall ? 16.0 : 18.0;
+    final isSuperAdmin = ref.watch(authProvider).role == UserRole.superAdmin;
 
-    final actions = [
+    // Super Admin: catalog + org-wide sales (no owned inventory). Shop Admin: stock + sales.
+    final actions = <_ActionItemData>[
+      if (isSuperAdmin)
+        _ActionItemData(
+          title: 'Add Product',
+          subtitle: 'Name, model, or configure',
+          icon: Icons.add_circle_outline_rounded,
+          route: '/admin/add-product',
+        ),
+
+      if (!isSuperAdmin) ...[
+        _ActionItemData(
+          title: 'Add Stock',
+          subtitle: 'Add new inventory items',
+          icon: Icons.add_box_outlined,
+          route: '/admin/add-stock',
+        ),
+        _ActionItemData(
+          title: 'Assign Stock',
+          subtitle: 'Transfer stock to seller',
+          icon: Icons.move_to_inbox_outlined,
+          route: '/admin/shipments/create',
+        ),
+      ],
+      if (isSuperAdmin)
+        _ActionItemData(
+          title: 'Add Admin',
+          subtitle: 'Shop or warehouse admin',
+          icon: Icons.admin_panel_settings_outlined,
+          route: '/admin/add-admin',
+        ),
+      if (isSuperAdmin)
+        _ActionItemData(
+          title: 'Accounts',
+          subtitle: 'Admins, sellers, employees · deactivate',
+          icon: Icons.manage_accounts_outlined,
+          route: '/admin/accounts',
+        ),
       _ActionItemData(
-        title: 'Add Stock',
-        subtitle: 'Add new inventory items',
-        icon: Icons.add_box_outlined,
-        route: '/admin/add-stock',
+        title: 'Staff',
+        subtitle: 'Sellers & employees across shops',
+        icon: Icons.people_outline_rounded,
+        route: '/admin/sellers',
       ),
+      if (!isSuperAdmin) ...[
+        _ActionItemData(
+          title: 'Create Bill',
+          subtitle: 'Sell from admin stock',
+          icon: Icons.receipt_long_outlined,
+          route: '/admin/create-bill',
+        ),
+        _ActionItemData(
+          title: 'Service Bill',
+          subtitle: 'Check, charge, jumpstart…',
+          icon: Icons.build_circle_outlined,
+          route: '/admin/service-bill',
+        ),
+        _ActionItemData(
+          title: 'Battery Rent',
+          subtitle: 'Deposit out · fee + refund in',
+          icon: Icons.battery_charging_full,
+          route: '/admin/battery-rent',
+        ),
+      ],
       _ActionItemData(
-        title: 'Assign Stock',
-        subtitle: 'Transfer stock to seller',
-        icon: Icons.move_to_inbox_outlined,
-        route: '/admin/shipments/create',
-      ),
-      _ActionItemData(
-        title: 'Add Seller',
-        subtitle: 'Create new seller account',
-        icon: Icons.person_add_alt_1_outlined,
-        route: '/admin/add-seller',
-      ),
-      _ActionItemData(
-        title: 'View Sales',
-        subtitle: 'Browse all sales transactions',
-        icon: Icons.point_of_sale_outlined,
-        route: '/admin/sales',
-      ),
-      _ActionItemData(
-        title: 'Shipments',
-        subtitle: 'Track stock transfers',
-        icon: Icons.local_shipping_outlined,
-        route: '/admin/shipments',
+        title: 'Checked-in staff',
+        subtitle: 'Live GPS at check-in',
+        icon: Icons.my_location_outlined,
+        route: '/admin/checked-in',
       ),
     ];
 

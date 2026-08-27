@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+import '../../../../shared/utils/app_formatters.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 import '../models/seller_sale.dart';
 
@@ -11,7 +11,7 @@ class SellerSaleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final formattedDate = DateFormat('dd MMM yyyy, hh:mm a').format(sale.soldAt);
+    final formattedDate = formatAppDateTime(sale.soldAt);
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: 8, horizontal: ResponsiveHelper.responsiveHorizontalMargin(context)),

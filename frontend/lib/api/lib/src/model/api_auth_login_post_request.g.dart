@@ -11,13 +11,27 @@ class _$ApiAuthLoginPostRequest extends ApiAuthLoginPostRequest {
   final String userId;
   @override
   final String password;
+  @override
+  final String? deviceId;
+  @override
+  final String? ipAddress;
+  @override
+  final String? appVersion;
+  @override
+  final String? firebaseToken;
 
   factory _$ApiAuthLoginPostRequest([
     void Function(ApiAuthLoginPostRequestBuilder)? updates,
   ]) => (ApiAuthLoginPostRequestBuilder()..update(updates))._build();
 
-  _$ApiAuthLoginPostRequest._({required this.userId, required this.password})
-    : super._();
+  _$ApiAuthLoginPostRequest._({
+    required this.userId,
+    required this.password,
+    this.deviceId,
+    this.ipAddress,
+    this.appVersion,
+    this.firebaseToken,
+  }) : super._();
   @override
   ApiAuthLoginPostRequest rebuild(
     void Function(ApiAuthLoginPostRequestBuilder) updates,
@@ -32,7 +46,11 @@ class _$ApiAuthLoginPostRequest extends ApiAuthLoginPostRequest {
     if (identical(other, this)) return true;
     return other is ApiAuthLoginPostRequest &&
         userId == other.userId &&
-        password == other.password;
+        password == other.password &&
+        deviceId == other.deviceId &&
+        ipAddress == other.ipAddress &&
+        appVersion == other.appVersion &&
+        firebaseToken == other.firebaseToken;
   }
 
   @override
@@ -40,6 +58,10 @@ class _$ApiAuthLoginPostRequest extends ApiAuthLoginPostRequest {
     var _$hash = 0;
     _$hash = $jc(_$hash, userId.hashCode);
     _$hash = $jc(_$hash, password.hashCode);
+    _$hash = $jc(_$hash, deviceId.hashCode);
+    _$hash = $jc(_$hash, ipAddress.hashCode);
+    _$hash = $jc(_$hash, appVersion.hashCode);
+    _$hash = $jc(_$hash, firebaseToken.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -48,7 +70,11 @@ class _$ApiAuthLoginPostRequest extends ApiAuthLoginPostRequest {
   String toString() {
     return (newBuiltValueToStringHelper(r'ApiAuthLoginPostRequest')
           ..add('userId', userId)
-          ..add('password', password))
+          ..add('password', password)
+          ..add('deviceId', deviceId)
+          ..add('ipAddress', ipAddress)
+          ..add('appVersion', appVersion)
+          ..add('firebaseToken', firebaseToken))
         .toString();
   }
 }
@@ -66,6 +92,23 @@ class ApiAuthLoginPostRequestBuilder
   String? get password => _$this._password;
   set password(String? password) => _$this._password = password;
 
+  String? _deviceId;
+  String? get deviceId => _$this._deviceId;
+  set deviceId(String? deviceId) => _$this._deviceId = deviceId;
+
+  String? _ipAddress;
+  String? get ipAddress => _$this._ipAddress;
+  set ipAddress(String? ipAddress) => _$this._ipAddress = ipAddress;
+
+  String? _appVersion;
+  String? get appVersion => _$this._appVersion;
+  set appVersion(String? appVersion) => _$this._appVersion = appVersion;
+
+  String? _firebaseToken;
+  String? get firebaseToken => _$this._firebaseToken;
+  set firebaseToken(String? firebaseToken) =>
+      _$this._firebaseToken = firebaseToken;
+
   ApiAuthLoginPostRequestBuilder() {
     ApiAuthLoginPostRequest._defaults(this);
   }
@@ -75,6 +118,10 @@ class ApiAuthLoginPostRequestBuilder
     if ($v != null) {
       _userId = $v.userId;
       _password = $v.password;
+      _deviceId = $v.deviceId;
+      _ipAddress = $v.ipAddress;
+      _appVersion = $v.appVersion;
+      _firebaseToken = $v.firebaseToken;
       _$v = null;
     }
     return this;
@@ -107,6 +154,10 @@ class ApiAuthLoginPostRequestBuilder
             r'ApiAuthLoginPostRequest',
             'password',
           ),
+          deviceId: deviceId,
+          ipAddress: ipAddress,
+          appVersion: appVersion,
+          firebaseToken: firebaseToken,
         );
     replace(_$result);
     return _$result;

@@ -1,49 +1,40 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:friends_battery_api/friends_battery_api.dart';
 import '../../../../core/network/api_client_provider.dart';
-import '../services/dashboard_api_service.dart';
-import '../models/dashboard_stats.dart';
+import '../../../shared/products/providers/product_catalog_providers.dart';
 
-final dashboardApiServiceProvider = Provider<DashboardApiService>((ref) {
-  final dio = ref.watch(apiClientProvider).dio;
-  return DashboardApiService(dio: dio);
+DashboardApi _dashboard(Ref ref) => ref.watch(apiClientProvider).getDashboardApi();
+
+final kpiProvider = FutureProvider<AdminDashboardStats>((ref) async {
+  final response = await _dashboard(ref).apiDashboardStatsGet();
+  final d = response.data?.data;
+  if (d == null) {
+    throw Exception(response.data?.message ?? 'Failed to load dashboard stats');
+  }
+  return d;
 });
 
-final kpiProvider = FutureProvider<DashboardStats>((ref) async {
-  return ref.watch(dashboardApiServiceProvider).getDashboardStats();
+/// GET /api/dashboard/recent-activity — OpenAPI [ActivityItem] list.
+final recentActivityProvider = FutureProvider<List<ActivityItem>>((ref) async {
+  final response = await _dashboard(ref).apiDashboardRecentActivityGet();
+  return response.data?.data?.toList() ?? [];
 });
 
-/// Fetches real recent activity from GET /api/dashboard/recent-activity.
-final recentActivityProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final dio = ref.watch(apiClientProvider).dio;
-  final response = await dio.get('/api/dashboard/recent-activity');
-  final body = response.data;
-  final List<dynamic> rawList =
-      (body is Map && body['data'] is List) ? body['data'] : (body is List ? body : []);
+/// Pull-to-refresh for admin dashboard cards.
+Future<void> refreshAdminDashboard(WidgetRef ref) async {
+  await Future.wait([
+    _safeRefresh(ref, kpiProvider, 'KPIs'),
+    _safeRefresh(ref, recentActivityProvider, 'Recent Activity'),
+    _safeRefresh(ref, productNamesProvider, 'Products'),
+  ]);
+}
 
-  return rawList.whereType<Map<String, dynamic>>().map((item) {
-    // Convert ISO time to a human-readable relative string
-    final isoTime = item['time'] as String? ?? '';
-    String timeLabel = '';
-    if (isoTime.isNotEmpty) {
-      final dt = DateTime.tryParse(isoTime);
-      if (dt != null) {
-        final diff = DateTime.now().difference(dt);
-        if (diff.inMinutes < 1) {
-          timeLabel = 'Just now';
-        } else if (diff.inMinutes < 60) {
-          timeLabel = '${diff.inMinutes}m ago';
-        } else if (diff.inHours < 24) {
-          timeLabel = '${diff.inHours}h ago';
-        } else {
-          timeLabel = '${diff.inDays}d ago';
-        }
-      }
-    }
-    return {
-      'title': item['title'] ?? '',
-      'subtitle': item['subtitle'] ?? '',
-      'time': timeLabel,
-      'icon': item['icon'] ?? 'notifications',
-    };
-  }).toList();
-});
+Future<void> _safeRefresh(WidgetRef ref, FutureProvider provider, String name) async {
+  try {
+    final _ = await ref.refresh(provider.future);
+  } catch (e) {
+    developer.log('Failed to refresh $name', error: e);
+  }
+}

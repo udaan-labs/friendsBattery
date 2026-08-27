@@ -59,17 +59,19 @@ List<SellerData> mockSellersList() {
 }
 
 SellerDetailsData mockSellerDetails() {
-  return SellerDetailsData({
-    'shop_name': 'Test Shop',
-    'user_name': 'TestSeller',
-    'user_number': '9876543210',
-    'is_active': true,
-    'is_verified': true,
-    'statistics': {'stock': 50, 'products': 10, 'sales': 100, 'returns': 2},
-    'inventory': [
-      {'product_name': 'Battery Ultra', 'model': 'X100', 'category': 'Automotive', 'quantity': 10, 'min_price': 1500.0},
-    ],
-  });
+  return SellerDetailsData(
+    shopName: 'Test Shop',
+    userName: 'TestSeller',
+    userNumber: '9876543210',
+    isActive: true,
+    isVerified: true,
+    locationLabel: 'Main Shop · SHOP-01',
+    stock: 50,
+    products: 10,
+    sales: 100,
+    returns: 2,
+    inventory: const [],
+  );
 }
 
 List<ShipmentSummaryModel> mockShipmentSummaries() {

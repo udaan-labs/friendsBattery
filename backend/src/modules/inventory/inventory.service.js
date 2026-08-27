@@ -1,6 +1,13 @@
 const crypto = require('crypto');
 const inventoryRepository = require('./inventory.repository');
+const { resolveUnitScope } = require('./inventory.scope');
+const { getDefaultWarehouseId, getUserLocationId } = require('../../shared/utils/location.util');
 const { prisma } = require('../../config/db');
+const { httpError } = require('../../shared/utils/http-error');
+const { assertAccess } = require('../../shared/utils/access.util');
+const { isAdminLikeRole } = require('../../shared/utils/role.util');
+const ROLES = require('../../shared/constants/roles');
+const shopsRepository = require('../shops/shops.repository');
 
 /**
  * Inventory Service
@@ -10,19 +17,51 @@ const { prisma } = require('../../config/db');
  * Does not access Express req/res directly.
  */
 class InventoryService {
+  _emptyInventoryPage(page, limit) {
+    return {
+      data: [],
+      pagination: {
+        total: 0,
+        page: Number(page),
+        limit: Number(limit),
+        total_pages: 0
+      }
+    };
+  }
+
   /**
    * Fetch inventory for a specific user.
-   * Input: userId, search, page, limit
-   * Output: Array of inventory items mapped to response format
+   * Seller: owner_id = seller. Employee: current_location_id = employee.location_id.
+   * SA/Admin may pass filterLocationId = units physically at that location.
    */
-  async getInventory(userId, role, { search, page = 1, limit = 10, includeOutOfStock = false }) {
+  async getInventory(userId, role, { search, page = 1, limit = 10, includeOutOfStock = false, locationId, filterLocationId, actor } = {}) {
     const skip = (page - 1) * limit;
     const includeOOS = String(includeOutOfStock) === 'true';
 
+    let unitScope;
+    if (filterLocationId != null && isAdminLikeRole(role)) {
+      const location = await shopsRepository.findLocationById(filterLocationId);
+      if (!location) {
+        throw httpError(404, 'Location not found');
+      }
+      assertAccess(actor || { id: userId, role, locationId }, {
+        kind: 'location',
+        locationId: Number(location.id),
+        warehouseId:
+          location.warehouseId != null ? Number(location.warehouseId) : null,
+      });
+      unitScope = { currentLocationId: BigInt(location.id) };
+    } else {
+      unitScope = await resolveUnitScope(userId, role, locationId);
+      if (!unitScope) {
+        return this._emptyInventoryPage(page, limit);
+      }
+    }
+
     let products, total;
     [products, total] = await Promise.all([
-      inventoryRepository.findInventory(userId, role, { search, skip, take: limit, includeOutOfStock: includeOOS }),
-      inventoryRepository.countInventory(userId, role, { search, includeOutOfStock: includeOOS })
+      inventoryRepository.findInventory(unitScope, { search, skip, take: limit, includeOutOfStock: includeOOS }),
+      inventoryRepository.countInventory(unitScope, { search, includeOutOfStock: includeOOS })
     ]);
 
     return {
@@ -38,7 +77,7 @@ class InventoryService {
         min_unit_count_seller: Number(p.minUnitCountSeller),
         min_unit_count_admin: Number(p.minUnitCountAdmin),
         on_sale: p.onSale,
-        is_low_stock: role === 'ADMIN' 
+        is_low_stock: isAdminLikeRole(role)
           ? p._count.units <= Number(p.minUnitCountAdmin)
           : p._count.units <= Number(p.minUnitCountSeller)
       })),
@@ -56,14 +95,21 @@ class InventoryService {
    * Input: userId, productId
    * Output: Inventory item details
    */
-  async getInventoryItem(userId, role, productId) {
-    let product;
-    product = await inventoryRepository.findInventoryByProduct(userId, role, productId);
+  async getInventoryItem(userId, role, productId, locationId) {
+    const loc = (locationId != null && isAdminLikeRole(role))
+      ? await shopsRepository.findLocationById(locationId)
+      : null;
+    const unitScope = loc
+      ? { currentLocationId: BigInt(loc.id) }
+      : await resolveUnitScope(userId, role, locationId);
+    if (!unitScope) {
+      throw httpError(404, 'Inventory item not found');
+    }
+
+    const product = await inventoryRepository.findInventoryByProduct(unitScope, productId);
     
     if (!product) {
-      const error = new Error('Inventory item not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Inventory item not found');
     }
 
     return {
@@ -72,15 +118,15 @@ class InventoryService {
       product_model_id: Number(product.productModelId),
       brand: product.productName?.name || '',
       model: product.productModel?.name || '',
-      quantity: product._count.units,
+      quantity: product._count?.units ?? 0,
       min_price: Number(product.minPrice),
       offer_price: product.offerPrice ? Number(product.offerPrice) : null,
       min_unit_count_seller: Number(product.minUnitCountSeller),
       min_unit_count_admin: Number(product.minUnitCountAdmin),
       on_sale: product.onSale,
-      is_low_stock: role === 'ADMIN'
-        ? product._count.units <= Number(product.minUnitCountAdmin)
-        : product._count.units <= Number(product.minUnitCountSeller),
+      is_low_stock: isAdminLikeRole(role)
+        ? (product._count?.units ?? 0) <= Number(product.minUnitCountAdmin)
+        : (product._count?.units ?? 0) <= Number(product.minUnitCountSeller),
       serial_numbers: product.units?.map(u => u.serialNumber) || []
     };
   }
@@ -95,25 +141,48 @@ class InventoryService {
       return { success: true, message: 'No adjustment needed' };
     }
 
+    // Hard cap — prevents accidental / abusive million-unit inserts
+    if (Math.abs(Number(adjustment_quantity)) > 500) {
+      throw httpError(400, 'Adjustment quantity cannot exceed 500 units per request');
+    }
+
     const productIdBig = BigInt(product_id);
     const userIdBig = BigInt(user_id);
+
+    // Never assign inventory ownership to EMPLOYEE / unknown roles
+    const owner = await prisma.user.findUnique({
+      where: { id: userIdBig },
+      select: { id: true, role: true },
+    });
+    if (
+      !owner ||
+      (owner.role !== 'ADMIN' &&
+        owner.role !== 'SUPER_ADMIN' &&
+        owner.role !== 'SELLER')
+    ) {
+      throw httpError(400, 'Adjustment target must be an ADMIN, SUPER_ADMIN, or SELLER user');
+    }
 
     // Wrap in a transaction to ensure atomicity
     return prisma.$transaction(async (tx) => {
       if (adjustment_quantity > 0) {
+        const locationId =
+          (await getUserLocationId(userIdBig, tx)) || (await getDefaultWarehouseId(tx));
         // Positive adjustment: increase stock by creating new product units
         const unitsData = Array.from({ length: adjustment_quantity }).map(() => ({
           productId: productIdBig,
           ownerId: userIdBig,
           serialNumber: `ADJ-${Date.now()}-${crypto.randomUUID()}`,
-          status: 'AVAILABLE'
+          status: 'AVAILABLE',
+          ...(locationId ? { currentLocationId: locationId } : {}),
         }));
 
         const createdUnits = await inventoryRepository.createInventory(unitsData, tx);
         const auditLogs = createdUnits.map(unit => ({
           productUnitId: unit.id,
           toUserId: userIdBig,
-          action: 'RECEIVED' // Using RECEIVED as fallback for ADJUSTED_IN
+          action: 'RECEIVED', // Using RECEIVED as fallback for ADJUSTED_IN
+          ...(locationId ? { toLocationId: locationId } : {}),
         }));
         await inventoryRepository.createInventoryTransaction(auditLogs, tx);
       } else {
@@ -122,9 +191,7 @@ class InventoryService {
         const availableUnits = await inventoryRepository.findAvailableUnits(userIdBig, productIdBig, decreaseAmount, tx);
 
         if (availableUnits.length < decreaseAmount) {
-          const error = new Error('Not enough stock to decrease');
-          error.statusCode = 400;
-          throw error;
+          throw httpError(400, 'Not enough stock to decrease');
         }
 
         const unitIds = availableUnits.map(u => u.id);
@@ -154,9 +221,7 @@ class InventoryService {
     // Validate seller existence
     const seller = await inventoryRepository.findSeller(sellerId);
     if (!seller || seller.role !== 'SELLER') {
-      const error = new Error('Invalid seller');
-      error.statusCode = 400;
-      throw error;
+      throw httpError(400, 'Invalid seller');
     }
 
     // Atomicity is required for inventory transfers to avoid partial stock updates
@@ -170,9 +235,7 @@ class InventoryService {
         const availableUnits = await inventoryRepository.findAvailableUnits(adminId, item.product_id, item.quantity, tx);
 
         if (availableUnits.length < item.quantity) {
-          const error = new Error(`Not enough stock for product ID: ${item.product_id}`);
-          error.statusCode = 400;
-          throw error;
+          throw httpError(400, `Not enough stock for product ID: ${item.product_id}`);
         }
 
         const ids = availableUnits.map(u => u.id);
@@ -186,8 +249,19 @@ class InventoryService {
         totalProductsShipped += item.quantity;
       }
 
-      // Decrease admin inventory & Increase seller inventory (Changing ownerId)
-      await inventoryRepository.updateInventory(unitIdsToTransfer, { ownerId: sellerId, ownerType: 'SELLER' }, tx);
+      const fromLoc = await getDefaultWarehouseId(tx);
+      const toLoc = (await getUserLocationId(sellerId, tx)) || null;
+
+      // Ownership + location (seller location if set)
+      await inventoryRepository.updateInventory(
+        unitIdsToTransfer,
+        {
+          ownerId: sellerId,
+          ownerType: 'SELLER',
+          ...(toLoc ? { currentLocationId: toLoc } : {}),
+        },
+        tx
+      );
 
       // Create shipment record
       const shipment = await inventoryRepository.createShipment({
@@ -213,7 +287,9 @@ class InventoryService {
         productUnitId: unitId,
         fromUserId: adminId,
         toUserId: sellerId,
-        action: 'TRANSFERRED'
+        action: 'TRANSFERRED',
+        ...(fromLoc ? { fromLocationId: fromLoc } : {}),
+        ...(toLoc ? { toLocationId: toLoc } : {}),
       }));
       await inventoryRepository.createInventoryTransaction(auditLogs, tx);
 
@@ -233,17 +309,22 @@ class InventoryService {
   async getHistory(userId, role, { from_date, to_date, product_id, seller_id, page = 1, limit = 10 }) {
     const filters = {};
 
-    // Apply role-based filtering
+    // Apply role-based filtering (EMPLOYEE / unknown → no full-ledger dump)
     if (role === 'SELLER') {
       filters.OR = [
         { fromUserId: userId },
         { toUserId: userId }
       ];
-    } else if (role === 'ADMIN' && seller_id) {
-      filters.OR = [
-        { fromUserId: seller_id },
-        { toUserId: seller_id }
-      ];
+    } else if (isAdminLikeRole(role)) {
+      if (seller_id) {
+        filters.OR = [
+          { fromUserId: seller_id },
+          { toUserId: seller_id }
+        ];
+      }
+    } else {
+      // EMPLOYEE must not see admin/seller ledger via this endpoint
+      return [];
     }
 
     // Apply product filter
@@ -273,19 +354,24 @@ class InventoryService {
   }
 
   /**
-   * Update stock (Admin only).
-   * Input: adminId, payload
-   * Output: updated stock details
+   * Update stock (Admin / Super Admin).
+   * SA: optional location_id (any active location / warehouse).
+   * Shop Admin: always own users.location_id (client location_id ignored).
+   *
+   * @param {number} adminId
+   * @param {object} payload
+   * @param {{ role?: string, locationId?: number|null }} [actor]
    */
-  async updateStock(adminId, { productNameId, productModelId, quantity, minSellPrice, minUnitCountAdmin, minUnitCountSeller, onSale }) {
+  async updateStock(adminId, { productNameId, productModelId, quantity, serial_numbers, minSellPrice, minUnitCountAdmin, minUnitCountSeller, onSale, location_id }, actor = {}) {
+    const role = actor.role;
+    const actorLocationId = actor.locationId != null ? Number(actor.locationId) : null;
+
     // 1. Validate product name existence
     const productName = await prisma.productName.findUnique({
       where: { id: BigInt(productNameId) }
     });
     if (!productName) {
-      const error = new Error('Product name not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Product name not found');
     }
 
     // 2. Validate product model existence and that it belongs to the product name
@@ -293,10 +379,38 @@ class InventoryService {
       where: { id: BigInt(productModelId) }
     });
     if (!productModel || Number(productModel.productNameId) !== productNameId) {
-      const error = new Error('Product model not found or does not belong to the selected product name');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Product model not found or does not belong to the selected product name');
     }
+
+    // Resolve target location (req.user.locationId is DB-fresh each request)
+    let resolvedLocationId = null;
+    if (role === 'ADMIN') {
+      if (actorLocationId == null) {
+        throw httpError(400, 'Your account has no shop location. Contact Super Admin before adding stock.');
+      }
+      const loc = await prisma.location.findFirst({
+        where: { id: BigInt(actorLocationId), isActive: true },
+        select: { id: true },
+      });
+      if (!loc) {
+        throw httpError(400, 'Shop location not found or inactive');
+      }
+      resolvedLocationId = loc.id;
+    } else if (location_id != null) {
+      const loc = await prisma.location.findFirst({
+        where: { id: BigInt(location_id), isActive: true },
+        select: { id: true },
+      });
+      if (!loc) {
+        throw httpError(400, 'Location not found or inactive');
+      }
+      resolvedLocationId = loc.id;
+    }
+
+    const serials = Array.isArray(serial_numbers)
+      ? serial_numbers.map((s) => String(s).trim()).filter(Boolean)
+      : [];
+    const addCount = serials.length > 0 ? serials.length : (quantity || 0);
 
     return prisma.$transaction(async (tx) => {
       // Find or create product
@@ -315,7 +429,7 @@ class InventoryService {
             productModelId: BigInt(productModelId),
             minPrice: minSellPrice !== undefined ? minSellPrice : 0,
             onSale: onSale !== undefined ? onSale : false,
-            stockQuantity: quantity ?? 0,
+            stockQuantity: addCount,
             minUnitCountAdmin: minUnitCountAdmin !== undefined ? minUnitCountAdmin : 0,
             minUnitCountSeller: minUnitCountSeller !== undefined ? minUnitCountSeller : 0
           }
@@ -325,7 +439,7 @@ class InventoryService {
         product = await tx.product.update({
           where: { id: product.id },
           data: {
-            ...(quantity ? { stockQuantity: { increment: quantity } } : {}),
+            ...(addCount ? { stockQuantity: { increment: addCount } } : {}),
             ...(minSellPrice !== undefined ? { minPrice: minSellPrice } : {}),
             ...(onSale !== undefined ? { onSale } : {}),
             ...(minUnitCountAdmin !== undefined ? { minUnitCountAdmin } : {}),
@@ -334,14 +448,55 @@ class InventoryService {
         });
       }
 
-      if (quantity && quantity > 0) {
-        const unitsData = Array.from({ length: quantity }).map(() => ({
-          productId: product.id,
-          ownerId: adminId,
-          serialNumber: `STK-${Date.now()}-${crypto.randomUUID()}`,
-          status: 'AVAILABLE'
-        }));
-        await inventoryRepository.createInventory(unitsData, tx);
+      let placedLocationId = resolvedLocationId;
+      if (addCount > 0) {
+        if (!placedLocationId) {
+          placedLocationId =
+            (await getUserLocationId(adminId, tx)) || (await getDefaultWarehouseId(tx));
+        }
+        const loc = placedLocationId ? { currentLocationId: placedLocationId } : {};
+        if (serials.length) {
+          const taken = await tx.productUnit.findFirst({
+            where: { serialNumber: { in: serials } },
+            select: { serialNumber: true },
+          });
+          if (taken) {
+            throw httpError(400, `Serial number already exists: ${taken.serialNumber}`);
+          }
+        }
+        const unitsData = serials.length
+          ? serials.map((serialNumber) => ({
+              productId: product.id,
+              ownerId: adminId,
+              serialNumber,
+              status: 'AVAILABLE',
+              ...loc,
+            }))
+          : Array.from({ length: addCount }).map(() => ({
+              productId: product.id,
+              ownerId: adminId,
+              serialNumber: `STK-${Date.now()}-${crypto.randomUUID()}`,
+              status: 'AVAILABLE',
+              ...loc,
+            }));
+        let createdUnits;
+        try {
+          createdUnits = await inventoryRepository.createInventory(unitsData, tx);
+        } catch (err) {
+          if (err.code === 'P2002') {
+            throw httpError(400, 'Serial number already exists');
+          }
+          throw err;
+        }
+        await inventoryRepository.createInventoryTransaction(
+          createdUnits.map((unit) => ({
+            productUnitId: unit.id,
+            toUserId: BigInt(adminId),
+            action: 'RECEIVED',
+            ...(placedLocationId ? { toLocationId: placedLocationId } : {}),
+          })),
+          tx
+        );
       }
 
       return {
@@ -351,7 +506,8 @@ class InventoryService {
         minSellPrice: Number(product.minPrice),
         minUnitCountAdmin: Number(product.minUnitCountAdmin),
         minUnitCountSeller: Number(product.minUnitCountSeller),
-        onSale: product.onSale
+        onSale: product.onSale,
+        location_id: placedLocationId != null ? Number(placedLocationId) : null,
       };
     });
   }
@@ -359,7 +515,7 @@ class InventoryService {
   /**
    * Fetch details of a product (stock count & min sell price) by product name and model IDs
    */
-  async getProductDetails(userId, role, { productNameId, productModelId }) {
+  async getProductDetails(userId, role, { productNameId, productModelId, locationId }) {
     // 1. Find product
     const product = await prisma.product.findFirst({
       where: {
@@ -376,14 +532,16 @@ class InventoryService {
       };
     }
 
-    // 2. Determine stock based on ProductUnit count
-    let stockCount = await prisma.productUnit.count({
-      where: {
-        productId: product.id,
-        ownerId: BigInt(userId),
-        status: 'AVAILABLE'
-      }
-    });
+    const unitScope = await resolveUnitScope(userId, role, locationId);
+    const stockCount = unitScope
+      ? await prisma.productUnit.count({
+          where: {
+            productId: product.id,
+            ...unitScope,
+            status: 'AVAILABLE'
+          }
+        })
+      : 0;
 
     return {
       productId: Number(product.id),
@@ -393,24 +551,38 @@ class InventoryService {
   }
 
   /**
-   * Fetch available serial numbers for a product owned by a specific user.
+   * Fetch available serial numbers for a product in the user's inventory scope.
    */
-  async getAvailableSerials(userId, { productNameId, productModelId }) {
-    return inventoryRepository.findAvailableSerials(userId, { productNameId, productModelId });
+  async getAvailableSerials(userId, role, { productNameId, productModelId, locationId }) {
+    const unitScope = await resolveUnitScope(userId, role, locationId);
+    if (!unitScope) {
+      return [];
+    }
+    return inventoryRepository.findAvailableSerials(unitScope, { productNameId, productModelId });
   }
 
   /**
    * Fetch inventory details grouped by ProductName -> Product.
-   * Input: userId, role, filters
-   * Output: Grouped inventory details and pagination
+   * Seller: by owner. Employee: by current_location_id.
    */
-  async getInventoryDetails(userId, role, { product_name_id, search, page = 1, limit = 10 }) {
+  async getInventoryDetails(userId, role, { product_name_id, search, page = 1, limit = 10, locationId } = {}) {
     const pageNum = Number(page);
     const limitNum = Number(limit);
     const skip = (pageNum - 1) * limitNum;
 
-    // Filter stock counts to only show the logged-in user's own stock, or all admins' stock if admin
-    const ownerFilter = role === 'ADMIN' ? { owner: { role: 'ADMIN' } } : { ownerId: BigInt(userId) };
+    const unitScope = await resolveUnitScope(userId, role, locationId);
+    if (!unitScope) {
+      return {
+        // Shape matches Swagger / OpenAPI (categories hierarchy) used by admin View Stock.
+        categories: [],
+        pagination: {
+          total: 0,
+          page: Number(page),
+          limit: Number(limit),
+          totalPages: 0
+        }
+      };
+    }
 
     const filters = {
       productNameId: product_name_id,
@@ -427,12 +599,12 @@ class InventoryService {
 
     if (products.length === 0) {
       return {
-        productNames: [],
+        categories: [],
         pagination: {
           total,
           page: Number(page),
           limit: Number(limit),
-          total_pages: Math.ceil(total / limit)
+          totalPages: Math.ceil(total / limitNum) || 0
         }
       };
     }
@@ -442,7 +614,7 @@ class InventoryService {
     const productNameIds = [...new Set(products.map(p => p.productNameId))];
 
     // 3. Fetch product unit aggregates (total, sold, remaining)
-    const unitGroups = await inventoryRepository.aggregateUnitCounts(productIds, ownerFilter);
+    const unitGroups = await inventoryRepository.aggregateUnitCounts(productIds, unitScope);
     const countMap = {};
     for (const group of unitGroups) {
       const pid = Number(group.productId);
@@ -465,14 +637,14 @@ class InventoryService {
     // 4. Fetch ProductName Stats (Total products and total available inventory)
     const productNameStats = await Promise.all(
       productNameIds.map(async (nameId) => {
-        const stats = await inventoryRepository.getProductNameStats(nameId, ownerFilter);
+        const stats = await inventoryRepository.getProductNameStats(nameId, unitScope);
         return { productNameId: nameId, ...stats };
       })
     );
 
     const productNameMap = new Map(productNameStats.map(s => [s.productNameId, s]));
 
-    // 5. Build hierarchy: ProductName -> Product
+    // 5. Build hierarchy: ProductName -> Product (internal)
     const productNames = [];
     for (const product of products) {
       const nameId = product.productNameId;
@@ -503,43 +675,70 @@ class InventoryService {
       });
     }
 
+    // Map to OpenAPI "categories → subcategories → products" for Flutter admin View Stock.
+    const categories = productNames.map((nameNode) => ({
+      categoryId: String(nameNode.productNameId),
+      categoryName: nameNode.productNameLabel,
+      subcategories: [
+        {
+          subcategoryName: 'Models',
+          products: nameNode.products.map((p) => ({
+            productName: p.productModel,
+            totalQuantity: p.totalQuantity,
+            soldQuantity: p.soldQuantity,
+            remainingQuantity: p.remainingQuantity
+          }))
+        }
+      ]
+    }));
+
     return {
-      productNames,
+      categories,
       pagination: {
         total,
         page: Number(page),
         limit: Number(limit),
-        total_pages: Math.ceil(total / limit)
+        totalPages: Math.ceil(total / limitNum) || 0
       }
     };
   }
 
   /**
-   * Scan a serial number to fetch product details for a sale
+   * Scan serial for sale.
+   * Admin/Seller: unit owned by actor. Employee: AVAILABLE at actor's shop location.
    * @param {string} serialNumber
-   * @param {number|string|bigint} sellerId
-   * @returns {Promise<Object>}
+   * @param {{ id: number, role: string, locationId?: number|null }} actor
    */
-  async scanForSale(serialNumber, sellerId) {
+  async scanForSale(serialNumber, actor) {
     const cleanSerial = serialNumber ? serialNumber.trim() : '';
+    const where = {
+      serialNumber: { equals: cleanSerial, mode: 'insensitive' },
+      status: 'AVAILABLE',
+    };
+
+    if (actor.role === ROLES.EMPLOYEE) {
+      if (actor.locationId == null) {
+        throw httpError(400, 'Your account has no shop location. Contact admin.');
+      }
+      where.currentLocationId = BigInt(actor.locationId);
+    } else {
+      where.ownerId = BigInt(actor.id);
+    }
+
     const unit = await prisma.productUnit.findFirst({
-      where: {
-        serialNumber: { equals: cleanSerial, mode: 'insensitive' },
-        ownerId: BigInt(sellerId),
-        status: 'AVAILABLE'
-      },
+      where,
       include: {
         product: {
           include: {
             productName: true,
-            productModel: true
-          }
-        }
-      }
+            productModel: true,
+          },
+        },
+      },
     });
 
     if (!unit) {
-      throw new Error('Product not found in your available inventory');
+      throw httpError(404, 'Product not found in your available inventory');
     }
 
     return {
@@ -548,8 +747,27 @@ class InventoryService {
       productModelId: Number(unit.product.productModelId),
       productName: unit.product.productName.name,
       productModel: unit.product.productModel.name,
-      minSellPrice: Number(unit.product.minPrice)
+      minSellPrice: Number(unit.product.minPrice),
     };
+  }
+
+  /**
+   * Remove a specific serial number unit from inventory (Admin / Super Admin only).
+   */
+  async removeUnit(serialNumber, actor) {
+    if (!isAdminLikeRole(actor.role)) {
+      throw httpError(403, 'Only Admins can remove inventory units');
+    }
+
+    const cleanSerial = serialNumber ? serialNumber.trim() : '';
+    const unit = await inventoryRepository.findUnitBySerial(cleanSerial);
+
+    if (!unit || unit.status !== 'AVAILABLE') {
+      throw httpError(404, 'Available inventory unit not found for this serial number');
+    }
+
+    await inventoryRepository.removeUnit(unit.id, BigInt(actor.id));
+    return { success: true, message: `Serial number ${cleanSerial} removed from inventory` };
   }
 }
 

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_controller.dart';
 import '../../../theme/app_theme.dart';
-import 'package:go_router/go_router.dart';
 import '../../../shared/widgets/responsive_helper.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -18,8 +17,41 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _obscurePassword = true;
 
   @override
+  void dispose() {
+    _userIdController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onLogin() async {
+    final userId = _userIdController.text.trim();
+    final password = _passwordController.text;
+    if (userId.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter User ID and password')),
+      );
+      return;
+    }
+    await ref.read(authControllerProvider.notifier).login(userId, password);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
+
+    ref.listen<AsyncValue<void>>(authControllerProvider, (prev, next) {
+      next.whenOrNull(
+        error: (err, _) {
+          final msg = err.toString().replaceFirst('Exception: ', '');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(msg.isEmpty ? 'Login failed' : msg),
+              backgroundColor: AppTheme.error,
+            ),
+          );
+        },
+      );
+    });
 
     return Scaffold(
       body: Center(
@@ -42,7 +74,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   fontFamily: 'Inter',
                   fontSize: ResponsiveHelper.isSmallPhone(context) ? 24 : 32,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF191C1E),
+                  color: const Color(0xFF191C1E),
                 ),
               ),
               const SizedBox(height: 8),
@@ -52,7 +84,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 style: TextStyle(
                   fontFamily: 'Inter',
                   fontSize: ResponsiveHelper.isSmallPhone(context) ? 14 : 16,
-                  color: Color(0xFF545F73),
+                  color: const Color(0xFF545F73),
                 ),
               ),
               SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 24 : 48),
@@ -62,7 +94,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: const [
                     BoxShadow(
-                      color: Color(0x0A000000), // 4% black
+                      color: Color(0x0A000000),
                       blurRadius: 12,
                       offset: Offset(0, 4),
                     ),
@@ -74,16 +106,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   children: [
                     TextField(
                       controller: _userIdController,
+                      textInputAction: TextInputAction.next,
                       decoration: const InputDecoration(labelText: 'User ID'),
+                      enabled: !authState.isLoading,
                     ),
                     const SizedBox(height: 16),
                     TextField(
                       controller: _passwordController,
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: (_) {
+                        if (!authState.isLoading) _onLogin();
+                      },
                       decoration: InputDecoration(
                         labelText: 'Password',
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                            _obscurePassword
+                                ? Icons.visibility
+                                : Icons.visibility_off,
                           ),
                           onPressed: () {
                             setState(() {
@@ -93,18 +133,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ),
                       obscureText: _obscurePassword,
+                      enabled: !authState.isLoading,
                     ),
-                    SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 20 : 32),
+                    SizedBox(
+                      height: ResponsiveHelper.isSmallPhone(context) ? 20 : 32,
+                    ),
                     if (authState.isLoading)
                       const Center(child: CircularProgressIndicator())
                     else
                       ElevatedButton(
-                        onPressed: () {
-                          ref.read(authControllerProvider.notifier).login(
-                            _userIdController.text,
-                            _passwordController.text,
-                          );
-                        },
+                        onPressed: _onLogin,
                         child: const Text(
                           'Login',
                           style: TextStyle(
@@ -114,13 +152,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ),
                       ),
-                    const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: () {
-                        context.push('/register');
-                      },
-                      child: const Text('New here? Sign up for the first time'),
-                    ),
                   ],
                 ),
               ),

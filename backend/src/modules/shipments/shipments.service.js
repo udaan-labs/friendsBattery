@@ -1,131 +1,144 @@
 const shipmentsRepository = require('./shipments.repository');
 const { prisma } = require('../../config/db');
+const { httpError } = require('../../shared/utils/http-error');
+const ROLES = require('../../shared/constants/roles');
+const {
+  resolveAdminShopScope,
+  resolveShopSellerIds,
+  isUserInShopScope,
+} = require('../../shared/utils/shop-scope.util');
 
+/**
+ * Admin → Seller stock transfer (serial-based).
+ * Uses existing product_units only — does not invent units.
+ */
 class ShipmentsService {
-  async createShipment(data, adminId) {
-    // 1. Validate Seller exists
+  /**
+   * Transfer serials owned by adminId → seller. SA: any seller; shop Admin: own sellers only.
+   */
+  async createShipment(data, adminId, actor = null) {
     const seller = await shipmentsRepository.findSellerById(data.sellerId);
     if (!seller) {
-      const error = new Error('Seller not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Seller not found');
     }
 
-    // 2. Validate each item and prepare batch data
-    const shipmentItemsData = [];
-    const productUnitsToCreate = [];
-    const productStockUpdates = [];
+    if (actor?.role === ROLES.ADMIN) {
+      const scope = resolveAdminShopScope(actor);
+      if (!isUserInShopScope(seller, scope)) {
+        throw httpError(403, 'Forbidden: seller is not under your shop');
+      }
+    }
 
+    const allSerials = [];
+    const perItemSerials = [];
     for (const item of data.items) {
-      // Find product to validate and get its ID
+      const serials = [];
+      for (const raw of item.serial_numbers) {
+        const serial = String(raw).trim();
+        if (!serial) {
+          throw httpError(400, 'Serial number cannot be empty');
+        }
+        serials.push(serial);
+        allSerials.push(serial);
+      }
+      perItemSerials.push(serials);
+    }
+
+    if (new Set(allSerials).size !== allSerials.length) {
+      throw httpError(400, 'Duplicate serial numbers in the transfer request');
+    }
+
+    const resolvedItems = [];
+    for (let i = 0; i < data.items.length; i++) {
+      const item = data.items[i];
       const product = await prisma.product.findFirst({
         where: {
           productNameId: BigInt(item.product_name_id),
-          productModelId: BigInt(item.product_model_id)
-        }
+          productModelId: BigInt(item.product_model_id),
+        },
+        include: {
+          productName: { select: { name: true } },
+          productModel: { select: { name: true } },
+        },
       });
+
       if (!product) {
-        const error = new Error(`Product not found for Name ID ${item.product_name_id} and Model ID ${item.product_model_id}`);
-        error.statusCode = 400;
-        throw error;
+        throw httpError(400, 
+          `Product not found for Name ID ${item.product_name_id} and Model ID ${item.product_model_id}`
+        );
       }
 
-      // Check if any of these serials already exist in the system
-      const existingUnits = await prisma.productUnit.findMany({
-        where: {
-          serialNumber: { in: item.serial_numbers }
-        }
-      });
-      if (existingUnits.length > 0) {
-        const dupes = existingUnits.map(u => u.serialNumber).join(', ');
-        const error = new Error(`The following serial numbers already exist in the system: ${dupes}`);
-        error.statusCode = 400;
-        throw error;
-      }
-
-      // Check sufficient stock
-      if (Number(product.stockQuantity) < item.serial_numbers.length) {
-        const error = new Error(`Insufficient stock for Product Name ID ${item.product_name_id} and Model ID ${item.product_model_id}. Required: ${item.serial_numbers.length}, Available: ${product.stockQuantity}`);
-        error.statusCode = 400;
-        throw error;
-      }
-
-      // Prepare ProductUnit records for batch creation
-      const unitEntries = item.serial_numbers.map(serial => ({
-        productId: product.id,
-        ownerId: BigInt(adminId),
-        ownerType: 'ADMIN',
-        serialNumber: serial,
-        status: 'IN_SHIPMENT'
-      }));
-
-      // Prepare shipment item entries (will link productUnit IDs after creation)
-      const itemEntries = item.serial_numbers.map(() => ({
-        productNameId: product.productNameId,
-        productModelId: product.productModelId,
-        productId: product.id,
-        quantity: 1
-      }));
-
-      productUnitsToCreate.push(...unitEntries);
-      shipmentItemsData.push(...itemEntries);
-
-      // Track stock decrement per product
-      productStockUpdates.push({
-        productId: product.id,
-        decrementBy: item.serial_numbers.length
+      resolvedItems.push({
+        product,
+        serials: perItemSerials[i],
+        pricePerPiece: item.price_per_piece,
       });
     }
 
-    // 3. Generate unique shipment number
-    const count = await prisma.newShipment.count();
-    const shipmentNumber = `SHP-${100 + count + 1}`;
-
-    // 4. Create shipment, product units, and update stock in a single transaction
-    await shipmentsRepository.createShipment({
-      shipmentNumber,
+    const result = await shipmentsRepository.transferUnitsToSeller({
       sellerId: data.sellerId,
-      createdByAdminId: adminId,
-      items: shipmentItemsData,
-      units: productUnitsToCreate,
-      stockUpdates: productStockUpdates
+      adminId,
+      resolvedItems,
     });
 
-    return {
-      success: true,
-      message: 'Shipment created successfully'
-    };
+    return result;
   }
 
   async getPendingShipmentsCount(sellerId) {
     const count = await shipmentsRepository.getPendingShipmentsCount(sellerId);
     return {
-      pendingShipments: count
+      pendingShipments: count,
     };
   }
 
   async getShipments(sellerId) {
     const shipments = await shipmentsRepository.getShipmentsBySeller(sellerId);
-    return shipments.map(s => ({
+    return shipments.map((s) => this._mapSellerShipmentListItem(s));
+  }
+
+  /**
+   * Employee: list shipments for sellers at the same location_id.
+   */
+  async getShipmentsForEmployeeLocation(locationId) {
+    if (locationId == null) return [];
+    const shipments = await shipmentsRepository.getShipmentsBySellerLocationId(locationId);
+    return shipments.map((s) => this._mapSellerShipmentListItem(s));
+  }
+
+  _mapSellerShipmentListItem(s) {
+    return {
       shipmentId: Number(s.id),
       shipmentNumber: s.shipmentNumber,
       status: s.status,
       createdAt: s.createdAt.toISOString().split('T')[0],
       acceptedAt: s.acceptedAt ? s.acceptedAt.toISOString() : null,
-      items: s.items.map(item => ({
+      items: s.items.map((item) => ({
         productName: item.product?.productName?.name || '',
         productModel: item.product?.productModel?.name || '',
-        quantity: item.quantity
-      }))
-    }));
+        quantity: item.quantity,
+      })),
+    };
   }
 
   /**
-   * Get all shipments (Admin view).
+   * @param {{ id: number, role: string, locationId?: number|null }} [user]
    */
-  async getAllShipments() {
-    const shipments = await shipmentsRepository.getAllShipments();
-    return shipments.map(s => ({
+  async getAllShipments(user) {
+    const scope = resolveAdminShopScope(user || {});
+    let shipments;
+    if (scope?.kind === 'shop') {
+      const sellerIds = await resolveShopSellerIds(prisma, scope);
+      const pureSellers = (sellerIds || []).filter(
+        (id) => Number(id) !== Number(scope.adminId)
+      );
+      shipments = await shipmentsRepository.getShipmentsForShopAdmin(
+        scope.adminId,
+        pureSellers
+      );
+    } else {
+      shipments = await shipmentsRepository.getAllShipments();
+    }
+    return shipments.map((s) => ({
       shipmentId: Number(s.id),
       shipmentNumber: s.shipmentNumber,
       status: s.status,
@@ -138,32 +151,55 @@ class ShipmentsService {
       },
       totalProducts: s.items.length,
       totalQuantity: s.items.reduce((sum, item) => sum + item.quantity, 0),
-      items: s.items.map(item => ({
+      items: s.items.map((item) => ({
         productName: item.product?.productName?.name || '',
         productModel: item.product?.productModel?.name || '',
-        quantity: item.quantity
-      }))
+        quantity: item.quantity,
+      })),
     }));
   }
 
-  /**
-   * Get a single shipment by ID with role-based access.
-   * Admin can view any shipment; Seller can only view their own.
-   */
-  async getShipmentById(shipmentId, userId, userRole) {
+  async getShipmentById(shipmentId, userId, userRole, locationId = null) {
     const shipment = await shipmentsRepository.getShipmentById(shipmentId);
 
     if (!shipment) {
-      const error = new Error('Shipment not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Shipment not found');
     }
 
-    // Sellers can only access their own shipments
-    if (userRole === 'SELLER' && Number(shipment.sellerId) !== Number(userId)) {
-      const error = new Error('Forbidden: You can only view your own shipments');
-      error.statusCode = 403;
-      throw error;
+    // Explicit allow-list (default deny) — no fall-through for unknown roles
+    if (userRole === ROLES.SUPER_ADMIN) {
+      // ok
+    } else if (userRole === ROLES.ADMIN) {
+      if (Number(shipment.createdByAdminId) === Number(userId)) {
+        // ok — this admin sent it
+      } else {
+        const seller = await prisma.user.findUnique({
+          where: { id: BigInt(shipment.sellerId) },
+          select: { id: true, parentId: true, locationId: true },
+        });
+        const scope = resolveAdminShopScope({
+          id: userId,
+          role: userRole,
+          locationId,
+        });
+        if (!seller || !isUserInShopScope(seller, scope)) {
+          throw httpError(403, 'Forbidden: You do not have access to this shipment');
+        }
+      }
+    } else if (userRole === 'SELLER') {
+      if (Number(shipment.sellerId) !== Number(userId)) {
+        throw httpError(403, 'Forbidden: You can only view your own shipments');
+      }
+    } else if (userRole === 'EMPLOYEE') {
+      const allowed = await shipmentsRepository.sellerSharesLocation(
+        shipment.sellerId,
+        locationId
+      );
+      if (!allowed) {
+        throw httpError(403, 'Forbidden: Shipment is not for your shop location');
+      }
+    } else {
+      throw httpError(403, 'Forbidden: You do not have access to this shipment');
     }
 
     const totalQuantity = shipment.items.reduce((sum, item) => sum + item.quantity, 0);
@@ -186,45 +222,36 @@ class ShipmentsService {
       },
       totalProducts: shipment.items.length,
       totalQuantity,
-      items: shipment.items.map(item => ({
+      items: shipment.items.map((item) => ({
         id: Number(item.id),
         productName: item.name?.name || '',
         productModel: item.model?.name || '',
         quantity: item.quantity,
         serialNumber: item.productUnit?.serialNumber || null,
-      }))
+      })),
     };
   }
 
+  /**
+   * Seller accept kept for any legacy PENDING shipments.
+   * New transfers complete ownership on admin create (see createShipment).
+   */
   async acceptShipment(shipmentId, sellerId) {
-    // 1. Fetch shipment
     const shipment = await shipmentsRepository.findShipmentById(shipmentId);
     if (!shipment) {
-      const error = new Error('Shipment not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Shipment not found');
     }
 
-    // 2. Verify shipment belongs to logged-in Seller
     if (Number(shipment.sellerId) !== Number(sellerId)) {
-      const error = new Error('Forbidden: You can only accept your own shipments');
-      error.statusCode = 403;
-      throw error;
+      throw httpError(403, 'Forbidden: You can only accept your own shipments');
     }
 
-    // 3. Verify status = PENDING
-    if (shipment.status !== 'PENDING') {
-      const error = new Error(`Shipment cannot be accepted. Current status: ${shipment.status}`);
-      error.statusCode = 400;
-      throw error;
-    }
-
-    // 4. Accept shipment and update inventory
-    await shipmentsRepository.acceptShipment(shipmentId, shipment.items, sellerId);
+    // Status claim + unit lock happen atomically in repository (race-safe)
+    await shipmentsRepository.acceptPendingShipment(shipmentId, shipment.items, sellerId);
 
     return {
       success: true,
-      message: 'Shipment accepted successfully'
+      message: 'Shipment accepted successfully',
     };
   }
 }

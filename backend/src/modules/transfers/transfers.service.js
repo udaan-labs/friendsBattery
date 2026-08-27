@@ -1,4 +1,12 @@
 const transfersRepository = require('./transfers.repository');
+const { httpError } = require('../../shared/utils/http-error');
+const ROLES = require('../../shared/constants/roles');
+const {
+  resolveAdminShopScope,
+  resolveShopSellerIds,
+  isUserInShopScope,
+} = require('../../shared/utils/shop-scope.util');
+const { prisma } = require('../../config/db');
 
 /**
  * Transfers Service
@@ -21,13 +29,19 @@ class TransfersService {
    * Input: data (request body), adminId (authenticated admin user ID)
    * Output: Created shipment summary
    */
-  async createTransfer(data, adminId) {
+  async createTransfer(data, adminId, actor = null) {
     // 1. Validate seller exists
     const seller = await transfersRepository.findSellerById(data.seller_id);
     if (!seller) {
-      const error = new Error('Seller not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Seller not found');
+    }
+
+    // Shop Admin: only ship to own sellers
+    if (actor?.role === ROLES.ADMIN) {
+      const scope = resolveAdminShopScope(actor);
+      if (!isUserInShopScope(seller, scope)) {
+        throw httpError(403, 'Forbidden: seller is not under your shop');
+      }
     }
 
     // 2. Validate each product and check admin inventory
@@ -40,19 +54,15 @@ class TransfersService {
         // Validate product exists
         const product = await transfersRepository.findProductById(item.product_id);
         if (!product) {
-          const error = new Error(`Product with ID ${item.product_id} not found`);
-          error.statusCode = 404;
-          throw error;
+          throw httpError(404, `Product with ID ${item.product_id} not found`);
         }
 
         // Validate admin has sufficient inventory
         const availableCount = await transfersRepository.countAvailableUnits(adminId, item.product_id);
         if (availableCount < item.quantity) {
-          const error = new Error(
+          throw httpError(400, 
             `Insufficient inventory for product ID ${item.product_id}. Available: ${availableCount}, Requested: ${item.quantity}`
           );
-          error.statusCode = 400;
-          throw error;
         }
       })
     );
@@ -99,10 +109,24 @@ class TransfersService {
   async getTransfers(user) {
     let shipments;
 
-    if (user.role === 'ADMIN') {
+    if (user.role === ROLES.SUPER_ADMIN) {
       shipments = await transfersRepository.getAllShipments();
-    } else {
+    } else if (user.role === ROLES.ADMIN) {
+      const scope = resolveAdminShopScope(user);
+      const sellerIds = await resolveShopSellerIds(prisma, scope);
+      // exclude admin self-id from "to" sellers for filter (still in list for fromUser)
+      const pureSellers = (sellerIds || []).filter(
+        (id) => Number(id) !== Number(user.id)
+      );
+      shipments = await transfersRepository.getShipmentsForShopAdmin(
+        user.id,
+        pureSellers
+      );
+    } else if (user.role === 'SELLER') {
       shipments = await transfersRepository.getShipmentsBySeller(user.id);
+    } else {
+      // EMPLOYEE / unknown — no legacy transfer list (use /api/employee/shipments)
+      return [];
     }
 
     return shipments.map(s => ({
@@ -122,6 +146,7 @@ class TransfersService {
    * Authorization:
    * - Admin can view any shipment
    * - Seller can only view shipments assigned to them
+   * - Employee/others: forbidden (legacy module; new path is /api/shipments)
    *
    * Input: shipmentId, user object from req.user
    * Output: Full shipment details including items with product info
@@ -130,16 +155,28 @@ class TransfersService {
     const shipment = await transfersRepository.findShipmentById(shipmentId);
 
     if (!shipment) {
-      const error = new Error('Shipment not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Shipment not found');
     }
 
-    // Authorization: Seller can only view their own shipments
-    if (user.role === 'SELLER' && Number(shipment.toUserId) !== Number(user.id)) {
-      const error = new Error('Forbidden: You do not have access to this shipment');
-      error.statusCode = 403;
-      throw error;
+    if (user.role === ROLES.SUPER_ADMIN) {
+      // ok
+    } else if (user.role === ROLES.ADMIN) {
+      if (Number(shipment.fromUserId) === Number(user.id)) {
+        // ok — sent by this admin
+      } else {
+        const toUser = await prisma.user.findUnique({
+          where: { id: BigInt(shipment.toUserId) },
+          select: { id: true, parentId: true, locationId: true },
+        });
+        const scope = resolveAdminShopScope(user);
+        if (!toUser || !isUserInShopScope(toUser, scope)) {
+          throw httpError(403, 'Forbidden: You do not have access to this shipment');
+        }
+      }
+    } else if (user.role === 'SELLER' && Number(shipment.toUserId) === Number(user.id)) {
+      // ok
+    } else {
+      throw httpError(403, 'Forbidden: You do not have access to this shipment');
     }
 
     return {
@@ -192,23 +229,17 @@ class TransfersService {
     const shipment = await transfersRepository.findShipmentById(shipmentId);
 
     if (!shipment) {
-      const error = new Error('Shipment not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Shipment not found');
     }
 
     // 2. Verify shipment is PENDING
     if (shipment.status !== 'PENDING') {
-      const error = new Error(`Shipment cannot be received. Current status: ${shipment.status}`);
-      error.statusCode = 400;
-      throw error;
+      throw httpError(400, `Shipment cannot be received. Current status: ${shipment.status}`);
     }
 
     // 3. Verify authenticated seller is the intended receiver
     if (Number(shipment.toUserId) !== Number(sellerId)) {
-      const error = new Error('Forbidden: This shipment is not assigned to you');
-      error.statusCode = 403;
-      throw error;
+      throw httpError(403, 'Forbidden: This shipment is not assigned to you');
     }
 
     // 4. Execute atomic inventory transfer in repository
@@ -237,16 +268,12 @@ class TransfersService {
     const shipment = await transfersRepository.findShipmentById(shipmentId);
 
     if (!shipment) {
-      const error = new Error('Shipment not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Shipment not found');
     }
 
     // 2. Only PENDING shipments can be cancelled
     if (shipment.status !== 'PENDING') {
-      const error = new Error(`Shipment cannot be cancelled. Current status: ${shipment.status}`);
-      error.statusCode = 400;
-      throw error;
+      throw httpError(400, `Shipment cannot be cancelled. Current status: ${shipment.status}`);
     }
 
     // 3. Cancel — no inventory changes

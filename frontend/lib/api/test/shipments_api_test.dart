@@ -7,6 +7,15 @@ void main() {
   final instance = FriendsBatteryApi().getShipmentsApi();
 
   group(ShipmentsApi, () {
+    // List shipments for sellers at the employee's shop location (read-only)
+    //
+    // EMPLOYEE only. Returns NewShipment rows where the seller shares users.location_id with the employee. Does not allow accept/transfer. 
+    //
+    //Future<SellerShipmentsListResponse> apiEmployeeShipmentsGet() async
+    test('test apiEmployeeShipmentsGet', () async {
+      // TODO
+    });
+
     // Get pending shipments count (Seller only)
     //
     //Future<ApiSellerDashboardPendingShipmentsGet200Response> apiSellerDashboardPendingShipmentsGet() async
@@ -21,9 +30,25 @@ void main() {
       // TODO
     });
 
-    // Create a new shipment (Admin only)
+    // List all shipments (Admin only)
     //
-    //Future apiShipmentsPost(ApiShipmentsPostRequest apiShipmentsPostRequest) async
+    //Future<ApiShipmentsGet200Response> apiShipmentsGet() async
+    test('test apiShipmentsGet', () async {
+      // TODO
+    });
+
+    // Get shipment details by ID (Admin or Seller)
+    //
+    //Future<ApiShipmentsIdGet200Response> apiShipmentsIdGet(int id) async
+    test('test apiShipmentsIdGet', () async {
+      // TODO
+    });
+
+    // Transfer stock serials from admin to seller (Admin only)
+    //
+    // Moves existing AVAILABLE admin-owned product units to the seller immediately. Creates shipment record (status ACCEPTED), inventory_transactions (TRANSFERRED), and returns updated inventory counts. 
+    //
+    //Future<CreateShipmentResponse> apiShipmentsPost(CreateShipmentRequest createShipmentRequest) async
     test('test apiShipmentsPost', () async {
       // TODO
     });

@@ -3,13 +3,20 @@ const router = express.Router();
 const salesController = require('./sales.controller');
 const {
   createSaleSchema,
+  createServiceBillSchema,
+  createRentSchema,
+  returnRentSchema,
   viewSaleSchema,
-  customerSalesSchema,
   salesHistorySchema,
-  adminSalesHistorySchema
+  adminSalesHistorySchema,
 } = require('./sales.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
-const { requireAdmin } = require('../../shared/middleware/role.middleware');
+const {
+  requireAdmin,
+  requireSeller,
+  requireAdminOrSeller,
+  requireAdminOrSellerOrEmployee,
+} = require('../../shared/middleware/role.middleware');
 const { validateRequest } = require('../../shared/middleware/validation.middleware');
 
 /**
@@ -23,36 +30,129 @@ const { validateRequest } = require('../../shared/middleware/validation.middlewa
  * @swagger
  * /api/sales:
  *   post:
- *     summary: Create a new sale transaction
+ *     summary: Create a sale (SA/Admin/Seller own units; EMPLOYEE location stock)
  *     tags: [Sales]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               product_id:
- *                 type: integer
- *               serial_number:
- *                 type: string
- *               customer_name:
- *                 type: string
- *               customer_number:
- *                 type: string
- *               vehicle_number:
- *                 type: string
- *               sell_price:
- *                 type: number
+ *             $ref: '#/components/schemas/CreateSaleRequest'
  *     responses:
  *       201:
  *         description: Sale transaction created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CreateSaleResponse'
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Serial not available in actor inventory/location
+ *       409:
+ *         description: Concurrent claim lost (already sold)
  */
 router.post(
   '/',
   authenticate,
+  // SA/Admin/Seller: own units · EMPLOYEE: AVAILABLE at own location
+  requireAdminOrSellerOrEmployee,
   validateRequest(createSaleSchema),
   salesController.createSale
+);
+
+/**
+ * @swagger
+ * /api/sales/service:
+ *   post:
+ *     summary: Create a service bill (no stock move)
+ *     tags: [Sales]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateServiceBillRequest'
+ *     responses:
+ *       201:
+ *         description: Service bill created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CreateServiceBillResponse'
+ *       400:
+ *         description: Validation error
+ */
+router.post(
+  '/service',
+  authenticate,
+  requireAdminOrSellerOrEmployee,
+  validateRequest(createServiceBillSchema),
+  salesController.createServiceBill
+);
+
+/**
+ * @swagger
+ * /api/sales/rent:
+ *   post:
+ *     summary: Rent battery out with deposit (unit → RENTED)
+ *     tags: [Sales]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateRentRequest'
+ *     responses:
+ *       201:
+ *         description: Battery rented
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CreateRentResponse'
+ */
+router.post(
+  '/rent',
+  authenticate,
+  requireAdminOrSellerOrEmployee,
+  validateRequest(createRentSchema),
+  salesController.createRent
+);
+
+/**
+ * @swagger
+ * /api/sales/rent/return:
+ *   post:
+ *     summary: Return rented battery — fee from deposit, refund rest
+ *     tags: [Sales]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ReturnRentRequest'
+ *     responses:
+ *       200:
+ *         description: Rent returned
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ReturnRentResponse'
+ */
+router.post(
+  '/rent/return',
+  authenticate,
+  requireAdminOrSellerOrEmployee,
+  validateRequest(returnRentSchema),
+  salesController.returnRent
 );
 
 /**
@@ -68,6 +168,7 @@ router.post(
 router.get(
   '/',
   authenticate,
+  requireAdminOrSeller,
   salesController.getSales
 );
 
@@ -77,6 +178,8 @@ router.get(
  *   get:
  *     summary: Return seller's own sales history with pagination, search, and date filtering
  *     tags: [Sales]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: page
@@ -106,13 +209,27 @@ router.get(
  *         schema:
  *           type: string
  *           format: date-time
+ *       - in: query
+ *         name: filter
+ *         schema:
+ *           type: string
+ *           enum: [today, date, all]
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Seller sales history fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SaleHistoryResponse'
  */
 router.get(
   '/history',
   authenticate,
+  requireSeller,
   validateRequest(salesHistorySchema),
   salesController.getSalesHistory
 );
@@ -162,6 +279,10 @@ router.get(
  *     responses:
  *       200:
  *         description: Admin sales history fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AdminSaleHistoryResponse'
  *       403:
  *         description: Forbidden — Admin access required
  */
@@ -179,21 +300,28 @@ router.get(
  *   get:
  *     summary: Return a single sale's details by ID
  *     tags: [Sales]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: transactionId
  *         required: true
  *         schema:
- *           type: string
+ *           type: integer
  *     responses:
  *       200:
  *         description: Sale details fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SaleDetailResponse'
  *       404:
  *         description: Transaction not found
  */
 router.get(
   '/:transactionId',
   authenticate,
+  requireAdminOrSeller,
   validateRequest(viewSaleSchema),
   salesController.getSaleById
 );

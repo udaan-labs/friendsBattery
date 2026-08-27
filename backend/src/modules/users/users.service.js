@@ -1,26 +1,91 @@
-const userRepository = require('./users.repository');
+const bcrypt = require('bcrypt');
+const usersRepository = require('./users.repository');
+const authRepository = require('../auth/auth.repository');
+const orgEventsRepository = require('../../shared/org-events.repository');
+const ROLES = require('../../shared/constants/roles');
+const { httpError } = require('../../shared/utils/http-error');
+const { assertAccess } = require('../../shared/utils/access.util');
 
-class UserService {
-  /**
-   * Fetch all users.
-   * @param {string} [role] - Optional role filter
-   * @returns {Promise<Array>}
-   */
-  async getAllUsers(role) {
-    const users = await userRepository.findAll(role);
-    return users.map(user => ({
-      id: Number(user.id),
-      userId: user.userId,
-      userName: user.userName,
-      role: user.role,
-      userNumber: user.userNumber,
-      shopName: user.shopName,
-      isActive: user.isActive,
-      isVerified: user.isVerified,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt
-    }));
+const STAFF_ROLES = new Set([ROLES.ADMIN, ROLES.SELLER, ROLES.EMPLOYEE]);
+
+function mapAccount(u) {
+  return {
+    id: Number(u.id),
+    user_id: u.userId,
+    user_name: u.userName,
+    role: u.role,
+    is_active: u.isActive,
+    location: u.location ? { name: u.location.name } : null,
+  };
+}
+
+class UsersService {
+  async listAccounts(role) {
+    const users = await usersRepository.findAccounts(role);
+    return users.map(mapAccount);
+  }
+
+  async setActive(actor, id, isActive) {
+    const user = await usersRepository.findById(id);
+    if (!user) throw httpError(404, 'User not found');
+    if (Number(user.id) === Number(actor.id)) {
+      throw httpError(403, 'Cannot change your own account');
+    }
+    if (!STAFF_ROLES.has(user.role)) {
+      throw httpError(403, 'Cannot change this account');
+    }
+    assertAccess(actor, { kind: 'user', target: user });
+
+    const updated = await usersRepository.setActive(id, isActive);
+
+    if (isActive === false && user.role === ROLES.EMPLOYEE) {
+      await authRepository.closeAllOpenEmployeeSessions(user.id);
+    }
+
+    await orgEventsRepository.create({
+      action: isActive ? 'USER_ACTIVATED' : 'USER_DEACTIVATED',
+      actorId: actor.id,
+      entityType: 'USER',
+      entityId: user.id,
+      payload: { user_id: user.userId, role: user.role, is_active: isActive },
+    });
+
+    return {
+      id: Number(updated.id),
+      user_id: updated.userId,
+      role: updated.role,
+      is_active: updated.isActive,
+    };
+  }
+
+  async changePassword(actor, id, newPassword) {
+    const user = await usersRepository.findById(id);
+    if (!user) throw httpError(404, 'User not found');
+    if (Number(user.id) === Number(actor.id)) {
+      throw httpError(403, 'Cannot change your own password here');
+    }
+    if (!STAFF_ROLES.has(user.role)) {
+      throw httpError(403, 'Cannot change password for this account');
+    }
+    assertAccess(actor, { kind: 'user', target: user });
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    const updated = await usersRepository.updatePassword(id, passwordHash);
+
+    await orgEventsRepository.create({
+      action: 'USER_PASSWORD_CHANGED',
+      actorId: actor.id,
+      entityType: 'USER',
+      entityId: user.id,
+      payload: { user_id: user.userId, role: user.role },
+    });
+
+    return {
+      id: Number(updated.id),
+      user_id: updated.userId,
+      role: updated.role,
+    };
   }
 }
 
-module.exports = new UserService();
+module.exports = new UsersService();

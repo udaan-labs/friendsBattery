@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 import '../providers/seller_dashboard_providers.dart';
-import '../../../../shared/widgets/snackbar_helper.dart';
 
 class RecentInventoryList extends ConsumerWidget {
   const RecentInventoryList({super.key});

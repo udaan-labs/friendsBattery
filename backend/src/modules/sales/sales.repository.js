@@ -1,4 +1,5 @@
 const { prisma } = require('../../config/db');
+const { httpError } = require('../../shared/utils/http-error');
 
 /**
  * Sales Repository
@@ -29,60 +30,48 @@ class SalesRepository {
   }
 
   /**
-   * Find an available product unit by serial number and seller ID
+   * AVAILABLE unit for sale: owner stock OR shop location stock.
+   * @param {string} serialNumber
+   * @param {{ ownerId?: number|bigint, locationId?: number|bigint }} scope
    */
-  async findAvailableProductUnit(serialNumber, sellerId) {
+  async findAvailableProductUnit(serialNumber, scope) {
+    const clean = serialNumber != null ? String(serialNumber).trim() : '';
+    const where = {
+      serialNumber: { equals: clean, mode: 'insensitive' },
+      status: 'AVAILABLE',
+    };
+    if (scope.locationId != null) {
+      where.currentLocationId = BigInt(scope.locationId);
+    } else {
+      where.ownerId = BigInt(scope.ownerId);
+    }
     return prisma.productUnit.findFirst({
-      where: {
-        serialNumber,
-        ownerId: BigInt(sellerId),
-        status: 'AVAILABLE'
-      },
-      include: {
-        product: true
-      }
+      where,
+      include: { product: true },
     });
   }
 
-  /**
-   * Find an available product unit by product ID and seller ID
-   */
-  async findAvailableProductUnitByProductId(productId, sellerId) {
-    return prisma.productUnit.findFirst({
-      where: {
-        productId: productId,
-        ownerId: BigInt(sellerId),
-        status: 'AVAILABLE'
-      }
-    });
-  }
-
-  /**
-   * Check if a serial number is already in use by any product unit
-   */
-  async checkSerialNumberExists(serialNumber) {
-    return prisma.productUnit.findUnique({
-      where: { serialNumber }
-    });
-  }
-
-  /**
-   * Create sale transaction and update inventory atomically
-   * Includes the immutable ledger record for inventory_transactions
-   */
+  /** Atomic sale + unit claim + ledger row. */
   async createSaleTransaction(saleData) {
     return prisma.$transaction(async (tx) => {
-      // 1. Update ProductUnit status to SOLD and update serialNumber
-      await tx.productUnit.update({
-        where: { id: saleData.productUnitId },
-        data: { 
-          status: 'SOLD',
-          soldDate: new Date()
-          // serialNumber doesn't change since we are scanning the actual serial
-        }
-      });
+      const claimWhere = {
+        id: saleData.productUnitId,
+        status: 'AVAILABLE',
+      };
+      if (saleData.claimByLocationId != null) {
+        claimWhere.currentLocationId = BigInt(saleData.claimByLocationId);
+      } else {
+        claimWhere.ownerId = BigInt(saleData.ownerId ?? saleData.sellerId);
+      }
 
-      // 2. Create the SalesTransaction record
+      const claimed = await tx.productUnit.updateMany({
+        where: claimWhere,
+        data: { status: 'SOLD', soldDate: new Date() },
+      });
+      if (claimed.count !== 1) {
+        throw httpError(409, 'The scanned serial number is not available in your inventory.');
+      }
+
       const sale = await tx.salesTransaction.create({
         data: {
           productId: saleData.productId,
@@ -91,21 +80,136 @@ class SalesRepository {
           sellerId: BigInt(saleData.sellerId),
           sellPrice: saleData.sellPrice,
           serialNumber: saleData.serialNumber,
-          vehicleNumber: saleData.vehicleNumber
-        }
+          vehicleNumber: saleData.vehicleNumber,
+          saleType: saleData.saleType,
+          scrapSerial: saleData.scrapSerial ?? null,
+        },
       });
 
-      // 3. Create audit log in inventory_transactions (Immutable Ledger)
+      const ownerId = BigInt(saleData.ownerId ?? saleData.sellerId);
       await tx.inventoryTransaction.create({
         data: {
           productUnitId: saleData.productUnitId,
-          fromUserId: BigInt(saleData.sellerId),
-          toUserId: BigInt(saleData.sellerId), // Required by schema, we set it back to seller since customer isn't a User
-          action: 'SOLD'
-        }
+          fromUserId: ownerId,
+          toUserId: ownerId,
+          action: 'SOLD',
+        },
       });
 
       return sale;
+    });
+  }
+
+  async findProductUnitById(id) {
+    return prisma.productUnit.findUnique({ where: { id: BigInt(id) } });
+  }
+
+  /** Service bill row — no unit / ledger write. */
+  async createServiceBill(data) {
+    return prisma.serviceBill.create({
+      data: {
+        sellerId: BigInt(data.sellerId),
+        customerId: data.customerId != null ? BigInt(data.customerId) : null,
+        serviceType: data.serviceType,
+        amount: data.amount,
+        vehicleNumber: data.vehicleNumber ?? null,
+        place: data.place ?? null,
+      },
+    });
+  }
+
+  /** Atomic rent-out: unit AVAILABLE → RENTED + rent row + ledger. */
+  async createRentOut(rentData) {
+    return prisma.$transaction(async (tx) => {
+      const claimWhere = {
+        id: rentData.productUnitId,
+        status: 'AVAILABLE',
+      };
+      if (rentData.claimByLocationId != null) {
+        claimWhere.currentLocationId = BigInt(rentData.claimByLocationId);
+      } else {
+        claimWhere.ownerId = BigInt(rentData.ownerId ?? rentData.sellerId);
+      }
+
+      const claimed = await tx.productUnit.updateMany({
+        where: claimWhere,
+        data: { status: 'RENTED' },
+      });
+      if (claimed.count !== 1) {
+        throw httpError(409, 'Serial is not available for rent in your inventory.');
+      }
+
+      const rent = await tx.batteryRent.create({
+        data: {
+          productUnitId: rentData.productUnitId,
+          sellerId: BigInt(rentData.sellerId),
+          customerId: rentData.customerId != null ? BigInt(rentData.customerId) : null,
+          serialNumber: rentData.serialNumber,
+          deposit: rentData.deposit,
+          status: 'OUT',
+        },
+      });
+
+      const ownerId = BigInt(rentData.ownerId ?? rentData.sellerId);
+      await tx.inventoryTransaction.create({
+        data: {
+          productUnitId: rentData.productUnitId,
+          fromUserId: ownerId,
+          toUserId: ownerId,
+          action: 'RENTED',
+        },
+      });
+
+      return rent;
+    });
+  }
+
+  async findOpenRentBySerial(serialNumber) {
+    const clean = serialNumber != null ? String(serialNumber).trim() : '';
+    return prisma.batteryRent.findFirst({
+      where: {
+        serialNumber: { equals: clean, mode: 'insensitive' },
+        status: 'OUT',
+      },
+      orderBy: { rentedAt: 'desc' },
+    });
+  }
+
+  /** Atomic rent return: unit RENTED → AVAILABLE + fee/refund + ledger. */
+  async returnRent(returnData) {
+    return prisma.$transaction(async (tx) => {
+      const updated = await tx.batteryRent.updateMany({
+        where: { id: returnData.rentId, status: 'OUT' },
+        data: {
+          status: 'RETURNED',
+          rentFee: returnData.rentFee,
+          refundAmount: returnData.refundAmount,
+          returnedAt: new Date(),
+        },
+      });
+      if (updated.count !== 1) {
+        throw httpError(409, 'This rent is already returned or not found.');
+      }
+
+      const unitOk = await tx.productUnit.updateMany({
+        where: { id: returnData.productUnitId, status: 'RENTED' },
+        data: { status: 'AVAILABLE' },
+      });
+      if (unitOk.count !== 1) {
+        throw httpError(409, 'Unit is not currently marked as rented.');
+      }
+
+      const ownerId = BigInt(returnData.ownerId);
+      await tx.inventoryTransaction.create({
+        data: {
+          productUnitId: returnData.productUnitId,
+          fromUserId: ownerId,
+          toUserId: ownerId,
+          action: 'RENT_RETURNED',
+        },
+      });
+
+      return tx.batteryRent.findUnique({ where: { id: returnData.rentId } });
     });
   }
 
@@ -134,6 +238,28 @@ class SalesRepository {
   async getSalesBySeller(sellerId) {
     return prisma.salesTransaction.findMany({
       where: { sellerId: BigInt(sellerId) },
+      include: {
+        customer: true,
+        seller: { select: { id: true, userName: true, shopName: true } },
+        product: {
+          include: {
+            productName: true,
+            productModel: true
+          }
+        }
+      },
+      orderBy: { soldAt: 'desc' }
+    });
+  }
+
+  /**
+   * Fetch sales for multiple sellers (shop Admin scope).
+   * @param {bigint[]|number[]} sellerIds
+   */
+  async getSalesBySellerIds(sellerIds) {
+    if (!sellerIds || sellerIds.length === 0) return [];
+    return prisma.salesTransaction.findMany({
+      where: { sellerId: { in: sellerIds.map((id) => BigInt(id)) } },
       include: {
         customer: true,
         seller: { select: { id: true, userName: true, shopName: true } },
@@ -259,19 +385,14 @@ class SalesRepository {
    * Build WHERE clause for admin sales history queries
    */
   _buildAdminWhereClause(filters) {
-    const { search, sellerId, fromDate, toDate, shipmentStatus } = filters;
+    const { search, sellerId, sellerIds, fromDate, toDate, shipmentStatus } = filters;
 
-    const where = {};
+    const where = this._sellerScopeWhere(filters);
 
-    if (sellerId) {
-      where.sellerId = BigInt(sellerId);
-    }
-
-    if (fromDate && toDate) {
-      where.soldAt = {
-        gte: new Date(fromDate),
-        lte: new Date(toDate),
-      };
+    if (fromDate || toDate) {
+      where.soldAt = {};
+      if (fromDate) where.soldAt.gte = new Date(fromDate);
+      if (toDate) where.soldAt.lte = new Date(toDate);
     }
 
     if (search && search.trim().length > 0) {
@@ -363,6 +484,79 @@ class SalesRepository {
   async countAdminSalesHistory(filters) {
     const where = this._buildAdminWhereClause(filters);
     return prisma.salesTransaction.count({ where });
+  }
+
+  /**
+   * Fetch Service Bills for Admin history
+   */
+  _sellerScopeWhere(filters) {
+    const { sellerId, sellerIds } = filters || {};
+    if (sellerId) return { sellerId: BigInt(sellerId) };
+    if (sellerIds && Array.isArray(sellerIds)) {
+      return { sellerId: { in: sellerIds.map((id) => BigInt(id)) } };
+    }
+    return {};
+  }
+
+  /**
+   * Fetch Service Bills for Admin history
+   */
+  async getAdminServiceBills(filters) {
+    const where = this._sellerScopeWhere(filters);
+    if (filters.fromDate || filters.toDate) {
+      where.createdAt = {};
+      if (filters.fromDate) where.createdAt.gte = new Date(filters.fromDate);
+      if (filters.toDate) where.createdAt.lte = new Date(filters.toDate);
+    }
+    if (filters.search && filters.search.trim().length > 0) {
+      const clean = this._sanitizeSearch(filters.search);
+      where.OR = [
+        { customer: { name: { contains: clean, mode: 'insensitive' } } },
+        { seller: { userName: { contains: clean, mode: 'insensitive' } } },
+        { seller: { shopName: { contains: clean, mode: 'insensitive' } } },
+        { vehicleNumber: { contains: clean, mode: 'insensitive' } },
+        { place: { contains: clean, mode: 'insensitive' } },
+      ];
+    }
+    return prisma.serviceBill.findMany({
+      where,
+      include: {
+        customer: true,
+        seller: { select: { id: true, userName: true, shopName: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+  }
+
+  /**
+   * Fetch Battery Rents for Admin history
+   */
+  async getAdminBatteryRents(filters) {
+    const where = this._sellerScopeWhere(filters);
+    if (filters.fromDate || filters.toDate) {
+      where.rentedAt = {};
+      if (filters.fromDate) where.rentedAt.gte = new Date(filters.fromDate);
+      if (filters.toDate) where.rentedAt.lte = new Date(filters.toDate);
+    }
+    if (filters.search && filters.search.trim().length > 0) {
+      const clean = this._sanitizeSearch(filters.search);
+      where.OR = [
+        { customer: { name: { contains: clean, mode: 'insensitive' } } },
+        { seller: { userName: { contains: clean, mode: 'insensitive' } } },
+        { seller: { shopName: { contains: clean, mode: 'insensitive' } } },
+        { serialNumber: { contains: clean, mode: 'insensitive' } },
+      ];
+    }
+    return prisma.batteryRent.findMany({
+      where,
+      include: {
+        customer: true,
+        seller: { select: { id: true, userName: true, shopName: true } },
+      },
+      orderBy: { rentedAt: 'desc' },
+      take: 100,
+    });
   }
 }
 

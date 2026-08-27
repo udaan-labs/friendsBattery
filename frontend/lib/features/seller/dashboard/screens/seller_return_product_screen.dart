@@ -1,13 +1,15 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:friends_battery_api/friends_battery_api.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dio/dio.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
-import '../../../../core/network/api_client.dart';
-import '../providers/seller_dashboard_controller.dart';
+import '../../../../core/network/api_client_provider.dart';
+import '../../../../core/state/data_sync.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
+import '../../../../shared/utils/app_formatters.dart';
 import '../../../../shared/widgets/scanner_screen.dart';
-import 'package:intl/intl.dart';
+import '../providers/seller_dashboard_providers.dart';
 
 class SellerReturnProductScreen extends ConsumerStatefulWidget {
   const SellerReturnProductScreen({super.key});
@@ -32,7 +34,7 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
   bool _isVerifiedValid = false;
 
   // Return history state variables
-  List<dynamic> _returnsHistory = [];
+  List<ReturnListItem> _returnsHistory = [];
   bool _isLoadingHistory = false;
   String? _historyError;
 
@@ -65,15 +67,11 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
     });
 
     try {
-      final dio = ApiClient().dio;
-      final response = await dio.get('/api/returns');
-      final data = response.data;
+      final response = await ref.read(apiClientProvider).getReturnsApi().apiReturnsGet();
       if (mounted) {
-        if (data is Map<String, dynamic> && data['data'] != null) {
-          setState(() {
-            _returnsHistory = data['data'];
-          });
-        }
+        setState(() {
+          _returnsHistory = response.data?.data?.toList() ?? [];
+        });
       }
     } catch (e) {
       if (mounted) {
@@ -123,28 +121,27 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
     });
 
     try {
-      final dio = ApiClient().dio;
-      final response = await dio.post('/api/product-units/verify', data: {
-        'identifier': serial,
-      });
+      final body = VerifyProductRequest((b) => b.identifier = serial);
+      final response = await ref
+          .read(apiClientProvider)
+          .getProductUnitsApi()
+          .apiProductUnitsVerifyPost(verifyProductRequest: body);
 
-      final data = response.data;
-      if (data is Map<String, dynamic> && data['data'] != null) {
-        final productUnit = data['data']['productUnit'];
-        final product = data['data']['product'];
-        
-        final status = productUnit['status'];
-
+      final data = response.data?.data;
+      if (data != null) {
+        final status = data.productUnit?.status;
         setState(() {
-          _verifiedProductName = product['name'];
-          _verifiedProductModel = product['model'];
+          _verifiedProductName = data.product?.name;
+          _verifiedProductModel = data.product?.model;
           _verifiedStatus = status;
 
           if (status == 'SOLD') {
             _isVerifiedValid = true;
             context.showSuccessSnackBar('Product verified successfully.');
           } else {
-            context.showErrorSnackBar('Product is not in SOLD status (Current: $status)');
+            context.showErrorSnackBar(
+              'Product is not in SOLD status (Current: $status)',
+            );
           }
         });
       }
@@ -173,16 +170,19 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
     setState(() => _isSubmitting = true);
 
     try {
-      final dio = ApiClient().dio;
-      await dio.post('/api/returns', data: {
-        'serial_number': _serialController.text.trim(),
-        'reason': _reasonController.text.trim(),
+      final body = CreateReturnRequest((b) {
+        b.serialNumber = _serialController.text.trim();
+        b.reason = _reasonController.text.trim();
       });
+      await ref.read(apiClientProvider).getReturnsApi().apiReturnsPost(
+            createReturnRequest: body,
+          );
 
       if (mounted) {
         context.showSuccessSnackBar('Return request submitted successfully');
-        await ref.read(sellerDashboardControllerProvider).refreshAllData();
-        
+        DataSync.afterSaleMutation(ref);
+        await refreshSellerDashboard(ref);
+
         // Reset form inputs
         _serialController.clear();
         _reasonController.clear();
@@ -658,18 +658,13 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
         itemCount: _returnsHistory.length,
         itemBuilder: (context, index) {
           final record = _returnsHistory[index];
-          final product = record['product'] ?? {};
-          final productName = product['productName']?['name'] ?? 'Unknown Product';
-          final productModel = product['productModel']?['name'] ?? 'N/A';
-          final serialNumber = record['serialNumber'] ?? 'No Serial';
-          final reason = record['reason'] ?? 'No reason provided';
-          
-          DateTime? dateParsed;
-          if (record['createdAt'] != null) {
-            dateParsed = DateTime.tryParse(record['createdAt']);
-          }
+          final productName = record.product?.productName?.name ?? 'Unknown Product';
+          final productModel = record.product?.productModel?.name ?? 'N/A';
+          final serialNumber = record.serialNumber ?? 'No Serial';
+          final reason = record.reason ?? 'No reason provided';
+          final dateParsed = record.createdAt;
           final formattedDate = dateParsed != null
-              ? DateFormat('dd MMM yyyy, hh:mm a').format(dateParsed)
+              ? formatAppDateTime(dateParsed.toLocal())
               : 'Unknown Date';
 
           return Card(

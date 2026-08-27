@@ -1,7 +1,42 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/storage/auth_token_cache.dart';
 import '../../core/storage/session_manager.dart';
 
-enum UserRole { admin, seller, guest }
+enum UserRole { superAdmin, admin, seller, employee, guest }
+
+/// Map API/session role string (case-insensitive) to [UserRole].
+UserRole parseUserRole(String? roleStr) {
+  switch (roleStr?.toLowerCase()) {
+    case 'super_admin':
+    case 'superadmin':
+      return UserRole.superAdmin;
+    case 'admin':
+      return UserRole.admin;
+    case 'employee':
+      return UserRole.employee;
+    case 'seller':
+      return UserRole.seller;
+    default:
+      // Never invent rights for unknown/missing role
+      return UserRole.guest;
+  }
+}
+
+/// Home path for an authenticated role (used by router redirects).
+/// Super Admin uses the existing admin shell until §1 dedicated SA UI.
+String homePathForRole(UserRole role) {
+  switch (role) {
+    case UserRole.superAdmin:
+    case UserRole.admin:
+      return '/admin/dashboard';
+    case UserRole.seller:
+      return '/seller/dashboard';
+    case UserRole.employee:
+      return '/employee/home';
+    case UserRole.guest:
+      return '/login';
+  }
+}
 
 class AuthState {
   final bool isAuthenticated;
@@ -28,20 +63,28 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> initSession() async {
     try {
-      final isLoggedIn = await SessionManager.isLoggedIn();
-      if (!isLoggedIn) return;
-
-      final sessionData = await SessionManager.getSessionData();
-      final authId = sessionData['auth_id'];
-      final authKey = sessionData['auth_key'];
-      final roleStr = sessionData['role'];
-      
-      if (authId != null && authKey != null && roleStr != null) {
-        final role = roleStr.toLowerCase() == 'admin' ? UserRole.admin : UserRole.seller;
-        setAuthenticated(role);
-      }
+      await _restoreSession().timeout(const Duration(seconds: 8));
     } catch (e) {
-      // If error occurs during restore, stay as guest
+      // Timeout / Keystore hang / storage error → stay guest; user can log in.
+    }
+  }
+
+  Future<void> _restoreSession() async {
+    final isLoggedIn = await SessionManager.isLoggedIn();
+    if (!isLoggedIn) {
+      AuthTokenCache.clear();
+      return;
+    }
+
+    // Parallel secure reads + populate memory cache for Dio.
+    final sessionData = await SessionManager.getSessionData();
+    final authId = sessionData['auth_id'];
+    final authKey = sessionData['auth_key'];
+    final roleStr = sessionData['role'];
+
+    if (authId != null && authKey != null && roleStr != null) {
+      AuthTokenCache.set(authId: authId, authKey: authKey, role: roleStr);
+      setAuthenticated(parseUserRole(roleStr));
     }
   }
 
@@ -49,10 +92,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isAuthenticated: true, role: role);
   }
 
+  /// Local session kill only (tokens + state). Call API logout first when online.
   Future<void> logout() async {
     try {
       await SessionManager.clearSession();
     } catch (_) {}
+    AuthTokenCache.clear();
     state = AuthState(); // Reset to guest
   }
 }

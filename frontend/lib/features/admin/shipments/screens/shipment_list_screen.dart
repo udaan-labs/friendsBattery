@@ -1,53 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+import 'package:frontend/shared/common.dart';
 import '../../../../theme/app_theme.dart';
-import '../../../../shared/widgets/responsive_helper.dart';
-import '../../../../shared/widgets/common_pull_to_refresh.dart';
 import '../providers/shipment_provider.dart';
 
 class ShipmentListScreen extends ConsumerWidget {
   const ShipmentListScreen({super.key});
-
-  Color _getStatusColor(String status) {
-    switch (status.toUpperCase()) {
-      case 'ACCEPTED':
-        return const Color(0xFF00873A);
-      case 'PENDING':
-        return const Color(0xFFC05600);
-      case 'REJECTED':
-        return const Color(0xFFBA1A1A);
-      default:
-        return const Color(0xFF586377);
-    }
-  }
-
-  Color _getStatusBgColor(String status) {
-    switch (status.toUpperCase()) {
-      case 'ACCEPTED':
-        return const Color(0xFFE8F5E9);
-      case 'PENDING':
-        return const Color(0xFFFFF3E0);
-      case 'REJECTED':
-        return const Color(0xFFFFEBEE);
-      default:
-        return const Color(0xFFECEEF0);
-    }
-  }
-
-  IconData _getStatusIcon(String status) {
-    switch (status.toUpperCase()) {
-      case 'ACCEPTED':
-        return Icons.check_circle_outline;
-      case 'PENDING':
-        return Icons.schedule;
-      case 'REJECTED':
-        return Icons.cancel_outlined;
-      default:
-        return Icons.info_outline;
-    }
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -74,10 +33,12 @@ class ShipmentListScreen extends ConsumerWidget {
         ),
       ),
       body: SafeArea(
-        child: CommonPullToRefresh(
+        child: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(shipmentsListProvider);
         },
+        color: AppTheme.primary,
+        backgroundColor: Colors.white,
         child: shipmentsState.when(
           data: (shipments) {
             if (shipments.isEmpty) {
@@ -122,7 +83,7 @@ class ShipmentListScreen extends ConsumerWidget {
               itemBuilder: (context, index) {
                 final shipment = shipments[index];
                 final formattedDate =
-                    DateFormat('dd MMM yyyy, hh:mm a').format(shipment.createdAt);
+                    formatAppDateTime(shipment.createdAt);
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 16),
@@ -172,33 +133,7 @@ class ShipmentListScreen extends ConsumerWidget {
                                   ),
                                 ],
                               ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: _getStatusBgColor(shipment.status),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      _getStatusIcon(shipment.status),
-                                      size: 13,
-                                      color: _getStatusColor(shipment.status),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      shipment.status.toUpperCase(),
-                                      style: TextStyle(
-                                        color: _getStatusColor(shipment.status),
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                              ShipmentStatusChip(status: shipment.status),
                             ],
                           ),
                           const SizedBox(height: 12),

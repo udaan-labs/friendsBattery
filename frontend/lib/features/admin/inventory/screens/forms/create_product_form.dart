@@ -1,13 +1,23 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:friends_battery_api/friends_battery_api.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dio/dio.dart';
 import '../../../../../shared/widgets/responsive_helper.dart';
-import '../../../../../core/network/api_client.dart';
+import '../../../../../core/state/data_sync.dart';
 import '../../../../../shared/widgets/snackbar_helper.dart';
+import '../../../../shared/products/providers/product_catalog_providers.dart';
 
 class CreateProductForm extends ConsumerStatefulWidget {
-  const CreateProductForm({super.key});
+  /// Pre-select name/model when arriving from Add Name / Add Model.
+  final String? initialProductNameId;
+  final String? initialProductModelId;
+
+  const CreateProductForm({
+    super.key,
+    this.initialProductNameId,
+    this.initialProductModelId,
+  });
 
   @override
   ConsumerState<CreateProductForm> createState() => _CreateProductFormState();
@@ -15,19 +25,14 @@ class CreateProductForm extends ConsumerStatefulWidget {
 
 class _CreateProductFormState extends ConsumerState<CreateProductForm> {
   final _formKey = GlobalKey<FormState>();
-  
+
   final _minPriceController = TextEditingController();
   final _offerPriceController = TextEditingController();
   final _minUnitAdminController = TextEditingController();
   final _minUnitSellerController = TextEditingController();
 
-  bool _isLoadingNames = false;
-  bool _isLoadingModels = false;
   bool _isSubmitting = false;
 
-  List<Map<String, String>> _productNames = [];
-  List<Map<String, String>> _productModels = [];
-  
   String? _selectedProductNameId;
   String? _selectedProductModelId;
 
@@ -36,9 +41,9 @@ class _CreateProductFormState extends ConsumerState<CreateProductForm> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _loadProductNames();
-    });
+    _selectedProductNameId = widget.initialProductNameId;
+    _selectedProductModelId = widget.initialProductModelId;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadConfig());
   }
 
   @override
@@ -48,56 +53,6 @@ class _CreateProductFormState extends ConsumerState<CreateProductForm> {
     _minUnitAdminController.dispose();
     _minUnitSellerController.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadProductNames() async {
-    setState(() => _isLoadingNames = true);
-    try {
-      final dio = ApiClient().dio;
-      final response = await dio.get('/api/products/product-names');
-      final data = response.data;
-      if (data is Map<String, dynamic> && data['data'] is List) {
-        final list = data['data'] as List;
-        setState(() {
-          _productNames = list.map((item) => {
-            'id': item['id'].toString(),
-            'name': item['name'].toString(),
-          }).toList();
-        });
-      }
-    } catch (e) {
-      // Error handled by interceptor
-    } finally {
-      if (mounted) setState(() => _isLoadingNames = false);
-    }
-  }
-
-  Future<void> _loadProductModels(String productNameId) async {
-    setState(() {
-      _isLoadingModels = true;
-      _productModels = [];
-      _selectedProductModelId = null;
-    });
-    try {
-      final dio = ApiClient().dio;
-      final response = await dio.post('/api/products/product-models/list', data: {
-        'product_name_id': int.parse(productNameId),
-      });
-      final data = response.data;
-      if (data is Map<String, dynamic> && data['data'] is List) {
-        final list = data['data'] as List;
-        setState(() {
-          _productModels = list.map((item) => {
-            'id': item['id'].toString(),
-            'name': item['name'].toString(),
-          }).toList();
-        });
-      }
-    } catch (e) {
-      // Error handled by interceptor
-    } finally {
-      if (mounted) setState(() => _isLoadingModels = false);
-    }
   }
 
   Future<void> _submit() async {
@@ -111,39 +66,99 @@ class _CreateProductFormState extends ConsumerState<CreateProductForm> {
     setState(() => _isSubmitting = true);
 
     try {
-      final dio = ApiClient().dio;
-
       final minPrice = _minPriceController.text.isNotEmpty ? num.parse(_minPriceController.text) : 0;
       final offerPrice = _offerPriceController.text.isNotEmpty ? num.parse(_offerPriceController.text) : null;
       final minUnitCountAdmin = _minUnitAdminController.text.isNotEmpty ? int.parse(_minUnitAdminController.text) : 0;
       final minUnitCountSeller = _minUnitSellerController.text.isNotEmpty ? int.parse(_minUnitSellerController.text) : 0;
 
-      await dio.post('/api/products', data: {
-        'product_name_id': int.parse(_selectedProductNameId!),
-        'product_model_id': int.parse(_selectedProductModelId!),
-        'min_price': minPrice,
-        'on_sale': _onSale,
-        if (offerPrice != null) 'offer_price': offerPrice,
-        'min_unit_count_admin': minUnitCountAdmin,
-        'min_unit_count_seller': minUnitCountSeller,
-      });
+      await ref.read(productCatalogRepositoryProvider).createProduct(
+            productNameId: int.parse(_selectedProductNameId!),
+            productModelId: int.parse(_selectedProductModelId!),
+            minPrice: minPrice,
+            onSale: _onSale,
+            offerPrice: offerPrice,
+            minUnitCountAdmin: minUnitCountAdmin,
+            minUnitCountSeller: minUnitCountSeller,
+          );
 
       if (mounted) {
-        context.showSuccessSnackBar('Product configured successfully');
-        context.pop();
+        context.showSuccessSnackBar('Product saved');
+        await DataSync.afterProductMutation(ref);
+        if (mounted) context.pop(true);
       }
     } on DioException catch (e) {
-      if (mounted) {
-        final msg = e.response?.data?['message'] ?? 'Failed to create product';
-        context.showErrorSnackBar(msg);
+      if (!mounted) return;
+      final body = e.response?.data;
+      final created = e.response?.statusCode == 201 ||
+          (body is Map && body['success'] == true);
+      if (created) {
+        context.showSuccessSnackBar('Product saved');
+        await DataSync.afterProductMutation(ref);
+        if (mounted) context.pop(true);
+        return;
       }
+      final msg = body is Map ? (body['message'] ?? 'Failed to create product') : 'Failed to create product';
+      context.showErrorSnackBar(msg);
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
+  void _clearConfigFields() {
+    _minPriceController.clear();
+    _offerPriceController.clear();
+    _minUnitAdminController.clear();
+    _minUnitSellerController.clear();
+    _onSale = false;
+  }
+
+  void _applyConfig(ProductConfigItem p) {
+    _minPriceController.text = p.minPrice?.toString() ?? '';
+    _onSale = p.onSale ?? false;
+    _offerPriceController.text = p.offerPrice?.toString() ?? '';
+    _minUnitAdminController.text = p.minUnitCountAdmin?.toString() ?? '';
+    _minUnitSellerController.text = p.minUnitCountSeller?.toString() ?? '';
+  }
+
+  Future<void> _loadConfig() async {
+    final nameId = int.tryParse(_selectedProductNameId ?? '');
+    final modelId = int.tryParse(_selectedProductModelId ?? '');
+    if (nameId == null || modelId == null) return;
+    try {
+      final p = await ref.read(productConfigProvider((
+        nameId: nameId,
+        modelId: modelId,
+      )).future);
+      if (!mounted) return;
+      if (_selectedProductNameId != '$nameId' ||
+          _selectedProductModelId != '$modelId') {
+        return;
+      }
+      setState(() {
+        if (p == null) {
+          _clearConfigFields();
+        } else {
+          _applyConfig(p);
+        }
+      });
+    } catch (_) {}
+  }
+
   @override
   Widget build(BuildContext context) {
+    final namesAsync = ref.watch(productNamesProvider);
+    final selectedNameId = int.tryParse(_selectedProductNameId ?? '');
+    final selectedModelId = int.tryParse(_selectedProductModelId ?? '');
+    final modelsAsync = selectedNameId == null
+        ? null
+        : ref.watch(productModelsProvider(selectedNameId));
+    final configKey = (selectedNameId != null && selectedModelId != null)
+        ? (nameId: selectedNameId, modelId: selectedModelId)
+        : null;
+    final configAsync = configKey == null
+        ? null
+        : ref.watch(productConfigProvider(configKey));
+
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FB),
       appBar: AppBar(
@@ -171,116 +186,165 @@ class _CreateProductFormState extends ConsumerState<CreateProductForm> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Product Name Selection
                       const Text('Product Name', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E))),
                       const SizedBox(height: 8),
-                      _isLoadingNames
-                          ? const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 16.0),
-                              child: Center(
-                                child: SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                      namesAsync.when(
+                        loading: () => const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16.0),
+                          child: Center(
+                            child: SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                        ),
+                        error: (_, __) => TextButton(
+                          onPressed: () => ref.invalidate(productNamesProvider),
+                          child: const Text('Failed to load product names. Retry'),
+                        ),
+                        data: (productNames) => productNames.isEmpty
+                            ? TextFormField(
+                                enabled: false,
+                                decoration: InputDecoration(
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  hintText: 'No products available. Please create one first.',
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  filled: true,
+                                  fillColor: Colors.grey.shade100,
                                 ),
+                              )
+                            : DropdownButtonFormField<String>(
+                                isExpanded: true,
+                                value: productNames.any((n) => n.id == _selectedProductNameId)
+                                    ? _selectedProductNameId
+                                    : null,
+                                decoration: InputDecoration(
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                ),
+                                hint: const Text('Select Existing Product Name'),
+                                items: productNames
+                                    .map((n) => DropdownMenuItem(value: n.id, child: Text(n.name)))
+                                    .toList(),
+                                onChanged: (id) {
+                                  setState(() {
+                                    _selectedProductNameId = id;
+                                    _selectedProductModelId = null;
+                                    _clearConfigFields();
+                                  });
+                                },
                               ),
-                            )
-                          : (_productNames.isEmpty
+                      ),
+                      const SizedBox(height: 16),
+
+                      const Text('Product Model', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E))),
+                      const SizedBox(height: 8),
+                      if (_selectedProductNameId == null)
+                        TextFormField(
+                          enabled: false,
+                          decoration: InputDecoration(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            hintText: 'Select Product Name first',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                            filled: true,
+                            fillColor: Colors.grey.shade100,
+                          ),
+                        )
+                      else if (modelsAsync == null)
+                        const SizedBox.shrink()
+                      else
+                        modelsAsync.when(
+                          loading: () => const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16.0),
+                            child: Center(
+                              child: SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            ),
+                          ),
+                          error: (_, __) => TextButton(
+                            onPressed: () {
+                              final id = int.tryParse(_selectedProductNameId ?? '');
+                              if (id != null) ref.invalidate(productModelsProvider(id));
+                            },
+                            child: const Text('Failed to load models. Retry'),
+                          ),
+                          data: (productModels) => productModels.isEmpty
                               ? TextFormField(
                                   enabled: false,
                                   decoration: InputDecoration(
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                    hintText: 'No products available. Please create one first.',
+                                    hintText: 'No models available for this product.',
                                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                                     filled: true,
                                     fillColor: Colors.grey.shade100,
                                   ),
                                 )
                               : DropdownButtonFormField<String>(
+                                  key: ValueKey('model_$_selectedProductNameId'),
                                   isExpanded: true,
+                                  value: productModels.any((m) => m.id == _selectedProductModelId)
+                                      ? _selectedProductModelId
+                                      : null,
                                   decoration: InputDecoration(
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                                     filled: true,
                                     fillColor: Colors.white,
                                   ),
-                                  hint: const Text('Select Existing Product Name'),
-                                  items: _productNames.map((n) {
-                                    return DropdownMenuItem<String>(
-                                      value: n['id']!,
-                                      child: Text(n['name']!),
-                                    );
-                                  }).toList(),
+                                  hint: const Text('Select Existing Product Model'),
+                                  items: productModels
+                                      .map((m) => DropdownMenuItem(value: m.id, child: Text(m.name)))
+                                      .toList(),
                                   onChanged: (id) {
-                                    if (id != null) {
-                                      setState(() => _selectedProductNameId = id);
-                                      _loadProductModels(id);
-                                    }
+                                    setState(() {
+                                      _selectedProductModelId = id;
+                                      _clearConfigFields();
+                                    });
+                                    _loadConfig();
                                   },
-                                )),
-                      const SizedBox(height: 16),
-
-                      // Product Model Selection
-                      const Text('Product Model', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E))),
-                      const SizedBox(height: 8),
-                      _isLoadingModels
-                          ? const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 16.0),
-                              child: Center(
-                                child: SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
                                 ),
-                              ),
-                            )
-                          : (_selectedProductNameId == null
-                              ? TextFormField(
-                                  enabled: false,
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                    hintText: 'Select Product Name first',
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                    filled: true,
-                                    fillColor: Colors.grey.shade100,
-                                  ),
-                                )
-                              : (_productModels.isEmpty
-                                  ? TextFormField(
-                                      enabled: false,
-                                      decoration: InputDecoration(
-                                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                        hintText: 'No models available for this product.',
-                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                        filled: true,
-                                        fillColor: Colors.grey.shade100,
-                                      ),
-                                    )
-                                  : DropdownButtonFormField<String>(
-                                      key: ValueKey('model_$_selectedProductNameId'),
-                                      isExpanded: true,
-                                      decoration: InputDecoration(
-                                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                        filled: true,
-                                        fillColor: Colors.white,
-                                      ),
-                                      hint: const Text('Select Existing Product Model'),
-                                      items: _productModels.map((m) {
-                                        return DropdownMenuItem<String>(
-                                          value: m['id']!,
-                                          child: Text(m['name']!),
-                                        );
-                                      }).toList(),
-                                      onChanged: (id) {
-                                        if (id != null) {
-                                          setState(() => _selectedProductModelId = id);
-                                        }
-                                      },
-                                    ))),
+                        ),
+                      if (configAsync != null) ...[
+                        const SizedBox(height: 12),
+                        configAsync.when(
+                          loading: () => const Align(
+                            alignment: Alignment.centerLeft,
+                            child: SizedBox(
+                              height: 16,
+                              width: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                          error: (_, __) => TextButton(
+                            onPressed: () {
+                              if (configKey != null) {
+                                ref.invalidate(productConfigProvider(configKey));
+                              }
+                            },
+                            child: const Text('Failed to load existing config. Retry'),
+                          ),
+                          data: (p) => Text(
+                            p == null
+                                ? 'Not configured yet. Fill in and save.'
+                                : 'Already configured. Edit and save — history will record it.',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: p == null
+                                  ? const Color(0xFF64748B)
+                                  : const Color(0xFF006B2C),
+                            ),
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 32),
-                      
-                      // Pricing Section
+
                       const Divider(),
                       const SizedBox(height: 16),
                       const Text('Pricing Section', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF191C1E))),
@@ -304,9 +368,7 @@ class _CreateProductFormState extends ConsumerState<CreateProductForm> {
                         title: const Text('Is On Sale?', style: TextStyle(fontWeight: FontWeight.w600)),
                         contentPadding: EdgeInsets.zero,
                         value: _onSale,
-                        onChanged: (val) {
-                          setState(() => _onSale = val ?? false);
-                        },
+                        onChanged: (val) => setState(() => _onSale = val ?? false),
                       ),
                       const SizedBox(height: 16),
 
@@ -318,15 +380,19 @@ class _CreateProductFormState extends ConsumerState<CreateProductForm> {
                           keyboardType: TextInputType.number,
                           decoration: const InputDecoration(hintText: 'Enter offer price', prefixText: '₹ '),
                           validator: (value) {
-                            if (_onSale && (value == null || value.trim().isEmpty)) return 'Offer Price is required if on sale';
-                            if (value != null && value.trim().isNotEmpty && num.tryParse(value) == null) return 'Must be a valid number';
+                            if (!_onSale) return null;
+                            final offer = num.tryParse(value?.trim() ?? '');
+                            if (offer == null) return 'Offer Price is required if on sale';
+                            final minPrice = num.tryParse(_minPriceController.text);
+                            if (minPrice != null && offer >= minPrice) {
+                              return 'Offer price must be less than min price';
+                            }
                             return null;
                           },
                         ),
                         const SizedBox(height: 16),
                       ],
 
-                      // Minimum Units Section
                       const Divider(),
                       const SizedBox(height: 16),
                       const Text('Threshold Configuration', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF191C1E))),
@@ -360,12 +426,13 @@ class _CreateProductFormState extends ConsumerState<CreateProductForm> {
                       ),
                       const SizedBox(height: 32),
 
-                      // Submit Button
                       ElevatedButton(
                         onPressed: _isSubmitting ? null : _submit,
                         child: _isSubmitting
                             ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                            : const Text('Save Configuration'),
+                            : Text(configAsync?.valueOrNull != null
+                                ? 'Update Configuration'
+                                : 'Save Configuration'),
                       ),
                     ],
                   ),

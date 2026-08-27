@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "version": "1.0.0",
+  "version": "1.1.4",
   "main": "index.js",
   "directories": {
     "test": "tests"
@@ -8,8 +8,9 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --test src/shared/utils/geo.util.test.js",
     "migrate": "npx prisma migrate dev",
+    "migrate:prod": "node scripts/migrate-prod.js",
     "prisma:generate": "npx prisma generate",
     "postinstall": "npm run prisma:generate",
     "swagger:export": "node scripts/export-swagger.js",

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+import '../../../../shared/utils/app_formatters.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 import '../providers/seller_sales_provider.dart';
 import '../models/seller_sale.dart';
@@ -76,7 +76,7 @@ class SellerSaleDetailsScreen extends ConsumerWidget {
   }
 
   Widget _buildSaleDetails(BuildContext context, SellerSale sale) {
-    final formattedDate = DateFormat('dd MMM yyyy, hh:mm a').format(sale.soldAt);
+    final formattedDate = formatAppDateTime(sale.soldAt);
 
     return SingleChildScrollView(
       padding: EdgeInsets.all(ResponsiveHelper.responsivePadding(context)),
@@ -196,12 +196,24 @@ class SellerSaleDetailsScreen extends ConsumerWidget {
   }
 
   Widget _buildSaleInfo(BuildContext context, SellerSale sale, String formattedDate) {
+    final typeLabel = switch (sale.saleType.toUpperCase()) {
+      'SCRAP' => 'Scrap Trade-in',
+      'MECHANIC' => 'Mechanic (B2B)',
+      _ => 'Normal Sale',
+    };
+
     return _buildSectionCard(
       context: context,
       title: 'Transaction Details',
       icon: Icons.receipt_long_outlined,
       children: [
         _buildInfoRow('Sale ID', '#${sale.id}'),
+        const Divider(height: 24, color: Color(0xFFF1F5F9)),
+        _buildInfoRow('Bill Type', typeLabel),
+        if (sale.scrapSerial != null && sale.scrapSerial!.isNotEmpty) ...[
+          const Divider(height: 24, color: Color(0xFFF1F5F9)),
+          _buildInfoRow('Scrap Serial', sale.scrapSerial!),
+        ],
         const Divider(height: 24, color: Color(0xFFF1F5F9)),
         _buildInfoRow('Date', formattedDate),
         const Divider(height: 24, color: Color(0xFFF1F5F9)),

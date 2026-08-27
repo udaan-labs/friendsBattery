@@ -1,0 +1,24 @@
+info:
+  name: get_employee_detail
+  type: http
+  seq: 4
+  description: |
+    Admin: one employee + CHECK_IN / CHECK_OUT actions only.
+    Login as admin first. employeeId=1 is seed employee1.
+
+http:
+  method: GET
+  url: "{{baseurl}}/shops/employees/1?limit=50"
+  headers:
+    - name: auth-id
+      value: "{{authId}}"
+    - name: auth-key
+      value: "{{authKey}}"
+  body:
+    type: none
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

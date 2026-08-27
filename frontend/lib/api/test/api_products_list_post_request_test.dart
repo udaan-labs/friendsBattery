@@ -7,11 +7,6 @@ void main() {
   // TODO add properties to the builder and call build()
 
   group(ApiProductsListPostRequest, () {
-    // int categoryId
-    test('to test the property `categoryId`', () async {
-      // TODO
-    });
-
     // int productNameId
     test('to test the property `productNameId`', () async {
       // TODO

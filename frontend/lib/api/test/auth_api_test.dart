@@ -16,14 +16,23 @@ void main() {
 
     // Authenticate user and return token
     //
-    //Future apiAuthLoginPost(ApiAuthLoginPostRequest apiAuthLoginPostRequest) async
+    // Works for SUPER_ADMIN, ADMIN, SELLER, and EMPLOYEE. EMPLOYEE login may include location / employee_role on user and session_id (employee_sessions). 
+    //
+    //Future<LoginResponse> apiAuthLoginPost(ApiAuthLoginPostRequest apiAuthLoginPostRequest) async
     test('test apiAuthLoginPost', () async {
+      // TODO
+    });
+
+    // End session (closes employee_sessions for EMPLOYEE)
+    //
+    //Future apiAuthLogoutPost() async
+    test('test apiAuthLogoutPost', () async {
       // TODO
     });
 
     // Register a new user
     //
-    //Future apiAuthRegisterPost(ApiAuthRegisterPostRequest apiAuthRegisterPostRequest) async
+    //Future<RegisterResponse> apiAuthRegisterPost(ApiAuthRegisterPostRequest apiAuthRegisterPostRequest) async
     test('test apiAuthRegisterPost', () async {
       // TODO
     });

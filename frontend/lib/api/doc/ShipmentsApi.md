@@ -9,13 +9,53 @@ All URIs are relative to *http://localhost:3000*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**apiEmployeeShipmentsGet**](ShipmentsApi.md#apiemployeeshipmentsget) | **GET** /api/employee/shipments | List shipments for sellers at the employee&#39;s shop location (read-only)
 [**apiSellerDashboardPendingShipmentsGet**](ShipmentsApi.md#apisellerdashboardpendingshipmentsget) | **GET** /api/seller/dashboard/pending-shipments | Get pending shipments count (Seller only)
 [**apiSellerShipmentsGet**](ShipmentsApi.md#apisellershipmentsget) | **GET** /api/seller/shipments | List shipments for seller (Seller only)
 [**apiShipmentsGet**](ShipmentsApi.md#apishipmentsget) | **GET** /api/shipments | List all shipments (Admin only)
 [**apiShipmentsIdGet**](ShipmentsApi.md#apishipmentsidget) | **GET** /api/shipments/{id} | Get shipment details by ID (Admin or Seller)
-[**apiShipmentsPost**](ShipmentsApi.md#apishipmentspost) | **POST** /api/shipments | Create a new shipment (Admin only)
+[**apiShipmentsPost**](ShipmentsApi.md#apishipmentspost) | **POST** /api/shipments | Transfer stock serials from admin to seller (Admin only)
 [**apiShipmentsShipmentIdAcceptPost**](ShipmentsApi.md#apishipmentsshipmentidacceptpost) | **POST** /api/shipments/{shipmentId}/accept | Accept a pending shipment (Seller only)
 
+
+# **apiEmployeeShipmentsGet**
+> SellerShipmentsListResponse apiEmployeeShipmentsGet()
+
+List shipments for sellers at the employee's shop location (read-only)
+
+EMPLOYEE only. Returns NewShipment rows where the seller shares users.location_id with the employee. Does not allow accept/transfer. 
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getShipmentsApi();
+
+try {
+    final response = api.apiEmployeeShipmentsGet();
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling ShipmentsApi->apiEmployeeShipmentsGet: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**SellerShipmentsListResponse**](SellerShipmentsListResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiSellerDashboardPendingShipmentsGet**
 > ApiSellerDashboardPendingShipmentsGet200Response apiSellerDashboardPendingShipmentsGet()
@@ -170,19 +210,22 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiShipmentsPost**
-> apiShipmentsPost(apiShipmentsPostRequest)
+> CreateShipmentResponse apiShipmentsPost(createShipmentRequest)
 
-Create a new shipment (Admin only)
+Transfer stock serials from admin to seller (Admin only)
+
+Moves existing AVAILABLE admin-owned product units to the seller immediately. Creates shipment record (status ACCEPTED), inventory_transactions (TRANSFERRED), and returns updated inventory counts. 
 
 ### Example
 ```dart
 import 'package:friends_battery_api/api.dart';
 
 final api = FriendsBatteryApi().getShipmentsApi();
-final ApiShipmentsPostRequest apiShipmentsPostRequest = ; // ApiShipmentsPostRequest | 
+final CreateShipmentRequest createShipmentRequest = ; // CreateShipmentRequest | 
 
 try {
-    api.apiShipmentsPost(apiShipmentsPostRequest);
+    final response = api.apiShipmentsPost(createShipmentRequest);
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling ShipmentsApi->apiShipmentsPost: $e\n');
 }
@@ -192,11 +235,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **apiShipmentsPostRequest** | [**ApiShipmentsPostRequest**](ApiShipmentsPostRequest.md)|  | 
+ **createShipmentRequest** | [**CreateShipmentRequest**](CreateShipmentRequest.md)|  | 
 
 ### Return type
 
-void (empty response body)
+[**CreateShipmentResponse**](CreateShipmentResponse.md)
 
 ### Authorization
 
@@ -205,7 +248,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

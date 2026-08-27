@@ -7,6 +7,7 @@ class SellerInfoCard extends StatelessWidget {
   final String userNumber;
   final bool isActive;
   final bool isVerified;
+  final String? locationLabel;
 
   const SellerInfoCard({
     super.key,
@@ -15,6 +16,7 @@ class SellerInfoCard extends StatelessWidget {
     required this.userNumber,
     required this.isActive,
     required this.isVerified,
+    this.locationLabel,
   });
 
   @override
@@ -71,6 +73,21 @@ class SellerInfoCard extends StatelessWidget {
               ),
             ],
           ),
+          if (locationLabel != null && locationLabel!.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.location_on_outlined, size: 20, color: Colors.black54),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    locationLabel!,
+                    style: const TextStyle(fontSize: 16, color: Colors.black87),
+                  ),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: 20),
           Row(
             children: [

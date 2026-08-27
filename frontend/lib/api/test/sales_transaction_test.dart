@@ -17,6 +17,11 @@ void main() {
       // TODO
     });
 
+    // String productUnitId
+    test('to test the property `productUnitId`', () async {
+      // TODO
+    });
+
     // String customerId
     test('to test the property `customerId`', () async {
       // TODO
@@ -34,6 +39,11 @@ void main() {
 
     // String serialNumber
     test('to test the property `serialNumber`', () async {
+      // TODO
+    });
+
+    // String vehicleNumber
+    test('to test the property `vehicleNumber`', () async {
       // TODO
     });
 

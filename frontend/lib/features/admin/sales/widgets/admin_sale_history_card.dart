@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import '../../../../shared/utils/app_formatters.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 import '../models/admin_sale_history.dart';
 
@@ -10,444 +10,383 @@ class AdminSaleHistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateFormatter = DateFormat('dd MMM yyyy, hh:mm a');
-    final formattedDate = dateFormatter.format(sale.soldAt);
+    final formattedDate = formatAppDateTime(sale.soldAt);
 
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 8, horizontal: ResponsiveHelper.responsiveHorizontalMargin(context)),
+      margin: EdgeInsets.symmetric(
+        vertical: 6,
+        horizontal: ResponsiveHelper.responsiveHorizontalMargin(context),
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFEDF2F7)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+      child: Padding(
+        padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Top accent strip ──────────────────────────────────────
-            Container(
-              height: 4,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF16A34A), Color(0xFF4ADE80)],
-                ),
-              ),
-            ),
-
-            Padding(
-              padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ── Top Section: Product Name | Price + Date ──────────
-                  Row(
+            // ── Header: Product & Price ────────────────────────────────
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                          Text(
-                            sale.productName,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF191C1E),
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                            const SizedBox(height: 2),
-                            Text(
-                              sale.productModel,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFF586377),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.calendar_today_outlined,
-                                  size: 12,
-                                  color: Color(0xFF9BA8B6),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  formattedDate,
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    color: Color(0xFF9BA8B6),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                      Text(
+                        sale.productName,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF0F172A),
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            '₹${sale.sellPrice.toStringAsFixed(0)}',
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF16A34A),
-                            ),
-                          ),
-                          Container(
-                            margin: const EdgeInsets.only(top: 4),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: ResponsiveHelper.isSmallPhone(context) ? 6 : 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF16A34A).withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              'Sale #${sale.id}',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF16A34A),
-                              ),
-                            ),
-                          ),
-                        ],
+                      const SizedBox(height: 2),
+                      Text(
+                        '${sale.productModel} · ${sale.category}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF64748B),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
-
-                  const _Divider(),
-
-                  // ── Customer Section ──────────────────────────────────
-                  _SectionRow(
-                    icon: Icons.person_outline_rounded,
-                    iconColor: const Color(0xFF3B82F6),
-                    iconBgColor: const Color(0xFFEFF6FF),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          sale.customerName ?? 'Unknown Customer',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF191C1E),
-                          ),
-                        ),
-                        if (sale.customerPhone != null &&
-                            sale.customerPhone!.isNotEmpty)
-                          Text(
-                            sale.customerPhone!,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF586377),
-                            ),
-                          ),
-                      ],
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '₹${sale.sellPrice.toStringAsFixed(0)}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF006B2C),
+                      ),
                     ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // ── Seller Section ────────────────────────────────────
-                  _SectionRow(
-                    icon: Icons.store_outlined,
-                    iconColor: const Color(0xFF7C3AED),
-                    iconBgColor: const Color(0xFFF5F3FF),
-                    child: Row(
+                    const SizedBox(height: 2),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Expanded(
-                          child: Text(
-                            sale.shopName,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF191C1E),
-                            ),
-                          ),
-                        ),
+                        _buildSaleTypeBadge(sale.saleType),
+                        const SizedBox(width: 6),
                         Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: ResponsiveHelper.isSmallPhone(context) ? 6 : 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF7C3AED).withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(20),
+                            color: const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            '@${sale.userName}',
+                            '#${sale.id}',
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF7C3AED),
+                              color: Color(0xFF64748B),
                             ),
                           ),
                         ),
                       ],
                     ),
+                  ],
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+
+            // ── Info Grid Box ─────────────────────────────────────────
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFF1F5F9)),
+              ),
+              child: Column(
+                children: [
+                  // Row 1: Customer & Shop
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _MetaItem(
+                          icon: Icons.person_outline_rounded,
+                          label: 'Customer',
+                          value: sale.customerName ?? 'Walk-in Customer',
+                          subValue: sale.customerPhone,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _MetaItem(
+                          icon: Icons.storefront_outlined,
+                          label: 'Shop / Seller',
+                          value: sale.shopName,
+                          subValue: '@${sale.userName}',
+                        ),
+                      ),
+                    ],
                   ),
-
-                  const _Divider(),
-
-                  // ── Product Section ───────────────────────────────────
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      if (constraints.maxWidth < 360) {
-                        return Column(
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(child: _InfoItem(icon: Icons.category_outlined, label: 'Category', value: sale.category)),
-                                const SizedBox(width: 8),
-                                Expanded(child: _InfoItem(icon: Icons.tag_rounded, label: 'Serial No', value: sale.serialNumber)),
-                              ],
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Divider(height: 1, thickness: 1, color: Color(0xFFE2E8F0)),
+                  ),
+                  // Row 2: Serial & Qty
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _MetaItem(
+                          icon: Icons.qr_code_rounded,
+                          label: 'Serial Number',
+                          value: sale.serialNumber,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _MetaItem(
+                          icon: Icons.inventory_2_outlined,
+                          label: 'Quantity',
+                          value: '${sale.quantity} pc${sale.quantity > 1 ? 's' : ''}',
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (sale.scrapSerial != null && sale.scrapSerial!.isNotEmpty) ...[
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Divider(height: 1, thickness: 1, color: Color(0xFFE2E8F0)),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _MetaItem(
+                            icon: Icons.recycling_rounded,
+                            label: 'Scrap Trade-in Serial',
+                            value: sale.scrapSerial!,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  if (sale.place != null && sale.place!.isNotEmpty) ...[
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Divider(height: 1, thickness: 1, color: Color(0xFFE2E8F0)),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _MetaItem(
+                            icon: Icons.location_on_outlined,
+                            label: 'Service Location / Site',
+                            value: sale.place!,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  if (sale.rentStatus != null) ...[
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Divider(height: 1, thickness: 1, color: Color(0xFFE2E8F0)),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _MetaItem(
+                            icon: Icons.assignment_return_outlined,
+                            label: 'Rental Status',
+                            value: sale.rentStatus!,
+                          ),
+                        ),
+                        if (sale.deposit != null) ...[
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _MetaItem(
+                              icon: Icons.account_balance_wallet_outlined,
+                              label: 'Deposit Paid',
+                              value: '₹${sale.deposit!.toStringAsFixed(0)}',
                             ),
-                            const SizedBox(height: 8),
-                            _InfoItem(icon: Icons.inventory_2_outlined, label: 'Qty', value: sale.quantity.toString()),
-                          ],
-                        );
-                      }
-                      return Row(
-                        children: [
-                          Expanded(child: _InfoItem(icon: Icons.category_outlined, label: 'Category', value: sale.category)),
-                          Expanded(child: _InfoItem(icon: Icons.tag_rounded, label: 'Serial No', value: sale.serialNumber)),
-                          Expanded(child: _InfoItem(icon: Icons.inventory_2_outlined, label: 'Qty', value: sale.quantity.toString())),
+                          ),
                         ],
-                      );
-                    },
-                  ),
-
-                  const _Divider(),
-
-                  // ── Shipment Section ──────────────────────────────────
-                  _ShipmentRow(shipment: sale.shipment),
+                      ],
+                    ),
+                  ],
                 ],
               ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // ── Footer: Date & Shipment Status ─────────────────────────
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.access_time_rounded, size: 13, color: Color(0xFF94A3B8)),
+                    const SizedBox(width: 4),
+                    Text(
+                      formattedDate,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+                if (sale.shipment != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF0FDF4),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFFDCFCE7)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.local_shipping_outlined, size: 12, color: Color(0xFF16A34A)),
+                        const SizedBox(width: 4),
+                        Text(
+                          sale.shipment!.shipmentNumber,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF16A34A),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      sale.saleType == 'SERVICE'
+                          ? 'Service Bill'
+                          : sale.saleType == 'RENT'
+                              ? 'Rent Bill'
+                              : 'Direct Sale',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ],
         ),
       ),
     );
   }
+
+  Widget _buildSaleTypeBadge(String saleType) {
+    final (label, bg, fg) = switch (saleType.toUpperCase()) {
+      'SERVICE' => ('SERVICE BILL', const Color(0xFFF3E8FF), const Color(0xFF7E22CE)),
+      'RENT' => ('BATTERY RENT', const Color(0xFFE0F2FE), const Color(0xFF0369A1)),
+      'SCRAP' => ('SCRAP', const Color(0xFFFFF7ED), const Color(0xFFC2410C)),
+      'MECHANIC' => ('MECHANIC', const Color(0xFFEFF6FF), const Color(0xFF1D4ED8)),
+      _ => ('NORMAL', const Color(0xFFF0FDF4), const Color(0xFF15803D)),
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: fg.withValues(alpha: 0.2)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          color: fg,
+        ),
+      ),
+    );
+  }
 }
 
-// ─── Shipment row ─────────────────────────────────────────────────────────
+class _MetaItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final String? subValue;
 
-class _ShipmentRow extends StatelessWidget {
-  final AdminShipmentInfo? shipment;
-
-  const _ShipmentRow({this.shipment});
-
-  Color _statusColor(String status) {
-    switch (status.toUpperCase()) {
-      case 'ACCEPTED':
-        return const Color(0xFF16A34A);
-      case 'PENDING':
-        return const Color(0xFFC05600);
-      case 'REJECTED':
-        return const Color(0xFFBA1A1A);
-      default:
-        return const Color(0xFF586377);
-    }
-  }
-
-  Color _statusBg(String status) {
-    switch (status.toUpperCase()) {
-      case 'ACCEPTED':
-        return const Color(0xFFDCFCE7);
-      case 'PENDING':
-        return const Color(0xFFFFF7ED);
-      case 'REJECTED':
-        return const Color(0xFFFFEBEE);
-      default:
-        return const Color(0xFFECEEF0);
-    }
-  }
+  const _MetaItem({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.subValue,
+  });
 
   @override
   Widget build(BuildContext context) {
-    if (shipment == null) {
-      return Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF1F3F5),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(Icons.local_shipping_outlined,
-                size: 16, color: Color(0xFF9BA8B6)),
-          ),
-          const SizedBox(width: 10),
-          const Text(
-            'No Shipment Linked',
-            style: TextStyle(fontSize: 13, color: Color(0xFF9BA8B6)),
-          ),
-        ],
-      );
-    }
-
-    final dateFormatter = DateFormat('dd MMM yyyy');
-    final arrivalStr = shipment!.arrivalDate != null
-        ? dateFormatter.format(shipment!.arrivalDate!)
-        : '—';
-
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: const Color(0xFFE8F5E9),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Icon(Icons.local_shipping_outlined,
-              size: 16, color: Color(0xFF16A34A)),
-        ),
-        const SizedBox(width: 10),
+        Icon(icon, size: 15, color: const Color(0xFF64748B)),
+        const SizedBox(width: 6),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                shipment!.shipmentNumber,
+                label,
                 style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF191C1E),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF94A3B8),
                 ),
+              ),
+              const SizedBox(height: 1),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1E293B),
+                ),
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              if (shipment!.arrivalDate != null)
+              if (subValue != null && subValue!.isNotEmpty)
                 Text(
-                  'Arrived $arrivalStr',
+                  subValue!,
                   style: const TextStyle(
                     fontSize: 11,
-                    color: Color(0xFF9BA8B6),
+                    color: Color(0xFF64748B),
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
             ],
           ),
         ),
-        const SizedBox(width: 8),
-        Container(
-          padding:
-              EdgeInsets.symmetric(horizontal: ResponsiveHelper.isSmallPhone(context) ? 8 : 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: _statusBg(shipment!.status),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Text(
-            shipment!.status.toUpperCase(),
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              color: _statusColor(shipment!.status),
-            ),
-          ),
-        ),
       ],
     );
   }
 }
 
-// ─── Helper widgets ────────────────────────────────────────────────────────
-
-class _Divider extends StatelessWidget {
-  const _Divider();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: ResponsiveHelper.cardPadding(context) * 0.75),
-      child: const Divider(height: 1, color: Color(0xFFEEF0F2)),
-    );
-  }
-}
-
-class _SectionRow extends StatelessWidget {
-  final IconData icon;
-  final Color iconColor;
-  final Color iconBgColor;
-  final Widget child;
-
-  const _SectionRow({
-    required this.icon,
-    required this.iconColor,
-    required this.iconBgColor,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Container(
-          padding: EdgeInsets.all(ResponsiveHelper.isSmallPhone(context) ? 4 : 6),
-          decoration: BoxDecoration(
-            color: iconBgColor,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, size: 16, color: iconColor),
-        ),
-        const SizedBox(width: 10),
-        Expanded(child: child),
-      ],
-    );
-  }
-}
-
-class _InfoItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  const _InfoItem({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(icon, size: 11, color: const Color(0xFF9BA8B6)),
-            const SizedBox(width: 3),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 10,
-                color: Color(0xFF9BA8B6),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF191C1E),
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
-    );
-  }
-}

@@ -17,7 +17,7 @@ void main() {
       // TODO
     });
 
-    // ApiSellerDashboardStatsGet200ResponseData data
+    // SellerDashboardStats data
     test('to test the property `data`', () async {
       // TODO
     });

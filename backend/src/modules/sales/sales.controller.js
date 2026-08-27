@@ -1,5 +1,6 @@
 const salesService = require('./sales.service');
-const { successResponse, errorResponse } = require('../../shared/utils/response');
+const { successResponse } = require('../../shared/utils/response');
+const { handleRouteError } = require('../../shared/utils/handle-route-error');
 
 /**
  * Sales Controller
@@ -13,18 +14,56 @@ class SalesController {
    */
   async createSale(req, res) {
     try {
-      // Pass the authenticated user ID safely
-      // Never trust frontend seller id, always use req.user.id
-      const sellerId = req.user.id;
-      const result = await salesService.createSale(req.body, sellerId);
-      
+      // Never trust client seller/owner/location — always req.user
+      const result = await salesService.createSale(req.body, {
+        id: req.user.id,
+        role: req.user.role,
+        locationId: req.user.locationId ?? null,
+      });
+
       return successResponse(res, 201, 'Sale transaction created successfully', result);
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Create Sale Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Create Sale Error:');
+    }
+  }
+
+  /**
+   * Create a service bill (no stock move)
+   */
+  async createServiceBill(req, res) {
+    try {
+      const result = await salesService.createServiceBill(req.body, {
+        id: req.user.id,
+      });
+      return successResponse(res, 201, 'Service bill created successfully', result);
+    } catch (error) {
+      return handleRouteError(res, error, 'Create Service Bill Error:');
+    }
+  }
+
+  async createRent(req, res) {
+    try {
+      const result = await salesService.createRent(req.body, {
+        id: req.user.id,
+        role: req.user.role,
+        locationId: req.user.locationId ?? null,
+      });
+      return successResponse(res, 201, 'Battery rented out successfully', result);
+    } catch (error) {
+      return handleRouteError(res, error, 'Create Rent Error:');
+    }
+  }
+
+  async returnRent(req, res) {
+    try {
+      const result = await salesService.returnRent(req.body, {
+        id: req.user.id,
+        role: req.user.role,
+        locationId: req.user.locationId ?? null,
+      });
+      return successResponse(res, 200, 'Battery rent returned successfully', result);
+    } catch (error) {
+      return handleRouteError(res, error, 'Return Rent Error:');
     }
   }
 
@@ -37,8 +76,7 @@ class SalesController {
       const sales = await salesService.getSales(req.user);
       return successResponse(res, 200, 'Sales fetched successfully', sales);
     } catch (error) {
-      console.error('Get Sales Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Sales Error:');
     }
   }
 
@@ -48,14 +86,10 @@ class SalesController {
   async getSaleById(req, res) {
     try {
       const { transactionId } = req.params;
-      const sale = await salesService.getSaleById(Number(transactionId));
+      const sale = await salesService.getSaleById(Number(transactionId), req.user);
       return successResponse(res, 200, 'Sale details fetched successfully', sale);
     } catch (error) {
-      if (error.statusCode) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Get Sale By ID Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Sale By ID Error:');
     }
   }
 
@@ -70,8 +104,7 @@ class SalesController {
       const history = await salesService.getSalesHistory(sellerId, query);
       return successResponse(res, 200, 'Seller sales history fetched successfully', history);
     } catch (error) {
-      console.error('Get Sales History Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Sales History Error:');
     }
   }
 
@@ -81,11 +114,10 @@ class SalesController {
   async getAdminSalesHistory(req, res) {
     try {
       const query = req.query;
-      const history = await salesService.getAdminSalesHistory(query);
+      const history = await salesService.getAdminSalesHistory(query, req.user);
       return successResponse(res, 200, 'Admin sales history fetched successfully', history);
     } catch (error) {
-      console.error('Get Admin Sales History Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Admin Sales History Error:');
     }
   }
 }

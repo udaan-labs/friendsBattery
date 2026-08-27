@@ -13,6 +13,8 @@ const getInventorySchema = z.object({
     page: z.string().regex(/^\d+$/).transform(Number).refine(val => val > 0, { message: 'Page must be positive' }).optional(),
     limit: z.string().regex(/^\d+$/).transform(Number).refine(val => val > 0, { message: 'Limit must be positive' }).optional(),
     includeOutOfStock: z.string().optional(),
+    /** SA/Admin: physical units at this location. Seller/Employee: ignored. */
+    location_id: z.string().regex(/^\d+$/).transform(Number).optional(),
   })
 });
 
@@ -20,6 +22,17 @@ const getInventorySchema = z.object({
 const getInventoryItemSchema = z.object({
   params: z.object({
     productId: z.string().regex(/^\d+$/).transform(Number)
+  }),
+  query: z.object({
+    location_id: z.string().regex(/^\d+$/).transform(Number).optional(),
+    locationId: z.string().regex(/^\d+$/).transform(Number).optional(),
+  }).optional()
+});
+
+// Schema for DELETE /inventory/unit/:serialNumber
+const removeUnitSchema = z.object({
+  params: z.object({
+    serialNumber: z.string().trim().min(1, { message: 'Serial number is required' })
   })
 });
 
@@ -63,10 +76,35 @@ const updateStockSchema = z.object({
     productNameId: z.number().int().positive({ message: 'Invalid product name id' }),
     productModelId: z.number().int().positive({ message: 'Invalid product model id' }),
     quantity: z.number().int().positive({ message: 'Quantity must be a positive integer' }).optional(),
+    serial_numbers: z
+      .array(z.string().trim().min(1, { message: 'Serial number cannot be empty' }).max(100))
+      .min(1)
+      .max(500)
+      .optional(),
     minSellPrice: z.number().nonnegative({ message: 'minSellPrice must be greater than or equal to 0' }).optional(),
     minUnitCountAdmin: z.number().int().nonnegative().optional(),
     minUnitCountSeller: z.number().int().nonnegative().optional(),
-    onSale: z.boolean().optional()
+    onSale: z.boolean().optional(),
+    /** Target warehouse (or any active location). Omit → actor location / default WH. */
+    location_id: z.number().int().positive().optional().nullable(),
+  }).superRefine((data, ctx) => {
+    if (data.serial_numbers && data.quantity != null) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['serial_numbers'],
+        message: 'Send serial_numbers or quantity, not both',
+      });
+    }
+    if (data.serial_numbers) {
+      const set = new Set(data.serial_numbers);
+      if (set.size !== data.serial_numbers.length) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['serial_numbers'],
+          message: 'Duplicate serial numbers in the request',
+        });
+      }
+    }
   })
 });
 
@@ -105,5 +143,6 @@ module.exports = {
   updateStockSchema,
   getProductDetailsSchema,
   getAvailableSerialsSchema,
-  getInventoryDetailsSchema
+  getInventoryDetailsSchema,
+  removeUnitSchema
 };

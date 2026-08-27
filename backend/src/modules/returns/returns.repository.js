@@ -1,4 +1,5 @@
 const { prisma } = require('../../config/db');
+const { httpError } = require('../../shared/utils/http-error');
 
 class ReturnsRepository {
   /**
@@ -30,14 +31,26 @@ class ReturnsRepository {
     const { productUnitId, productId, transactionId, serialNumber, reason, sellerId } = data;
 
     return prisma.$transaction(async (tx) => {
-      // 1. Update ProductUnit status to RETURNED
-      const updatedUnit = await tx.productUnit.update({
-        where: { id: productUnitId },
+      // 1. Atomic claim — only one concurrent return can flip SOLD → RETURNED
+      const claimed = await tx.productUnit.updateMany({
+        where: {
+          id: productUnitId,
+          status: 'SOLD',
+        },
         data: {
           status: 'RETURNED',
           ownerId: sellerId,
-          ownerType: 'SELLER'
-        }
+          ownerType: 'SELLER',
+        },
+      });
+      if (claimed.count !== 1) {
+        throw httpError(409, 
+          'Product is no longer in SOLD status (already returned or sold again).'
+        );
+      }
+
+      const updatedUnit = await tx.productUnit.findUnique({
+        where: { id: productUnitId },
       });
 
       // 2. Create ReturnProduct record

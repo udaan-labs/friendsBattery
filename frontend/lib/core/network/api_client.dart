@@ -1,39 +1,39 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'api_config.dart';
 import 'api_interceptor.dart';
 
-class ApiClient {
-  static final ApiClient _instance = ApiClient._internal();
-  late final Dio _dio;
-  
-  factory ApiClient() {
-    return _instance;
-  }
-  
-  ApiClient._internal() {
-    _dio = Dio(BaseOptions(
-      baseUrl: ApiConfig.baseUrl,
-      connectTimeout: ApiConfig.connectTimeout,
-      receiveTimeout: ApiConfig.receiveTimeout,
-      sendTimeout: ApiConfig.sendTimeout,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    ));
-    
-    _dio.interceptors.addAll([
-      ApiInterceptor(),
+/// Builds the shared Dio instance (auth + debug error logging).
+Dio createAppDio() {
+  final dio = Dio(BaseOptions(
+    baseUrl: ApiConfig.baseUrl,
+    connectTimeout: ApiConfig.connectTimeout,
+    receiveTimeout: ApiConfig.receiveTimeout,
+    sendTimeout: ApiConfig.sendTimeout,
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      // Skip ngrok free-tier browser interstitial (HTML).
+      'ngrok-skip-browser-warning': '1',
+    },
+  ));
+
+  dio.interceptors.addAll([
+    ApiInterceptor(),
+    if (kDebugMode)
       LogInterceptor(
-        request: true,
-        requestHeader: true,
-        requestBody: true,
-        responseHeader: true,
-        responseBody: true,
+        request: false,
+        requestHeader: false,
+        requestBody: false,
+        responseHeader: false,
+        responseBody: false,
         error: true,
+        logPrint: (obj) {
+          // ignore: avoid_print
+          print(obj);
+        },
       ),
-    ]);
-  }
-  
-  Dio get dio => _dio;
+  ]);
+
+  return dio;
 }

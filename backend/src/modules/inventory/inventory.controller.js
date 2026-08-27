@@ -1,5 +1,6 @@
 const inventoryService = require('./inventory.service');
 const { successResponse, errorResponse } = require('../../shared/utils/response');
+const { handleRouteError } = require('../../shared/utils/handle-route-error');
 
 /**
  * Inventory Controller
@@ -11,23 +12,30 @@ const { successResponse, errorResponse } = require('../../shared/utils/response'
 class InventoryController {
   /**
    * Return logged-in user's inventory.
-   * Admin returns admin inventory.
-   * Seller returns only seller inventory.
+   * Admin: admin-owned units. Seller: owner_id. Employee: current_location_id.
    */
   async getInventory(req, res) {
     try {
       const userId = Number(req.user.id);
       const role = req.user.role;
-      const { search, page, limit, includeOutOfStock } = req.query;
+      const locationId = req.user.locationId ?? null;
+      const { search, page, limit, includeOutOfStock, location_id } = req.query;
 
       // Call business layer
-      const inventory = await inventoryService.getInventory(userId, role, { search, page, limit, includeOutOfStock });
+      const inventory = await inventoryService.getInventory(userId, role, {
+        search,
+        page,
+        limit,
+        includeOutOfStock,
+        locationId,
+        filterLocationId: location_id ?? null,
+        actor: req.user,
+      });
 
       // Return standardized success response
       return successResponse(res, 200, 'Inventory fetched successfully', inventory);
     } catch (error) {
-      console.error('Get Inventory Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Inventory Error:');
     }
   }
 
@@ -38,19 +46,16 @@ class InventoryController {
     try {
       const userId = Number(req.user.id);
       const role = req.user.role;
+      const locationId = req.query.location_id ? Number(req.query.location_id) : (req.query.locationId ? Number(req.query.locationId) : (req.user.locationId ?? null));
       const { productId } = req.params;
 
       // Call business layer
-      const inventoryItem = await inventoryService.getInventoryItem(userId, role, productId);
+      const inventoryItem = await inventoryService.getInventoryItem(userId, role, productId, locationId);
 
       // Return standardized success response
       return successResponse(res, 200, 'Inventory item fetched successfully', inventoryItem);
     } catch (error) {
-      if (error.statusCode === 404) {
-        return errorResponse(res, 404, error.message);
-      }
-      console.error('Get Inventory Item Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Inventory Item Error:');
     }
   }
 
@@ -68,11 +73,7 @@ class InventoryController {
       // Return standardized success response
       return successResponse(res, 200, 'Inventory adjusted successfully', result);
     } catch (error) {
-      if (error.statusCode === 400) {
-        return errorResponse(res, 400, error.message);
-      }
-      console.error('Adjust Inventory Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Adjust Inventory Error:');
     }
   }
 
@@ -91,11 +92,7 @@ class InventoryController {
       // Return standardized success response
       return successResponse(res, 200, 'Inventory transferred successfully', result);
     } catch (error) {
-      if (error.statusCode === 400) {
-        return errorResponse(res, 400, error.message);
-      }
-      console.error('Transfer Inventory Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Transfer Inventory Error:');
     }
   }
 
@@ -114,8 +111,7 @@ class InventoryController {
       // Return standardized success response
       return successResponse(res, 200, 'Inventory history fetched successfully', history);
     } catch (error) {
-      console.error('Get Inventory History Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Inventory History Error:');
     }
   }
 
@@ -125,27 +121,39 @@ class InventoryController {
   async updateStock(req, res) {
     try {
       const adminId = Number(req.user.id);
-      const { productNameId, productModelId, quantity, minSellPrice, minUnitCountAdmin, minUnitCountSeller, onSale } = req.body;
-
-      // Call business layer
-      const result = await inventoryService.updateStock(adminId, {
+      const {
         productNameId,
         productModelId,
         quantity,
+        serial_numbers,
         minSellPrice,
         minUnitCountAdmin,
         minUnitCountSeller,
-        onSale
-      });
+        onSale,
+        location_id,
+      } = req.body;
+
+      // Call business layer
+      const result = await inventoryService.updateStock(
+        adminId,
+        {
+          productNameId,
+          productModelId,
+          quantity,
+          serial_numbers,
+          minSellPrice,
+          minUnitCountAdmin,
+          minUnitCountSeller,
+          onSale,
+          location_id,
+        },
+        { role: req.user.role, locationId: req.user.locationId ?? null }
+      );
 
       // Return standardized success response
       return successResponse(res, 200, 'Stock updated successfully', result);
     } catch (error) {
-      if (error.statusCode === 400 || error.statusCode === 404) {
-        return errorResponse(res, error.statusCode, error.message);
-      }
-      console.error('Update Stock Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Update Stock Error:');
     }
   }
 
@@ -156,37 +164,40 @@ class InventoryController {
     try {
       const userId = Number(req.user.id);
       const role = req.user.role;
+      const locationId = req.user.locationId ?? null;
       const { product_name_id, product_model_id } = req.query;
 
       const details = await inventoryService.getProductDetails(userId, role, {
         productNameId: Number(product_name_id),
-        productModelId: Number(product_model_id)
+        productModelId: Number(product_model_id),
+        locationId,
       });
 
       return successResponse(res, 200, 'Product details fetched successfully', details);
     } catch (error) {
-      console.error('Get Product Details Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Product Details Error:');
     }
   }
 
   /**
-   * Fetch available serial numbers for a product owned by the logged-in user.
+   * Fetch available serial numbers for a product in the logged-in user's inventory scope.
    */
   async getAvailableSerials(req, res) {
     try {
       const userId = Number(req.user.id);
+      const role = req.user.role;
+      const locationId = req.user.locationId ?? null;
       const { product_name_id, product_model_id } = req.query;
 
-      const serials = await inventoryService.getAvailableSerials(userId, {
+      const serials = await inventoryService.getAvailableSerials(userId, role, {
         productNameId: Number(product_name_id),
-        productModelId: Number(product_model_id)
+        productModelId: Number(product_model_id),
+        locationId,
       });
 
       return successResponse(res, 200, 'Available serials fetched successfully', serials);
     } catch (error) {
-      console.error('Get Available Serials Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Available Serials Error:');
     }
   }
 
@@ -197,6 +208,7 @@ class InventoryController {
     try {
       const userId = Number(req.user.id);
       const role = req.user.role;
+      const locationId = req.user.locationId ?? null;
       const { product_name_id, search, page, limit } = req.query;
 
       // Call business layer
@@ -204,14 +216,14 @@ class InventoryController {
         product_name_id,
         search,
         page,
-        limit
+        limit,
+        locationId,
       });
 
       // Return standardized success response
       return successResponse(res, 200, 'Inventory details fetched successfully', details);
     } catch (error) {
-      console.error('Get Inventory Details Error:', error);
-      return errorResponse(res, 500, 'Internal server error');
+      return handleRouteError(res, error, 'Get Inventory Details Error:');
     }
   }
   /**
@@ -220,20 +232,32 @@ class InventoryController {
   async scanForSale(req, res) {
     try {
       const { serial_number } = req.query;
-      const sellerId = req.user.id;
 
       if (!serial_number) {
         return errorResponse(res, 400, 'Serial number is required');
       }
 
-      const productDetails = await inventoryService.scanForSale(serial_number, sellerId);
+      const productDetails = await inventoryService.scanForSale(serial_number, {
+        id: req.user.id,
+        role: req.user.role,
+        locationId: req.user.locationId ?? null,
+      });
       return successResponse(res, 200, 'Product found successfully', productDetails);
     } catch (error) {
-      if (error.message === 'Product not found in your available inventory') {
-        return errorResponse(res, 404, error.message);
-      }
-      console.error('Scan For Sale Error:', error);
-      return errorResponse(res, 500, 'Internal server error while scanning product');
+      return handleRouteError(res, error, 'Scan For Sale Error:');
+    }
+  }
+
+  /**
+   * Remove a specific serial number unit from inventory.
+   */
+  async removeUnit(req, res) {
+    try {
+      const { serialNumber } = req.params;
+      const result = await inventoryService.removeUnit(serialNumber, req.user);
+      return successResponse(res, 200, 'Unit removed successfully', result);
+    } catch (error) {
+      return handleRouteError(res, error, 'Remove Unit Error:');
     }
   }
 }

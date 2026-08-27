@@ -1,30 +1,24 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
+import 'package:friends_battery_api/friends_battery_api.dart';
 import 'package:intl/intl.dart';
+import '../../../../theme/app_theme.dart';
 
 class ProductDetailsScreen extends StatelessWidget {
-  final Map<String, dynamic> productData;
+  final VerifyProductPayload productData;
 
   const ProductDetailsScreen({super.key, required this.productData});
 
-  String _formatDate(String? dateStr) {
-    if (dateStr == null) return 'N/A';
-    try {
-      final date = DateTime.parse(dateStr);
-      return DateFormat('MMM dd, yyyy').format(date);
-    } catch (e) {
-      return dateStr;
-    }
+  String _formatDate(DateTime? date) {
+    if (date == null) return 'N/A';
+    return DateFormat('MMM dd, yyyy').format(date);
   }
 
   @override
   Widget build(BuildContext context) {
-    final unit = productData['productUnit'] ?? {};
-    final product = productData['product'] ?? {};
-    final seller = productData['seller'];
-    final customer = productData['customer'];
-    final sale = productData['sale'];
-    final history = (productData['inventoryHistory'] as List?) ?? [];
+    final unit = productData.productUnit;
+    final product = productData.product;
+    final warranty = unit?.warrantyExpiry;
+    final isExpired = warranty != null && warranty.isBefore(DateTime.now());
 
     return Scaffold(
       appBar: AppBar(
@@ -33,7 +27,7 @@ class ProductDetailsScreen extends StatelessWidget {
         foregroundColor: Colors.black,
         elevation: 0,
       ),
-      backgroundColor: AppColors.background,
+      backgroundColor: AppTheme.background,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -44,61 +38,21 @@ class ProductDetailsScreen extends StatelessWidget {
               icon: Icons.battery_charging_full,
               content: Column(
                 children: [
-                  _buildRow('Model', product['model']),
-                  _buildRow('Name', product['name']),
-                  _buildRow('Serial Number', unit['serialNumber']),
-                  _buildRow('Status', unit['status'], isStatus: true),
-                  _buildRow('Manufactured', _formatDate(unit['manufactureDate'])),
+                  _buildRow('Model', product?.model),
+                  _buildRow('Name', product?.name),
+                  _buildRow('Group', product?.group),
+                  _buildRow('Subgroup', product?.subgroup),
+                  _buildRow('Serial Number', unit?.serialNumber),
+                  _buildRow('Status', unit?.status, isStatus: true),
+                  _buildRow('QR Code', unit?.qrCode),
+                  _buildRow(
+                    'Warranty Expiry',
+                    _formatDate(warranty),
+                    highlight: warranty != null,
+                    isExpired: isExpired,
+                  ),
                 ],
               ),
-            ),
-            const SizedBox(height: 16),
-            if (sale != null) ...[
-              _buildSection(
-                title: 'Sale & Warranty Information',
-                icon: Icons.point_of_sale,
-                content: Column(
-                  children: [
-                    _buildRow('Sale Date', _formatDate(sale['saleDate'])),
-                    _buildRow('Sale Price', '₹${sale['salePrice']}'),
-                    _buildRow('Warranty Expiry', _formatDate(unit['warrantyExpiry']), 
-                        highlight: true, 
-                        isExpired: unit['warrantyExpiry'] != null && DateTime.parse(unit['warrantyExpiry']).isBefore(DateTime.now())),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-            if (customer != null) ...[
-              _buildSection(
-                title: 'Customer Information',
-                icon: Icons.person,
-                content: Column(
-                  children: [
-                    _buildRow('Name', customer['name']),
-                    _buildRow('Phone', customer['phone']),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-            if (seller != null) ...[
-              _buildSection(
-                title: 'Seller Information',
-                icon: Icons.store,
-                content: Column(
-                  children: [
-                    _buildRow('Shop', seller['shopName']),
-                    _buildRow('Owner', seller['name']),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-            _buildSection(
-              title: 'Inventory Timeline',
-              icon: Icons.history,
-              content: _buildTimeline(history),
             ),
           ],
         ),
@@ -117,14 +71,14 @@ class ProductDetailsScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(icon, color: AppColors.primary, size: 24),
+                Icon(icon, color: AppTheme.primary, size: 24),
                 const SizedBox(width: 8),
                 Text(
                   title,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                    color: AppTheme.textPrimary,
                   ),
                 ),
               ],
@@ -137,16 +91,22 @@ class ProductDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRow(String label, dynamic value, {bool isStatus = false, bool highlight = false, bool isExpired = false}) {
+  Widget _buildRow(
+    String label,
+    dynamic value, {
+    bool isStatus = false,
+    bool highlight = false,
+    bool isExpired = false,
+  }) {
     String displayValue = value?.toString() ?? 'N/A';
-    Color? valueColor = AppColors.textSecondary;
+    Color? valueColor = AppTheme.textSecondary;
     FontWeight valueWeight = FontWeight.normal;
 
     if (isStatus) {
-      valueColor = displayValue == 'SOLD' ? AppColors.success : AppColors.primary;
+      valueColor = displayValue == 'SOLD' ? AppTheme.success : AppTheme.primary;
       valueWeight = FontWeight.bold;
     } else if (highlight) {
-      valueColor = isExpired ? AppColors.error : AppColors.success;
+      valueColor = isExpired ? AppTheme.error : AppTheme.success;
       valueWeight = FontWeight.bold;
       if (isExpired) displayValue += ' (Expired)';
     }
@@ -158,7 +118,7 @@ class ProductDetailsScreen extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w500),
+            style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w500),
           ),
           Flexible(
             child: Text(
@@ -169,61 +129,6 @@ class ProductDetailsScreen extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildTimeline(List history) {
-    if (history.isEmpty) {
-      return const Text('No history available', style: TextStyle(color: AppColors.textSecondary));
-    }
-
-    return Column(
-      children: List.generate(history.length, (index) {
-        final event = history[index];
-        final isLast = index == history.length - 1;
-        
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Column(
-              children: [
-                Container(
-                  width: 12,
-                  height: 12,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primary,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                if (!isLast)
-                  Container(
-                    width: 2,
-                    height: 40,
-                    color: AppColors.primary.withOpacity(0.3),
-                  ),
-              ],
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    event['type']?.toString().replaceAll('_', ' ') ?? 'UNKNOWN',
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${_formatDate(event['date'])} - by ${event['performedBy']}',
-                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                  ),
-                  if (!isLast) const SizedBox(height: 16),
-                ],
-              ),
-            ),
-          ],
-        );
-      }),
     );
   }
 }

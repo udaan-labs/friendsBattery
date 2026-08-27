@@ -6,7 +6,6 @@ import '../../../../theme/app_theme.dart';
 import 'package:intl/intl.dart';
 import '../providers/seller_sales_provider.dart';
 import '../widgets/seller_sale_card.dart';
-import '../../dashboard/screens/seller_shell_screen.dart';
 
 class SellerSalesHistoryScreen extends ConsumerStatefulWidget {
   const SellerSalesHistoryScreen({super.key});
@@ -60,6 +59,7 @@ class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScr
     }
   }
 
+  @override
   Widget build(BuildContext context) {
     final state = ref.watch(sellerSalesProvider);
 
@@ -218,7 +218,7 @@ class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScr
       );
     }
 
-    if (state.error != null) {
+    if (state.error != null && state.sales.isEmpty) {
       return ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
@@ -231,35 +231,34 @@ class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScr
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
-                      decoration: BoxDecoration(
-                        color: AppTheme.error.withValues(alpha: 0.08),
+                      padding: const EdgeInsets.all(16),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFEF3C7),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.cloud_off_rounded, size: 48, color: AppTheme.error),
+                      child: const Icon(Icons.wifi_off_rounded, size: 38, color: Color(0xFFD97706)),
                     ),
                     const SizedBox(height: 16),
                     const Text(
-                      'Something went wrong',
-                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF191C1E)),
+                      'Unable to load sales history',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Could not load your sales. Pull down to retry.',
-                      style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Please check your network connection and try again.',
+                      style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 24),
-                    ElevatedButton.icon(
+                    const SizedBox(height: 20),
+                    OutlinedButton.icon(
                       onPressed: () => ref.read(sellerSalesProvider.notifier).fetchSales(),
-                      icon: const Icon(Icons.refresh_rounded, size: 18),
-                      label: const Text('Retry'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF16A34A),
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(horizontal: ResponsiveHelper.responsivePadding(context), vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                        elevation: 0,
+                      icon: const Icon(Icons.refresh_rounded, size: 16),
+                      label: const Text('Try Again'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.primary,
+                        side: const BorderSide(color: AppTheme.primary),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                       ),
                     ),
                   ],

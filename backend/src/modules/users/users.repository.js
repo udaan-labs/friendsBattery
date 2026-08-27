@@ -1,23 +1,69 @@
 const { prisma } = require('../../config/db');
 
-class UserRepository {
-  /**
-   * Find all users optionally filtered by role.
-   * @param {string} [role] - Optional role filter ('ADMIN', 'SELLER')
-   * @returns {Promise<Array>}
-   */
-  async findAll(role) {
-    const where = {};
-    if (role) {
-      where.role = role;
-    }
+const accountSelect = {
+  id: true,
+  userId: true,
+  userName: true,
+  role: true,
+  isActive: true,
+  location: { select: { name: true } },
+};
+
+class UsersRepository {
+  findAccounts(role) {
     return prisma.user.findMany({
-      where,
-      orderBy: {
-        createdAt: 'desc'
-      }
+      where: { role },
+      select: accountSelect,
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  findById(id) {
+    return prisma.user.findUnique({
+      where: { id: BigInt(id) },
+      select: {
+        id: true,
+        userId: true,
+        userName: true,
+        role: true,
+        isActive: true,
+        parentId: true,
+        locationId: true,
+        location: {
+          select: {
+            id: true,
+            name: true,
+            warehouseId: true,
+          },
+        },
+      },
+    });
+  }
+
+  setActive(id, isActive) {
+    return prisma.user.update({
+      where: { id: BigInt(id) },
+      data: { isActive },
+      select: {
+        id: true,
+        userId: true,
+        role: true,
+        isActive: true,
+      },
+    });
+  }
+
+  updatePassword(id, passwordHash) {
+    return prisma.user.update({
+      where: { id: BigInt(id) },
+      data: { passwordHash },
+      select: {
+        id: true,
+        userId: true,
+        role: true,
+      },
     });
   }
 }
 
-module.exports = new UserRepository();
+module.exports = new UsersRepository();

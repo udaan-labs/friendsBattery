@@ -1,0 +1,203 @@
+{
+  "main": {
+    "id": "8dfcdc52ed830bf1",
+    "type": "split",
+    "children": [
+      {
+        "id": "dded9991630f6619",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "ab3804b824cf2c01",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "User Roles & Capabilities Flow.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "User Roles & Capabilities Flow"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "8bcbc426479cbf12",
+    "type": "split",
+    "children": [
+      {
+        "id": "6edf27bd4871b7a9",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "9459b3b85dcaf597",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "4879d279cddce08a",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "11de1df848630127",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 200
+  },
+  "right": {
+    "id": "dff4a2495f20b692",
+    "type": "split",
+    "children": [
+      {
+        "id": "30ec34f9c5b57a04",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "4975b33d35dc19fb",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Product and Shipment Flows.canvas",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Product and Shipment Flows"
+            }
+          },
+          {
+            "id": "41ff549f5d137e76",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Product and Shipment Flows.canvas",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Product and Shipment Flows"
+            }
+          },
+          {
+            "id": "e3df71320224ea88",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "2b8dfbb2325414e4",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "b606a83d092eb07a",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Product and Shipment Flows.canvas",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Product and Shipment Flows"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "ab3804b824cf2c01",
+  "lastOpenFiles": [
+    "User Roles & Capabilities Flow.canvas",
+    "ponytail.md",
+    "User Roles & Capabilities Flow.md",
+    "Role Chain Workflow.md",
+    "Role Chain Workflow.canvas",
+    "Product and Shipment Flows.canvas",
+    "Login Flow.canvas",
+    "flows.md",
+    "Login Flow.md",
+    "Untitled.canvas",
+    "Untitled.base",
+    "Welcome.md"
+  ]
+}

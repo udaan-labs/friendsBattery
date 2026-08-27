@@ -16,29 +16,42 @@ Method | HTTP request | Description
 
 
 # **apiDashboardActivityHistoryGet**
-> apiDashboardActivityHistoryGet()
+> ActivityHistoryResponse apiDashboardActivityHistoryGet(cursor, fromDate, toDate, limit)
 
 Get paginated activity history (Admin only)
+
+Same scope as recent-activity. SUPER_ADMIN org-wide; ADMIN own warehouse/shop tree only.
 
 ### Example
 ```dart
 import 'package:friends_battery_api/api.dart';
 
 final api = FriendsBatteryApi().getDashboardApi();
+final String cursor = cursor_example; // String | Opaque cursor from previous page (pagination.nextCursor)
+final DateTime fromDate = 2013-10-20T19:20:30+01:00; // DateTime | Inclusive start of range (ISO)
+final DateTime toDate = 2013-10-20T19:20:30+01:00; // DateTime | Inclusive end of range (ISO)
+final int limit = 56; // int | 
 
 try {
-    api.apiDashboardActivityHistoryGet();
+    final response = api.apiDashboardActivityHistoryGet(cursor, fromDate, toDate, limit);
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling DashboardApi->apiDashboardActivityHistoryGet: $e\n');
 }
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **cursor** | **String**| Opaque cursor from previous page (pagination.nextCursor) | [optional] 
+ **fromDate** | **DateTime**| Inclusive start of range (ISO) | [optional] 
+ **toDate** | **DateTime**| Inclusive end of range (ISO) | [optional] 
+ **limit** | **int**|  | [optional] [default to 20]
 
 ### Return type
 
-void (empty response body)
+[**ActivityHistoryResponse**](ActivityHistoryResponse.md)
 
 ### Authorization
 
@@ -47,14 +60,16 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiDashboardRecentActivityGet**
-> apiDashboardRecentActivityGet()
+> RecentActivityResponse apiDashboardRecentActivityGet()
 
 Get recent activity feed (Admin only)
+
+SUPER_ADMIN sees org-wide activity. Shop/warehouse ADMIN sees only own warehouse/shop plus sellers and employees under them.
 
 ### Example
 ```dart
@@ -63,7 +78,8 @@ import 'package:friends_battery_api/api.dart';
 final api = FriendsBatteryApi().getDashboardApi();
 
 try {
-    api.apiDashboardRecentActivityGet();
+    final response = api.apiDashboardRecentActivityGet();
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling DashboardApi->apiDashboardRecentActivityGet: $e\n');
 }
@@ -74,7 +90,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-void (empty response body)
+[**RecentActivityResponse**](RecentActivityResponse.md)
 
 ### Authorization
 
@@ -83,7 +99,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

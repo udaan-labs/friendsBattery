@@ -1,12 +1,23 @@
 const express = require('express');
 const shipmentsController = require('./shipments.controller');
-const { createShipmentSchema, acceptShipmentSchema } = require('./shipments.validation');
+const {
+  createShipmentSchema,
+  acceptShipmentSchema,
+  viewShipmentSchema,
+} = require('./shipments.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
-const { requireAdmin, requireSeller, requireAdminOrSeller } = require('../../shared/middleware/role.middleware');
+const {
+  requireAdmin,
+  requireSeller,
+  requireAdminOrSeller,
+  requireAdminOrSellerOrEmployee,
+  requireEmployee,
+} = require('../../shared/middleware/role.middleware');
 const { validateRequest } = require('../../shared/middleware/validation.middleware');
 
 const shipmentsRouter = express.Router();
 const sellerRouter = express.Router();
+const employeeRouter = express.Router();
 
 /**
  * @swagger
@@ -19,7 +30,11 @@ const sellerRouter = express.Router();
  * @swagger
  * /api/shipments:
  *   post:
- *     summary: Create a new shipment (Admin only)
+ *     summary: Transfer stock serials from admin to seller (Admin only)
+ *     description: |
+ *       Marks existing AVAILABLE admin-owned product units as IN_SHIPMENT.
+ *       Creates shipment record (status PENDING) and inventory_transactions (SHIPPED).
+ *       Ownership moves to seller when seller accepts the shipment.
  *     tags: [Shipments]
  *     security:
  *       - bearerAuth: []
@@ -28,44 +43,38 @@ const sellerRouter = express.Router();
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - sellerId
- *               - items
- *             properties:
- *               sellerId:
- *                 type: integer
- *               items:
- *                 type: array
- *                 items:
- *                   type: object
- *                   required:
- *                     - productCategoryId
- *                     - productNameId
- *                     - productModelId
- *                     - productId
- *                     - productItemId
- *                     - quantity
- *                   properties:
- *                     productCategoryId:
- *                       type: integer
- *                     productNameId:
- *                       type: integer
- *                     productModelId:
- *                       type: integer
- *                     productId:
- *                       type: integer
- *                     productItemId:
- *                       type: integer
- *                     quantity:
- *                       type: integer
+ *             $ref: '#/components/schemas/CreateShipmentRequest'
  *     responses:
  *       201:
- *         description: Shipment created successfully
+ *         description: Units transferred successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CreateShipmentResponse'
  *       400:
- *         description: Invalid input or product combo not found
+ *         description: Invalid serials, product, or payload
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       403:
  *         description: Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Seller not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       409:
+ *         description: Serial no longer available (race)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 shipmentsRouter.post(
   '/',
@@ -217,7 +226,8 @@ shipmentsRouter.get(
 shipmentsRouter.get(
   '/:id',
   authenticate,
-  requireAdminOrSeller,
+  requireAdminOrSellerOrEmployee,
+  validateRequest(viewShipmentSchema),
   shipmentsController.getShipmentById.bind(shipmentsController)
 );
 
@@ -342,7 +352,38 @@ sellerRouter.get(
   shipmentsController.getShipments.bind(shipmentsController)
 );
 
+/**
+ * @swagger
+ * /api/employee/shipments:
+ *   get:
+ *     summary: List shipments for sellers at the employee's shop location (read-only)
+ *     description: |
+ *       EMPLOYEE only. Returns NewShipment rows where the seller shares
+ *       users.location_id with the employee. Does not allow accept/transfer.
+ *     tags: [Shipments]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Shop shipments list (same shape as seller list)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SellerShipmentsListResponse'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Employee only
+ */
+employeeRouter.get(
+  '/shipments',
+  authenticate,
+  requireEmployee,
+  shipmentsController.getEmployeeShipments.bind(shipmentsController)
+);
+
 module.exports = {
   shipments: shipmentsRouter,
-  seller: sellerRouter
+  seller: sellerRouter,
+  employee: employeeRouter,
 };

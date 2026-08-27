@@ -13,9 +13,10 @@ part 'api_auth_register_post_request.g.dart';
 /// Properties:
 /// * [userId] 
 /// * [username] 
-/// * [userNumber] 
+/// * [userNumber] - Exactly 10 digits
 /// * [shopName] 
-/// * [password] 
+/// * [password] - Min 8 characters, one uppercase, one special character
+/// * [locationId] - Optional SHOP location id (assign seller to a shop)
 @BuiltValue()
 abstract class ApiAuthRegisterPostRequest implements Built<ApiAuthRegisterPostRequest, ApiAuthRegisterPostRequestBuilder> {
   @BuiltValueField(wireName: r'user_id')
@@ -24,14 +25,20 @@ abstract class ApiAuthRegisterPostRequest implements Built<ApiAuthRegisterPostRe
   @BuiltValueField(wireName: r'username')
   String get username;
 
+  /// Exactly 10 digits
   @BuiltValueField(wireName: r'user_number')
   String get userNumber;
 
   @BuiltValueField(wireName: r'shop_name')
   String get shopName;
 
+  /// Min 8 characters, one uppercase, one special character
   @BuiltValueField(wireName: r'password')
   String get password;
+
+  /// Optional SHOP location id (assign seller to a shop)
+  @BuiltValueField(wireName: r'location_id')
+  int? get locationId;
 
   ApiAuthRegisterPostRequest._();
 
@@ -81,6 +88,13 @@ class _$ApiAuthRegisterPostRequestSerializer implements PrimitiveSerializer<ApiA
       object.password,
       specifiedType: const FullType(String),
     );
+    if (object.locationId != null) {
+      yield r'location_id';
+      yield serializers.serialize(
+        object.locationId,
+        specifiedType: const FullType(int),
+      );
+    }
   }
 
   @override
@@ -138,6 +152,13 @@ class _$ApiAuthRegisterPostRequestSerializer implements PrimitiveSerializer<ApiA
             specifiedType: const FullType(String),
           ) as String;
           result.password = valueDes;
+          break;
+        case r'location_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.locationId = valueDes;
           break;
         default:
           unhandled.add(key);

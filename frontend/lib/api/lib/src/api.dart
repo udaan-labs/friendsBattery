@@ -9,15 +9,20 @@ import 'package:friends_battery_api/src/auth/api_key_auth.dart';
 import 'package:friends_battery_api/src/auth/basic_auth.dart';
 import 'package:friends_battery_api/src/auth/bearer_auth.dart';
 import 'package:friends_battery_api/src/auth/oauth.dart';
+import 'package:friends_battery_api/src/api/app_api.dart';
+import 'package:friends_battery_api/src/api/attendance_api.dart';
 import 'package:friends_battery_api/src/api/auth_api.dart';
-import 'package:friends_battery_api/src/api/customers_api.dart';
 import 'package:friends_battery_api/src/api/dashboard_api.dart';
+import 'package:friends_battery_api/src/api/health_api.dart';
 import 'package:friends_battery_api/src/api/inventory_api.dart';
+import 'package:friends_battery_api/src/api/product_units_api.dart';
 import 'package:friends_battery_api/src/api/products_api.dart';
+import 'package:friends_battery_api/src/api/returns_api.dart';
 import 'package:friends_battery_api/src/api/sales_api.dart';
 import 'package:friends_battery_api/src/api/shipments_api.dart';
 import 'package:friends_battery_api/src/api/shops_api.dart';
 import 'package:friends_battery_api/src/api/transfers_api.dart';
+import 'package:friends_battery_api/src/api/users_api.dart';
 
 class FriendsBatteryApi {
   static const String basePath = r'http://localhost:3000';
@@ -113,16 +118,22 @@ class FriendsBatteryApi {
     }
   }
 
+  /// Get AppApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  AppApi getAppApi() {
+    return AppApi(dio, serializers);
+  }
+
+  /// Get AttendanceApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  AttendanceApi getAttendanceApi() {
+    return AttendanceApi(dio, serializers);
+  }
+
   /// Get AuthApi instance, base route and serializer can be overridden by a given but be careful,
   /// by doing that all interceptors will not be executed
   AuthApi getAuthApi() {
     return AuthApi(dio, serializers);
-  }
-
-  /// Get CustomersApi instance, base route and serializer can be overridden by a given but be careful,
-  /// by doing that all interceptors will not be executed
-  CustomersApi getCustomersApi() {
-    return CustomersApi(dio, serializers);
   }
 
   /// Get DashboardApi instance, base route and serializer can be overridden by a given but be careful,
@@ -131,16 +142,34 @@ class FriendsBatteryApi {
     return DashboardApi(dio, serializers);
   }
 
+  /// Get HealthApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  HealthApi getHealthApi() {
+    return HealthApi(dio, serializers);
+  }
+
   /// Get InventoryApi instance, base route and serializer can be overridden by a given but be careful,
   /// by doing that all interceptors will not be executed
   InventoryApi getInventoryApi() {
     return InventoryApi(dio, serializers);
   }
 
+  /// Get ProductUnitsApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  ProductUnitsApi getProductUnitsApi() {
+    return ProductUnitsApi(dio, serializers);
+  }
+
   /// Get ProductsApi instance, base route and serializer can be overridden by a given but be careful,
   /// by doing that all interceptors will not be executed
   ProductsApi getProductsApi() {
     return ProductsApi(dio, serializers);
+  }
+
+  /// Get ReturnsApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  ReturnsApi getReturnsApi() {
+    return ReturnsApi(dio, serializers);
   }
 
   /// Get SalesApi instance, base route and serializer can be overridden by a given but be careful,
@@ -165,5 +194,11 @@ class FriendsBatteryApi {
   /// by doing that all interceptors will not be executed
   TransfersApi getTransfersApi() {
     return TransfersApi(dio, serializers);
+  }
+
+  /// Get UsersApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  UsersApi getUsersApi() {
+    return UsersApi(dio, serializers);
   }
 }

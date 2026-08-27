@@ -1,18 +1,18 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../shared/widgets/common_pull_to_refresh.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
-import '../../../../core/network/api_client_provider.dart';
-import '../../../../core/storage/local_storage.dart';
-import '../../../../shared/widgets/snackbar_helper.dart';
+import '../../../../core/storage/session_manager.dart';
+import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/widgets/logout_dialog_helper.dart';
-import '../providers/dashboard_controller.dart';
+import '../../../../theme/app_theme.dart';
+import '../providers/admin_stock_provider.dart';
+import '../providers/dashboard_providers.dart';
 import '../widgets/kpi_grid.dart';
 import '../widgets/quick_actions.dart';
 import '../widgets/recent_activity_timeline.dart';
-import '../../inventory/screens/add_product_screen.dart';
 
 class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -24,20 +24,20 @@ class AdminDashboardScreen extends ConsumerStatefulWidget {
 class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   String _currentTab = 'dashboard';
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
-  // View Stock tab state variables
-  int _stockPage = 1;
-  final int _stockLimit = 10;
-  int _stockTotalPages = 1;
-  String _stockSearchQuery = '';
-  bool _isLoadingStock = false;
-  List<Map<String, dynamic>> _flatStockItems = [];
+  final TextEditingController _stockSearchController = TextEditingController();
+  Timer? _stockSearchDebounce;
 
   @override
   void initState() {
     super.initState();
-    // Pre-load data based on default view
-    ref.read(dashboardControllerProvider).refreshAllData();
+    // KPI / activity load via ref.watch in child widgets — no forced double-fetch here.
+  }
+
+  @override
+  void dispose() {
+    _stockSearchController.dispose();
+    _stockSearchDebounce?.cancel();
+    super.dispose();
   }
 
   void _switchTab(String tabId) {
@@ -47,76 +47,20 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
       context.pop(); // Close drawer
     }
-
-    if (tabId == 'dashboard') {
-      ref.read(dashboardControllerProvider).refreshAllData();
-    }
+    // Do not force-refresh on every tab switch; pull-to-refresh covers intentional reloads.
   }
 
-  // --- API Methods for View Stock ---
-  Future<void> _fetchStock(int page) async {
-    setState(() {
-      _stockPage = page;
-      _isLoadingStock = true;
-      _flatStockItems = [];
+  void _onStockSearchChanged(String value) {
+    if (_stockSearchDebounce?.isActive ?? false) _stockSearchDebounce!.cancel();
+    _stockSearchDebounce = Timer(const Duration(milliseconds: 400), () {
+      ref.read(adminStockQueryProvider.notifier).update(
+            (q) => q.copyWith(page: 1, search: value),
+          );
     });
+  }
 
-    try {
-      final api = ref.read(apiClientProvider).getInventoryApi();
-      final response = await api.apiInventoryDetailsGet(
-        page: _stockPage,
-        limit: _stockLimit,
-        search: _stockSearchQuery.isNotEmpty ? _stockSearchQuery : null,
-      );
-
-      final details = response.data?.data;
-      if (details != null) {
-        final categories = details.categories;
-        final pagination = details.pagination;
-        
-        setState(() {
-          _stockTotalPages = pagination?.totalPages ?? 1;
-        });
-
-        List<Map<String, dynamic>> items = [];
-        if (categories != null) {
-          for (var cat in categories) {
-            final subcats = cat.subcategories;
-            if (subcats != null) {
-              for (var sub in subcats) {
-                final prods = sub.products;
-                if (prods != null) {
-                  for (var prod in prods) {
-                    items.add({
-                      'category': cat.categoryName ?? '',
-                      'subcategory': sub.subcategoryName ?? '',
-                      'productName': prod.productName ?? '',
-                      'total': prod.totalQuantity ?? 0,
-                      'sold': prod.soldQuantity ?? 0,
-                      'remaining': prod.remainingQuantity ?? 0,
-                    });
-                  }
-                }
-              }
-            }
-          }
-        }
-
-        setState(() {
-          _flatStockItems = items;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        context.showErrorSnackBar('Failed to retrieve inventory details');
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoadingStock = false;
-        });
-      }
-    }
+  void _goToStockPage(int page) {
+    ref.read(adminStockQueryProvider.notifier).update((q) => q.copyWith(page: page));
   }
 
   String _getInitials(String name) {
@@ -131,19 +75,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   }
 
   String _getUserNameSafe() {
-    try {
-      final user = LocalStorage.get('user');
-      if (user != null) {
-        try {
-          return (user as dynamic).userName ?? (user as dynamic).username ?? 'Administrator';
-        } catch (_) {
-          if (user is Map) {
-            return (user['userName'] ?? user['username'] ?? 'Administrator').toString();
-          }
-        }
-      }
-    } catch (_) {}
-    return 'Administrator';
+    final user = SessionManager.user;
+    if (user == null) return 'Administrator';
+    return (user['userName'] ?? user['username'] ?? 'Administrator').toString();
   }
 
   @override
@@ -151,6 +85,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     final isDesktop = ResponsiveHelper.isDesktop(context);
     final isTablet = ResponsiveHelper.isTablet(context);
     final username = _getUserNameSafe();
+    final isSuperAdmin = ref.watch(authProvider).role == UserRole.superAdmin;
 
     return PopScope(
       canPop: _currentTab == 'dashboard',
@@ -183,14 +118,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         actions: [
 
           IconButton(
-            icon: Badge(
-              label: const Text('3'),
-              backgroundColor: const Color(0xFFBA1A1A),
-              child: Icon(Icons.notifications_none_outlined, color: const Color(0xFF3E4A3D), size: ResponsiveHelper.isSmallPhone(context) ? 24 : 28),
+            icon: Icon(
+              Icons.history,
+              color: const Color(0xFF3E4A3D),
+              size: ResponsiveHelper.isSmallPhone(context) ? 24 : 28,
             ),
-            onPressed: () {
-              context.push('/admin/activity-history');
-            },
+            onPressed: () => context.push('/admin/activity-history'),
           ),
           IconButton(
             icon: Icon(Icons.exit_to_app, color: const Color(0xFF3E4A3D), size: ResponsiveHelper.isSmallPhone(context) ? 24 : 28),
@@ -277,22 +210,29 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     title: 'Dashboard',
                     tabId: 'dashboard',
                   ),
-                  _buildDrawerItem(
-                    icon: Icons.add_box_outlined,
-                    activeIcon: Icons.add_box,
-                    title: 'Add Product',
-                    tabId: 'add_product',
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.inventory_2_outlined,
-                    activeIcon: Icons.inventory_2,
-                    title: 'View Stock',
-                    tabId: 'view_stock',
-                    onTap: () {
-                      context.pop(); // close drawer
-                      context.push('/admin/inventory');
-                    },
-                  ),
+                  if (isSuperAdmin)
+                    _buildDrawerItem(
+                      icon: Icons.price_change_outlined,
+                      activeIcon: Icons.price_change,
+                      title: 'Configure Product',
+                      tabId: 'configure_product',
+                      onTap: () {
+                        context.pop();
+                        context.push('/admin/add-product/configure');
+                      },
+                    ),
+                  // Super Admin owns catalog only — no personal inventory screen.
+                  if (!isSuperAdmin)
+                    _buildDrawerItem(
+                      icon: Icons.inventory_2_outlined,
+                      activeIcon: Icons.inventory_2,
+                      title: 'View Stock',
+                      tabId: 'view_stock',
+                      onTap: () {
+                        context.pop(); // close drawer
+                        context.push('/admin/inventory');
+                      },
+                    ),
                   _buildDrawerItem(
                     icon: Icons.qr_code_scanner_outlined,
                     activeIcon: Icons.qr_code_scanner,
@@ -323,16 +263,18 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       context.push('/admin/sales');
                     },
                   ),
-                  _buildDrawerItem(
-                    icon: Icons.swap_horiz_outlined,
-                    activeIcon: Icons.swap_horiz,
-                    title: 'Stock Transfer',
-                    tabId: 'stock_transfer',
-                    onTap: () {
-                      context.pop();
-                      context.go('/admin/shipments');
-                    },
-                  ),
+                  if (!isSuperAdmin) ...[
+                    _buildDrawerItem(
+                      icon: Icons.swap_horiz_outlined,
+                      activeIcon: Icons.swap_horiz,
+                      title: 'Stock Transfer',
+                      tabId: 'stock_transfer',
+                      onTap: () {
+                        context.pop();
+                        context.go('/admin/shipments');
+                      },
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -398,8 +340,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     switch (_currentTab) {
       case 'dashboard':
         return _buildDashboardTabView(isDesktop, isTablet);
-      case 'add_product':
-        return _buildAddProductTabView();
       case 'view_stock':
         return _buildViewStockTabView();
       case 'manage_sellers':
@@ -420,8 +360,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
   // --- Sub-View: Bento Grid Dashboard ---
   Widget _buildDashboardTabView(bool isDesktop, bool isTablet) {
-    return CommonPullToRefresh(
-      onRefresh: () => ref.read(dashboardControllerProvider).refreshAllData(),
+    return RefreshIndicator(
+      onRefresh: () => refreshAdminDashboard(ref),
+      color: AppTheme.primary,
+      backgroundColor: Colors.white,
       child: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
@@ -504,85 +446,92 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     );
   }
 
-  // --- Sub-View: Add Product Form ---
-  Widget _buildAddProductTabView() {
-    return const AddProductScreen();
-  }
-  // --- Sub-View: View Stock (Paginated Table) ---
+  // --- Sub-View: View Stock (Paginated Table via shared provider) ---
   Widget _buildViewStockTabView() {
+    final stockAsync = ref.watch(adminStockDetailsProvider);
+    final query = ref.watch(adminStockQueryProvider);
+    final stockPage = query.page;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Header filters row
         Padding(
           padding: EdgeInsets.all(ResponsiveHelper.responsiveHorizontalMargin(context)),
           child: Row(
             children: [
               Expanded(
                 child: TextField(
+                  controller: _stockSearchController,
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.search, color: Color(0xFF3E4A3D)),
                     hintText: 'Search product model...',
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(999)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                   ),
-                  onChanged: (val) {
-                    setState(() {
-                      _stockSearchQuery = val;
-                    });
-                    _fetchStock(1);
-                  },
+                  onChanged: _onStockSearchChanged,
                 ),
               ),
               const SizedBox(width: 8),
               IconButton(
                 icon: const Icon(Icons.refresh, color: Color(0xFF006B2C)),
-                onPressed: () => _fetchStock(1),
+                onPressed: () => ref.invalidate(adminStockDetailsProvider),
               ),
             ],
           ),
         ),
-        // Stock Items List/Table
         Expanded(
-          child: _isLoadingStock
-              ? const Center(child: CircularProgressIndicator())
-              : _flatStockItems.isEmpty
-                  ? const Center(child: Text('No stock matches found.'))
-                  : SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: DataTable(
-                          columns: const [
-                            DataColumn(label: Text('Category', style: TextStyle(fontWeight: FontWeight.bold))),
-                            DataColumn(label: Text('Subcategory', style: TextStyle(fontWeight: FontWeight.bold))),
-                            DataColumn(label: Text('Product Model', style: TextStyle(fontWeight: FontWeight.bold))),
-                            DataColumn(label: Text('Total Qty', style: TextStyle(fontWeight: FontWeight.bold)), numeric: true),
-                            DataColumn(label: Text('Sold Qty', style: TextStyle(fontWeight: FontWeight.bold)), numeric: true),
-                            DataColumn(label: Text('Remaining Qty', style: TextStyle(fontWeight: FontWeight.bold)), numeric: true),
-                          ],
-                          rows: _flatStockItems.map((item) {
-                            return DataRow(cells: [
-                              DataCell(Text(item['category'])),
-                              DataCell(Text(item['subcategory'])),
-                              DataCell(Text(item['productName'], style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF006B2C)))),
-                              DataCell(Text(item['total'].toString())),
-                              DataCell(Text(item['sold'].toString())),
-                              DataCell(Text(item['remaining'].toString(), style: const TextStyle(fontWeight: FontWeight.bold))),
-                            ]);
-                          }).toList(),
-                        ),
-                      ),
-                    ),
+          child: stockAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (_, __) => Center(
+              child: TextButton(
+                onPressed: () => ref.invalidate(adminStockDetailsProvider),
+                child: const Text('Failed to load stock. Retry'),
+              ),
+            ),
+            data: (pageData) {
+              if (pageData.items.isEmpty) {
+                return const Center(child: Text('No stock matches found.'));
+              }
+              return SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    columns: const [
+                      DataColumn(label: Text('Category', style: TextStyle(fontWeight: FontWeight.bold))),
+                      DataColumn(label: Text('Subcategory', style: TextStyle(fontWeight: FontWeight.bold))),
+                      DataColumn(label: Text('Product Model', style: TextStyle(fontWeight: FontWeight.bold))),
+                      DataColumn(label: Text('Total Qty', style: TextStyle(fontWeight: FontWeight.bold)), numeric: true),
+                      DataColumn(label: Text('Sold Qty', style: TextStyle(fontWeight: FontWeight.bold)), numeric: true),
+                      DataColumn(label: Text('Remaining Qty', style: TextStyle(fontWeight: FontWeight.bold)), numeric: true),
+                    ],
+                    rows: pageData.items.map((item) {
+                      return DataRow(cells: [
+                        DataCell(Text(item.category)),
+                        DataCell(Text(item.subcategory)),
+                        DataCell(Text(item.productName, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF006B2C)))),
+                        DataCell(Text(item.total.toString())),
+                        DataCell(Text(item.sold.toString())),
+                        DataCell(Text(item.remaining.toString(), style: const TextStyle(fontWeight: FontWeight.bold))),
+                      ]);
+                    }).toList(),
+                  ),
+                ),
+              );
+            },
+          ),
         ),
-        // Pagination Toolbar
         Padding(
           padding: EdgeInsets.all(ResponsiveHelper.responsiveHorizontalMargin(context)),
-          child: ResponsiveHelper.isSmallPhone(context)
+          child: stockAsync.maybeWhen(
+            data: (pageData) {
+              final totalPages = pageData.totalPages;
+              if (totalPages <= 1) return const SizedBox.shrink();
+              return ResponsiveHelper.isSmallPhone(context)
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text('Page $_stockPage of $_stockTotalPages',
+                    Text('Page $stockPage of $totalPages',
                         style: const TextStyle(color: Color(0xFF3E4A3D)),
                         textAlign: TextAlign.center),
                     const SizedBox(height: 8),
@@ -590,7 +539,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         ElevatedButton(
-                          onPressed: _stockPage <= 1 ? null : () => _fetchStock(_stockPage - 1),
+                          onPressed: stockPage <= 1 ? null : () => _goToStockPage(stockPage - 1),
                           style: ElevatedButton.styleFrom(
                             minimumSize: const Size(0, 48),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
@@ -599,7 +548,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         ),
                         const SizedBox(width: 8),
                         ElevatedButton(
-                          onPressed: _stockPage >= _stockTotalPages ? null : () => _fetchStock(_stockPage + 1),
+                          onPressed: stockPage >= totalPages ? null : () => _goToStockPage(stockPage + 1),
                           style: ElevatedButton.styleFrom(
                             minimumSize: const Size(0, 48),
                             backgroundColor: const Color(0xFF006B2C),
@@ -615,11 +564,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               : Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Page $_stockPage of $_stockTotalPages', style: const TextStyle(color: Color(0xFF3E4A3D))),
+                    Text('Page $stockPage of $totalPages', style: const TextStyle(color: Color(0xFF3E4A3D))),
                     Row(
                       children: [
                         ElevatedButton(
-                          onPressed: _stockPage <= 1 ? null : () => _fetchStock(_stockPage - 1),
+                          onPressed: stockPage <= 1 ? null : () => _goToStockPage(stockPage - 1),
                           style: ElevatedButton.styleFrom(
                             minimumSize: const Size(0, 48),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
@@ -628,7 +577,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         ),
                         const SizedBox(width: 8),
                         ElevatedButton(
-                          onPressed: _stockPage >= _stockTotalPages ? null : () => _fetchStock(_stockPage + 1),
+                          onPressed: stockPage >= totalPages ? null : () => _goToStockPage(stockPage + 1),
                           style: ElevatedButton.styleFrom(
                             minimumSize: const Size(0, 48),
                             backgroundColor: const Color(0xFF006B2C),
@@ -640,7 +589,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       ],
                     ),
                   ],
-                ),
+                );
+            },
+            orElse: () => const SizedBox.shrink(),
+          ),
         ),
       ],
     );

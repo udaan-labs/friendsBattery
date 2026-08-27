@@ -1,5 +1,6 @@
 module.exports = {
-  ADMIN: 'ADMIN',
   SUPER_ADMIN: 'SUPER_ADMIN',
-  SELLER: 'SELLER'
+  ADMIN: 'ADMIN',
+  SELLER: 'SELLER',
+  EMPLOYEE: 'EMPLOYEE',
 };

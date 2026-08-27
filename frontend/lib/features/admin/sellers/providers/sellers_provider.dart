@@ -19,40 +19,56 @@ class SellerData {
 }
 
 final sellersProvider = FutureProvider<List<SellerData>>((ref) async {
-  final dio = ref.watch(apiClientProvider).dio;
-  final response = await dio.get('/api/shops/sellers');
-  
-  final dynamic data = response.data;
-  List<SellerData> sellersList = [];
-  
-  List<dynamic> rawList = [];
-  if (data is List) {
-    rawList = data;
-  } else if (data is Map<String, dynamic> && data.containsKey('data') && data['data'] is List) {
-    rawList = data['data'];
-  }
-  
-  for (var item in rawList) {
-    if (item is Map<String, dynamic>) {
-      // Manually map fields because API returns snake_case but generated User expects camelCase
-      final user = User((b) => b
-        ..id = item['id']?.toString()
-        ..userName = item['user_name']?.toString()
-        ..shopName = item['shop_name']?.toString()
-        ..userNumber = item['user_number']?.toString()
-        ..isVerified = item['is_verified'] == true || item['is_verified'] == 1
-        ..isActive = item['is_active'] == true || item['is_active'] == 1
-      );
+  final response = await ref.watch(apiClientProvider).getShopsApi().apiShopsSellersGet();
+  final rows = response.data?.data?.toList() ?? [];
 
-      sellersList.add(SellerData(
-        seller: user,
-        totalStock: item['totalStock'] ?? 0,
-        todaySales: item['todaySales'] ?? 0,
-        pendingShipments: item['pendingShipments'] ?? 0,
-        hasLowStock: item['hasLowStock'] == true,
-      ));
+  return rows.map((item) {
+    final user = User((b) {
+      b.id = item.id?.toString();
+      b.userName = item.userName;
+      b.shopName = item.shopName;
+      b.userNumber = item.userNumber;
+      b.isVerified = item.isVerified;
+      b.isActive = item.isActive;
+    });
+
+    return SellerData(
+      seller: user,
+      totalStock: item.totalStock ?? 0,
+      todaySales: item.todaySales ?? 0,
+      pendingShipments: item.pendingShipments ?? 0,
+      hasLowStock: item.hasLowStock == true,
+    );
+  }).toList();
+});
+
+class EmployeeStaffData {
+  final ShopStaffMember member;
+  final LocationItem? location;
+
+  EmployeeStaffData({
+    required this.member,
+    this.location,
+  });
+}
+
+final allEmployeesProvider = FutureProvider<List<EmployeeStaffData>>((ref) async {
+  final repo = ref.watch(apiClientProvider).getShopsApi();
+  final locationsResponse = await repo.apiShopsLocationsGet();
+  final locations = locationsResponse.data?.data?.toList() ?? <LocationItem>[];
+
+  final results = await Future.wait(locations.map((loc) async {
+    final locId = loc.id;
+    if (locId == null) return <EmployeeStaffData>[];
+    try {
+      final res = await repo.apiShopsLocationsLocationIdStaffGet(locationId: locId);
+      final employees = res.data?.data?.employees?.toList() ?? <ShopStaffMember>[];
+      return employees.map((emp) => EmployeeStaffData(member: emp, location: loc)).toList();
+    } catch (_) {
+      return <EmployeeStaffData>[];
     }
-  }
+  }));
 
-  return sellersList;
+  final seen = <int>{};
+  return results.expand((e) => e).where((e) => e.member.id != null && seen.add(e.member.id!)).toList();
 });

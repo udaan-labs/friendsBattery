@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "FriendsBattery API",
-    "version": "1.0.0",
+    "version": "1.1.4",
     "description": "API documentation for the FriendsBattery Inventory and Stock Management application",
     "contact": {
       "name": "API Support"
@@ -51,8 +51,10 @@
           "role": {
             "type": "string",
             "enum": [
+              "SUPER_ADMIN",
               "ADMIN",
-              "SELLER"
+              "SELLER",
+              "EMPLOYEE"
             ]
           },
           "userNumber": {
@@ -79,33 +81,379 @@
           }
         }
       },
-      "Customer": {
+      "LoginUser": {
         "type": "object",
         "properties": {
           "id": {
+            "type": "integer"
+          },
+          "username": {
             "type": "string"
           },
-          "name": {
-            "type": "string"
-          },
-          "phone": {
+          "user_number": {
             "type": "string",
             "nullable": true
           },
-          "createdAt": {
+          "shop_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "SUPER_ADMIN",
+              "ADMIN",
+              "SELLER",
+              "EMPLOYEE"
+            ]
+          },
+          "location_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "employee_role_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "location": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "code": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "WAREHOUSE",
+                  "SHOP"
+                ]
+              }
+            }
+          },
+          "employee_role": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          }
+        }
+      },
+      "LoginData": {
+        "type": "object",
+        "properties": {
+          "auth_id": {
+            "type": "string"
+          },
+          "auth_key": {
+            "type": "string"
+          },
+          "session_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Present for EMPLOYEE logins (employee_sessions)"
+          },
+          "user": {
+            "$ref": "#/components/schemas/LoginUser"
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/LoginData"
+          }
+        }
+      },
+      "LoginOtpChallengeData": {
+        "type": "object",
+        "properties": {
+          "requires_otp": {
+            "type": "boolean"
+          },
+          "challenge_id": {
+            "type": "string"
+          },
+          "expires_in": {
+            "type": "integer",
+            "description": "Seconds until OTP expires"
+          },
+          "phone_masked": {
+            "type": "string",
+            "nullable": true
+          },
+          "otp": {
+            "type": "string",
+            "nullable": true,
+            "description": "Only when OTP_ECHO=1 (debug)"
+          }
+        }
+      },
+      "LoginOtpChallengeResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/LoginOtpChallengeData"
+          }
+        }
+      },
+      "RegisterData": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "user_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "shop_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "location_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "role": {
+            "type": "string"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "is_verified": {
+            "type": "boolean"
+          },
+          "created_at": {
             "type": "string",
             "format": "date-time"
           }
         }
       },
-      "Category": {
+      "RegisterResponse": {
         "type": "object",
         "properties": {
-          "id": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
             "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/RegisterData"
+          }
+        }
+      },
+      "AttendanceGeoBody": {
+        "type": "object",
+        "required": [
+          "latitude",
+          "longitude"
+        ],
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "description": "Device GPS latitude (WGS84)"
+          },
+          "longitude": {
+            "type": "number",
+            "description": "Device GPS longitude (WGS84)"
+          },
+          "lat": {
+            "type": "number",
+            "nullable": true,
+            "description": "Alias for latitude"
+          },
+          "lng": {
+            "type": "number",
+            "nullable": true,
+            "description": "Alias for longitude"
+          },
+          "accuracy": {
+            "type": "number",
+            "nullable": true,
+            "description": "GPS accuracy in meters"
+          },
+          "timestamp": {
+            "type": "string",
+            "nullable": true,
+            "description": "Client capture time (ISO-8601)"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "AssignedLocation": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
           },
           "name": {
             "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "latitude": {
+            "type": "number",
+            "nullable": true
+          },
+          "longitude": {
+            "type": "number",
+            "nullable": true
+          },
+          "allowed_radius": {
+            "type": "integer",
+            "description": "Max distance from center in meters for attendance"
+          }
+        }
+      },
+      "AttendanceRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "employee_id": {
+            "type": "integer"
+          },
+          "assigned_location_id": {
+            "type": "integer"
+          },
+          "check_in_time": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "check_out_time": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "CHECKED_IN",
+              "CHECKED_OUT"
+            ]
+          },
+          "location": {
+            "$ref": "#/components/schemas/AssignedLocation"
+          }
+        }
+      },
+      "AttendanceStatusData": {
+        "type": "object",
+        "properties": {
+          "is_checked_in": {
+            "type": "boolean"
+          },
+          "attendance": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AttendanceRecord"
+              }
+            ],
+            "nullable": true
+          },
+          "location": {
+            "$ref": "#/components/schemas/AssignedLocation"
+          }
+        }
+      },
+      "SellerShipmentListItem": {
+        "type": "object",
+        "properties": {
+          "shipmentId": {
+            "type": "integer"
+          },
+          "shipmentNumber": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "acceptedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "productName": {
+                  "type": "string"
+                },
+                "productModel": {
+                  "type": "string"
+                },
+                "quantity": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      },
+      "SellerShipmentsListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SellerShipmentListItem"
+            }
           }
         }
       },
@@ -113,7 +461,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": "integer"
           },
           "name": {
             "type": "string"
@@ -124,10 +472,1935 @@
         "type": "object",
         "properties": {
           "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "product_name_id": {
+            "type": "integer"
+          }
+        }
+      },
+      "ProductNamesResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductName"
+            }
+          }
+        }
+      },
+      "ProductNameResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ProductName"
+          }
+        }
+      },
+      "ProductModelsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductModel"
+            }
+          }
+        }
+      },
+      "ProductModelResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ProductModel"
+          }
+        }
+      },
+      "CreateProductNameRequest": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateProductModelRequest": {
+        "type": "object",
+        "required": [
+          "product_name_id",
+          "name"
+        ],
+        "properties": {
+          "product_name_id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "ListProductModelsRequest": {
+        "type": "object",
+        "required": [
+          "product_name_id"
+        ],
+        "properties": {
+          "product_name_id": {
+            "type": "integer"
+          }
+        }
+      },
+      "ListProductsRequest": {
+        "type": "object",
+        "required": [
+          "product_name_id",
+          "product_model_id"
+        ],
+        "properties": {
+          "product_name_id": {
+            "type": "integer"
+          },
+          "product_model_id": {
+            "type": "integer"
+          }
+        }
+      },
+      "CreateProductRequest": {
+        "type": "object",
+        "required": [
+          "product_name_id",
+          "product_model_id"
+        ],
+        "properties": {
+          "product_name_id": {
+            "type": "integer"
+          },
+          "product_model_id": {
+            "type": "integer"
+          },
+          "min_price": {
+            "type": "number"
+          },
+          "on_sale": {
+            "type": "boolean"
+          },
+          "offer_price": {
+            "type": "number",
+            "nullable": true
+          },
+          "min_unit_count_admin": {
+            "type": "integer"
+          },
+          "min_unit_count_seller": {
+            "type": "integer"
+          }
+        }
+      },
+      "ProductCreated": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "product_name_id": {
+            "type": "integer"
+          },
+          "product_model_id": {
+            "type": "integer"
+          },
+          "min_price": {
+            "type": "number"
+          },
+          "on_sale": {
+            "type": "boolean"
+          },
+          "offer_price": {
+            "type": "number",
+            "nullable": true
+          },
+          "min_unit_count_admin": {
+            "type": "integer"
+          },
+          "min_unit_count_seller": {
+            "type": "integer"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateProductResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ProductCreated"
+          }
+        }
+      },
+      "ProductConfigItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "product_name": {
+            "type": "string"
+          },
+          "product_model": {
+            "type": "string"
+          },
+          "min_price": {
+            "type": "number"
+          },
+          "on_sale": {
+            "type": "boolean"
+          },
+          "offer_price": {
+            "type": "number",
+            "nullable": true
+          },
+          "min_unit_count_admin": {
+            "type": "integer"
+          },
+          "min_unit_count_seller": {
+            "type": "integer"
+          }
+        }
+      },
+      "ListProductsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductConfigItem"
+            }
+          }
+        }
+      },
+      "ProductStockDetails": {
+        "type": "object",
+        "properties": {
+          "currentStock": {
+            "type": "integer"
+          },
+          "minSellPrice": {
+            "type": "number"
+          }
+        }
+      },
+      "ProductStockDetailsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ProductStockDetails"
+          }
+        }
+      },
+      "AdminDashboardStats": {
+        "type": "object",
+        "properties": {
+          "totalStock": {
+            "type": "integer"
+          },
+          "todaySales": {
+            "type": "integer"
+          },
+          "todaySalesAmount": {
+            "type": "number"
+          },
+          "pendingRequests": {
+            "type": "integer"
+          },
+          "totalSellers": {
+            "type": "integer"
+          },
+          "pendingShipments": {
+            "type": "integer"
+          },
+          "totalAdmins": {
+            "type": "integer"
+          },
+          "totalLocations": {
+            "type": "integer"
+          }
+        }
+      },
+      "AdminDashboardStatsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AdminDashboardStats"
+          }
+        }
+      },
+      "SellerRecentSale": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "customerName": {
+            "type": "string"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "productModel": {
+            "type": "string"
+          },
+          "serialNumber": {
+            "type": "string"
+          },
+          "sellPrice": {
+            "type": "number"
+          },
+          "soldAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SellerDashboardStats": {
+        "type": "object",
+        "properties": {
+          "totalStock": {
+            "type": "integer"
+          },
+          "todaySales": {
+            "type": "integer"
+          },
+          "todaySalesAmount": {
+            "type": "number"
+          },
+          "pendingShipments": {
+            "type": "integer"
+          },
+          "recentSales": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SellerRecentSale"
+            }
+          }
+        }
+      },
+      "SellerDashboardStatsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SellerDashboardStats"
+          }
+        }
+      },
+      "ActivityItem": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "subtitle": {
+            "type": "string"
+          },
+          "time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "icon": {
+            "type": "string"
+          }
+        }
+      },
+      "RecentActivityResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActivityItem"
+            }
+          }
+        }
+      },
+      "ActivityHistoryPagination": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          },
+          "hasNextPage": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ActivityHistoryResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActivityItem"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/ActivityHistoryPagination"
+          }
+        }
+      },
+      "CreateSaleRequest": {
+        "type": "object",
+        "required": [
+          "product_name_id",
+          "product_model_id",
+          "serial_number",
+          "customer_name",
+          "customer_number",
+          "sell_price"
+        ],
+        "properties": {
+          "product_name_id": {
+            "type": "integer"
+          },
+          "product_model_id": {
+            "type": "integer"
+          },
+          "serial_number": {
+            "type": "string"
+          },
+          "customer_name": {
+            "type": "string"
+          },
+          "customer_number": {
+            "type": "string"
+          },
+          "vehicle_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "sell_price": {
+            "type": "number"
+          },
+          "sale_type": {
+            "type": "string",
+            "enum": [
+              "NORMAL",
+              "SCRAP",
+              "MECHANIC"
+            ],
+            "default": "NORMAL",
+            "description": "SCRAP/MECHANIC waive product min price; SCRAP requires scrap_serial"
+          },
+          "scrap_serial": {
+            "type": "string",
+            "nullable": true,
+            "description": "Old battery serial when sale_type=SCRAP"
+          }
+        }
+      },
+      "CreateSaleResult": {
+        "type": "object",
+        "properties": {
+          "transaction_id": {
+            "type": "integer"
+          }
+        }
+      },
+      "CreateSaleResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/CreateSaleResult"
+          }
+        }
+      },
+      "CreateServiceBillRequest": {
+        "type": "object",
+        "required": [
+          "service_type",
+          "amount",
+          "customer_name",
+          "customer_number"
+        ],
+        "properties": {
+          "service_type": {
+            "type": "string",
+            "enum": [
+              "BATTERY_CHECK_2W",
+              "BATTERY_CHECK_4W",
+              "BATTERY_CHARGING",
+              "JUMPSTART",
+              "INVERTER_SERVICE"
+            ]
+          },
+          "amount": {
+            "type": "number"
+          },
+          "customer_name": {
+            "type": "string"
+          },
+          "customer_number": {
+            "type": "string"
+          },
+          "vehicle_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "place": {
+            "type": "string",
+            "nullable": true,
+            "description": "Required when service_type is JUMPSTART"
+          }
+        }
+      },
+      "CreateServiceBillResult": {
+        "type": "object",
+        "properties": {
+          "service_bill_id": {
+            "type": "integer"
+          }
+        }
+      },
+      "CreateServiceBillResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/CreateServiceBillResult"
+          }
+        }
+      },
+      "CreateRentRequest": {
+        "type": "object",
+        "required": [
+          "serial_number",
+          "customer_name",
+          "customer_number",
+          "deposit"
+        ],
+        "properties": {
+          "serial_number": {
+            "type": "string"
+          },
+          "customer_name": {
+            "type": "string"
+          },
+          "customer_number": {
+            "type": "string"
+          },
+          "deposit": {
+            "type": "number",
+            "example": 1000
+          }
+        }
+      },
+      "CreateRentResult": {
+        "type": "object",
+        "properties": {
+          "rent_id": {
+            "type": "integer"
+          },
+          "serial_number": {
+            "type": "string"
+          },
+          "deposit": {
+            "type": "number"
+          }
+        }
+      },
+      "CreateRentResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/CreateRentResult"
+          }
+        }
+      },
+      "ReturnRentRequest": {
+        "type": "object",
+        "required": [
+          "serial_number",
+          "rent_fee"
+        ],
+        "properties": {
+          "serial_number": {
+            "type": "string"
+          },
+          "rent_fee": {
+            "type": "number",
+            "example": 100,
+            "description": "Fee taken from deposit; refund = deposit - fee"
+          }
+        }
+      },
+      "ReturnRentResult": {
+        "type": "object",
+        "properties": {
+          "rent_id": {
+            "type": "integer"
+          },
+          "serial_number": {
+            "type": "string"
+          },
+          "deposit": {
+            "type": "number"
+          },
+          "rent_fee": {
+            "type": "number"
+          },
+          "refund_amount": {
+            "type": "number"
+          }
+        }
+      },
+      "ReturnRentResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ReturnRentResult"
+          }
+        }
+      },
+      "SaleCustomer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          }
+        }
+      },
+      "SaleSeller": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "user_name": {
+            "type": "string"
+          },
+          "shop_name": {
+            "type": "string"
+          }
+        }
+      },
+      "SaleProduct": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "product_name": {
+            "type": "string"
+          },
+          "product_model": {
+            "type": "string"
+          }
+        }
+      },
+      "SaleRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "product_id": {
+            "type": "integer"
+          },
+          "product_unit_id": {
+            "type": "integer"
+          },
+          "sell_price": {
+            "type": "number"
+          },
+          "serial_number": {
+            "type": "string"
+          },
+          "vehicle_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "sale_type": {
+            "type": "string",
+            "enum": [
+              "NORMAL",
+              "SCRAP",
+              "MECHANIC",
+              "SERVICE",
+              "RENT"
+            ]
+          },
+          "scrap_serial": {
+            "type": "string",
+            "nullable": true
+          },
+          "service_type": {
+            "type": "string",
+            "nullable": true
+          },
+          "rent_status": {
+            "type": "string",
+            "nullable": true
+          },
+          "deposit": {
+            "type": "number",
+            "nullable": true
+          },
+          "place": {
+            "type": "string",
+            "nullable": true
+          },
+          "sold_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/SaleCustomer"
+          },
+          "seller": {
+            "$ref": "#/components/schemas/SaleSeller"
+          },
+          "product": {
+            "$ref": "#/components/schemas/SaleProduct"
+          }
+        }
+      },
+      "SaleHistoryPage": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SaleRecord"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          }
+        }
+      },
+      "SaleHistoryResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SaleHistoryPage"
+          }
+        }
+      },
+      "SaleDetailResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SaleRecord"
+          }
+        }
+      },
+      "AdminSaleShipment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "shipment_number": {
+            "type": "string"
+          },
+          "shipment_date": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "arrival_date": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "AdminSaleRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "sold_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "sell_price": {
+            "type": "number"
+          },
+          "serial_number": {
+            "type": "string"
+          },
+          "vehicle_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "sale_type": {
+            "type": "string",
+            "enum": [
+              "NORMAL",
+              "SCRAP",
+              "MECHANIC",
+              "SERVICE",
+              "RENT"
+            ]
+          },
+          "scrap_serial": {
+            "type": "string",
+            "nullable": true
+          },
+          "service_type": {
+            "type": "string",
+            "nullable": true
+          },
+          "rent_status": {
+            "type": "string",
+            "nullable": true
+          },
+          "deposit": {
+            "type": "number",
+            "nullable": true
+          },
+          "place": {
+            "type": "string",
+            "nullable": true
+          },
+          "seller": {
+            "$ref": "#/components/schemas/SaleSeller"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/SaleCustomer"
+          },
+          "product": {
+            "$ref": "#/components/schemas/SaleProduct"
+          },
+          "shipment": {
+            "$ref": "#/components/schemas/AdminSaleShipment",
+            "nullable": true
+          }
+        }
+      },
+      "AdminSaleHistoryPage": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminSaleRecord"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          }
+        }
+      },
+      "AdminSaleHistoryResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AdminSaleHistoryPage"
+          }
+        }
+      },
+      "ScanForSaleResult": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer"
+          },
+          "productNameId": {
+            "type": "integer"
+          },
+          "productModelId": {
+            "type": "integer"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "productModel": {
+            "type": "string"
+          },
+          "minSellPrice": {
+            "type": "number"
+          }
+        }
+      },
+      "ScanForSaleResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ScanForSaleResult"
+          }
+        }
+      },
+      "SellerStatistics": {
+        "type": "object",
+        "properties": {
+          "stock": {
+            "type": "integer"
+          },
+          "products": {
+            "type": "integer"
+          },
+          "sales": {
+            "type": "integer"
+          },
+          "returns": {
+            "type": "integer"
+          }
+        }
+      },
+      "SellerDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "user_name": {
+            "type": "string"
+          },
+          "shop_name": {
+            "type": "string"
+          },
+          "user_number": {
+            "type": "string"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "is_verified": {
+            "type": "boolean"
+          },
+          "location_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "location": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "code": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "is_active": {
+                "type": "boolean"
+              }
+            }
+          },
+          "statistics": {
+            "$ref": "#/components/schemas/SellerStatistics"
+          },
+          "inventory": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryListItem"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ShopStaffMember": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "user_name": {
+            "type": "string"
+          },
+          "user_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "shop_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "SELLER",
+              "EMPLOYEE"
+            ]
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "is_verified": {
+            "type": "boolean"
+          },
+          "employee_role": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          }
+        }
+      },
+      "ShopStaffData": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "code": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "is_active": {
+                "type": "boolean"
+              }
+            }
+          },
+          "admins": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShopStaffMember"
+            }
+          },
+          "sellers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShopStaffMember"
+            }
+          },
+          "employees": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShopStaffMember"
+            }
+          }
+        }
+      },
+      "ShopStaffResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ShopStaffData"
+          }
+        }
+      },
+      "CreateEmployeeRequest": {
+        "type": "object",
+        "required": [
+          "username",
+          "user_number",
+          "password"
+        ],
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "example": "EMP002",
+            "description": "Optional login ID. Omit to auto-generate EMP001, EMP002, …"
+          },
+          "username": {
+            "type": "string",
+            "example": "Ravi Kumar"
+          },
+          "user_number": {
+            "type": "string",
+            "example": "9876543210",
+            "description": "10-digit mobile"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "minLength": 8,
+            "description": "Min 8 characters, at least one uppercase letter and one special character",
+            "example": "Passw0rd!"
+          },
+          "employee_role_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Optional job title id from GET /api/shops/employee-roles"
+          },
+          "location_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Required for admin (warehouse or shop). Ignored for seller."
+          }
+        }
+      },
+      "CreatedEmployee": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "user_name": {
+            "type": "string"
+          },
+          "user_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "shop_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "EMPLOYEE"
+            ]
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "is_verified": {
+            "type": "boolean"
+          },
+          "employee_role": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          },
+          "location_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "location": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "code": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "WAREHOUSE",
+                  "SHOP"
+                ]
+              },
+              "is_active": {
+                "type": "boolean"
+              }
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateEmployeeResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/CreatedEmployee"
+          }
+        }
+      },
+      "TransferEmployeeRequest": {
+        "type": "object",
+        "required": [
+          "location_id"
+        ],
+        "properties": {
+          "location_id": {
+            "type": "integer",
+            "description": "Destination shop or warehouse id"
+          }
+        }
+      },
+      "TransferEmployeeResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/CreatedEmployee"
+          }
+        }
+      },
+      "NextEmployeeUserIdData": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "example": "EMP001"
+          }
+        }
+      },
+      "NextEmployeeUserIdResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/NextEmployeeUserIdData"
+          }
+        }
+      },
+      "EmployeeRoleItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "EmployeeRolesResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmployeeRoleItem"
+            }
+          }
+        }
+      },
+      "LocationItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "code": {
             "type": "string"
           },
           "name": {
             "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "WAREHOUSE",
+              "SHOP"
+            ]
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "latitude": {
+            "type": "number",
+            "nullable": true,
+            "description": "Geofence center latitude (WGS84)"
+          },
+          "longitude": {
+            "type": "number",
+            "nullable": true,
+            "description": "Geofence center longitude (WGS84)"
+          },
+          "allowed_radius": {
+            "type": "integer",
+            "description": "Max check-in distance in meters from center",
+            "example": 100
+          },
+          "warehouse_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Parent warehouse id (shops only)"
+          }
+        }
+      },
+      "LocationsListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LocationItem"
+            }
+          }
+        }
+      },
+      "CreateLocationRequest": {
+        "type": "object",
+        "required": [
+          "name",
+          "type"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 50,
+            "example": "SHOP002",
+            "description": "Ignored. Server assigns SHOP001 / WH001 …"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 150,
+            "example": "Andheri Shop"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "SHOP",
+              "WAREHOUSE"
+            ]
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "latitude": {
+            "type": "number",
+            "nullable": true,
+            "minimum": -90,
+            "maximum": 90,
+            "example": 23.0225,
+            "description": "Geofence center; required together with longitude"
+          },
+          "longitude": {
+            "type": "number",
+            "nullable": true,
+            "minimum": -180,
+            "maximum": 180,
+            "example": 72.5714,
+            "description": "Geofence center; required together with latitude"
+          },
+          "allowed_radius": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 10,
+            "maximum": 5000,
+            "example": 100,
+            "description": "Attendance radius in meters (default 100 when lat/lng set)"
+          },
+          "warehouse_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Required for SHOP. Must be an active warehouse. Omit for WAREHOUSE."
+          }
+        }
+      },
+      "CreateLocationResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/LocationItem"
+          }
+        }
+      },
+      "UpdateLocationRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 150,
+            "example": "Andheri Shop"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "latitude": {
+            "type": "number",
+            "nullable": true,
+            "minimum": -90,
+            "maximum": 90,
+            "example": 23.0225,
+            "description": "Geofence center; required together with longitude"
+          },
+          "longitude": {
+            "type": "number",
+            "nullable": true,
+            "minimum": -180,
+            "maximum": 180,
+            "example": 72.5714,
+            "description": "Geofence center; required together with latitude"
+          },
+          "allowed_radius": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 10,
+            "maximum": 5000,
+            "example": 100,
+            "description": "Attendance radius in meters"
+          }
+        }
+      },
+      "UpdateLocationResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/LocationItem"
+          }
+        }
+      },
+      "EmployeeAction": {
+        "type": "object",
+        "description": "Employee-only action (CHECK_IN or CHECK_OUT)",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "CHECK_IN",
+              "CHECK_OUT"
+            ]
+          },
+          "attendance_id": {
+            "type": "integer"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lat": {
+            "type": "number",
+            "nullable": true
+          },
+          "lng": {
+            "type": "number",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "location": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "code": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "AdminEmployeeDetailData": {
+        "type": "object",
+        "properties": {
+          "employee": {
+            "$ref": "#/components/schemas/ShopStaffMember"
+          },
+          "is_checked_in": {
+            "type": "boolean"
+          },
+          "current_attendance": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "check_in_time": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              },
+              "status": {
+                "type": "string"
+              },
+              "location": {
+                "type": "object",
+                "nullable": true,
+                "properties": {
+                  "id": {
+                    "type": "integer"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "actions": {
+            "type": "array",
+            "description": "Only CHECK_IN and CHECK_OUT events, newest first",
+            "items": {
+              "$ref": "#/components/schemas/EmployeeAction"
+            }
+          }
+        }
+      },
+      "AdminEmployeeDetailResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AdminEmployeeDetailData"
+          }
+        }
+      },
+      "SellerDetailResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SellerDetail"
+          }
+        }
+      },
+      "HealthStatus": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AppStatus": {
+        "type": "object",
+        "properties": {
+          "latest_version": {
+            "type": "string",
+            "description": "Expected client app version (semver, e.g. 1.1.3)",
+            "example": "1.1.3"
+          },
+          "maintenance": {
+            "type": "boolean",
+            "description": "When true, clients must show maintenance screen",
+            "example": false
+          },
+          "message": {
+            "type": "string",
+            "nullable": true,
+            "description": "Optional message for update or maintenance UI"
+          },
+          "android_update_url": {
+            "type": "string",
+            "nullable": true,
+            "description": "Play Store / APK URL for force-update button"
+          }
+        }
+      },
+      "AppStatusResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AppStatus"
+          }
+        }
+      },
+      "VerifyProductRequest": {
+        "type": "object",
+        "required": [
+          "identifier"
+        ],
+        "properties": {
+          "identifier": {
+            "type": "string"
+          }
+        }
+      },
+      "VerifyProductUnit": {
+        "type": "object",
+        "properties": {
+          "serialNumber": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "qrCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "manufactureDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "warrantyExpiry": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "VerifyProductInfo": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "subgroup": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          }
+        }
+      },
+      "VerifyProductPayload": {
+        "type": "object",
+        "properties": {
+          "productUnit": {
+            "$ref": "#/components/schemas/VerifyProductUnit"
+          },
+          "product": {
+            "$ref": "#/components/schemas/VerifyProductInfo"
+          }
+        }
+      },
+      "VerifyProductResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/VerifyProductPayload"
+          }
+        }
+      },
+      "CreateReturnRequest": {
+        "type": "object",
+        "required": [
+          "serial_number",
+          "reason"
+        ],
+        "properties": {
+          "serial_number": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateReturnResult": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "returnRecordId": {
+            "type": "string"
+          },
+          "productUnitId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateReturnResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/CreateReturnResult"
           }
         }
       },
@@ -135,9 +2408,6 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
-          },
-          "categoryId": {
             "type": "string"
           },
           "productNameId": {
@@ -167,9 +2437,6 @@
           "createdAt": {
             "type": "string",
             "format": "date-time"
-          },
-          "category": {
-            "$ref": "#/components/schemas/Category"
           },
           "productName": {
             "$ref": "#/components/schemas/ProductName"
@@ -243,62 +2510,6 @@
           "timestamp": {
             "type": "string",
             "format": "date-time"
-          }
-        }
-      },
-      "StockRequest": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "sellerId": {
-            "type": "string"
-          },
-          "requestTo": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "PENDING",
-              "APPROVED",
-              "REJECTED",
-              "SHIPPED",
-              "DELIVERED"
-            ]
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "approvedAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/StockRequestItem"
-            }
-          }
-        }
-      },
-      "StockRequestItem": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "stockRequestId": {
-            "type": "string"
-          },
-          "productId": {
-            "type": "string"
-          },
-          "requestedQuantity": {
-            "type": "integer"
           }
         }
       },
@@ -458,6 +2669,790 @@
             "format": "date-time"
           }
         }
+      },
+      "ReturnListProductName": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "ReturnListProductModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "productNameId": {
+            "type": "string"
+          }
+        }
+      },
+      "ReturnListProduct": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "productNameId": {
+            "type": "string"
+          },
+          "productModelId": {
+            "type": "string"
+          },
+          "productName": {
+            "$ref": "#/components/schemas/ReturnListProductName"
+          },
+          "productModel": {
+            "$ref": "#/components/schemas/ReturnListProductModel"
+          }
+        }
+      },
+      "ReturnListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "transactionId": {
+            "type": "string",
+            "nullable": true
+          },
+          "productId": {
+            "type": "string",
+            "nullable": true
+          },
+          "serialNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "returnType": {
+            "type": "string",
+            "nullable": true
+          },
+          "returnById": {
+            "type": "string",
+            "nullable": true
+          },
+          "returnToId": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "product": {
+            "$ref": "#/components/schemas/ReturnListProduct"
+          }
+        }
+      },
+      "ReturnsListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReturnListItem"
+            }
+          }
+        }
+      },
+      "CreateShipmentItem": {
+        "type": "object",
+        "required": [
+          "product_name_id",
+          "product_model_id",
+          "serial_numbers"
+        ],
+        "properties": {
+          "product_name_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "product_model_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "serial_numbers": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "price_per_piece": {
+            "type": "number",
+            "minimum": 0
+          }
+        }
+      },
+      "CreateShipmentRequest": {
+        "type": "object",
+        "required": [
+          "sellerId",
+          "items"
+        ],
+        "properties": {
+          "sellerId": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/CreateShipmentItem"
+            }
+          }
+        }
+      },
+      "TransferInventoryCount": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "productModel": {
+            "type": "string"
+          },
+          "transferred": {
+            "type": "integer"
+          },
+          "adminAvailable": {
+            "type": "integer"
+          },
+          "sellerAvailable": {
+            "type": "integer"
+          }
+        }
+      },
+      "CreateShipmentResult": {
+        "type": "object",
+        "properties": {
+          "shipmentId": {
+            "type": "integer"
+          },
+          "shipmentNumber": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "ACCEPTED",
+              "REJECTED"
+            ]
+          },
+          "transferredUnits": {
+            "type": "integer"
+          },
+          "sellerId": {
+            "type": "integer"
+          },
+          "inventory": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransferInventoryCount"
+            }
+          }
+        }
+      },
+      "CreateShipmentResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/CreateShipmentResult"
+          }
+        }
+      },
+      "AvailableSerialsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Serial numbers AVAILABLE for the authenticated user"
+          }
+        }
+      },
+      "SellerShopSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "user_name": {
+            "type": "string"
+          },
+          "shop_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "user_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "is_verified": {
+            "type": "boolean"
+          },
+          "totalStock": {
+            "type": "integer"
+          },
+          "todaySales": {
+            "type": "integer"
+          },
+          "pendingShipments": {
+            "type": "integer"
+          },
+          "hasLowStock": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SellersListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SellerShopSummary"
+            }
+          }
+        }
+      },
+      "InventoryProductModelOption": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Product id"
+          },
+          "productModelId": {
+            "type": "integer"
+          },
+          "productModel": {
+            "type": "string"
+          },
+          "availableQuantity": {
+            "type": "integer"
+          },
+          "minSellPrice": {
+            "type": "number"
+          }
+        }
+      },
+      "InventoryProductNameGroup": {
+        "type": "object",
+        "properties": {
+          "productName": {
+            "type": "string"
+          },
+          "productNameId": {
+            "type": "integer"
+          },
+          "models": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryProductModelOption"
+            }
+          }
+        }
+      },
+      "InventoryProductsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryProductNameGroup"
+            }
+          }
+        }
+      },
+      "InventoryListItem": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "integer"
+          },
+          "product_name_id": {
+            "type": "integer"
+          },
+          "product_model_id": {
+            "type": "integer"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "min_price": {
+            "type": "number"
+          },
+          "offer_price": {
+            "type": "number",
+            "nullable": true
+          },
+          "min_unit_count_seller": {
+            "type": "integer"
+          },
+          "min_unit_count_admin": {
+            "type": "integer"
+          },
+          "on_sale": {
+            "type": "boolean"
+          },
+          "is_low_stock": {
+            "type": "boolean"
+          }
+        }
+      },
+      "InventoryPagination": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          }
+        }
+      },
+      "InventoryListPayload": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryListItem"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/InventoryPagination"
+          }
+        }
+      },
+      "InventoryListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/InventoryListPayload"
+          }
+        }
+      },
+      "InventoryItemDetail": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "integer"
+          },
+          "product_name_id": {
+            "type": "integer"
+          },
+          "product_model_id": {
+            "type": "integer"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "min_price": {
+            "type": "number"
+          },
+          "offer_price": {
+            "type": "number",
+            "nullable": true
+          },
+          "min_unit_count_seller": {
+            "type": "integer"
+          },
+          "min_unit_count_admin": {
+            "type": "integer"
+          },
+          "on_sale": {
+            "type": "boolean"
+          },
+          "is_low_stock": {
+            "type": "boolean"
+          },
+          "serial_numbers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "InventoryItemDetailResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/InventoryItemDetail"
+          }
+        }
+      },
+      "UpdateStockRequest": {
+        "type": "object",
+        "required": [
+          "productNameId",
+          "productModelId"
+        ],
+        "properties": {
+          "productNameId": {
+            "type": "integer"
+          },
+          "productModelId": {
+            "type": "integer"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Units to add as STK- placeholders; optional when only updating price/flags. Do not send with serial_numbers."
+          },
+          "serial_numbers": {
+            "type": "array",
+            "maxItems": 500,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "description": "Scanned serials to add as units. Quantity = length. Do not send with quantity."
+          },
+          "minSellPrice": {
+            "type": "number"
+          },
+          "minUnitCountAdmin": {
+            "type": "integer"
+          },
+          "minUnitCountSeller": {
+            "type": "integer"
+          },
+          "onSale": {
+            "type": "boolean"
+          },
+          "location_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Target warehouse/location for new units. Omit for actor location or default WH."
+          }
+        }
+      },
+      "UpdateStockResult": {
+        "type": "object",
+        "properties": {
+          "productNameId": {
+            "type": "integer"
+          },
+          "productModelId": {
+            "type": "integer"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "minSellPrice": {
+            "type": "number"
+          },
+          "minUnitCountAdmin": {
+            "type": "integer"
+          },
+          "minUnitCountSeller": {
+            "type": "integer"
+          },
+          "onSale": {
+            "type": "boolean"
+          },
+          "location_id": {
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "UpdateStockResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/UpdateStockResult"
+          }
+        }
+      },
+      "AdjustInventoryRequest": {
+        "type": "object",
+        "required": [
+          "product_id",
+          "user_id",
+          "adjustment_quantity"
+        ],
+        "properties": {
+          "product_id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "integer"
+          },
+          "adjustment_quantity": {
+            "type": "integer",
+            "description": "Positive to add, negative to remove"
+          }
+        }
+      },
+      "AdjustInventoryResult": {
+        "type": "object",
+        "properties": {
+          "adjusted": {
+            "type": "boolean"
+          },
+          "adjustment_quantity": {
+            "type": "integer"
+          }
+        }
+      },
+      "AdjustInventoryResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AdjustInventoryResult"
+          }
+        }
+      },
+      "AccountUserLocation": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "AccountUser": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "user_name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "SELLER",
+              "EMPLOYEE"
+            ]
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "location": {
+            "$ref": "#/components/schemas/AccountUserLocation",
+            "nullable": true
+          }
+        }
+      },
+      "AccountUsersResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountUser"
+            }
+          }
+        }
+      },
+      "SetAccountActiveRequest": {
+        "type": "object",
+        "required": [
+          "is_active"
+        ],
+        "properties": {
+          "is_active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SetAccountActiveData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "SELLER",
+              "EMPLOYEE"
+            ]
+          },
+          "is_active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SetAccountActiveResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SetAccountActiveData"
+          }
+        }
+      },
+      "ChangePasswordRequest": {
+        "type": "object",
+        "required": [
+          "password"
+        ],
+        "properties": {
+          "password": {
+            "type": "string",
+            "minLength": 6
+          }
+        }
+      },
+      "ChangePasswordData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "SELLER",
+              "EMPLOYEE"
+            ]
+          }
+        }
+      },
+      "ChangePasswordResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ChangePasswordData"
+          }
+        }
       }
     },
     "securitySchemes": {
@@ -475,6 +3470,169 @@
     }
   ],
   "paths": {
+    "/api/users": {
+      "get": {
+        "summary": "List admins, sellers, and employees",
+        "description": "Super Admin only. Filter by ADMIN, SELLER, or EMPLOYEE.",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "role",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ADMIN",
+                "SELLER",
+                "EMPLOYEE"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Users fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountUsersResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Super Admin only"
+          }
+        }
+      }
+    },
+    "/api/users/{id}/active": {
+      "patch": {
+        "summary": "Activate or deactivate an admin, seller, or employee",
+        "description": "Super Admin or Admin. Inactive users cannot log in or use the API. Cannot change self or out-of-scope accounts.",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetAccountActiveRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User status updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetAccountActiveResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+    "/api/users/{id}/password": {
+      "patch": {
+        "summary": "Reset or change password for a seller or employee",
+        "description": "Super Admin or Admin. Super Admin can reset password for any account; Admin can reset for sellers/employees under their shop.",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangePasswordResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
     "/api/transfers": {
       "post": {
         "summary": "Create a new shipment from Admin to Seller",
@@ -633,9 +3791,72 @@
         "tags": [
           "Shops"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Sellers fetched successfully"
+            "description": "Sellers fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SellersListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Admin only",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/shops/sellers/next-user-id": {
+      "get": {
+        "summary": "Preview next auto-generated seller user_id (SEL001, SEL002, …)",
+        "tags": [
+          "Shops"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Next unused SEL### login id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextEmployeeUserIdResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Admin only"
           }
         }
       }
@@ -645,6 +3866,64 @@
         "summary": "Return one seller",
         "tags": [
           "Shops"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sellerId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "includeOutOfStock",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Seller fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SellerDetailResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Seller not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/shops/sellers/{sellerId}/staff": {
+      "get": {
+        "summary": "Sellers and employees at the same shop location as this seller",
+        "description": "Admin only. Uses the seller's users.location_id.\nReturns only SELLER and EMPLOYEE users assigned to that location.\nEmpty lists if seller has no location.\n",
+        "tags": [
+          "Shops"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
         ],
         "parameters": [
           {
@@ -658,7 +3937,20 @@
         ],
         "responses": {
           "200": {
-            "description": "Seller fetched successfully"
+            "description": "Shop staff fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopStaffResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Admin only"
           },
           "404": {
             "description": "Seller not found"
@@ -666,9 +3958,459 @@
         }
       }
     },
+    "/api/shops/my-staff": {
+      "get": {
+        "summary": "Seller — staff at own shop location",
+        "tags": [
+          "Shops"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shop staff fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopStaffResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Seller only"
+          }
+        }
+      }
+    },
+    "/api/shops/employee-roles": {
+      "get": {
+        "summary": "List job titles for employees (Manager, Cashier, …)",
+        "tags": [
+          "Shops"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Roles list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeRolesResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Admin or Seller only"
+          }
+        }
+      }
+    },
+    "/api/shops/locations": {
+      "get": {
+        "summary": "List active locations (warehouse + shops)",
+        "description": "Admin only. Optional type filter for shops vs warehouses.",
+        "tags": [
+          "Shops"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "SHOP",
+                "WAREHOUSE"
+              ]
+            },
+            "description": "Filter by location type"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Locations list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationsListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Admin only"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a shop or warehouse location",
+        "description": "Admin only. Creates an active location used for seller assignment,\nemployees, and inventory placement. Optional latitude/longitude set the\nattendance geofence center (both required together); allowed_radius defaults to 100m.\nSHOP requires warehouse_id of an active warehouse. WAREHOUSE has no parent.\n",
+        "tags": [
+          "Shops"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLocationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Location created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateLocationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Admin only"
+          },
+          "409": {
+            "description": "Location code already exists"
+          }
+        }
+      }
+    },
+    "/api/shops/locations/{locationId}/staff": {
+      "get": {
+        "summary": "Admin, sellers and employees assigned to this location",
+        "description": "Admin only. Returns ADMIN, SELLER and EMPLOYEE users with users.location_id\nequal to this shop/warehouse.\n",
+        "tags": [
+          "Shops"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "locationId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shop staff fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopStaffResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Admin only"
+          },
+          "404": {
+            "description": "Location not found"
+          }
+        }
+      }
+    },
+    "/api/shops/locations/{locationId}": {
+      "patch": {
+        "summary": "Update a shop or warehouse name and map location",
+        "description": "Admin only. Updates name, address, and/or attendance geofence\n(latitude, longitude, allowed_radius). Does not change type, code,\nor warehouse_id. Super Admin: any location. Shop Admin: own shop only.\n",
+        "tags": [
+          "Shops"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "locationId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLocationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Location updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateLocationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden (not your shop)"
+          },
+          "404": {
+            "description": "Location not found"
+          }
+        }
+      }
+    },
+    "/api/shops/employees": {
+      "post": {
+        "summary": "Create an employee at a shop or warehouse",
+        "description": "**Seller:** employee is always assigned to the seller's `location_id`\n(body `location_id` is ignored). Seller must have a location.\n**Admin:** body `location_id` is required (WAREHOUSE or SHOP).\nNew employees are active and verified (can log in immediately).\n`user_id` is optional — omit to auto-generate EMP001, EMP002, …\n",
+        "tags": [
+          "Shops"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEmployeeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Employee created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateEmployeeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation / missing location / invalid role"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Admin or Seller only"
+          },
+          "409": {
+            "description": "user_id, username, or mobile already exists"
+          }
+        }
+      }
+    },
+    "/api/shops/employees/next-user-id": {
+      "get": {
+        "summary": "Preview next auto-generated employee user_id (EMP001, EMP002, …)",
+        "tags": [
+          "Shops"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Next unused EMP### login id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextEmployeeUserIdResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Admin or Seller only"
+          }
+        }
+      }
+    },
+    "/api/shops/employees/{employeeId}": {
+      "get": {
+        "summary": "Admin view one employee (profile + check-in/check-out only)",
+        "description": "Admin only. Returns EMPLOYEE user profile and an `actions` timeline\nlimited to CHECK_IN and CHECK_OUT (from employee_attendance).\nDoes not include sales, inventory, or seller data.\n",
+        "tags": [
+          "Shops"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employeeId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "maximum": 100
+            },
+            "description": "Max attendance rows to expand into actions"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Employee profile + attendance actions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminEmployeeDetailResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Admin only"
+          },
+          "404": {
+            "description": "Employee not found (or user is not EMPLOYEE)"
+          }
+        }
+      }
+    },
+    "/api/shops/employees/{employeeId}/location": {
+      "patch": {
+        "summary": "Move an admin, seller, or employee",
+        "description": "Super Admin or shop Admin. ADMIN, SELLER, or EMPLOYEE. Updates `users.location_id`\n(and parent/shop name). Shop Admin: person must be in their shop. Dest must be\nactive. Seller dest must be a shop. Employee must be checked out first.\nInventory stays at the old location.\n",
+        "tags": [
+          "Shops"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employeeId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferEmployeeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Employee moved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferEmployeeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Same location, inactive dest, or employee is checked in"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Super Admin or shop Admin; employee out of shop Admin scope"
+          },
+          "404": {
+            "description": "Staff user not found"
+          }
+        }
+      }
+    },
     "/api/shipments": {
       "post": {
-        "summary": "Create a new shipment (Admin only)",
+        "summary": "Transfer stock serials from admin to seller (Admin only)",
+        "description": "Marks existing AVAILABLE admin-owned product units as IN_SHIPMENT.\nCreates shipment record (status PENDING) and inventory_transactions (SHIPPED).\nOwnership moves to seller when seller accepts the shipment.\n",
         "tags": [
           "Shipments"
         ],
@@ -682,63 +4424,61 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": [
-                  "sellerId",
-                  "items"
-                ],
-                "properties": {
-                  "sellerId": {
-                    "type": "integer"
-                  },
-                  "items": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "required": [
-                        "productCategoryId",
-                        "productNameId",
-                        "productModelId",
-                        "productId",
-                        "productItemId",
-                        "quantity"
-                      ],
-                      "properties": {
-                        "productCategoryId": {
-                          "type": "integer"
-                        },
-                        "productNameId": {
-                          "type": "integer"
-                        },
-                        "productModelId": {
-                          "type": "integer"
-                        },
-                        "productId": {
-                          "type": "integer"
-                        },
-                        "productItemId": {
-                          "type": "integer"
-                        },
-                        "quantity": {
-                          "type": "integer"
-                        }
-                      }
-                    }
-                  }
-                }
+                "$ref": "#/components/schemas/CreateShipmentRequest"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Shipment created successfully"
+            "description": "Units transferred successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateShipmentResponse"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Invalid input or product combo not found"
+            "description": "Invalid serials, product, or payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "403": {
-            "description": "Admin access required"
+            "description": "Admin access required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Seller not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Serial no longer available (race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       },
@@ -1098,45 +4838,78 @@
         }
       }
     },
+    "/api/employee/shipments": {
+      "get": {
+        "summary": "List shipments for sellers at the employee's shop location (read-only)",
+        "description": "EMPLOYEE only. Returns NewShipment rows where the seller shares\nusers.location_id with the employee. Does not allow accept/transfer.\n",
+        "tags": [
+          "Shipments"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shop shipments list (same shape as seller list)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SellerShipmentsListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Employee only"
+          }
+        }
+      }
+    },
     "/api/sales": {
       "post": {
-        "summary": "Create a new sale transaction",
+        "summary": "Create a sale (SA/Admin/Seller own units; EMPLOYEE location stock)",
         "tags": [
           "Sales"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "product_id": {
-                    "type": "integer"
-                  },
-                  "serial_number": {
-                    "type": "string"
-                  },
-                  "customer_name": {
-                    "type": "string"
-                  },
-                  "customer_number": {
-                    "type": "string"
-                  },
-                  "vehicle_number": {
-                    "type": "string"
-                  },
-                  "sell_price": {
-                    "type": "number"
-                  }
-                }
+                "$ref": "#/components/schemas/CreateSaleRequest"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Sale transaction created successfully"
+            "description": "Sale transaction created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSaleResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Serial not available in actor inventory/location"
+          },
+          "409": {
+            "description": "Concurrent claim lost (already sold)"
           }
         }
       },
@@ -1152,11 +4925,124 @@
         }
       }
     },
+    "/api/sales/service": {
+      "post": {
+        "summary": "Create a service bill (no stock move)",
+        "tags": [
+          "Sales"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateServiceBillRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Service bill created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateServiceBillResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/api/sales/rent": {
+      "post": {
+        "summary": "Rent battery out with deposit (unit → RENTED)",
+        "tags": [
+          "Sales"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Battery rented",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateRentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sales/rent/return": {
+      "post": {
+        "summary": "Return rented battery — fee from deposit, refund rest",
+        "tags": [
+          "Sales"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReturnRentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rent returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReturnRentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/sales/history": {
       "get": {
         "summary": "Return seller's own sales history with pagination, search, and date filtering",
         "tags": [
           "Sales"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
         ],
         "parameters": [
           {
@@ -1204,11 +5090,37 @@
               "type": "string",
               "format": "date-time"
             }
+          },
+          {
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "today",
+                "date",
+                "all"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "date",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Seller sales history fetched successfully"
+            "description": "Seller sales history fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleHistoryResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -1283,7 +5195,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Admin sales history fetched successfully"
+            "description": "Admin sales history fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSaleHistoryResponse"
+                }
+              }
+            }
           },
           "403": {
             "description": "Forbidden — Admin access required"
@@ -1297,22 +5216,112 @@
         "tags": [
           "Sales"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "path",
             "name": "transactionId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Sale details fetched successfully"
+            "description": "Sale details fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleDetailResponse"
+                }
+              }
+            }
           },
           "404": {
             "description": "Transaction not found"
+          }
+        }
+      }
+    },
+    "/api/returns": {
+      "post": {
+        "summary": "Process a product return (seller)",
+        "tags": [
+          "Returns"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReturnRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Return processed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateReturnResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid return",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List product returns (seller own, admin all)",
+        "tags": [
+          "Returns"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReturnsListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -1323,24 +5332,41 @@
         "tags": [
           "Products"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  }
-                }
+                "$ref": "#/components/schemas/CreateProductNameRequest"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Product name created successfully"
+            "description": "Product name created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductNameResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Product name already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       },
@@ -1349,9 +5375,21 @@
         "tags": [
           "Products"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Product names fetched successfully"
+            "description": "Product names fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductNamesResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -1369,13 +5407,34 @@
         ],
         "responses": {
           "200": {
-            "description": "Inventory products fetched successfully"
+            "description": "Inventory products fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryProductsResponse"
+                }
+              }
+            }
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "500": {
-            "description": "Internal server error"
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -1386,27 +5445,41 @@
         "tags": [
           "Products"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "product_name_id": {
-                    "type": "integer"
-                  },
-                  "name": {
-                    "type": "string"
-                  }
-                }
+                "$ref": "#/components/schemas/CreateProductModelRequest"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Product model created successfully"
+            "description": "Product model created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductModelResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Product model already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -1417,24 +5490,41 @@
         "tags": [
           "Products"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "product_name_id": {
-                    "type": "integer"
-                  }
-                }
+                "$ref": "#/components/schemas/ListProductModelsRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Product models fetched successfully"
+            "description": "Product models fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductModelsResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product name not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -1445,42 +5535,31 @@
         "tags": [
           "Products"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "product_name_id": {
-                    "type": "integer"
-                  },
-                  "product_model_id": {
-                    "type": "integer"
-                  },
-                  "min_price": {
-                    "type": "number"
-                  },
-                  "on_sale": {
-                    "type": "boolean"
-                  },
-                  "offer_price": {
-                    "type": "number"
-                  },
-                  "min_unit_count_admin": {
-                    "type": "integer"
-                  },
-                  "min_unit_count_seller": {
-                    "type": "integer"
-                  }
-                }
+                "$ref": "#/components/schemas/CreateProductRequest"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Product created successfully"
+            "description": "Product created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateProductResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -1491,27 +5570,76 @@
         "tags": [
           "Products"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "product_name_id": {
-                    "type": "integer"
-                  },
-                  "product_model_id": {
-                    "type": "integer"
-                  }
-                }
+                "$ref": "#/components/schemas/ListProductsRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Products fetched successfully"
+            "description": "Products fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListProductsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/product-units/verify": {
+      "post": {
+        "summary": "Verify a product unit by serial or QR",
+        "tags": [
+          "ProductUnits"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyProductRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyProductResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -1519,8 +5647,14 @@
     "/api/inventory": {
       "get": {
         "summary": "Return logged-in user's inventory",
+        "description": "Scope by role (unit inventory):\n- ADMIN: units owned by admin users\n- SELLER: units where owner_id = seller\n- EMPLOYEE: units where current_location_id = employee.location_id\nEmployee with no location_id gets an empty list.\nOptional `location_id` (SUPER_ADMIN / ADMIN only): available units at that\nlocation (`current_location_id`). Seller/Employee query is ignored.\n",
         "tags": [
           "Inventory"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
         ],
         "parameters": [
           {
@@ -1543,11 +5677,43 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "in": "query",
+            "name": "includeOutOfStock",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "location_id",
+            "description": "SA/Admin only. Physical stock at this shop or warehouse.",
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Inventory fetched successfully"
+            "description": "Inventory fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -1759,13 +5925,18 @@
         "tags": [
           "Inventory"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "query",
             "name": "product_name_id",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           },
           {
@@ -1773,22 +5944,34 @@
             "name": "product_model_id",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Product details fetched successfully"
+            "description": "Product details fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductStockDetailsResponse"
+                }
+              }
+            }
           }
         }
       }
     },
     "/api/inventory/available-serials": {
       "get": {
-        "summary": "Fetch available serial numbers for a product owned by the logged-in seller",
+        "summary": "Fetch available serial numbers for a product owned by the authenticated user",
         "tags": [
           "Inventory"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
         ],
         "parameters": [
           {
@@ -1796,7 +5979,7 @@
             "name": "product_name_id",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           },
           {
@@ -1804,22 +5987,44 @@
             "name": "product_model_id",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Available serials fetched successfully"
+            "description": "Available serials fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvailableSerialsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
     },
     "/api/inventory/scan-for-sale": {
       "get": {
-        "summary": "Scan a serial number to fetch product details for a sale",
+        "summary": "Scan serial for sale (owner stock; EMPLOYEE = location stock)",
         "tags": [
           "Inventory"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
         ],
         "parameters": [
           {
@@ -1833,7 +6038,17 @@
         ],
         "responses": {
           "200": {
-            "description": "Product found successfully"
+            "description": "Product found successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScanForSaleResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Employee has no shop location"
           },
           "404": {
             "description": "Product not found in available inventory"
@@ -1847,11 +6062,24 @@
         "tags": [
           "Inventory"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "path",
             "name": "productId",
             "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "location_id",
+            "description": "SA/Admin physical stock at this location",
             "schema": {
               "type": "integer"
             }
@@ -1863,47 +6091,30 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "product_id": {
-                          "type": "integer"
-                        },
-                        "category": {
-                          "type": "string"
-                        },
-                        "brand": {
-                          "type": "string"
-                        },
-                        "model": {
-                          "type": "string"
-                        },
-                        "quantity": {
-                          "type": "integer"
-                        },
-                        "min_price": {
-                          "type": "number"
-                        },
-                        "offer_price": {
-                          "type": "number"
-                        }
-                      }
-                    }
-                  }
+                  "$ref": "#/components/schemas/InventoryItemDetailResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
           },
           "404": {
-            "description": "Inventory item not found"
+            "description": "Inventory item not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -1914,38 +6125,51 @@
         "tags": [
           "Inventory"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": [
-                  "product_id",
-                  "user_id",
-                  "adjustment_quantity"
-                ],
-                "properties": {
-                  "product_id": {
-                    "type": "integer"
-                  },
-                  "user_id": {
-                    "type": "integer"
-                  },
-                  "adjustment_quantity": {
-                    "type": "integer"
-                  }
-                }
+                "$ref": "#/components/schemas/AdjustInventoryRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Inventory adjusted successfully"
+            "description": "Inventory adjusted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdjustInventoryResponse"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Not enough stock to decrease"
+            "description": "Not enough stock to decrease",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -2005,56 +6229,85 @@
         "tags": [
           "Inventory"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": [
-                  "productNameId",
-                  "productModelId",
-                  "quantity"
-                ],
-                "properties": {
-                  "productNameId": {
-                    "type": "integer",
-                    "example": 10
-                  },
-                  "productModelId": {
-                    "type": "integer",
-                    "example": 25
-                  },
-                  "quantity": {
-                    "type": "integer",
-                    "example": 50
-                  },
-                  "minSellPrice": {
-                    "type": "number",
-                    "example": 1200
-                  },
-                  "minUnitCountAdmin": {
-                    "type": "integer",
-                    "example": 0
-                  },
-                  "minUnitCountSeller": {
-                    "type": "integer",
-                    "example": 0
-                  }
-                }
+                "$ref": "#/components/schemas/UpdateStockRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Stock updated successfully"
+            "description": "Stock updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateStockResponse"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Invalid request payload"
+            "description": "Invalid request payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "404": {
-            "description": "Product name or product model not found"
+            "description": "Product name or product model not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/inventory/unit/{serialNumber}": {
+      "delete": {
+        "summary": "Remove a specific serial number unit from inventory (Admin only)",
+        "tags": [
+          "Inventory"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "serialNumber",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Unit removed successfully"
+          },
+          "403": {
+            "description": "Forbidden (Admin only)"
+          },
+          "404": {
+            "description": "Serial number unit not found or not available"
           }
         }
       }
@@ -2088,21 +6341,7 @@
                       "example": "Seller dashboard stats retrieved successfully"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "totalStock": {
-                          "type": "integer",
-                          "example": 1284
-                        },
-                        "todaySales": {
-                          "type": "integer",
-                          "example": 14
-                        },
-                        "pendingShipments": {
-                          "type": "integer",
-                          "example": 4
-                        }
-                      }
+                      "$ref": "#/components/schemas/SellerDashboardStats"
                     }
                   }
                 }
@@ -2150,25 +6389,7 @@
                       "example": "Dashboard stats retrieved successfully"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "totalStock": {
-                          "type": "integer",
-                          "example": 120
-                        },
-                        "todaySales": {
-                          "type": "integer",
-                          "example": 35
-                        },
-                        "pendingRequests": {
-                          "type": "integer",
-                          "example": 8
-                        },
-                        "totalSellers": {
-                          "type": "integer",
-                          "example": 12
-                        }
-                      }
+                      "$ref": "#/components/schemas/AdminDashboardStats"
                     }
                   }
                 }
@@ -2190,6 +6411,7 @@
     "/api/dashboard/recent-activity": {
       "get": {
         "summary": "Get recent activity feed (Admin only)",
+        "description": "SUPER_ADMIN sees org-wide activity. Shop/warehouse ADMIN sees only own warehouse/shop plus sellers and employees under them.",
         "tags": [
           "Dashboard"
         ],
@@ -2200,7 +6422,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Recent activity retrieved successfully"
+            "description": "Recent activity retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecentActivityResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -2208,6 +6437,7 @@
     "/api/dashboard/activity-history": {
       "get": {
         "summary": "Get paginated activity history (Admin only)",
+        "description": "Same scope as recent-activity. SUPER_ADMIN org-wide; ADMIN own warehouse/shop tree only.",
         "tags": [
           "Dashboard"
         ],
@@ -2216,44 +6446,50 @@
             "bearerAuth": []
           }
         ],
-        "responses": {
-          "200": {
-            "description": "Activity history retrieved successfully"
-          }
-        }
-      }
-    },
-    "/api/customers": {
-      "get": {
-        "summary": "Retrieve a list of customers",
-        "tags": [
-          "Customers"
-        ],
-        "security": [
+        "parameters": [
           {
-            "bearerAuth": []
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Opaque cursor from previous page (pagination.nextCursor)"
+          },
+          {
+            "in": "query",
+            "name": "from_date",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Inclusive start of range (ISO)"
+          },
+          {
+            "in": "query",
+            "name": "to_date",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Inclusive end of range (ISO)"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "maximum": 50
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "A list of customers",
+            "description": "Activity history retrieved successfully",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Customer"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/ActivityHistoryResponse"
                 }
               }
             }
@@ -2263,9 +6499,14 @@
     },
     "/api/auth/register": {
       "post": {
-        "summary": "Register a new user",
+        "summary": "Register a new seller",
         "tags": [
           "Auth"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
         ],
         "requestBody": {
           "required": true,
@@ -2291,6 +6532,8 @@
                   },
                   "user_number": {
                     "type": "string",
+                    "pattern": "^\\\\d{10}$",
+                    "description": "Exactly 10 digits",
                     "example": "9876543210"
                   },
                   "shop_name": {
@@ -2300,7 +6543,14 @@
                   "password": {
                     "type": "string",
                     "format": "password",
-                    "example": "password123"
+                    "minLength": 8,
+                    "description": "Min 8 characters, one uppercase, one special character",
+                    "example": "Passw0rd!"
+                  },
+                  "location_id": {
+                    "type": "integer",
+                    "description": "Optional SHOP location id (assign seller to a shop)",
+                    "example": 2
                   }
                 }
               }
@@ -2309,7 +6559,14 @@
         },
         "responses": {
           "201": {
-            "description": "User registered successfully"
+            "description": "User registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterResponse"
+                }
+              }
+            }
           },
           "400": {
             "description": "Username, password and shop name are required"
@@ -2320,9 +6577,91 @@
         }
       }
     },
+    "/api/auth/register-admin": {
+      "post": {
+        "summary": "Super Admin creates a shop or warehouse Admin",
+        "description": "SUPER_ADMIN only. Creates role ADMIN with parent_id = Super Admin.\nNew admin is active and verified (can log in immediately).\nOptional location_id must be an active SHOP or WAREHOUSE.\n",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "user_id",
+                  "username",
+                  "user_number",
+                  "shop_name",
+                  "password"
+                ],
+                "properties": {
+                  "user_id": {
+                    "type": "string",
+                    "example": "ADMIN001"
+                  },
+                  "username": {
+                    "type": "string",
+                    "example": "shop_admin"
+                  },
+                  "user_number": {
+                    "type": "string",
+                    "pattern": "^\\\\d{10}$",
+                    "description": "Exactly 10 digits",
+                    "example": "9876543211"
+                  },
+                  "shop_name": {
+                    "type": "string",
+                    "example": "Main Shop Admin"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "minLength": 8,
+                    "description": "Min 8 characters, one uppercase, one special character",
+                    "example": "Passw0rd!"
+                  },
+                  "location_id": {
+                    "type": "integer",
+                    "description": "Optional SHOP or WAREHOUSE location for this admin",
+                    "example": 2
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Admin created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only Super Admin"
+          },
+          "409": {
+            "description": "User id / username / number already exists"
+          }
+        }
+      }
+    },
     "/api/auth/login": {
       "post": {
-        "summary": "Authenticate user and return token",
+        "summary": "Login with User ID and password",
+        "description": "Password login for SUPER_ADMIN, ADMIN, SELLER, EMPLOYEE. Returns JWT.\nOTP step is deferred.\n",
         "tags": [
           "Auth"
         ],
@@ -2339,12 +6678,25 @@
                 "properties": {
                   "user_id": {
                     "type": "string",
-                    "example": "SELLER001"
+                    "example": "EMP001"
                   },
                   "password": {
                     "type": "string",
                     "format": "password",
                     "example": "password123"
+                  },
+                  "device_id": {
+                    "type": "string",
+                    "description": "Optional — stored on employee_sessions for EMPLOYEE"
+                  },
+                  "ip_address": {
+                    "type": "string"
+                  },
+                  "app_version": {
+                    "type": "string"
+                  },
+                  "firebase_token": {
+                    "type": "string"
                   }
                 }
               }
@@ -2353,16 +6705,119 @@
         },
         "responses": {
           "200": {
-            "description": "Login successful"
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Validation Error"
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "401": {
-            "description": "Invalid Credentials"
+            "description": "Invalid Credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "403": {
-            "description": "Inactive / Unverified Account"
+            "description": "Inactive / Unverified Account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/verify-otp": {
+      "post": {
+        "summary": "Complete login with OTP",
+        "description": "Exchange login OTP challenge for auth_id / auth_key.",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "challenge_id",
+                  "otp"
+                ],
+                "properties": {
+                  "challenge_id": {
+                    "type": "string"
+                  },
+                  "otp": {
+                    "type": "string",
+                    "example": "123456"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid / expired OTP",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "summary": "End session (closes employee_sessions for EMPLOYEE)",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logout successful"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
@@ -2420,9 +6875,277 @@
           }
         }
       }
+    },
+    "/api/employee/attendance/status": {
+      "get": {
+        "summary": "Current check-in status for employee",
+        "tags": [
+          "Attendance"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Status retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AttendanceStatusData"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Employee only"
+          }
+        }
+      }
+    },
+    "/api/employee/attendance/check-in": {
+      "post": {
+        "summary": "Check in at assigned shop location",
+        "tags": [
+          "Attendance"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttendanceGeoBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Checked in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AttendanceRecord"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No location assigned"
+          },
+          "403": {
+            "description": "Employee only"
+          },
+          "409": {
+            "description": "Already checked in"
+          }
+        }
+      }
+    },
+    "/api/employee/attendance/check-out": {
+      "post": {
+        "summary": "Check out (close open attendance)",
+        "tags": [
+          "Attendance"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttendanceGeoBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Checked out",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AttendanceRecord"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not checked in"
+          },
+          "403": {
+            "description": "Employee only"
+          }
+        }
+      }
+    },
+    "/api/employee/attendance/checked-in": {
+      "get": {
+        "summary": "List all currently checked-in employees (Admin / Super Admin)",
+        "description": "Returns open attendance rows with check-in GPS and employee profile.\n§2 may re-scope Admin to own shop; Super Admin sees all.\n",
+        "tags": [
+          "Attendance"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Checked-in staff list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "employee_id": {
+                            "type": "integer"
+                          },
+                          "check_in_time": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "check_in_lat": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "check_in_lng": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "location": {
+                            "type": "object"
+                          },
+                          "employee": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Admin only"
+          }
+        }
+      }
+    },
+    "/api/app/status": {
+      "get": {
+        "summary": "App version + maintenance gate status",
+        "description": "Public endpoint for Flutter splash / app gate.\nClients compare local version to `latest_version` and block on `maintenance`.\n",
+        "tags": [
+          "App"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Current app gate status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppStatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "summary": "Health check",
+        "tags": [
+          "Health"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "API is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthStatus"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "tags": [
+    {
+      "name": "Users",
+      "description": "Super Admin account list and activate / deactivate"
+    },
     {
       "name": "Transfers",
       "description": "Shipment / Transfer management APIs"
@@ -2446,6 +7169,10 @@
     {
       "name": "Inventory",
       "description": "Inventory management"
+    },
+    {
+      "name": "Attendance",
+      "description": "Employee physical check-in / check-out (employee_attendance)"
     }
   ]
 }

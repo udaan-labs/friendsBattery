@@ -1,0 +1,21 @@
+{
+	"nodes":[
+		{"id":"4","type":"text","text":"### 3. Backend Route & Controller\n- Zod validation parses payload\n- Controller delegates to `authService.loginUser()`","x":310,"y":-150,"width":220,"height":270},
+		{"id":"8","type":"text","text":"### 7. Failure\n- Returns `400/401 Error` response\n- Display error message on Login page","x":680,"y":-100,"width":220,"height":220},
+		{"id":"5","type":"text","text":"### 4. Auth Service / Repository\n- Check user in DB\n- Verify hashed password\n- Lock user if too many attempts","x":420,"y":285,"width":220,"height":290},
+		{"id":"2","type":"text","text":"### 1. Login Page UI\n- User enters phone number/user ID\n- User enters password\n- Clicks 'Login'","x":-400,"y":-90,"width":220,"height":210},
+		{"id":"1","type":"text","text":"# Login Process Flowchart\nThis canvas represents the end-to-end user login flow.","x":30,"y":-400,"width":500,"height":100},
+		{"id":"3","type":"text","text":"### 2. Frontend validation & Send\n- Riverpod / Dio sends POST request to `/api/auth/login`\n- Uses generated OpenAPI model `ApiAuthLoginPostRequest`","x":-30,"y":-150,"width":220,"height":300},
+		{"id":"6","type":"text","text":"### 5. Success (Token Generation)\n- Generate JWT token (role, id)\n- Returns `200 Success` with `LoginResponse` DTO","x":-30,"y":285,"width":220,"height":290},
+		{"id":"7","type":"text","text":"### 6. Session Saved\n- Frontend secure storage saves JWT\n- Route changes to Home Page","x":-360,"y":165,"width":220,"height":195}
+	],
+	"edges":[
+		{"id":"e1","fromNode":"2","fromSide":"right","toNode":"3","toSide":"left"},
+		{"id":"e2","fromNode":"3","fromSide":"right","toNode":"4","toSide":"left"},
+		{"id":"e3","fromNode":"4","fromSide":"bottom","toNode":"5","toSide":"top"},
+		{"id":"e4","fromNode":"5","fromSide":"left","toNode":"6","toSide":"right","label":"Success"},
+		{"id":"e5","fromNode":"6","fromSide":"left","toNode":"7","toSide":"right"},
+		{"id":"e6","fromNode":"5","fromSide":"right","toNode":"8","toSide":"bottom","label":"Fail"},
+		{"id":"e7","fromNode":"8","fromSide":"top","toNode":"2","toSide":"top","label":"Retry"}
+	]
+}

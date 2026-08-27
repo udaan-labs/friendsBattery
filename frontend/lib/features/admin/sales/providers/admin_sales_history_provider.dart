@@ -1,16 +1,35 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_client_provider.dart';
+import '../../../../shared/utils/app_formatters.dart';
 import '../models/admin_sale_history.dart';
 import '../repositories/admin_sales_repository.dart';
 
 // ─── Repository provider ───────────────────────────────────────────────────
 
 final adminSalesRepositoryProvider = Provider<AdminSalesRepository>((ref) {
-  final dio = ref.watch(apiClientProvider).dio;
-  return AdminSalesRepository(dio);
+  return AdminSalesRepository(api: ref.watch(apiClientProvider));
 });
 
 // ─── State ─────────────────────────────────────────────────────────────────
+
+/// Period filter for sales report chips.
+enum AdminSalesPeriod {
+  all,
+  today,
+  week,
+  month,
+  year,
+  custom;
+
+  String label(DateTime? customDate) => switch (this) {
+        all => 'All',
+        today => 'Today',
+        week => 'This week',
+        month => 'This month',
+        year => 'This year',
+        custom => customDate == null ? 'Date' : formatAppDate(customDate),
+      };
+}
 
 class AdminSalesHistoryState {
   final List<AdminSaleHistory> sales;
@@ -18,6 +37,8 @@ class AdminSalesHistoryState {
   final bool isLoadingMore;
   final String? error;
   final String searchQuery;
+  final AdminSalesPeriod period;
+  final DateTime? customDate;
   final int currentPage;
   final int totalPages;
   final int total;
@@ -28,12 +49,17 @@ class AdminSalesHistoryState {
     this.isLoadingMore = false,
     this.error,
     this.searchQuery = '',
+    this.period = AdminSalesPeriod.all,
+    this.customDate,
     this.currentPage = 1,
     this.totalPages = 1,
     this.total = 0,
   });
 
   bool get hasMore => currentPage < totalPages;
+
+  double get totalRevenue =>
+      sales.fold<double>(0, (sum, s) => sum + s.sellPrice);
 
   AdminSalesHistoryState copyWith({
     List<AdminSaleHistory>? sales,
@@ -42,6 +68,9 @@ class AdminSalesHistoryState {
     String? error,
     bool clearError = false,
     String? searchQuery,
+    AdminSalesPeriod? period,
+    DateTime? customDate,
+    bool clearCustomDate = false,
     int? currentPage,
     int? totalPages,
     int? total,
@@ -52,6 +81,8 @@ class AdminSalesHistoryState {
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       error: clearError ? null : error ?? this.error,
       searchQuery: searchQuery ?? this.searchQuery,
+      period: period ?? this.period,
+      customDate: clearCustomDate ? null : customDate ?? this.customDate,
       currentPage: currentPage ?? this.currentPage,
       totalPages: totalPages ?? this.totalPages,
       total: total ?? this.total,
@@ -72,6 +103,29 @@ class AdminSalesHistoryNotifier
 
   static const int _pageSize = 10;
 
+  DateTime _endOfDay(DateTime d) => DateTime(d.year, d.month, d.day, 23, 59, 59, 999);
+
+  ({String? from, String? to}) _dateRangeFor(AdminSalesPeriod period) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    if (period == AdminSalesPeriod.all) return (from: null, to: null);
+    if (period == AdminSalesPeriod.custom) {
+      final day = state.customDate ?? today;
+      return (
+        from: DateTime(day.year, day.month, day.day).toUtc().toIso8601String(),
+        to: _endOfDay(day).toUtc().toIso8601String(),
+      );
+    }
+    final start = switch (period) {
+      AdminSalesPeriod.today => today,
+      AdminSalesPeriod.week => today.subtract(Duration(days: now.weekday - 1)),
+      AdminSalesPeriod.month => DateTime(now.year, now.month, 1),
+      AdminSalesPeriod.year => DateTime(now.year, 1, 1),
+      _ => today,
+    };
+    return (from: start.toUtc().toIso8601String(), to: _endOfDay(now).toUtc().toIso8601String());
+  }
+
   Future<void> fetchSales({bool isRefresh = false}) async {
     if (isRefresh || state.isLoading) {
       state = state.copyWith(
@@ -82,11 +136,15 @@ class AdminSalesHistoryNotifier
       );
     }
 
+    final range = _dateRangeFor(state.period);
+
     try {
       final result = await _repository.getAdminSalesHistory(
         page: 1,
         limit: _pageSize,
         search: state.searchQuery.isNotEmpty ? state.searchQuery : null,
+        fromDate: range.from,
+        toDate: range.to,
       );
 
       state = state.copyWith(
@@ -110,12 +168,15 @@ class AdminSalesHistoryNotifier
 
     state = state.copyWith(isLoadingMore: true);
     final nextPage = state.currentPage + 1;
+    final range = _dateRangeFor(state.period);
 
     try {
       final result = await _repository.getAdminSalesHistory(
         page: nextPage,
         limit: _pageSize,
         search: state.searchQuery.isNotEmpty ? state.searchQuery : null,
+        fromDate: range.from,
+        toDate: range.to,
       );
 
       state = state.copyWith(
@@ -134,6 +195,17 @@ class AdminSalesHistoryNotifier
   void updateSearch(String query) {
     state = state.copyWith(searchQuery: query);
     fetchSales();
+  }
+
+  void setPeriod(AdminSalesPeriod period) {
+    if (state.period == period) return;
+    state = state.copyWith(period: period, clearCustomDate: true);
+    fetchSales(isRefresh: true);
+  }
+
+  void setCustomDate(DateTime date) {
+    state = state.copyWith(period: AdminSalesPeriod.custom, customDate: date);
+    fetchSales(isRefresh: true);
   }
 }
 

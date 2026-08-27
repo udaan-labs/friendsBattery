@@ -7,11 +7,6 @@ void main() {
   // TODO add properties to the builder and call build()
 
   group(ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner, () {
-    // int productId
-    test('to test the property `productId`', () async {
-      // TODO
-    });
-
     // String productName
     test('to test the property `productName`', () async {
       // TODO

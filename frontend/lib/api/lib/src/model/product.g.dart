@@ -10,8 +10,6 @@ class _$Product extends Product {
   @override
   final String? id;
   @override
-  final String? categoryId;
-  @override
   final String? productNameId;
   @override
   final String? productModelId;
@@ -28,8 +26,6 @@ class _$Product extends Product {
   @override
   final DateTime? createdAt;
   @override
-  final Category? category;
-  @override
   final ProductName? productName;
   @override
   final ProductModel? productModel;
@@ -39,7 +35,6 @@ class _$Product extends Product {
 
   _$Product._({
     this.id,
-    this.categoryId,
     this.productNameId,
     this.productModelId,
     this.minPrice,
@@ -48,7 +43,6 @@ class _$Product extends Product {
     this.minUnitCountAdmin,
     this.minUnitCountSeller,
     this.createdAt,
-    this.category,
     this.productName,
     this.productModel,
   }) : super._();
@@ -64,7 +58,6 @@ class _$Product extends Product {
     if (identical(other, this)) return true;
     return other is Product &&
         id == other.id &&
-        categoryId == other.categoryId &&
         productNameId == other.productNameId &&
         productModelId == other.productModelId &&
         minPrice == other.minPrice &&
@@ -73,7 +66,6 @@ class _$Product extends Product {
         minUnitCountAdmin == other.minUnitCountAdmin &&
         minUnitCountSeller == other.minUnitCountSeller &&
         createdAt == other.createdAt &&
-        category == other.category &&
         productName == other.productName &&
         productModel == other.productModel;
   }
@@ -82,7 +74,6 @@ class _$Product extends Product {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, id.hashCode);
-    _$hash = $jc(_$hash, categoryId.hashCode);
     _$hash = $jc(_$hash, productNameId.hashCode);
     _$hash = $jc(_$hash, productModelId.hashCode);
     _$hash = $jc(_$hash, minPrice.hashCode);
@@ -91,7 +82,6 @@ class _$Product extends Product {
     _$hash = $jc(_$hash, minUnitCountAdmin.hashCode);
     _$hash = $jc(_$hash, minUnitCountSeller.hashCode);
     _$hash = $jc(_$hash, createdAt.hashCode);
-    _$hash = $jc(_$hash, category.hashCode);
     _$hash = $jc(_$hash, productName.hashCode);
     _$hash = $jc(_$hash, productModel.hashCode);
     _$hash = $jf(_$hash);
@@ -102,7 +92,6 @@ class _$Product extends Product {
   String toString() {
     return (newBuiltValueToStringHelper(r'Product')
           ..add('id', id)
-          ..add('categoryId', categoryId)
           ..add('productNameId', productNameId)
           ..add('productModelId', productModelId)
           ..add('minPrice', minPrice)
@@ -111,7 +100,6 @@ class _$Product extends Product {
           ..add('minUnitCountAdmin', minUnitCountAdmin)
           ..add('minUnitCountSeller', minUnitCountSeller)
           ..add('createdAt', createdAt)
-          ..add('category', category)
           ..add('productName', productName)
           ..add('productModel', productModel))
         .toString();
@@ -124,10 +112,6 @@ class ProductBuilder implements Builder<Product, ProductBuilder> {
   String? _id;
   String? get id => _$this._id;
   set id(String? id) => _$this._id = id;
-
-  String? _categoryId;
-  String? get categoryId => _$this._categoryId;
-  set categoryId(String? categoryId) => _$this._categoryId = categoryId;
 
   String? _productNameId;
   String? get productNameId => _$this._productNameId;
@@ -165,10 +149,6 @@ class ProductBuilder implements Builder<Product, ProductBuilder> {
   DateTime? get createdAt => _$this._createdAt;
   set createdAt(DateTime? createdAt) => _$this._createdAt = createdAt;
 
-  CategoryBuilder? _category;
-  CategoryBuilder get category => _$this._category ??= CategoryBuilder();
-  set category(CategoryBuilder? category) => _$this._category = category;
-
   ProductNameBuilder? _productName;
   ProductNameBuilder get productName =>
       _$this._productName ??= ProductNameBuilder();
@@ -189,7 +169,6 @@ class ProductBuilder implements Builder<Product, ProductBuilder> {
     final $v = _$v;
     if ($v != null) {
       _id = $v.id;
-      _categoryId = $v.categoryId;
       _productNameId = $v.productNameId;
       _productModelId = $v.productModelId;
       _minPrice = $v.minPrice;
@@ -198,7 +177,6 @@ class ProductBuilder implements Builder<Product, ProductBuilder> {
       _minUnitCountAdmin = $v.minUnitCountAdmin;
       _minUnitCountSeller = $v.minUnitCountSeller;
       _createdAt = $v.createdAt;
-      _category = $v.category?.toBuilder();
       _productName = $v.productName?.toBuilder();
       _productModel = $v.productModel?.toBuilder();
       _$v = null;
@@ -226,7 +204,6 @@ class ProductBuilder implements Builder<Product, ProductBuilder> {
           _$v ??
           _$Product._(
             id: id,
-            categoryId: categoryId,
             productNameId: productNameId,
             productModelId: productModelId,
             minPrice: minPrice,
@@ -235,15 +212,12 @@ class ProductBuilder implements Builder<Product, ProductBuilder> {
             minUnitCountAdmin: minUnitCountAdmin,
             minUnitCountSeller: minUnitCountSeller,
             createdAt: createdAt,
-            category: _category?.build(),
             productName: _productName?.build(),
             productModel: _productModel?.build(),
           );
     } catch (_) {
       late String _$failedField;
       try {
-        _$failedField = 'category';
-        _category?.build();
         _$failedField = 'productName';
         _productName?.build();
         _$failedField = 'productModel';

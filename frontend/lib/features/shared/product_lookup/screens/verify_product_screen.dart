@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'product_details_screen.dart';
 import '../providers/product_lookup_provider.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../theme/app_theme.dart';
+import '../../../../shared/widgets/snackbar_helper.dart';
 import 'package:go_router/go_router.dart';
 
 class VerifyProductScreen extends ConsumerStatefulWidget {
@@ -33,7 +34,7 @@ class _VerifyProductScreenState extends ConsumerState<VerifyProductScreen> {
   Widget build(BuildContext context) {
     final searchState = ref.watch(productLookupProvider);
 
-    ref.listen<AsyncValue<Map<String, dynamic>?>>(productLookupProvider, (previous, next) {
+    ref.listen(productLookupProvider, (previous, next) {
       next.when(
         data: (data) {
           if (data != null) {
@@ -49,13 +50,7 @@ class _VerifyProductScreenState extends ConsumerState<VerifyProductScreen> {
           }
         },
         error: (err, stack) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(err.toString()),
-              backgroundColor: AppColors.error,
-              behavior: SnackBarBehavior.fixed,
-            ),
-          );
+          context.showErrorSnackBar(err.toString());
         },
         loading: () {},
       );
@@ -83,7 +78,7 @@ class _VerifyProductScreenState extends ConsumerState<VerifyProductScreen> {
           },
         ),
       ),
-      backgroundColor: AppColors.background,
+      backgroundColor: AppTheme.background,
       body: _isScanning 
         ? _buildScanner() 
         : _buildManualEntry(searchState.isLoading),
@@ -116,7 +111,7 @@ class _VerifyProductScreenState extends ConsumerState<VerifyProductScreen> {
               icon: const Icon(Icons.close),
               label: const Text('Cancel Scan'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.error,
+                backgroundColor: AppTheme.error,
                 foregroundColor: Colors.white,
               ),
             ),
@@ -137,7 +132,7 @@ class _VerifyProductScreenState extends ConsumerState<VerifyProductScreen> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              color: AppTheme.textPrimary,
             ),
             textAlign: TextAlign.center,
           ),
@@ -158,7 +153,7 @@ class _VerifyProductScreenState extends ConsumerState<VerifyProductScreen> {
           ElevatedButton(
             onPressed: isLoading ? null : () => _searchProduct(_searchController.text),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
+              backgroundColor: AppTheme.primary,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
@@ -190,8 +185,8 @@ class _VerifyProductScreenState extends ConsumerState<VerifyProductScreen> {
             icon: const Icon(Icons.qr_code_scanner),
             label: const Text('Scan QR Code'),
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.primary,
-              side: const BorderSide(color: AppColors.primary),
+              foregroundColor: AppTheme.primary,
+              side: const BorderSide(color: AppTheme.primary),
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),

@@ -1,0 +1,23 @@
+# friends_battery_api.model.CreateLocationRequest
+
+## Load the model package
+```dart
+import 'package:friends_battery_api/api.dart';
+```
+
+## Properties
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**code** | **String** | Ignored. Server assigns SHOP001 / WH001 … | [optional] 
+**name** | **String** |  | 
+**type** | **String** |  | 
+**address** | **String** |  | [optional] 
+**phone** | **String** |  | [optional] 
+**latitude** | **num** | Geofence center; required together with longitude | [optional] 
+**longitude** | **num** | Geofence center; required together with latitude | [optional] 
+**allowedRadius** | **int** | Attendance radius in meters (default 100 when lat/lng set) | [optional] 
+**warehouseId** | **int** | Required for SHOP. Must be an active warehouse. Omit for WAREHOUSE. | [optional] 
+
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
+

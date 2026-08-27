@@ -31,7 +31,10 @@ const createProductSchema = z.object({
     offer_price: z.number().positive('Offer price must be a positive number').optional().nullable(),
     min_unit_count_admin: z.number().int().min(0, 'Min unit count admin cannot be negative'),
     min_unit_count_seller: z.number().int().min(0, 'Min unit count seller cannot be negative')
-  })
+  }).refine(
+    (d) => !d.on_sale || (d.offer_price != null && d.offer_price < d.min_price),
+    { message: 'Offer price must be less than min price', path: ['offer_price'] }
+  )
 });
 
 /**

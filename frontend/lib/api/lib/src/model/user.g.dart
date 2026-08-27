@@ -6,34 +6,50 @@ part of 'user.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const UserRoleEnum _$userRoleEnum_SUPER_ADMIN = const UserRoleEnum._(
+  'SUPER_ADMIN',
+);
 const UserRoleEnum _$userRoleEnum_ADMIN = const UserRoleEnum._('ADMIN');
 const UserRoleEnum _$userRoleEnum_SELLER = const UserRoleEnum._('SELLER');
+const UserRoleEnum _$userRoleEnum_EMPLOYEE = const UserRoleEnum._('EMPLOYEE');
 
 UserRoleEnum _$userRoleEnumValueOf(String name) {
   switch (name) {
+    case 'SUPER_ADMIN':
+      return _$userRoleEnum_SUPER_ADMIN;
     case 'ADMIN':
       return _$userRoleEnum_ADMIN;
     case 'SELLER':
       return _$userRoleEnum_SELLER;
+    case 'EMPLOYEE':
+      return _$userRoleEnum_EMPLOYEE;
     default:
       throw ArgumentError(name);
   }
 }
 
-final BuiltSet<UserRoleEnum> _$userRoleEnumValues = BuiltSet<UserRoleEnum>(
-  const <UserRoleEnum>[_$userRoleEnum_ADMIN, _$userRoleEnum_SELLER],
-);
+final BuiltSet<UserRoleEnum> _$userRoleEnumValues =
+    BuiltSet<UserRoleEnum>(const <UserRoleEnum>[
+      _$userRoleEnum_SUPER_ADMIN,
+      _$userRoleEnum_ADMIN,
+      _$userRoleEnum_SELLER,
+      _$userRoleEnum_EMPLOYEE,
+    ]);
 
 Serializer<UserRoleEnum> _$userRoleEnumSerializer = _$UserRoleEnumSerializer();
 
 class _$UserRoleEnumSerializer implements PrimitiveSerializer<UserRoleEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
+    'SUPER_ADMIN': 'SUPER_ADMIN',
     'ADMIN': 'ADMIN',
     'SELLER': 'SELLER',
+    'EMPLOYEE': 'EMPLOYEE',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
+    'SUPER_ADMIN': 'SUPER_ADMIN',
     'ADMIN': 'ADMIN',
     'SELLER': 'SELLER',
+    'EMPLOYEE': 'EMPLOYEE',
   };
 
   @override

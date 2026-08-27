@@ -36,7 +36,7 @@ abstract class User implements Built<User, UserBuilder> {
 
   @BuiltValueField(wireName: r'role')
   UserRoleEnum? get role;
-  // enum roleEnum {  ADMIN,  SELLER,  };
+  // enum roleEnum {  SUPER_ADMIN,  ADMIN,  SELLER,  EMPLOYEE,  };
 
   @BuiltValueField(wireName: r'userNumber')
   String? get userNumber;
@@ -275,10 +275,14 @@ class _$UserSerializer implements PrimitiveSerializer<User> {
 
 class UserRoleEnum extends EnumClass {
 
+  @BuiltValueEnumConst(wireName: r'SUPER_ADMIN')
+  static const UserRoleEnum SUPER_ADMIN = _$userRoleEnum_SUPER_ADMIN;
   @BuiltValueEnumConst(wireName: r'ADMIN')
   static const UserRoleEnum ADMIN = _$userRoleEnum_ADMIN;
   @BuiltValueEnumConst(wireName: r'SELLER')
   static const UserRoleEnum SELLER = _$userRoleEnum_SELLER;
+  @BuiltValueEnumConst(wireName: r'EMPLOYEE')
+  static const UserRoleEnum EMPLOYEE = _$userRoleEnum_EMPLOYEE;
 
   static Serializer<UserRoleEnum> get serializer => _$userRoleEnumSerializer;
 

@@ -8,8 +8,11 @@ import 'package:built_value/json_object.dart';
 import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
+import 'package:friends_battery_api/src/api_util.dart';
+import 'package:friends_battery_api/src/model/activity_history_response.dart';
 import 'package:friends_battery_api/src/model/api_dashboard_stats_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_seller_dashboard_stats_get200_response.dart';
+import 'package:friends_battery_api/src/model/recent_activity_response.dart';
 
 class DashboardApi {
 
@@ -20,9 +23,13 @@ class DashboardApi {
   const DashboardApi(this._dio, this._serializers);
 
   /// Get paginated activity history (Admin only)
-  /// 
+  /// Same scope as recent-activity. SUPER_ADMIN org-wide; ADMIN own warehouse/shop tree only.
   ///
   /// Parameters:
+  /// * [cursor] - Opaque cursor from previous page (pagination.nextCursor)
+  /// * [fromDate] - Inclusive start of range (ISO)
+  /// * [toDate] - Inclusive end of range (ISO)
+  /// * [limit] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -30,9 +37,13 @@ class DashboardApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future]
+  /// Returns a [Future] containing a [Response] with a [ActivityHistoryResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<void>> apiDashboardActivityHistoryGet({ 
+  Future<Response<ActivityHistoryResponse>> apiDashboardActivityHistoryGet({ 
+    String? cursor,
+    DateTime? fromDate,
+    DateTime? toDate,
+    int? limit = 20,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -59,19 +70,55 @@ class DashboardApi {
       validateStatus: validateStatus,
     );
 
+    final _queryParameters = <String, dynamic>{
+      if (cursor != null) r'cursor': encodeQueryParameter(_serializers, cursor, const FullType(String)),
+      if (fromDate != null) r'from_date': encodeQueryParameter(_serializers, fromDate, const FullType(DateTime)),
+      if (toDate != null) r'to_date': encodeQueryParameter(_serializers, toDate, const FullType(DateTime)),
+      if (limit != null) r'limit': encodeQueryParameter(_serializers, limit, const FullType(int)),
+    };
+
     final _response = await _dio.request<Object>(
       _path,
       options: _options,
+      queryParameters: _queryParameters,
       cancelToken: cancelToken,
       onSendProgress: onSendProgress,
       onReceiveProgress: onReceiveProgress,
     );
 
-    return _response;
+    ActivityHistoryResponse? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(ActivityHistoryResponse),
+      ) as ActivityHistoryResponse;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<ActivityHistoryResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
   }
 
   /// Get recent activity feed (Admin only)
-  /// 
+  /// SUPER_ADMIN sees org-wide activity. Shop/warehouse ADMIN sees only own warehouse/shop plus sellers and employees under them.
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -81,9 +128,9 @@ class DashboardApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future]
+  /// Returns a [Future] containing a [Response] with a [RecentActivityResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<void>> apiDashboardRecentActivityGet({ 
+  Future<Response<RecentActivityResponse>> apiDashboardRecentActivityGet({ 
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -118,7 +165,35 @@ class DashboardApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    return _response;
+    RecentActivityResponse? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(RecentActivityResponse),
+      ) as RecentActivityResponse;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<RecentActivityResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
   }
 
   /// Get dashboard statistics

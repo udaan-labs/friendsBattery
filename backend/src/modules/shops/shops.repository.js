@@ -9,15 +9,31 @@ const { prisma } = require('../../config/db');
  */
 class ShopsRepository {
   /**
-   * Fetch all active sellers.
-   * Output: Array of User objects with role 'SELLER' and isActive true
+   * Fetch active sellers.
+   * @param {{ OR?: object[] }|null} [scopeFilter] - e.g. { OR: [{ parentId }, { locationId }] }
    */
-  async findSellers() {
-    return prisma.user.findMany({
-      where: {
-        role: 'SELLER',
-        isActive: true
-      }
+  async findSellers(scopeFilter = null) {
+    const where = {
+      role: 'SELLER',
+    };
+    if (scopeFilter?.OR) {
+      where.OR = scopeFilter.OR;
+    }
+    return prisma.user.findMany({ where });
+  }
+
+  /** Set user's primary location (shop Admin first shop / employee move). */
+  async updateUserLocationId(userId, locationId, shopName, parentId) {
+    return prisma.user.update({
+      where: { id: BigInt(userId) },
+      data: {
+        locationId: BigInt(locationId),
+        ...(shopName !== undefined ? { shopName } : {}),
+        ...(parentId !== undefined
+          ? { parentId: parentId != null ? BigInt(parentId) : null }
+          : {}),
+      },
+      select: { id: true, locationId: true },
     });
   }
 
@@ -31,7 +47,246 @@ class ShopsRepository {
       where: {
         id: BigInt(sellerId),
         role: 'SELLER'
-      }
+      },
+      include: {
+        location: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            type: true,
+            isActive: true,
+            warehouseId: true,
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * Admin + sellers + employees assigned to a location.
+   * @param {number|bigint} locationId
+   */
+  async findUsersByLocationId(locationId) {
+    return prisma.user.findMany({
+      where: {
+        locationId: BigInt(locationId),
+        role: { in: ['ADMIN', 'SELLER', 'EMPLOYEE'] },
+      },
+      select: {
+        id: true,
+        userId: true,
+        userName: true,
+        userNumber: true,
+        shopName: true,
+        role: true,
+        parentId: true,
+        locationId: true,
+        isActive: true,
+        isVerified: true,
+        employeeRole: {
+          select: { id: true, name: true, description: true },
+        },
+      },
+      orderBy: [{ role: 'asc' }, { userName: 'asc' }],
+    });
+  }
+
+  async findLocationById(locationId) {
+    return prisma.location.findUnique({
+      where: { id: BigInt(locationId) },
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        type: true,
+        isActive: true,
+        address: true,
+        phone: true,
+        latitude: true,
+        longitude: true,
+        allowedRadius: true,
+        warehouseId: true,
+      },
+    });
+  }
+
+  async findLocationByCode(code) {
+    return prisma.location.findUnique({
+      where: { code },
+      select: { id: true, code: true, name: true, type: true, isActive: true },
+    });
+  }
+
+  async findCodesByType(type) {
+    const rows = await prisma.location.findMany({
+      where: { type },
+      select: { code: true },
+    });
+    return rows.map((r) => r.code);
+  }
+
+  async findUserIdsByPrefix(prefix) {
+    const rows = await prisma.user.findMany({
+      where: { userId: { startsWith: prefix } },
+      select: { userId: true },
+    });
+    return rows.map((r) => r.userId);
+  }
+
+  /**
+   * Active locations for admin assignment (warehouse + shops).
+   * @param {{ type?: 'SHOP'|'WAREHOUSE' }} [filter]
+   */
+  async findActiveLocations(filter = {}) {
+    const where = { isActive: true };
+    if (filter.type) {
+      where.type = filter.type;
+    }
+    if (filter.warehouseId != null) {
+      where.warehouseId = BigInt(filter.warehouseId);
+    }
+    return prisma.location.findMany({
+      where,
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        type: true,
+        isActive: true,
+        address: true,
+        phone: true,
+        latitude: true,
+        longitude: true,
+        allowedRadius: true,
+        warehouseId: true,
+      },
+      orderBy: [{ type: 'asc' }, { name: 'asc' }],
+    });
+  }
+
+  async updateLocation(locationId, data) {
+    return prisma.location.update({
+      where: { id: BigInt(locationId) },
+      data: {
+        name: data.name,
+        address: data.address,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        allowedRadius: data.allowedRadius,
+      },
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        type: true,
+        isActive: true,
+        address: true,
+        phone: true,
+        latitude: true,
+        longitude: true,
+        allowedRadius: true,
+        warehouseId: true,
+      },
+    });
+  }
+
+  async createLocation(data) {
+    return prisma.location.create({
+      data: {
+        code: data.code,
+        name: data.name,
+        type: data.type,
+        address: data.address ?? null,
+        phone: data.phone ?? null,
+        latitude: data.latitude ?? null,
+        longitude: data.longitude ?? null,
+        ...(data.allowedRadius != null
+          ? { allowedRadius: data.allowedRadius }
+          : {}),
+        warehouseId: data.warehouseId != null ? BigInt(data.warehouseId) : null,
+        isActive: true,
+      },
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        type: true,
+        isActive: true,
+        address: true,
+        phone: true,
+        latitude: true,
+        longitude: true,
+        allowedRadius: true,
+        warehouseId: true,
+        createdAt: true,
+      },
+    });
+  }
+
+  async findAllEmployeeRoles() {
+    return prisma.employeeRole.findMany({
+      select: { id: true, name: true, description: true },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  async findEmployeeRoleById(roleId) {
+    return prisma.employeeRole.findUnique({
+      where: { id: BigInt(roleId) },
+      select: { id: true, name: true, description: true },
+    });
+  }
+
+  async findUserById(id) {
+    return prisma.user.findUnique({
+      where: { id: BigInt(id) },
+      select: {
+        id: true,
+        shopName: true,
+        locationId: true,
+        parentId: true,
+        role: true,
+      },
+    });
+  }
+
+  /**
+   * Create EMPLOYEE user at a location.
+   * @param {object} data - Prisma create data (camelCase)
+   */
+  async createEmployeeUser(data) {
+    return prisma.user.create({
+      data,
+      include: {
+        location: {
+          select: { id: true, code: true, name: true, type: true, isActive: true },
+        },
+        employeeRole: {
+          select: { id: true, name: true, description: true },
+        },
+      },
+    });
+  }
+
+  /**
+   * Single staff user by id. Default EMPLOYEE only (admin view).
+   * Pass roles `['ADMIN','SELLER','EMPLOYEE']` for move.
+   */
+  async findEmployeeById(employeeId, roles = ['EMPLOYEE']) {
+    return prisma.user.findFirst({
+      where: {
+        id: BigInt(employeeId),
+        role: { in: roles },
+      },
+      include: {
+        location: {
+          select: { id: true, code: true, name: true, type: true, isActive: true },
+        },
+        employeeRole: {
+          select: { id: true, name: true, description: true },
+        },
+      },
     });
   }
 

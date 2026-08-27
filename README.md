@@ -1,30 +1,55 @@
 # FriendsBattery
 
-Inventory and stock management application.
+Inventory and stock management application (admin + seller, unit/serial inventory).
 
 ## Tech Stack
 
 ### Backend
-- Node.js
-- Express.js
+- Node.js, Express, Prisma, PostgreSQL
+- **OpenAPI/Swagger** is the API contract (`@swagger` / schemas → `openapi.json`)
 
 ### Frontend
-- Flutter
+- Flutter, Riverpod, go_router
+- **API models:** generated OpenAPI package `friends_battery_api` (`frontend/lib/api/`) — **do not hand-edit**
+- **Dio:** HTTP transport only (`frontend/lib/core/network`) — **not** the source of API models
+
+```text
+UI → Riverpod → Feature Repository → friends_battery_api → Dio → Backend
+```
+
+Agent rules: `AGENTS.md`. Docs: `docs/architecture.md`, `docs/OPENAPI.md`, `docs/frontend-guidelines.md`.
+
+---
+
+## New / changed API → frontend (required)
+
+1. Backend + **Swagger** matching the real handler  
+2. From repo root: **`npm run gen`** (exports OpenAPI + regenerates Flutter client)  
+3. Feature **repository** uses generated `*Api` + OpenAPI types (no feature `dio.get/post`, no twin `fromJson` DTOs)  
+4. Riverpod provider → UI  
+
+If generated types are wrong: fix **backend swagger**, then `npm run gen` again.
 
 ---
 
 ## Project Structure
 
 ```text
-friendsBattery/
-│
-├── backend/
-│
-├── frontend/  
-│
+FriendsBattery/
+├── backend/                 # Express + Prisma + Swagger
+├── frontend/
+│   ├── lib/api/             # GENERATED OpenAPI client — do not edit
+│   ├── lib/core/network/    # Dio transport only
+│   └── lib/features/        # screens, providers, repositories
+├── docs/
+│   ├── architecture.md      # backend
+│   ├── OPENAPI.md           # Flutter networking standard
+│   └── frontend-guidelines.md
+├── generate_api.bat
+├── package.json             # npm run gen, build-*, tunnel
+├── AGENTS.md
 └── README.md
 ```
-
 ---
 
 ## Backend Setup

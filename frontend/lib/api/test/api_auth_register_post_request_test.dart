@@ -32,5 +32,11 @@ void main() {
       // TODO
     });
 
+    // Optional SHOP location id (assign seller to a shop)
+    // int locationId
+    test('to test the property `locationId`', () async {
+      // TODO
+    });
+
   });
 }

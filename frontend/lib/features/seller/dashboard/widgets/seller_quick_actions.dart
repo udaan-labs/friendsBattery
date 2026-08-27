@@ -42,6 +42,26 @@ class SellerQuickActions extends StatelessWidget {
                     },
                   ),
                   _ActionButton(
+                    title: 'Service Bill',
+                    icon: Icons.build_circle_outlined,
+                    bgColor: Colors.white,
+                    iconBgColor: const Color(0xFFD5E0F8),
+                    iconColor: const Color(0xFF16A34A),
+                    onTap: () {
+                      context.push('/seller/service-bill');
+                    },
+                  ),
+                  _ActionButton(
+                    title: 'Battery Rent',
+                    icon: Icons.battery_charging_full,
+                    bgColor: Colors.white,
+                    iconBgColor: const Color(0xFFD5E0F8),
+                    iconColor: const Color(0xFF16A34A),
+                    onTap: () {
+                      context.push('/seller/battery-rent');
+                    },
+                  ),
+                  _ActionButton(
                     title: 'Return Product',
                     icon: Icons.assignment_return_rounded,
                     bgColor: Colors.white,

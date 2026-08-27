@@ -7,13 +7,18 @@ void main() {
   // TODO add properties to the builder and call build()
 
   group(ProductModel, () {
-    // String id
+    // int id
     test('to test the property `id`', () async {
       // TODO
     });
 
     // String name
     test('to test the property `name`', () async {
+      // TODO
+    });
+
+    // int productNameId
+    test('to test the property `productNameId`', () async {
       // TODO
     });
 

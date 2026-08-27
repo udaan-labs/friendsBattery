@@ -1,12 +1,11 @@
 const { errorResponse } = require('../utils/response');
-const { logError } = require('../../config/logger');
 
 const globalErrorHandler = (err, req, res, next) => {
-  logError(err.message, err.stack);
-  
+  console.error(`[ERROR] ${new Date().toISOString()} - ${err.message}`, err.stack);
+
   const statusCode = err.statusCode || 500;
   const message = err.message || 'Internal Server Error';
-  
+
   return errorResponse(res, statusCode, message);
 };
 

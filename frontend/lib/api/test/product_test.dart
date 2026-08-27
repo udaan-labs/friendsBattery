@@ -12,11 +12,6 @@ void main() {
       // TODO
     });
 
-    // String categoryId
-    test('to test the property `categoryId`', () async {
-      // TODO
-    });
-
     // String productNameId
     test('to test the property `productNameId`', () async {
       // TODO
@@ -42,18 +37,18 @@ void main() {
       // TODO
     });
 
-    // int minQuantity
-    test('to test the property `minQuantity`', () async {
+    // int minUnitCountAdmin
+    test('to test the property `minUnitCountAdmin`', () async {
+      // TODO
+    });
+
+    // int minUnitCountSeller
+    test('to test the property `minUnitCountSeller`', () async {
       // TODO
     });
 
     // DateTime createdAt
     test('to test the property `createdAt`', () async {
-      // TODO
-    });
-
-    // Category category
-    test('to test the property `category`', () async {
       // TODO
     });
 

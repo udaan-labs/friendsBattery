@@ -3,9 +3,8 @@ import '../../../../core/network/api_client_provider.dart';
 import '../repository/shared_inventory_repository.dart';
 
 final sharedInventoryRepositoryProvider = Provider<SharedInventoryRepository>((ref) {
-  final dio = ref.watch(dioProvider);
   return SharedInventoryRepository(
-    dio: dio,
+    api: ref.watch(apiClientProvider),
   );
 });
 
@@ -34,15 +33,38 @@ final sharedInventoryQueryProvider = StateProvider<InventoryQuery>((ref) => cons
 final sharedInventoryProvider = FutureProvider<PaginatedInventoryResponse>((ref) async {
   final repository = ref.watch(sharedInventoryRepositoryProvider);
   final query = ref.watch(sharedInventoryQueryProvider);
-  
-  return repository.getInventory(
+  final sw = Stopwatch()..start();
+  final result = await repository.getInventory(
     search: query.search,
     page: query.page,
     limit: query.limit,
   );
+  sw.stop();
+  assert(() {
+    // ignore: avoid_print
+    print(
+      '[PERF-PROVIDER] sharedInventoryProvider total=${sw.elapsedMilliseconds}ms '
+      'page=${query.page} items=${result.items.length}',
+    );
+    return true;
+  }());
+  return result;
 });
 
-final sharedInventoryProductDetailProvider = FutureProvider.family<InventoryProductDetailModel, int>((ref, productId) async {
+final sharedInventoryProductDetailProvider =
+    FutureProvider.family<InventoryProductDetailModel, ({int productId, int? locationId})>(
+        (ref, arg) async {
   final repository = ref.watch(sharedInventoryRepositoryProvider);
-  return repository.getProductDetail(productId);
+  return repository.getProductDetail(arg.productId, locationId: arg.locationId);
+});
+
+/// SA/Admin: available units physically at this shop/warehouse.
+/// ponytail: first page limit=50; add paging if a warehouse grows past that.
+final locationInventoryProvider =
+    FutureProvider.family<PaginatedInventoryResponse, int>((ref, locationId) async {
+  return ref.watch(sharedInventoryRepositoryProvider).getInventory(
+        locationId: locationId,
+        page: 1,
+        limit: 50,
+      );
 });

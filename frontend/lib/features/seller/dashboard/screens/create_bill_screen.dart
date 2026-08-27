@@ -1,15 +1,16 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dio/dio.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
-import '../../../../core/network/api_client.dart';
-import '../providers/seller_dashboard_controller.dart';
+import '../../../../core/state/data_sync.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
 import '../../../../shared/widgets/scanner_screen.dart';
-import 'seller_shell_screen.dart';
+import '../../../../shared/providers/auth_provider.dart';
+import '../../sales/providers/seller_sales_provider.dart';
+import '../models/sale_success_data.dart';
 
 class CreateBillScreen extends ConsumerStatefulWidget {
   const CreateBillScreen({super.key});
@@ -25,9 +26,16 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
   final _customerMobileController = TextEditingController();
   final _vehicleNumberController = TextEditingController();
   final _sellPriceController = TextEditingController();
+  final _scrapSerialController = TextEditingController();
+
+  /// NORMAL | SCRAP | MECHANIC
+  String _saleType = 'NORMAL';
 
   bool _isFetchingDetails = false;
   bool _isSubmitting = false;
+
+  bool get _waiveMinPrice =>
+      _saleType == 'SCRAP' || _saleType == 'MECHANIC';
 
   String? _selectedProductNameId;
   String? _selectedProductModelId;
@@ -57,6 +65,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
     _customerMobileController.dispose();
     _vehicleNumberController.dispose();
     _sellPriceController.dispose();
+    _scrapSerialController.dispose();
     super.dispose();
   }
 
@@ -87,37 +96,28 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
     });
 
     try {
-      final dio = ApiClient().dio;
-      final response = await dio.get(
-        '/api/inventory/scan-for-sale',
-        queryParameters: {'serial_number': serial.trim()},
-      );
-
-      final body = response.data;
-      if (body is Map<String, dynamic> && body['success'] == true) {
-        final data = body['data'] as Map<String, dynamic>;
-        setState(() {
-          _productId = data['productId'] as int?;
-          _selectedProductNameId = data['productNameId']?.toString();
-          _selectedProductModelId = data['productModelId']?.toString();
-          _selectedProductName = data['productName'] as String?;
-          _selectedProductModel = data['productModel'] as String?;
-          _fetchedSerialNumber = serial.trim();
-          _minPrice = data['minSellPrice'] as num?;
-        });
-        if (mounted) {
-          context.showSuccessSnackBar('Product details fetched successfully!');
-        }
-      } else {
-        if (mounted) {
-          context.showErrorSnackBar(body['message'] ?? 'Failed to fetch details');
-        }
+      final data = await ref
+          .read(sellerSalesRepositoryProvider)
+          .scanForSale(serial.trim());
+      setState(() {
+        _productId = data.productId;
+        _selectedProductNameId = data.productNameId?.toString();
+        _selectedProductModelId = data.productModelId?.toString();
+        _selectedProductName = data.productName;
+        _selectedProductModel = data.productModel;
+        _fetchedSerialNumber = serial.trim();
+        _minPrice = data.minSellPrice;
+      });
+      if (mounted) {
+        context.showSuccessSnackBar('Product details fetched successfully!');
       }
     } catch (e) {
       if (mounted) {
         if (e is DioException && e.response != null) {
           final errorData = e.response!.data;
-          context.showErrorSnackBar(errorData['message'] ?? 'Product not found in your available inventory');
+          context.showErrorSnackBar(
+            errorData['message'] ?? 'Product not found in your available inventory',
+          );
         } else {
           context.showErrorSnackBar('Error: $e');
         }
@@ -150,38 +150,53 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
     });
 
     try {
-      final dio = ApiClient().dio;
-      final sellPrice = double.parse(_sellPriceController.text);
-      final serialValue = _serialNumberController.text.trim();
+      // Min price enforced by form validator; backend re-checks.
+      final sellPrice = double.parse(_sellPriceController.text.trim());
+      final customerName = _customerNameController.text.trim();
+      final customerNumber = _customerMobileController.text.trim();
+      final vehicleRaw = _vehicleNumberController.text.trim();
 
-      await dio.post('/api/sales', data: {
-        'product_name_id': int.parse(_selectedProductNameId!),
-        'product_model_id': int.parse(_selectedProductModelId!),
-        'serial_number': serialValue,
-        'customer_name': _customerNameController.text,
-        'customer_number': _customerMobileController.text,
-        if (_vehicleNumberController.text.isNotEmpty) 'vehicle_number': _vehicleNumberController.text,
-        'sell_price': sellPrice,
-      });
+      final scrapRaw = _scrapSerialController.text.trim();
+      await ref.read(sellerSalesRepositoryProvider).createSale(
+            productNameId: int.parse(_selectedProductNameId!),
+            productModelId: int.parse(_selectedProductModelId!),
+            serialNumber: serialValue,
+            customerName: customerName,
+            customerNumber: customerNumber,
+            vehicleNumber: vehicleRaw.isNotEmpty ? vehicleRaw.toUpperCase() : null,
+            sellPrice: sellPrice,
+            saleType: _saleType,
+            scrapSerial: _saleType == 'SCRAP' ? scrapRaw : null,
+          );
 
       if (mounted) {
         context.showSuccessSnackBar('Sale recorded successfully');
-        // Refresh dashboard statistics, recent inventories & current stock
-        await ref.read(sellerDashboardControllerProvider).refreshAllData();
-        if (mounted) {
-          final saleData = {
-            'customer_name': _customerNameController.text,
-            'customer_number': _customerMobileController.text,
-            'product_name': '$_selectedProductName $_selectedProductModel',
-            'serial_number': serialValue,
-            'sell_price': sellPrice,
-            'invoice_number': 'INV-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}',
-            'sale_date': DateTime.now(),
-            'seller_name': 'Friends Battery Seller',
-          };
-          
-          context.go('/seller/sale-success', extra: saleData);
-        }
+        DataSync.afterSaleMutation(ref);
+        final role = ref.read(authProvider).role;
+        final successPath = switch (role) {
+          UserRole.admin || UserRole.superAdmin => '/admin/sale-success',
+          UserRole.employee => '/employee/sale-success',
+          _ => '/seller/sale-success',
+        };
+        final sellerLabel = switch (role) {
+          UserRole.admin || UserRole.superAdmin => 'Friends Battery Admin',
+          UserRole.employee => 'Friends Battery Employee',
+          _ => 'Friends Battery Seller',
+        };
+        context.go(
+          successPath,
+          extra: SaleSuccessData(
+            customerName: customerName,
+            customerNumber: customerNumber,
+            productName: '$_selectedProductName $_selectedProductModel',
+            serialNumber: serialValue,
+            sellPrice: sellPrice,
+            invoiceNumber:
+                'INV-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}',
+            saleDate: DateTime.now(),
+            sellerName: sellerLabel,
+          ),
+        );
       }
     } catch (e) {
       if (mounted && e is! DioException) {
@@ -205,12 +220,17 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
         _sellPriceController.text.isNotEmpty;
   }
 
+  String get _homePath {
+    final role = ref.read(authProvider).role;
+    return homePathForRole(role);
+  }
+
   Future<void> _onBackPressed() async {
     if (!_hasUnsavedChanges()) {
       if (context.canPop()) {
         context.pop();
       } else {
-        context.go('/seller/dashboard');
+        context.go(_homePath);
       }
       return;
     }
@@ -238,7 +258,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
       if (context.canPop()) {
         context.pop();
       } else {
-        context.go('/seller/dashboard');
+        context.go(_homePath);
       }
     }
   }
@@ -400,6 +420,49 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                               const SizedBox(height: 20),
                             ],
 
+                            // Sale type: normal / scrap trade-in / mechanic B2B
+                            const Text(
+                              'Sale type',
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
+                            ),
+                            const SizedBox(height: 8),
+                            SegmentedButton<String>(
+                              segments: const [
+                                ButtonSegment(value: 'NORMAL', label: Text('Normal')),
+                                ButtonSegment(value: 'SCRAP', label: Text('Scrap')),
+                                ButtonSegment(value: 'MECHANIC', label: Text('Mechanic')),
+                              ],
+                              selected: {_saleType},
+                              onSelectionChanged: (s) {
+                                setState(() => _saleType = s.first);
+                              },
+                            ),
+                            if (_saleType == 'SCRAP') ...[
+                              const SizedBox(height: 12),
+                              TextFormField(
+                                controller: _scrapSerialController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Old battery serial (trade-in)',
+                                  hintText: 'Scrap battery serial',
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'Scrap serial required';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ],
+                            if (_waiveMinPrice)
+                              const Padding(
+                                padding: EdgeInsets.only(top: 8),
+                                child: Text(
+                                  'Min sell price not enforced for this sale type.',
+                                  style: TextStyle(fontSize: 12, color: Color(0xFF545F73)),
+                                ),
+                              ),
+                            const SizedBox(height: 20),
+
                             // Customer Name
                             const Text(
                               'Customer Name',
@@ -489,17 +552,25 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                                 if (value == null || value.trim().isEmpty) {
                                   return 'Sell price is required';
                                 }
-                                final parsed = double.tryParse(value);
+                                final parsed = double.tryParse(value.trim());
                                 if (parsed == null || parsed <= 0) {
                                   return 'Sell price must be greater than 0';
+                                }
+                                if (!_waiveMinPrice &&
+                                    _minPrice != null &&
+                                    parsed < _minPrice!) {
+                                  return 'Price cannot be below minimum ₹$_minPrice';
                                 }
                                 return null;
                               },
                             ),
                             const SizedBox(height: 12),
 
-                            // Selling below recommended warning
-                            if (_minPrice != null && _userSellPrice != null && _userSellPrice! < _minPrice!) ...[
+                            // Below min — blocked for NORMAL only
+                            if (!_waiveMinPrice &&
+                                _minPrice != null &&
+                                _userSellPrice != null &&
+                                _userSellPrice! < _minPrice!) ...[
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
@@ -507,14 +578,18 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                                   border: Border.all(color: const Color(0xFFDC2626)),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Row(
+                                child: Row(
                                   children: [
-                                    Icon(Icons.warning_amber_rounded, color: Color(0xFFDC2626)),
-                                    SizedBox(width: 8),
+                                    const Icon(Icons.block, color: Color(0xFFDC2626)),
+                                    const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
-                                        'Warning: Selling below minimum recommended price.',
-                                        style: TextStyle(color: Color(0xFFDC2626), fontSize: 13, fontWeight: FontWeight.w500),
+                                        'Price is below minimum ₹$_minPrice. Raise the price to continue.',
+                                        style: const TextStyle(
+                                          color: Color(0xFFDC2626),
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
                                     ),
                                   ],

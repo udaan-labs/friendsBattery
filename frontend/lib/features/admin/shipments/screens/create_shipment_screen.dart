@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:friends_battery_api/friends_battery_api.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:dio/dio.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
-import '../../../../core/network/api_client.dart';
 import '../providers/shipment_provider.dart';
 import '../repository/shipment_repository.dart';
-import '../../dashboard/providers/dashboard_controller.dart';
+import '../../../../shared/widgets/serial_scan_field.dart';
+import '../../../../core/state/data_sync.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
-import '../../../../shared/widgets/scanner_screen.dart';
 
 class TransferRowState {
   String? productNameId;
   String? productModelId;
   int? productId; // resolved actual product database ID
   int? availableStock;
+  List<String> availableSerials = [];
+  bool isLoadingSerials = false;
 
   final priceController = TextEditingController();
   final manualSerialController = TextEditingController();
@@ -49,7 +50,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
   bool _isSubmitting = false;
 
   List<SellerModel> _sellers = [];
-  List<Map<String, dynamic>> _inventoryProducts = [];
+  List<InventoryProductNameGroup> _inventoryProducts = [];
   List<Map<String, String>> _productNames = [];
 
   int? _selectedSellerId;
@@ -57,6 +58,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
   DateTime? _expectedArrivalDate;
 
   final List<TransferRowState> _rows = [];
+  int _expandedRow = 0;
 
   @override
   void initState() {
@@ -79,6 +81,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
   void _addRow() {
     setState(() {
       _rows.add(TransferRowState());
+      _expandedRow = _rows.length - 1;
     });
   }
 
@@ -87,7 +90,20 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
     setState(() {
       final removed = _rows.removeAt(index);
       removed.dispose();
+      if (_expandedRow >= _rows.length) {
+        _expandedRow = _rows.length - 1;
+      } else if (_expandedRow > index) {
+        _expandedRow -= 1;
+      }
     });
+  }
+
+  String _rowSummary(TransferRowState row) {
+    final name = _productNames.where((n) => n['id'] == row.productNameId).map((n) => n['name']).firstOrNull;
+    final model = row.productModels.where((m) => m['id'] == row.productModelId).map((m) => m['name']).firstOrNull;
+    final product = [name, model].whereType<String>().where((s) => s.isNotEmpty).join(' / ');
+    final scans = '${row.scannedSerials.length} scanned';
+    return product.isEmpty ? scans : '$product · $scans';
   }
 
   Future<void> _loadInitialData() async {
@@ -111,29 +127,17 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
     }
 
     try {
-      final dio = ApiClient().dio;
-      final response = await dio.get('/api/products/inventory-products');
-      final body = response.data;
+      final repo = ref.read(shipmentRepositoryProvider);
+      final inventoryList = await repo.getInventoryProducts();
 
-      List<dynamic> rawList = [];
-      if (body is Map && body['data'] is List) {
-        rawList = body['data'];
-      }
-
-      List<Map<String, String>> namesList = [];
-      List<Map<String, dynamic>> inventoryList = [];
-      
-      for (var item in rawList) {
-        if (item is Map<String, dynamic>) {
-          inventoryList.add(item);
-          final productName = item['productName']?.toString() ?? '';
-          final productNameId = item['productNameId']?.toString() ?? '';
-          if (productName.isNotEmpty && productNameId.isNotEmpty) {
-            namesList.add({
-              'id': productNameId,
-              'name': productName,
-            });
-          }
+      final namesList = <Map<String, String>>[];
+      for (final item in inventoryList) {
+        final productName = item.productName ?? '';
+        final productNameId = item.productNameId?.toString() ?? '';
+        final models = item.models?.toList() ?? const [];
+        final hasStock = models.any((m) => (m.availableQuantity ?? 0) > 0);
+        if (productName.isNotEmpty && productNameId.isNotEmpty && hasStock) {
+          namesList.add({'id': productNameId, 'name': productName});
         }
       }
 
@@ -153,19 +157,21 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
   void _onProductNameSelected(int rowIndex, String productNameId) {
     final row = _rows[rowIndex];
 
-    final group = _inventoryProducts.firstWhere(
-      (g) => g['productNameId'].toString() == productNameId,
-      orElse: () => <String, dynamic>{},
-    );
+    InventoryProductNameGroup? group;
+    for (final g in _inventoryProducts) {
+      if (g.productNameId?.toString() == productNameId) {
+        group = g;
+        break;
+      }
+    }
 
     final List<Map<String, String>> models = [];
-    if (group.isNotEmpty && group['models'] is List) {
-      for (final m in group['models'] as List) {
-        models.add({
-          'id': m['productModelId'].toString(),
-          'name': m['productModel'].toString(),
-        });
-      }
+    for (final m in group?.models?.toList() ?? const <InventoryProductModelOption>[]) {
+      if ((m.availableQuantity ?? 0) <= 0) continue;
+      models.add({
+        'id': m.productModelId?.toString() ?? '',
+        'name': m.productModel ?? '',
+      });
     }
 
     setState(() {
@@ -174,25 +180,28 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
       row.productModelId = null;
       row.productId = null;
       row.availableStock = null;
+      row.availableSerials = [];
+      row.scannedSerials = [];
     });
   }
 
   void _onProductModelSelected(int rowIndex, String modelId) {
     final row = _rows[rowIndex];
-    final group = _inventoryProducts.firstWhere(
-      (g) => g['productNameId'].toString() == row.productNameId,
-      orElse: () => <String, dynamic>{},
-    );
+    InventoryProductNameGroup? group;
+    for (final g in _inventoryProducts) {
+      if (g.productNameId?.toString() == row.productNameId) {
+        group = g;
+        break;
+      }
+    }
 
     int? resolvedProdId;
     int? stockCount;
-    if (group.isNotEmpty && group['models'] is List) {
-      for (final m in group['models'] as List) {
-        if (m['productModelId'].toString() == modelId) {
-          resolvedProdId = m['id'];
-          stockCount = m['availableQuantity'] as int?;
-          break;
-        }
+    for (final m in group?.models?.toList() ?? const <InventoryProductModelOption>[]) {
+      if (m.productModelId?.toString() == modelId) {
+        resolvedProdId = m.id;
+        stockCount = m.availableQuantity;
+        break;
       }
     }
 
@@ -200,7 +209,82 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
       row.productModelId = modelId;
       row.productId = resolvedProdId;
       row.availableStock = stockCount ?? 0;
+      row.scannedSerials = [];
+      row.availableSerials = [];
     });
+    _loadAvailableSerials(rowIndex);
+  }
+
+  Future<void> _loadAvailableSerials(int rowIndex) async {
+    final row = _rows[rowIndex];
+    final nameId = int.tryParse(row.productNameId ?? '');
+    final modelId = int.tryParse(row.productModelId ?? '');
+    if (nameId == null || modelId == null) return;
+
+    setState(() => row.isLoadingSerials = true);
+    try {
+      final serials = await ref.read(shipmentRepositoryProvider).getAvailableSerials(
+        productNameId: nameId,
+        productModelId: modelId,
+      );
+      if (!mounted) return;
+      if (row.productNameId != nameId.toString() || row.productModelId != modelId.toString()) return;
+      setState(() {
+        row.availableSerials = serials;
+        row.availableStock = serials.length;
+        row.isLoadingSerials = false;
+      });
+    } catch (e) {
+      debugPrint('Error loading available serials: $e');
+      if (mounted) {
+        setState(() {
+          row.availableSerials = [];
+          row.isLoadingSerials = false;
+        });
+        context.showErrorSnackBar('Could not load serials for this product');
+      }
+    }
+  }
+
+  String? _canonicalInStock(TransferRowState row, String serial) {
+    final lower = serial.toLowerCase();
+    for (final s in row.availableSerials) {
+      if (s.toLowerCase() == lower) return s;
+    }
+    return null;
+  }
+
+  bool _alreadyScanned(String serial) {
+    final lower = serial.toLowerCase();
+    for (final r in _rows) {
+      for (final s in r.scannedSerials) {
+        if (s.toLowerCase() == lower) return true;
+      }
+    }
+    return false;
+  }
+
+  bool _tryAddSerial(TransferRowState row, String raw) {
+    final serial = raw.trim();
+    if (serial.isEmpty) return false;
+    if (row.isLoadingSerials) {
+      context.showErrorSnackBar('Loading available serials…');
+      return false;
+    }
+    if (_alreadyScanned(serial)) {
+      context.showErrorSnackBar('Serial number already added');
+      return false;
+    }
+    final canonical = _canonicalInStock(row, serial);
+    if (canonical == null) {
+      context.showErrorSnackBar('Serial unavailable or not in admin inventory for this product');
+      return false;
+    }
+    setState(() {
+      row.scannedSerials.add(canonical);
+      row.manualSerialController.clear();
+    });
+    return true;
   }
 
   Future<void> _selectDispatchDate(BuildContext context) async {
@@ -262,7 +346,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
 
     // Product duplicate check
     final productIds = <int>{};
-    final List<Map<String, dynamic>> itemsPayload = [];
+    final List<CreateShipmentItem> itemsPayload = [];
 
     for (int i = 0; i < _rows.length; i++) {
       final row = _rows[i];
@@ -294,12 +378,12 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
         return;
       }
 
-      itemsPayload.add({
-        'product_name_id': int.parse(row.productNameId!),
-        'product_model_id': int.parse(row.productModelId!),
-        'serial_numbers': row.scannedSerials,
-        'price_per_piece': price,
-      });
+      itemsPayload.add(CreateShipmentItem((b) {
+        b.productNameId = int.parse(row.productNameId!);
+        b.productModelId = int.parse(row.productModelId!);
+        b.serialNumbers.replace(row.scannedSerials);
+        b.pricePerPiece = price;
+      }));
     }
 
     setState(() {
@@ -308,27 +392,33 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
 
     try {
       final repo = ref.read(shipmentRepositoryProvider);
-      await repo.createShipment(
+      final result = await repo.createShipment(
         sellerId: _selectedSellerId!,
         items: itemsPayload,
       );
 
       if (mounted) {
-        context.showSuccessSnackBar('Shipment created successfully');
-
-        // Refresh list provider and dashboard data
-        ref.invalidate(shipmentsListProvider);
-        ref.read(dashboardControllerProvider).refreshAllData();
-
-        // Navigate back to shipment list
+        final count = result.transferredUnits > 0
+            ? result.transferredUnits
+            : itemsPayload.fold<int>(
+                0,
+                (sum, item) => sum + item.serialNumbers.length,
+              );
+        context.showSuccessSnackBar(
+          'Transferred $count unit(s) to seller successfully',
+        );
+        // Refresh admin/seller inventory + shipment lists (SSOT).
+        DataSync.afterShipmentMutation(ref);
         context.pop();
       }
     } catch (e) {
-      // Handled automatically by ApiInterceptor
+      // Handled automatically by ApiInterceptor (error snackbar)
     } finally {
-      setState(() {
-        _isSubmitting = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
     }
   }
 
@@ -523,6 +613,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                     // Dynamic Transfer Items Rows
                     ...List.generate(_rows.length, (index) {
                       final row = _rows[index];
+                      final expanded = _rows.length == 1 || _expandedRow == index;
                       return Container(
                         margin: const EdgeInsets.only(bottom: 20),
                         decoration: BoxDecoration(
@@ -541,20 +632,46 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Product Row #${index + 1}',
-                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF006B2C)),
-                                ),
-                                if (_rows.length > 1)
-                                  IconButton(
-                                    icon: const Icon(Icons.delete_outline, color: AppTheme.error),
-                                    onPressed: () => _removeRow(index),
+                            InkWell(
+                              onTap: _rows.length == 1
+                                  ? null
+                                  : () => setState(() => _expandedRow = index),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Product ${index + 1}',
+                                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF006B2C)),
+                                        ),
+                                        if (!expanded) ...[
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            _rowSummary(row),
+                                            style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ],
+                                    ),
                                   ),
-                              ],
+                                  if (_rows.length > 1)
+                                    IconButton(
+                                      icon: const Icon(Icons.delete_outline, color: AppTheme.error),
+                                      onPressed: () => _removeRow(index),
+                                    ),
+                                  if (_rows.length > 1)
+                                    Icon(
+                                      expanded ? Icons.expand_less : Icons.expand_more,
+                                      color: const Color(0xFF64748B),
+                                    ),
+                                ],
+                              ),
                             ),
+                            if (expanded) ...[
                             const SizedBox(height: 12),
 
                             // Product Name Dropdown
@@ -578,6 +695,9 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                                       )
                                     : DropdownButtonFormField<String>(
                                         key: ValueKey('name_$index'),
+                                        value: _productNames.any((n) => n['id'] == row.productNameId)
+                                            ? row.productNameId
+                                            : null,
                                         isExpanded: true,
                                         decoration: InputDecoration(
                                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -630,6 +750,9 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                                       )
                                     : DropdownButtonFormField<String>(
                                         key: ValueKey('model_${index}_${row.productNameId}'),
+                                        value: row.productModels.any((m) => m['id'] == row.productModelId)
+                                            ? row.productModelId
+                                            : null,
                                         isExpanded: true,
                                         decoration: InputDecoration(
                                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -677,74 +800,19 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 // Serial Numbers
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: [
-                                    Text(
-                                      'Serial Numbers (${row.scannedSerials.length})',
-                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    ElevatedButton.icon(
-                                      icon: const Icon(Icons.qr_code_scanner),
-                                      label: const Text('Scan Serial Number'),
-                                      style: ElevatedButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(vertical: 12),
-                                        backgroundColor: const Color(0xFF006B2C),
-                                        foregroundColor: Colors.white,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(10),
-                                        ),
-                                      ),
-                                      onPressed: () async {
-                                        final scanned = await Navigator.of(context).push<String>(
-                                          MaterialPageRoute(builder: (_) => const ScannerScreen()),
-                                        );
-                                        if (scanned != null && scanned.trim().isNotEmpty) {
-                                          if (!row.scannedSerials.contains(scanned.trim())) {
-                                            setState(() {
-                                              row.scannedSerials.add(scanned.trim());
-                                            });
-                                          } else {
-                                            if (mounted) context.showErrorSnackBar('Serial number already scanned');
-                                          }
-                                        }
-                                      },
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: TextFormField(
-                                            controller: row.manualSerialController,
-                                            decoration: InputDecoration(
-                                              hintText: 'Manual Add (Fallback)',
-                                              isDense: true,
-                                              contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        IconButton(
-                                          icon: const Icon(Icons.add_circle, color: Color(0xFF006B2C), size: 32),
-                                          onPressed: () {
-                                            final val = row.manualSerialController.text.trim();
-                                            if (val.isNotEmpty) {
-                                              if (!row.scannedSerials.contains(val)) {
-                                                setState(() {
-                                                  row.scannedSerials.add(val);
-                                                  row.manualSerialController.clear();
-                                                });
-                                              } else {
-                                                context.showErrorSnackBar('Serial number already added');
-                                              }
-                                            }
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                if (row.isLoadingSerials) ...[
+                                  const LinearProgressIndicator(minHeight: 2),
+                                  const SizedBox(height: 8),
+                                ],
+                                SerialScanField(
+                                  serials: row.scannedSerials,
+                                  manualController: row.manualSerialController,
+                                  enabled: row.productModelId != null && !row.isLoadingSerials,
+                                  availableStock: row.availableStock,
+                                  onAdd: (s) => _tryAddSerial(row, s),
+                                  onRemove: (s) {
+                                    setState(() => row.scannedSerials.remove(s));
+                                  },
                                 ),
                                 const SizedBox(height: 16),
 
@@ -779,6 +847,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                                 ),
                               ],
                             ),
+                            ],
                           ],
                         ),
                       );

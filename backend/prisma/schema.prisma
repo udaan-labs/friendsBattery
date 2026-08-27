@@ -9,8 +9,10 @@ generator client {
 }
 
 enum Role {
+  SUPER_ADMIN
   ADMIN
   SELLER
+  EMPLOYEE
 }
 
 enum OrderStatus {
@@ -28,6 +30,7 @@ enum UnitStatus {
   SOLD
   RETURNED
   DEFECTIVE
+  RENTED
 }
 
 enum TransactionAction {
@@ -36,23 +39,100 @@ enum TransactionAction {
   SOLD
   RETURNED
   TRANSFERRED
+  RENTED
+  RENT_RETURNED
+}
+
+enum RentStatus {
+  OUT
+  RETURNED
+}
+
+/// Bill kind on unit sales (normal retail vs scrap trade-in vs mechanic B2B).
+enum SaleType {
+  NORMAL
+  SCRAP
+  MECHANIC
+}
+
+/// Service bills — no unit / inventory move.
+enum ServiceBillType {
+  BATTERY_CHECK_2W
+  BATTERY_CHECK_4W
+  BATTERY_CHARGING
+  JUMPSTART
+  INVERTER_SERVICE
+}
+
+enum LocationType {
+  WAREHOUSE
+  SHOP
+}
+
+model Location {
+  id             BigInt       @id @default(autoincrement())
+  code           String       @unique @db.VarChar(50)
+  name           String       @db.VarChar(150)
+  type           LocationType
+  address        String?      @db.Text
+  phone          String?      @db.VarChar(20)
+  /// Geofence center for employee attendance (WGS84)
+  latitude       Decimal?     @db.Decimal(10, 7)
+  longitude      Decimal?     @db.Decimal(10, 7)
+  /// Max distance in meters from center for check-in / check-out
+  allowedRadius  Int          @default(100) @map("allowed_radius")
+  isActive       Boolean      @default(true) @map("is_active")
+  /// SHOP → parent warehouse. WAREHOUSE always null.
+  warehouseId    BigInt?      @map("warehouse_id")
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamp()
+  updatedAt      DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamp()
+
+  warehouse            Location?              @relation("ShopWarehouse", fields: [warehouseId], references: [id])
+  shops                Location[]             @relation("ShopWarehouse")
+  users                User[]
+  employeeAttendances  EmployeeAttendance[]
+  productUnits         ProductUnit[]
+  transactionsFrom     InventoryTransaction[] @relation("TransactionFromLocation")
+  transactionsTo       InventoryTransaction[] @relation("TransactionToLocation")
+
+  @@index([warehouseId])
+  @@map("locations")
+}
+
+/// Job title within EMPLOYEE system role (Manager, Cashier, …) — separate from Role enum.
+model EmployeeRole {
+  id          BigInt  @id @default(autoincrement())
+  name        String  @unique @db.VarChar(100)
+  description String? @db.Text
+
+  users User[]
+
+  @@map("employee_roles")
 }
 
 model User {
-  id           BigInt   @id @default(autoincrement())
-  userId       String   @unique @map("user_id") @db.VarChar(50)
-  userName     String   @map("user_name") @db.VarChar(100)
-  role         Role
-  userNumber   String?  @unique @map("user_number") @db.VarChar(20)
-  shopName     String?  @map("shop_name") @db.VarChar(150)
-  passwordHash String   @map("password_hash") @db.Text
-  loginAttempt Int      @default(0) @map("login_attempt")
-  isActive     Boolean  @default(true) @map("is_active")
-  isVerified   Boolean  @default(false) @map("is_verified")
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamp()
-  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp()
+  id             BigInt   @id @default(autoincrement())
+  userId         String   @unique @map("user_id") @db.VarChar(50)
+  userName       String   @map("user_name") @db.VarChar(100)
+  role           Role
+  userNumber     String?  @unique @map("user_number") @db.VarChar(20)
+  shopName       String?  @map("shop_name") @db.VarChar(150)
+  locationId     BigInt?  @map("location_id")
+  /// Org parent: SUPER_ADMIN has null; ADMIN → SA; SELLER/EMPLOYEE → ADMIN
+  parentId       BigInt?  @map("parent_id")
+  employeeRoleId BigInt?  @map("employee_role_id")
+  passwordHash   String   @map("password_hash") @db.Text
+  loginAttempt   Int      @default(0) @map("login_attempt")
+  isActive       Boolean  @default(true) @map("is_active")
+  isVerified     Boolean  @default(false) @map("is_verified")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamp()
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp()
 
   // Relations
+  location               Location?              @relation(fields: [locationId], references: [id])
+  parent                 User?                  @relation("UserParent", fields: [parentId], references: [id])
+  children               User[]                 @relation("UserParent")
+  employeeRole           EmployeeRole?          @relation(fields: [employeeRoleId], references: [id])
   ownedUnits             ProductUnit[]          @relation("UnitOwner")
   transactionsFrom       InventoryTransaction[] @relation("TransactionFromUser")
   transactionsTo         InventoryTransaction[] @relation("TransactionToUser")
@@ -63,10 +143,101 @@ model User {
   adminShipmentsSent     NewShipment[]          @relation("AdminShipmentSent")
   adminShipmentsReceived NewShipment[]          @relation("AdminShipmentReceived")
   sales                  SalesTransaction[]     @relation("SalesSeller")
+  serviceBills           ServiceBill[]          @relation("ServiceBillSeller")
+  batteryRents           BatteryRent[]          @relation("BatteryRentSeller")
   returnsBy              ReturnProduct[]        @relation("ReturnByUser")
   returnsTo              ReturnProduct[]        @relation("ReturnToUser")
+  attendances            EmployeeAttendance[]   @relation("AttendanceEmployee")
+  activityLogs           EmployeeActivityLog[]  @relation("ActivityLogEmployee")
+  sessions               EmployeeSession[]      @relation("SessionEmployee")
+  catalogEvents          ProductCatalogEvent[]  @relation("CatalogEventActor")
+  orgEvents              OrgEvent[]             @relation("OrgEventActor")
 
+  @@index([locationId])
+  @@index([parentId])
+  @@index([employeeRoleId])
   @@map("users")
+}
+
+/// App login session (security) — separate from physical check-in attendance.
+model EmployeeSession {
+  id            BigInt    @id @default(autoincrement())
+  employeeId    BigInt    @map("employee_id")
+  loginTime     DateTime  @default(now()) @map("login_time") @db.Timestamp()
+  logoutTime    DateTime? @map("logout_time") @db.Timestamp()
+  deviceId      String?   @map("device_id") @db.VarChar(255)
+  ipAddress     String?   @map("ip_address") @db.VarChar(45)
+  appVersion    String?   @map("app_version") @db.VarChar(50)
+  firebaseToken String?   @map("firebase_token") @db.Text
+
+  employee User @relation("SessionEmployee", fields: [employeeId], references: [id])
+
+  @@index([employeeId])
+  @@index([loginTime])
+  @@map("employee_sessions")
+}
+
+/// Append-style log of employee actions (check-in, sale, shipment, etc.).
+model EmployeeActivityLog {
+  id          BigInt   @id @default(autoincrement())
+  employeeId  BigInt   @map("employee_id")
+  action      String   @db.VarChar(100)
+  referenceId BigInt?  @map("reference_id")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp()
+
+  employee User @relation("ActivityLogEmployee", fields: [employeeId], references: [id])
+
+  @@index([employeeId])
+  @@index([createdAt])
+  @@index([action])
+  @@map("employee_activity_logs")
+}
+
+/// Append-only org setup (shop / warehouse / admin / seller / employee). Never update or delete.
+model OrgEvent {
+  id         BigInt   @id @default(autoincrement())
+  action     String   @db.VarChar(40)
+  actorId    BigInt   @map("actor_id")
+  entityType String   @map("entity_type") @db.VarChar(20)
+  entityId   BigInt   @map("entity_id")
+  payload    Json
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamp()
+
+  actor User @relation("OrgEventActor", fields: [actorId], references: [id])
+
+  @@index([createdAt])
+  @@index([actorId, createdAt])
+  @@map("org_events")
+}
+
+enum AttendanceStatus {
+  CHECKED_IN
+  CHECKED_OUT
+}
+
+model EmployeeAttendance {
+  id                 BigInt           @id @default(autoincrement())
+  employeeId         BigInt           @map("employee_id")
+  assignedLocationId BigInt           @map("assigned_location_id")
+  checkInTime        DateTime         @map("check_in_time") @db.Timestamp()
+  checkOutTime       DateTime?        @map("check_out_time") @db.Timestamp()
+  checkInLat         Decimal?         @map("check_in_lat") @db.Decimal(10, 7)
+  checkInLng         Decimal?         @map("check_in_lng") @db.Decimal(10, 7)
+  checkOutLat        Decimal?         @map("check_out_lat") @db.Decimal(10, 7)
+  checkOutLng        Decimal?         @map("check_out_lng") @db.Decimal(10, 7)
+  checkInAddress     String?          @map("check_in_address") @db.Text
+  checkOutAddress    String?          @map("check_out_address") @db.Text
+  status             AttendanceStatus @default(CHECKED_IN)
+  createdAt          DateTime         @default(now()) @map("created_at") @db.Timestamp()
+
+  employee         User     @relation("AttendanceEmployee", fields: [employeeId], references: [id])
+  assignedLocation Location @relation(fields: [assignedLocationId], references: [id])
+
+  @@index([employeeId])
+  @@index([assignedLocationId])
+  @@index([checkInTime])
+  @@index([status])
+  @@map("employee_attendance")
 }
 
 model Customer {
@@ -75,7 +246,9 @@ model Customer {
   phone     String?  @db.VarChar(20)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamp()
 
-  sales SalesTransaction[]
+  sales        SalesTransaction[]
+  serviceBills ServiceBill[]
+  batteryRents BatteryRent[]
 
   @@map("customers")
 }
@@ -87,6 +260,7 @@ model ProductName {
   products         Product[]
   productModels    ProductModel[]
   newShipmentItems NewShipmentItem[]
+  catalogEvents    ProductCatalogEvent[]
 
   @@map("product_names")
 }
@@ -99,6 +273,7 @@ model ProductModel {
   productName      ProductName       @relation(fields: [productNameId], references: [id])
   products         Product[]
   newShipmentItems NewShipmentItem[]
+  catalogEvents    ProductCatalogEvent[]
 
   @@unique([productNameId, name])
   @@map("product_models")
@@ -127,27 +302,54 @@ model Product {
   returns           ReturnProduct[]
   shipmentItems     ShipmentItem[]
   newShipmentItems  NewShipmentItem[]
+  catalogEvents     ProductCatalogEvent[]
 
+  @@unique([productNameId, productModelId])
   @@map("products")
 }
 
-model ProductUnit {
-  id           BigInt     @id @default(autoincrement())
-  productId    BigInt     @map("product_id")
-  ownerId      BigInt     @map("owner_id")
-  ownerType    Role       @default(ADMIN) @map("owner_type")
-  serialNumber String     @unique @map("serial_number") @db.VarChar(100)
-  qrCode       String?    @unique @map("qr_code") @db.VarChar(100)
-  status       UnitStatus @default(AVAILABLE)
-  soldDate     DateTime?  @map("sold_date") @db.Timestamp()
-  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamp()
-  updatedAt    DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamp()
+/// Append-only catalog history (add name / model / configure). Never update or delete.
+model ProductCatalogEvent {
+  id             BigInt   @id @default(autoincrement())
+  action         String   @db.VarChar(40)
+  actorId        BigInt   @map("actor_id")
+  productNameId  BigInt?  @map("product_name_id")
+  productModelId BigInt?  @map("product_model_id")
+  productId      BigInt?  @map("product_id")
+  payload        Json
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamp()
 
-  product Product @relation(fields: [productId], references: [id])
-  owner   User    @relation("UnitOwner", fields: [ownerId], references: [id])
+  actor        User          @relation("CatalogEventActor", fields: [actorId], references: [id])
+  productName  ProductName?  @relation(fields: [productNameId], references: [id], onDelete: SetNull)
+  productModel ProductModel? @relation(fields: [productModelId], references: [id], onDelete: SetNull)
+  product      Product?      @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([productNameId, createdAt])
+  @@index([actorId, createdAt])
+  @@map("product_catalog_events")
+}
+
+model ProductUnit {
+  id                BigInt     @id @default(autoincrement())
+  productId         BigInt     @map("product_id")
+  ownerId           BigInt     @map("owner_id")
+  ownerType         Role       @default(ADMIN) @map("owner_type")
+  currentLocationId BigInt?    @map("current_location_id")
+  serialNumber      String     @unique @map("serial_number") @db.VarChar(100)
+  qrCode            String?    @unique @map("qr_code") @db.VarChar(100)
+  status            UnitStatus @default(AVAILABLE)
+  soldDate          DateTime?  @map("sold_date") @db.Timestamp()
+  createdAt         DateTime   @default(now()) @map("created_at") @db.Timestamp()
+  updatedAt         DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamp()
+
+  product         Product   @relation(fields: [productId], references: [id])
+  owner           User      @relation("UnitOwner", fields: [ownerId], references: [id])
+  currentLocation Location? @relation(fields: [currentLocationId], references: [id])
 
   transactions     InventoryTransaction[]
   sales            SalesTransaction[]
+  batteryRents     BatteryRent[]
   newShipmentItems NewShipmentItem[]
 
   @@index([ownerId])
@@ -155,24 +357,31 @@ model ProductUnit {
   @@index([status])
   @@index([ownerId, status])
   @@index([productId, ownerId, status])
+  @@index([currentLocationId])
   @@map("product_units")
 }
 
 model InventoryTransaction {
-  id            BigInt            @id @default(autoincrement())
-  productUnitId BigInt            @map("product_unit_id")
-  fromUserId    BigInt?           @map("from_user_id")
-  toUserId      BigInt            @map("to_user_id")
-  action        TransactionAction
-  timestamp     DateTime          @default(now()) @db.Timestamp()
+  id             BigInt            @id @default(autoincrement())
+  productUnitId  BigInt            @map("product_unit_id")
+  fromUserId     BigInt?           @map("from_user_id")
+  toUserId       BigInt            @map("to_user_id")
+  fromLocationId BigInt?           @map("from_location_id")
+  toLocationId   BigInt?           @map("to_location_id")
+  action         TransactionAction
+  timestamp      DateTime          @default(now()) @db.Timestamp()
 
-  productUnit ProductUnit @relation(fields: [productUnitId], references: [id])
-  fromUser    User?       @relation("TransactionFromUser", fields: [fromUserId], references: [id])
-  toUser      User        @relation("TransactionToUser", fields: [toUserId], references: [id])
+  productUnit  ProductUnit @relation(fields: [productUnitId], references: [id])
+  fromUser     User?       @relation("TransactionFromUser", fields: [fromUserId], references: [id])
+  toUser       User        @relation("TransactionToUser", fields: [toUserId], references: [id])
+  fromLocation Location?   @relation("TransactionFromLocation", fields: [fromLocationId], references: [id])
+  toLocation   Location?   @relation("TransactionToLocation", fields: [toLocationId], references: [id])
 
   @@index([productUnitId])
   @@index([fromUserId])
   @@index([toUserId])
+  @@index([fromLocationId])
+  @@index([toLocationId])
   @@map("inventory_transactions")
 }
 
@@ -291,6 +500,10 @@ model SalesTransaction {
   sellPrice         Decimal  @map("sell_price") @db.Decimal(12, 2)
   serialNumber      String?  @map("serial_number") @db.VarChar(100)
   vehicleNumber     String?  @map("vehicle_number") @db.VarChar(50)
+  /// NORMAL | SCRAP (old battery trade-in) | MECHANIC (B2B lower price)
+  saleType          SaleType @default(NORMAL) @map("sale_type")
+  /// Old/scrap battery serial when sale_type = SCRAP (not unit inventory)
+  scrapSerial       String?  @map("scrap_serial") @db.VarChar(100)
   productReplacedId BigInt?  @map("product_replaced_id")
   soldAt            DateTime @default(now()) @map("sold_at") @db.Timestamp()
 
@@ -304,7 +517,53 @@ model SalesTransaction {
 
   @@index([soldAt])
   @@index([sellerId, soldAt])
+  @@index([saleType])
   @@map("sales_transactions")
+}
+
+/// Non-stock service bill (check / charge / jumpstart / inverter).
+model ServiceBill {
+  id            BigInt          @id @default(autoincrement())
+  sellerId      BigInt          @map("seller_id")
+  customerId    BigInt?         @map("customer_id")
+  serviceType   ServiceBillType @map("service_type")
+  amount        Decimal         @db.Decimal(12, 2)
+  vehicleNumber String?         @map("vehicle_number") @db.VarChar(50)
+  /// Customer place / site (required for JUMPSTART)
+  place         String?         @db.VarChar(200)
+  createdAt     DateTime        @default(now()) @map("created_at") @db.Timestamp()
+
+  seller   User      @relation("ServiceBillSeller", fields: [sellerId], references: [id])
+  customer Customer? @relation(fields: [customerId], references: [id])
+
+  @@index([sellerId, createdAt])
+  @@index([serviceType])
+  @@map("service_bills")
+}
+
+/// Battery out on rent with deposit; return takes fee and refunds rest.
+model BatteryRent {
+  id            BigInt     @id @default(autoincrement())
+  productUnitId BigInt     @map("product_unit_id")
+  sellerId      BigInt     @map("seller_id")
+  customerId    BigInt?    @map("customer_id")
+  serialNumber  String     @map("serial_number") @db.VarChar(100)
+  deposit       Decimal    @db.Decimal(12, 2)
+  /// Fee charged on return (from deposit)
+  rentFee       Decimal?   @map("rent_fee") @db.Decimal(12, 2)
+  refundAmount  Decimal?   @map("refund_amount") @db.Decimal(12, 2)
+  status        RentStatus @default(OUT)
+  rentedAt      DateTime   @default(now()) @map("rented_at") @db.Timestamp()
+  returnedAt    DateTime?  @map("returned_at") @db.Timestamp()
+
+  productUnit ProductUnit @relation(fields: [productUnitId], references: [id])
+  seller      User        @relation("BatteryRentSeller", fields: [sellerId], references: [id])
+  customer    Customer?   @relation(fields: [customerId], references: [id])
+
+  @@index([sellerId, status])
+  @@index([serialNumber])
+  @@index([status])
+  @@map("battery_rents")
 }
 
 model ReturnProduct {

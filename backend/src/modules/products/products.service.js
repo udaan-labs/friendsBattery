@@ -1,4 +1,32 @@
 const productsRepository = require('./products.repository');
+const { resolveUnitScope } = require('../inventory/inventory.scope');
+const { httpError } = require('../../shared/utils/http-error');
+
+/** First letter upper; rest unchanged. "amaron" → "Amaron". */
+function capitalizeFirst(name) {
+  const t = String(name ?? '').trim();
+  if (!t) return t;
+  return t[0].toLocaleUpperCase() + t.slice(1);
+}
+
+function configSnapshot(product, data) {
+  if (product) {
+    return {
+      min_price: Number(product.minPrice),
+      on_sale: product.onSale,
+      offer_price: product.offerPrice == null ? null : Number(product.offerPrice),
+      min_unit_count_admin: product.minUnitCountAdmin,
+      min_unit_count_seller: product.minUnitCountSeller
+    };
+  }
+  return {
+    min_price: data.min_price,
+    on_sale: data.on_sale ?? false,
+    offer_price: data.offer_price ?? null,
+    min_unit_count_admin: data.min_unit_count_admin,
+    min_unit_count_seller: data.min_unit_count_seller
+  };
+}
 
 /**
  * Products Service
@@ -11,14 +39,19 @@ class ProductsService {
    * Create a new product name
    * Ensures the name is globally unique before creating
    */
-  async createProductName(data) {
-    const existing = await productsRepository.findProductNameByName(data.name);
+  async createProductName(data, actorId) {
+    const name = capitalizeFirst(data.name);
+    const existing = await productsRepository.findProductNameByName(name);
     if (existing) {
-      const error = new Error('Product name already exists');
-      error.statusCode = 409;
-      throw error;
+      throw httpError(409, 'Product name already exists');
     }
-    const productName = await productsRepository.createProductName(data);
+    const productName = await productsRepository.createProductName({ ...data, name });
+    await productsRepository.createCatalogEvent({
+      action: 'NAME_CREATED',
+      actorId,
+      productNameId: productName.id,
+      payload: { name: productName.name }
+    });
     return {
       id: Number(productName.id),
       name: productName.name
@@ -40,14 +73,23 @@ class ProductsService {
    * Create a new product model
    * Ensures the model is unique within the product name
    */
-  async createProductModel(data) {
-    const existing = await productsRepository.findProductModelByNameAndProductName(data.product_name_id, data.name);
+  async createProductModel(data, actorId) {
+    const name = capitalizeFirst(data.name);
+    const existing = await productsRepository.findProductModelByNameAndProductName(
+      data.product_name_id,
+      name
+    );
     if (existing) {
-      const error = new Error('Product model already exists under this product name');
-      error.statusCode = 409;
-      throw error;
+      throw httpError(409, 'Product model already exists under this product name');
     }
-    const model = await productsRepository.createProductModel(data);
+    const model = await productsRepository.createProductModel({ ...data, name });
+    await productsRepository.createCatalogEvent({
+      action: 'MODEL_CREATED',
+      actorId,
+      productNameId: model.productNameId,
+      productModelId: model.id,
+      payload: { name: model.name }
+    });
     return {
       id: Number(model.id),
       product_name_id: Number(model.productNameId),
@@ -67,9 +109,7 @@ class ProductsService {
   async getProductModelsByProductName(productNameId) {
     const productName = await productsRepository.findProductNameById(productNameId);
     if (!productName) {
-      const error = new Error('Product name not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Product name not found');
     }
 
     const models = await productsRepository.getProductModelsByProductName(productNameId);
@@ -82,15 +122,31 @@ class ProductsService {
   /**
    * Create a new product
    */
-  async createProduct(data) {
-    const product = await productsRepository.createProduct(data);
+  async createProduct(data, actorId) {
+    const existing = await productsRepository.findByNameAndModel(
+      data.product_name_id,
+      data.product_model_id
+    );
+    const before = existing ? configSnapshot(existing) : null;
+    const product = existing
+      ? await productsRepository.updateProductConfig(existing.id, data)
+      : await productsRepository.createProduct(data);
+    const after = configSnapshot(product);
+    await productsRepository.createCatalogEvent({
+      action: existing ? 'PRODUCT_UPDATED' : 'PRODUCT_CREATED',
+      actorId,
+      productNameId: product.productNameId,
+      productModelId: product.productModelId,
+      productId: product.id,
+      payload: existing ? { before, after } : { after }
+    });
     return {
       id: Number(product.id),
       product_name_id: Number(product.productNameId),
       product_model_id: Number(product.productModelId),
-      min_price: product.minPrice,
+      min_price: Number(product.minPrice),
       on_sale: product.onSale,
-      offer_price: product.offerPrice,
+      offer_price: product.offerPrice == null ? null : Number(product.offerPrice),
       min_unit_count_admin: product.minUnitCountAdmin,
       min_unit_count_seller: product.minUnitCountSeller,
       created_at: product.createdAt
@@ -98,23 +154,22 @@ class ProductsService {
   }
 
   /**
-   * Get products available in the authenticated user's inventory.
-   * Returns data grouped by product name, with models and stock counts.
-   * Excludes products with zero available quantity.
-   * For admin: uses stockQuantity from the Product model.
-   * For seller: counts available ProductUnit records.
+   * Get products with AVAILABLE units in the actor's inventory scope.
+   * SUPER_ADMIN/ADMIN: owner scope. Seller: owner_id. Employee: current_location_id.
    */
   async getInventoryProducts(userId, role) {
-    let products;
-    if (role === 'ADMIN') {
-      products = await productsRepository.findAdminInventoryProducts();
-    } else {
-      products = await productsRepository.findInventoryProducts(userId);
+    const unitScope = await resolveUnitScope(userId, role);
+    if (!unitScope) {
+      return [];
     }
+    const products = await productsRepository.findInventoryProducts(unitScope);
 
     const groupedMap = new Map();
 
     for (const product of products) {
+      const availableQuantity = product._count.units;
+      if (!availableQuantity) continue;
+
       const nameKey = product.productName.name;
       if (!groupedMap.has(nameKey)) {
         groupedMap.set(nameKey, {
@@ -123,10 +178,6 @@ class ProductsService {
           models: []
         });
       }
-
-      const availableQuantity = role === 'ADMIN'
-        ? Number(product.stockQuantity)
-        : product._count.units;
 
       groupedMap.get(nameKey).models.push({
         id: Number(product.id),
@@ -152,16 +203,12 @@ class ProductsService {
   async getProducts(productNameId, productModelId) {
     const productName = await productsRepository.findProductNameById(productNameId);
     if (!productName) {
-      const error = new Error('Product name not found');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Product name not found');
     }
 
     const productModel = await productsRepository.findProductModelById(productModelId);
     if (!productModel || Number(productModel.productNameId) !== productNameId) {
-      const error = new Error('Product model not found or does not belong to the selected product name');
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, 'Product model not found or does not belong to the selected product name');
     }
 
     const products = await productsRepository.getProductsByFilters(productNameId, productModelId);
@@ -169,9 +216,9 @@ class ProductsService {
       id: Number(p.id),
       product_name: p.productName.name,
       product_model: p.productModel.name,
-      min_price: p.minPrice,
+      min_price: Number(p.minPrice),
       on_sale: p.onSale,
-      offer_price: p.offerPrice,
+      offer_price: p.offerPrice == null ? null : Number(p.offerPrice),
       min_unit_count_admin: p.minUnitCountAdmin,
       min_unit_count_seller: p.minUnitCountSeller
     }));

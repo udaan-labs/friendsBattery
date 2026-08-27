@@ -5,7 +5,11 @@ import '../../../../shared/widgets/responsive_helper.dart';
 import '../providers/seller_details_provider.dart';
 import '../widgets/seller_info_card.dart';
 import '../widgets/statistic_card.dart';
-import '../widgets/inventory_product_card.dart';
+import '../widgets/shop_staff_section.dart';
+import '../../../shared/inventory/widgets/inventory_product_card.dart';
+import '../../../shared/staff/providers/staff_providers.dart';
+
+import '../widgets/change_password_dialog.dart';
 
 class SellerDetailsScreen extends ConsumerStatefulWidget {
   final int sellerId;
@@ -58,11 +62,27 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
           'Seller Details',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.key_rounded, color: Color(0xFF006B2C)),
+            tooltip: 'Change Password',
+            onPressed: () {
+              final name = asyncData.valueOrNull?.userName ?? 'Seller';
+              ChangePasswordDialog.show(
+                context,
+                userId: widget.sellerId,
+                userName: name,
+                role: 'Seller',
+              );
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
             ref.invalidate(sellerDetailsProvider((sellerId: widget.sellerId, includeOutOfStock: _showOutOfStock)));
+            ref.invalidate(shopStaffProvider(widget.sellerId));
           },
           child: asyncData.when(
             data: (data) => _buildContent(data),
@@ -87,6 +107,7 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
             userNumber: data.userNumber,
             isActive: data.isActive,
             isVerified: data.isVerified,
+            locationLabel: data.locationLabel,
           ),
           const SizedBox(height: 24),
           
@@ -131,6 +152,8 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
           ),
           
           SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 24 : 32),
+          ShopStaffSection(sellerId: widget.sellerId),
+          SizedBox(height: ResponsiveHelper.isSmallPhone(context) ? 24 : 32),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -148,7 +171,7 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
                   Switch(
                     value: _showOutOfStock,
                     onChanged: (val) => setState(() => _showOutOfStock = val),
-                    activeColor: const Color(0xFF006B2C),
+                    activeThumbColor: const Color(0xFF006B2C),
                   ),
                 ],
               ),
@@ -165,8 +188,8 @@ class _SellerDetailsScreenState extends ConsumerState<SellerDetailsScreen> with 
               itemCount: data.inventory.length,
               itemBuilder: (context, index) {
                 return InventoryProductCard(
-                  inventoryItem: data.inventory[index],
-                  onTap: () {},
+                  item: data.inventory[index],
+                  index: index + 1,
                 );
               },
             ),

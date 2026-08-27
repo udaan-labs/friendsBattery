@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
+import '../../../../shared/widgets/snackbar_helper.dart';
 import '../providers/admin_sales_history_provider.dart';
 import '../widgets/admin_sale_history_card.dart';
+import '../widgets/admin_sales_period_chips.dart';
 
 class AdminSalesScreen extends ConsumerStatefulWidget {
   const AdminSalesScreen({super.key});
@@ -47,6 +50,28 @@ class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
         .fetchSales(isRefresh: true);
   }
 
+  Future<void> _shareReport(AdminSalesHistoryState state) async {
+    final period = state.period.label(state.customDate);
+    final buf = StringBuffer()
+      ..writeln('Friends Battery — Sales report ($period)')
+      ..writeln('Total sales: ${state.total}')
+      ..writeln(
+          'Revenue (loaded page sample): ₹${state.totalRevenue.toStringAsFixed(0)}')
+      ..writeln('---');
+    for (final s in state.sales.take(50)) {
+      buf.writeln(
+        '${s.soldAt.toIso8601String().substring(0, 10)} · ${s.shopName} · '
+        '${s.productName} ${s.productModel} · ₹${s.sellPrice.toStringAsFixed(0)} · ${s.serialNumber}',
+      );
+    }
+    if (state.total > state.sales.length) {
+      buf.writeln('… and ${state.total - state.sales.length} more (not listed)');
+    }
+    // ignore: deprecated_member_use
+    await Share.share(buf.toString(), subject: 'Sales report — $period');
+    if (mounted) context.showSuccessSnackBar('Report shared');
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(adminSalesHistoryProvider);
@@ -68,9 +93,9 @@ class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
                 'Sales History',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
-              if (!state.isLoading && state.total > 0)
+              if (!state.isLoading)
                 Text(
-                  '${state.total} total sales',
+                  '${state.total} total${state.sales.isEmpty ? '' : ' · ₹${state.totalRevenue.toStringAsFixed(0)} (shown)'}',
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.normal,
@@ -81,10 +106,10 @@ class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
           ),
           backgroundColor: Colors.white,
           elevation: 0,
-          foregroundColor: const Color(0xFF191C1E),
+          foregroundColor: const Color(0xFF0F172A),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                color: Color(0xFF3E4A3D)),
+                color: Color(0xFF0F172A)),
             onPressed: () {
               if (Navigator.of(context).canPop()) {
                 Navigator.of(context).pop();
@@ -93,70 +118,81 @@ class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
               }
             },
           ),
+          actions: [
+            IconButton(
+              tooltip: 'Share report',
+              icon: const Icon(Icons.ios_share_rounded, color: Color(0xFF0F172A)),
+              onPressed: state.isLoading || state.sales.isEmpty
+                  ? null
+                  : () => _shareReport(state),
+            ),
+          ],
         ),
         body: SafeArea(
-        child: Column(
-          children: [
-          // ── Search bar ──────────────────────────────────────────────
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-            child: TextField(
-              controller: _searchController,
-              onChanged: _onSearchChanged,
-              decoration: InputDecoration(
-                hintText: ResponsiveHelper.isSmallPhone(context)
-                    ? 'Search sales...'
-                    : 'Search by customer, seller, shop, product, serial...',
-                hintStyle:
-                    TextStyle(color: Colors.grey.shade400, fontSize: 13),
-                prefixIcon: const Icon(Icons.search_rounded,
-                    color: Color(0xFF586377), size: 20),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear_rounded,
-                            color: Color(0xFF586377), size: 18),
-                        onPressed: () {
-                          _searchController.clear();
-                          _onSearchChanged('');
-                        },
-                      )
-                    : null,
-                filled: true,
-                fillColor: const Color(0xFFF7F9FB),
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: const BorderSide(
-                      color: Color(0xFF16A34A), width: 1.5),
+          child: Column(
+            children: [
+              const AdminSalesPeriodChips(),
+
+              // ── Search bar ──────────────────────────────────────────────
+              Container(
+                color: Colors.white,
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: _onSearchChanged,
+                  decoration: InputDecoration(
+                    hintText: ResponsiveHelper.isSmallPhone(context)
+                        ? 'Search sales...'
+                        : 'Search customer, seller, shop, product, serial...',
+                    hintStyle:
+                        const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                    prefixIcon: const Icon(Icons.search_rounded,
+                        color: Color(0xFF64748B), size: 20),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear_rounded,
+                                color: Color(0xFF64748B), size: 18),
+                            onPressed: () {
+                              _searchController.clear();
+                              _onSearchChanged('');
+                            },
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: const Color(0xFFF8FAFC),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: const BorderSide(
+                          color: AppTheme.primary, width: 1.5),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
 
-          const Divider(height: 1, thickness: 1, color: Color(0xFFEEF0F2)),
+              const Divider(height: 1, thickness: 1, color: Color(0xFFE2E8F0)),
 
-          // ── List body ───────────────────────────────────────────────
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: _onRefresh,
-              color: const Color(0xFF16A34A),
-              backgroundColor: Colors.white,
-              child: _buildBody(state),
-            ),
+              // ── List body ───────────────────────────────────────────────
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: _onRefresh,
+                  color: AppTheme.primary,
+                  backgroundColor: Colors.white,
+                  child: _buildBody(state),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
-    ),
-    ),
     );
   }
 
@@ -186,43 +222,45 @@ class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
                   children: [
                     Container(
                       padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppTheme.error.withValues(alpha: 0.08),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFEF3C7),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.cloud_off_rounded,
-                          size: 48, color: AppTheme.error),
+                      child: const Icon(
+                        Icons.wifi_off_rounded,
+                        size: 38,
+                        color: Color(0xFFD97706),
+                      ),
                     ),
                     const SizedBox(height: 16),
                     const Text(
-                      'Something went wrong',
+                      'Unable to load sales history',
                       style: TextStyle(
-                          fontSize: 17,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF191C1E)),
+                          color: Color(0xFF0F172A)),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Could not load sales history. Pull down to retry.',
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Please check your network connection and try again.',
                       style: TextStyle(
-                          color: Colors.grey.shade500, fontSize: 13),
+                          color: Color(0xFF64748B), fontSize: 13),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 24),
-                    ElevatedButton.icon(
+                    const SizedBox(height: 20),
+                    OutlinedButton.icon(
                       onPressed: () => ref
                           .read(adminSalesHistoryProvider.notifier)
                           .fetchSales(),
-                      icon: const Icon(Icons.refresh_rounded, size: 18),
-                      label: const Text('Retry'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF16A34A),
-                        foregroundColor: Colors.white,
+                      icon: const Icon(Icons.refresh_rounded, size: 16),
+                      label: const Text('Try Again'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.primary,
+                        side: const BorderSide(color: AppTheme.primary),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 28, vertical: 12),
+                            horizontal: 24, vertical: 10),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30)),
-                        elevation: 0,
+                            borderRadius: BorderRadius.circular(20)),
                       ),
                     ),
                   ],
@@ -251,8 +289,8 @@ class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
                       color: Colors.grey.withValues(alpha: 0.08),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(Icons.receipt_long_rounded,
-                        size: 52, color: Colors.grey.shade400),
+                    child: const Icon(Icons.receipt_long_rounded,
+                        size: 52, color: Color(0xFF94A3B8)),
                   ),
                   const SizedBox(height: 16),
                   const Text(
@@ -260,15 +298,17 @@ class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
                     style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF191C1E)),
+                        color: Color(0xFF0F172A)),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    _searchController.text.isEmpty
-                        ? 'No sales have been recorded yet.'
-                        : 'No results match your search.',
-                    style: TextStyle(
-                        color: Colors.grey.shade500, fontSize: 14),
+                    _searchController.text.isNotEmpty
+                        ? 'No results match your search.'
+                        : state.period == AdminSalesPeriod.custom
+                            ? 'No sales on this date.'
+                            : 'No sales have been recorded yet.',
+                    style: const TextStyle(
+                        color: Color(0xFF64748B), fontSize: 14),
                   ),
                 ],
               ),
@@ -295,7 +335,7 @@ class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
                 height: 24,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: Color(0xFF16A34A),
+                  color: AppTheme.primary,
                 ),
               ),
             ),
@@ -313,80 +353,61 @@ class _ShimmerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFEDF2F7)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _box(width: 140, height: 16),
+              _box(width: 60, height: 20),
+            ],
+          ),
+          const SizedBox(height: 6),
+          _box(width: 100, height: 12),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(child: _box(width: 80, height: 14)),
+                    const SizedBox(width: 8),
+                    Expanded(child: _box(width: 80, height: 14)),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(child: _box(width: 80, height: 14)),
+                    const SizedBox(width: 8),
+                    Expanded(child: _box(width: 80, height: 14)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _box(width: 120, height: 12),
+              _box(width: 70, height: 18, radius: 10),
+            ],
           ),
         ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Accent strip shimmer
-            Container(height: 4, color: Colors.grey.shade200),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _box(width: 140, height: 18),
-                      _box(width: 70, height: 22),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  _box(width: 100, height: 13),
-                  const SizedBox(height: 16),
-                  _box(width: double.infinity, height: 1),
-                  const SizedBox(height: 16),
-                  Row(children: [
-                    _box(width: 30, height: 30, radius: 8),
-                    const SizedBox(width: 10),
-                    _box(width: 120, height: 14),
-                  ]),
-                  const SizedBox(height: 10),
-                  Row(children: [
-                    _box(width: 30, height: 30, radius: 8),
-                    const SizedBox(width: 10),
-                    _box(width: 150, height: 14),
-                  ]),
-                  const SizedBox(height: 16),
-                  _box(width: double.infinity, height: 1),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(child: _box(width: 60, height: 32)),
-                      const SizedBox(width: 8),
-                      Expanded(child: _box(width: 60, height: 32)),
-                      const SizedBox(width: 8),
-                      Expanded(child: _box(width: 60, height: 32)),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  _box(width: double.infinity, height: 1),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _box(width: 160, height: 14),
-                      _box(width: 70, height: 24, radius: 12),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -405,3 +426,4 @@ class _ShimmerCard extends StatelessWidget {
     );
   }
 }
+

@@ -1,0 +1,24 @@
+info:
+  name: get_employee_shipments
+  type: http
+  seq: 4
+  description: |
+    Shipments for sellers at the same shop location as EMP001.
+    Run login_employee first.
+
+http:
+  method: GET
+  url: "{{baseurl}}/employee/shipments"
+  headers:
+    - name: auth-id
+      value: "{{authId}}"
+    - name: auth-key
+      value: "{{authKey}}"
+  body:
+    type: none
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

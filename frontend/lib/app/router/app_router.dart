@@ -3,61 +3,148 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/screens/splash_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
-import '../../features/auth/screens/register_screen.dart';
+import '../../features/auth/screens/register_screen.dart'; // admin add-seller only
 import '../../features/admin/dashboard/screens/admin_dashboard_screen.dart';
 import '../../features/admin/dashboard/screens/admin_shell_screen.dart';
 import '../../features/admin/dashboard/screens/admin_activity_history_screen.dart';
 import '../../features/admin/inventory/screens/add_stock_screen.dart';
-import '../../features/admin/inventory/screens/add_product_screen.dart';
+import '../../features/admin/inventory/screens/add_product_hub_screen.dart';
+import '../../features/admin/inventory/screens/product_catalog_list_screen.dart';
+import '../../features/admin/inventory/screens/forms/create_product_form.dart';
 import '../../features/admin/shipments/screens/shipment_list_screen.dart';
 import '../../features/admin/shipments/screens/create_shipment_screen.dart';
 import '../../features/admin/shipments/screens/admin_shipment_detail_screen.dart';
 import '../../features/admin/sales/screens/admin_sales_screen.dart';
+import '../../features/admin/attendance/screens/checked_in_staff_screen.dart';
 import '../../features/seller/dashboard/screens/seller_dashboard_screen.dart';
 import '../../features/seller/dashboard/screens/seller_shell_screen.dart';
 import '../../features/seller/dashboard/screens/create_bill_screen.dart';
+import '../../features/seller/dashboard/screens/create_service_bill_screen.dart';
+import '../../features/seller/dashboard/screens/battery_rent_screen.dart';
 import '../../features/seller/dashboard/screens/shipment_details_screen.dart';
 import '../../features/seller/dashboard/screens/seller_received_shipments_screen.dart';
 import '../../features/seller/dashboard/screens/sale_success_screen.dart';
+import '../../features/seller/dashboard/models/sale_success_data.dart';
 import '../../features/seller/dashboard/screens/seller_return_product_screen.dart';
 import '../../features/seller/sales/screens/seller_sales_history_screen.dart';
 import '../../features/seller/sales/screens/seller_sale_details_screen.dart';
 import '../../features/shared/inventory/screens/current_inventory_screen.dart';
 import '../../features/shared/inventory/screens/inventory_product_detail_screen.dart';
+import '../../features/admin/accounts/screens/accounts_screen.dart';
 import '../../features/admin/sellers/screens/sellers_list_screen.dart';
 import '../../features/admin/sellers/screens/seller_details_screen.dart';
 import '../../features/shared/product_lookup/screens/verify_product_screen.dart';
+import '../../features/shared/staff/screens/add_employee_screen.dart';
+import '../../features/seller/staff/screens/seller_staff_screen.dart';
+import '../../features/admin/locations/screens/locations_list_screen.dart';
+import '../../features/admin/locations/screens/add_location_screen.dart';
+import '../../features/admin/locations/screens/location_detail_screen.dart';
+import '../../features/admin/locations/screens/edit_location_screen.dart';
+import '../../features/employee/dashboard/screens/employee_shell_screen.dart';
+import '../../features/employee/dashboard/screens/employee_home_screen.dart';
+import '../../features/employee/attendance/employee_attendance_screen.dart';
+import '../../features/employee/shipments/screens/employee_shipments_screen.dart';
+import '../../features/employee/shipments/screens/employee_shipment_detail_screen.dart';
+import '../../features/shared/app_gate/providers/app_gate_provider.dart';
+import '../../features/shared/app_gate/screens/app_gate_screen.dart';
 import '../../shared/providers/auth_provider.dart';
+import '../../core/navigation/root_navigator_key.dart';
 
-final rootNavigatorKey = GlobalKey<NavigatorState>();
+export '../../core/navigation/root_navigator_key.dart' show rootNavigatorKey;
 
+/// Old `/admin/shops|:id` and `/admin/warehouses|:id` → unified locations detail.
+String _legacyLocationDetailRedirect(GoRouterState state) {
+  final id = state.pathParameters['id'] ?? '';
+  final name = state.uri.queryParameters['name'];
+  return Uri(
+    path: '/admin/locations/$id',
+    queryParameters: {
+      if (name != null && name.isNotEmpty) 'name': name,
+    },
+  ).toString();
+}
+
+/// Stable [GoRouter] — auth changes notify via [refreshListenable] instead of
+/// recreating the entire router (which rebuilds MaterialApp and all routes).
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
+  final refresh = ValueNotifier<int>(0);
+  ref.onDispose(refresh.dispose);
+  ref.listen<AuthState>(authProvider, (prev, next) {
+    if (prev?.isAuthenticated != next.isAuthenticated ||
+        prev?.role != next.role) {
+      refresh.value++;
+    }
+  });
+  // Only re-route on real gate outcomes — ignore isLoading noise.
+  ref.listen<AppGateState>(appGateProvider, (prev, next) {
+    if (prev?.checked != next.checked ||
+        prev?.mode != next.mode ||
+        prev?.isBlocked != next.isBlocked) {
+      refresh.value++;
+    }
+  });
 
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/splash',
+    refreshListenable: refresh,
     redirect: (context, state) {
-      final isLoggingIn = state.uri.toString() == '/login';
-      final isSplash = state.uri.toString() == '/splash';
-      
-      if (!authState.isAuthenticated) {
-        if (isSplash || isLoggingIn || state.uri.toString() == '/register') return null;
+      final path = state.uri.path;
+      final isSplash = path == '/splash';
+      final isAppGate = path == '/app-gate';
+      final isLoggingIn = path == '/login';
+
+      final gate = ref.read(appGateProvider);
+
+      // Splash owns first boot. Stay wherever we are until check finishes —
+      // never force-navigate to /splash (mid-mount refresh caused stack overflow).
+      if (!gate.checked) {
+        return null;
+      }
+
+      // Highest priority: force-update / maintenance (all roles).
+      if (gate.isBlocked) {
+        return isAppGate ? null : '/app-gate';
+      }
+      // Gate cleared while user is on block screen → resume normal flow.
+      if (isAppGate) {
+        final auth = ref.read(authProvider);
+        if (auth.isAuthenticated) return homePathForRole(auth.role);
         return '/login';
       }
 
-      if ((isLoggingIn || isSplash || state.uri.toString() == '/register') && authState.isAuthenticated) {
-        return authState.role == UserRole.admin ? '/admin/dashboard' : '/seller/dashboard';
+      final authState = ref.read(authProvider);
+
+      // Public self-register closed (admin-only via /admin/add-seller)
+      if (!authState.isAuthenticated) {
+        if (isSplash || isLoggingIn) return null;
+        return '/login';
+      }
+
+      if ((isLoggingIn || isSplash || path == '/register') &&
+          authState.isAuthenticated) {
+        return homePathForRole(authState.role);
       }
 
       if (authState.isAuthenticated) {
-        final path = state.uri.toString();
-        if (path.startsWith('/admin') && authState.role != UserRole.admin) {
-          return '/seller/dashboard';
+        // Guest / unknown role: never stay in app shell
+        if (authState.role == UserRole.guest) {
+          return '/login';
+        }
+        // Super Admin reuses admin shell until §1 dedicated tools
+        if (path.startsWith('/admin') &&
+            authState.role != UserRole.admin &&
+            authState.role != UserRole.superAdmin) {
+          return homePathForRole(authState.role);
         }
         if (path.startsWith('/seller') && authState.role != UserRole.seller) {
-          return '/admin/dashboard';
+          return homePathForRole(authState.role);
         }
+        if (path.startsWith('/employee') &&
+            authState.role != UserRole.employee) {
+          return homePathForRole(authState.role);
+        }
+        // Shared inventory deep links: any real role OK; guest already redirected
       }
 
       return null;
@@ -68,15 +155,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(
+        path: '/app-gate',
+        builder: (context, state) => const AppGateScreen(),
+      ),
+      GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
       ),
-      GoRoute(
-        path: '/register',
-        builder: (context, state) => const RegisterScreen(isAdminFlow: false),
-      ),
 
-      // ── Admin shell ──────────────────────────────────────────────────────────
+      // ── Admin shell (Super Admin uses this shell until §1) ───────────────────
       ShellRoute(
         builder: (context, state, child) => AdminShellScreen(child: child),
         routes: [
@@ -86,15 +173,57 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/admin/add-seller',
-            builder: (context, state) => const RegisterScreen(isAdminFlow: true),
+            builder: (context, state) => RegisterScreen(
+              isAdminFlow: true,
+              initialLocationId: int.tryParse(
+                state.uri.queryParameters['locationId'] ?? '',
+              ),
+            ),
+          ),
+          GoRoute(
+            path: '/admin/add-admin',
+            builder: (context, state) => RegisterScreen(
+              isCreateAdmin: true,
+              initialLocationId: int.tryParse(
+                state.uri.queryParameters['locationId'] ?? '',
+              ),
+            ),
+          ),
+          GoRoute(
+            path: '/admin/accounts',
+            builder: (context, state) => const AccountsScreen(),
           ),
           GoRoute(
             path: '/admin/add-stock',
             builder: (context, state) => const AddStockScreen(),
           ),
           GoRoute(
+            path: '/admin/products',
+            builder: (context, state) => const ProductCatalogListScreen(),
+          ),
+          GoRoute(
             path: '/admin/add-product',
-            builder: (context, state) => const AddProductScreen(),
+            builder: (context, state) => const AddProductHubScreen(),
+          ),
+          GoRoute(
+            path: '/admin/add-product/name',
+            builder: (context, state) => const AddProductNameScreen(),
+          ),
+          GoRoute(
+            path: '/admin/add-product/model',
+            builder: (context, state) => AddProductModelScreen(
+              initialProductNameId: state.uri.queryParameters['productNameId'],
+            ),
+          ),
+          GoRoute(
+            path: '/admin/add-product/configure',
+            builder: (context, state) {
+              final q = state.uri.queryParameters;
+              return CreateProductForm(
+                initialProductNameId: q['productNameId'],
+                initialProductModelId: q['productModelId'],
+              );
+            },
           ),
           GoRoute(
             path: '/admin/inventory',
@@ -119,8 +248,87 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/admin/sellers/:id',
             builder: (context, state) {
-              final idStr = state.pathParameters['id']!;
-              return SellerDetailsScreen(sellerId: int.parse(idStr));
+              final id = int.tryParse(state.pathParameters['id'] ?? '');
+              if (id == null) {
+                return const Scaffold(body: Center(child: Text('Invalid seller')));
+              }
+              return SellerDetailsScreen(sellerId: id);
+            },
+          ),
+          // Unified shops + warehouses (same resource, type on each item).
+          GoRoute(
+            path: '/admin/locations',
+            builder: (context, state) => const LocationsListScreen(),
+          ),
+          GoRoute(
+            path: '/admin/locations/add',
+            builder: (context, state) {
+              final t = state.uri.queryParameters['type'];
+              return AddLocationScreen(
+                initialType: t == 'WAREHOUSE' ? 'WAREHOUSE' : 'SHOP',
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/locations/:id/edit',
+            builder: (context, state) {
+              final id = int.tryParse(state.pathParameters['id'] ?? '');
+              if (id == null) {
+                return const Scaffold(
+                  body: Center(child: Text('Invalid location')),
+                );
+              }
+              return EditLocationScreen(locationId: id);
+            },
+          ),
+          GoRoute(
+            path: '/admin/locations/:id',
+            builder: (context, state) {
+              final id = int.tryParse(state.pathParameters['id'] ?? '');
+              if (id == null) {
+                return const Scaffold(
+                  body: Center(child: Text('Invalid location')),
+                );
+              }
+              return LocationDetailScreen(locationId: id);
+            },
+          ),
+          // Legacy redirects (old bookmarks / deep links).
+          GoRoute(
+            path: '/admin/shops',
+            redirect: (_, __) => '/admin/locations',
+          ),
+          GoRoute(
+            path: '/admin/shops/add',
+            redirect: (_, __) => '/admin/locations/add?type=SHOP',
+          ),
+          GoRoute(
+            path: '/admin/shops/:id',
+            redirect: (_, state) => _legacyLocationDetailRedirect(state),
+          ),
+          GoRoute(
+            path: '/admin/warehouses',
+            redirect: (_, __) => '/admin/locations',
+          ),
+          GoRoute(
+            path: '/admin/warehouses/add',
+            redirect: (_, __) => '/admin/locations/add?type=WAREHOUSE',
+          ),
+          GoRoute(
+            path: '/admin/warehouses/:id',
+            redirect: (_, state) => _legacyLocationDetailRedirect(state),
+          ),
+          GoRoute(
+            path: '/admin/add-employee',
+            builder: (context, state) {
+              final loc = int.tryParse(state.uri.queryParameters['locationId'] ?? '');
+              final sellerId =
+                  int.tryParse(state.uri.queryParameters['sellerId'] ?? '');
+              return AddEmployeeScreen(
+                isAdmin: true,
+                initialLocationId: loc,
+                sellerIdForRefresh: sellerId,
+              );
             },
           ),
           GoRoute(
@@ -128,11 +336,42 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const AdminSalesScreen(),
           ),
           GoRoute(
+            path: '/admin/create-bill',
+            builder: (context, state) => const CreateBillScreen(),
+          ),
+          GoRoute(
+            path: '/admin/service-bill',
+            builder: (context, state) => const CreateServiceBillScreen(),
+          ),
+          GoRoute(
+            path: '/admin/battery-rent',
+            builder: (context, state) => const BatteryRentScreen(),
+          ),
+          GoRoute(
+            path: '/admin/sale-success',
+            builder: (context, state) {
+              final saleData = state.extra as SaleSuccessData?;
+              if (saleData == null) {
+                return const Scaffold(
+                  body: Center(child: Text('Missing sale data')),
+                );
+              }
+              return SaleSuccessScreen(saleData: saleData);
+            },
+          ),
+          GoRoute(
             path: '/admin/shipments/:id',
             builder: (context, state) {
-              final idStr = state.pathParameters['id']!;
-              return AdminShipmentDetailScreen(shipmentId: int.parse(idStr));
+              final id = int.tryParse(state.pathParameters['id'] ?? '');
+              if (id == null) {
+                return const Scaffold(body: Center(child: Text('Invalid shipment')));
+              }
+              return AdminShipmentDetailScreen(shipmentId: id);
             },
+          ),
+          GoRoute(
+            path: '/admin/checked-in',
+            builder: (context, state) => const CheckedInStaffScreen(),
           ),
           GoRoute(
             path: '/admin/activity-history',
@@ -162,9 +401,22 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const CreateBillScreen(),
           ),
           GoRoute(
+            path: '/seller/service-bill',
+            builder: (context, state) => const CreateServiceBillScreen(),
+          ),
+          GoRoute(
+            path: '/seller/battery-rent',
+            builder: (context, state) => const BatteryRentScreen(),
+          ),
+          GoRoute(
             path: '/seller/sale-success',
             builder: (context, state) {
-              final saleData = state.extra as Map<String, dynamic>? ?? {};
+              final saleData = state.extra as SaleSuccessData?;
+              if (saleData == null) {
+                return const Scaffold(
+                  body: Center(child: Text('Missing sale data')),
+                );
+              }
               return SaleSuccessScreen(saleData: saleData);
             },
           ),
@@ -179,8 +431,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/seller/sales/:id',
             builder: (context, state) {
-              final idStr = state.pathParameters['id']!;
-              return SellerSaleDetailsScreen(saleId: int.parse(idStr));
+              final id = int.tryParse(state.pathParameters['id'] ?? '');
+              if (id == null) {
+                return const Scaffold(body: Center(child: Text('Invalid sale')));
+              }
+              return SellerSaleDetailsScreen(saleId: id);
             },
           ),
           GoRoute(
@@ -188,10 +443,78 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const SellerReturnProductScreen(),
           ),
           GoRoute(
+            path: '/seller/staff',
+            builder: (context, state) => const SellerStaffScreen(),
+          ),
+          GoRoute(
+            path: '/seller/add-employee',
+            builder: (context, state) => const AddEmployeeScreen(isAdmin: false),
+          ),
+          GoRoute(
             path: '/seller/shipments/:shipmentId',
             builder: (context, state) {
-              final shipmentIdStr = state.pathParameters['shipmentId']!;
-              return ShipmentDetailsScreen(shipmentId: int.parse(shipmentIdStr));
+              final id = int.tryParse(state.pathParameters['shipmentId'] ?? '');
+              if (id == null) {
+                return const Scaffold(body: Center(child: Text('Invalid shipment')));
+              }
+              return ShipmentDetailsScreen(shipmentId: id);
+            },
+          ),
+        ],
+      ),
+
+      // ── Employee shell ───────────────────────────────────────────────────────
+      ShellRoute(
+        builder: (context, state, child) => EmployeeShellScreen(child: child),
+        routes: [
+          GoRoute(
+            path: '/employee/home',
+            builder: (context, state) => const EmployeeHomeScreen(),
+          ),
+          GoRoute(
+            path: '/employee/inventory',
+            builder: (context, state) => const CurrentInventoryScreen(),
+          ),
+          GoRoute(
+            path: '/employee/create-bill',
+            builder: (context, state) => const CreateBillScreen(),
+          ),
+          GoRoute(
+            path: '/employee/service-bill',
+            builder: (context, state) => const CreateServiceBillScreen(),
+          ),
+          GoRoute(
+            path: '/employee/battery-rent',
+            builder: (context, state) => const BatteryRentScreen(),
+          ),
+          GoRoute(
+            path: '/employee/sale-success',
+            builder: (context, state) {
+              final saleData = state.extra as SaleSuccessData?;
+              if (saleData == null) {
+                return const Scaffold(
+                  body: Center(child: Text('Missing sale data')),
+                );
+              }
+              return SaleSuccessScreen(saleData: saleData);
+            },
+          ),
+          GoRoute(
+            path: '/employee/attendance',
+            builder: (context, state) => const EmployeeAttendanceScreen(),
+          ),
+          GoRoute(
+            path: '/employee/shipments',
+            builder: (context, state) => const EmployeeShipmentsScreen(),
+          ),
+          GoRoute(
+            path: '/employee/shipments/:shipmentId',
+            builder: (context, state) {
+              final id = int.tryParse(state.pathParameters['shipmentId'] ?? '');
+              if (id == null) {
+                return const Scaffold(body: Center(child: Text('Invalid shipment')));
+              }
+              return EmployeeShipmentDetailScreen(shipmentId: id);
             },
           ),
         ],
@@ -205,8 +528,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/shared/inventory/:productId',
         builder: (context, state) {
-          final idStr = state.pathParameters['productId']!;
-          return InventoryProductDetailScreen(productId: int.parse(idStr));
+          final id = int.tryParse(state.pathParameters['productId'] ?? '');
+          final locationId =
+              int.tryParse(state.uri.queryParameters['locationId'] ?? '');
+          if (id == null) {
+            return const Scaffold(body: Center(child: Text('Invalid product')));
+          }
+          return InventoryProductDetailScreen(
+            productId: id,
+            locationId: locationId,
+          );
         },
       ),
     ],

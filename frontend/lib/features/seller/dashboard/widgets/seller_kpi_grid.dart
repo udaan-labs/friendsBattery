@@ -13,7 +13,7 @@ class SellerKpiGrid extends ConsumerWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmall = ResponsiveHelper.isSmallPhone(context);
 
-    Widget buildGrid(int stock, double salesAmount, int salesCount, double growth) {
+    Widget buildGrid(int stock, double salesAmount, int salesCount) {
       String formattedSales = '₹${salesAmount.toStringAsFixed(0)}';
       if (salesAmount >= 1000) {
         formattedSales = '₹${(salesAmount / 1000).toStringAsFixed(1)}k';
@@ -155,22 +155,10 @@ class SellerKpiGrid extends ConsumerWidget {
                               size: 24,
                             ),
                           ),
-                          Row(
-                            children: [
-                              Text(
-                                '+${growth.toStringAsFixed(0)}% ',
-                                style: const TextStyle(
-                                  color: Color(0xFF16A34A),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const Icon(
-                                Icons.trending_up,
-                                color: Color(0xFF16A34A),
-                                size: 16,
-                              ),
-                            ],
+                          const Icon(
+                            Icons.chevron_right,
+                            size: 18,
+                            color: Color(0xFF545F73),
                           ),
                         ],
                       ),
@@ -229,9 +217,8 @@ class SellerKpiGrid extends ConsumerWidget {
         stats.currentStock,
         stats.todaySalesAmount,
         stats.todaySalesCount,
-        stats.salesGrowthPercentage,
       ),
-      loading: () => buildGrid(0, 0, 0, 0),
+      loading: () => buildGrid(0, 0, 0),
       error: (e, st) => const SliverToBoxAdapter(child: SizedBox.shrink()),
     );
   }

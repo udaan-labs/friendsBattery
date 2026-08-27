@@ -1,0 +1,35 @@
+info:
+  name: create_shipment
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseurl}}/shipments"
+  headers:
+    - name: Authorization
+      value: "Bearer {{authKey}}"
+    - name: auth-id
+      value: "{{authId}}"
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "sellerId": 5,
+        "items": [
+          {
+            "product_name_id": 1,
+            "product_model_id": 1,
+            "serial_numbers": ["REPLACE-WITH-AVAILABLE-ADMIN-SERIAL"],
+            "price_per_piece": 100
+          }
+        ]
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

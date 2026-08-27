@@ -4,8 +4,13 @@
   "scripts": {
     "gen": ".\\generate_api.bat",
     "build-models": "cd frontend/lib/api && dart pub get && dart run build_runner build --delete-conflicting-outputs",
-    "tunnel": "ngrok http --url=flannels-battering-paralyses.ngrok-free.dev 3000",
+    "tunnel": "node scripts/tunnel.js",
     "build-prod": "cd frontend && flutter build apk --release --split-per-abi --dart-define=ENV_FILE=.env.production",
-    "build-local": "cd frontend && flutter build apk --release --split-per-abi --dart-define=ENV_FILE=.env.local"
+    "build-local": "cd frontend && flutter build apk --release --split-per-abi --dart-define=ENV_FILE=.env.local",
+    "migrate-prod": "cd backend && node scripts/migrate-prod.js",
+    "fresh": ".\\fresh.bat"
+  },
+  "devDependencies": {
+    "@ngrok/ngrok": "^1.7.0"
   }
 }

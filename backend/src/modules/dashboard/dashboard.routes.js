@@ -31,20 +31,7 @@ const { requireAdmin } = require('../../shared/middleware/role.middleware');
  *                   type: string
  *                   example: Dashboard stats retrieved successfully
  *                 data:
- *                   type: object
- *                   properties:
- *                     totalStock:
- *                       type: integer
- *                       example: 120
- *                     todaySales:
- *                       type: integer
- *                       example: 35
- *                     pendingRequests:
- *                       type: integer
- *                       example: 8
- *                     totalSellers:
- *                       type: integer
- *                       example: 12
+ *                   $ref: '#/components/schemas/AdminDashboardStats'
  *       401:
  *         description: Unauthorized
  *       403:
@@ -64,12 +51,17 @@ router.get(
  * /api/dashboard/recent-activity:
  *   get:
  *     summary: Get recent activity feed (Admin only)
+ *     description: SUPER_ADMIN sees org-wide activity. Shop/warehouse ADMIN sees only own warehouse/shop plus sellers and employees under them.
  *     tags: [Dashboard]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Recent activity retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RecentActivityResponse'
  */
 router.get(
   '/recent-activity',
@@ -83,12 +75,41 @@ router.get(
  * /api/dashboard/activity-history:
  *   get:
  *     summary: Get paginated activity history (Admin only)
+ *     description: Same scope as recent-activity. SUPER_ADMIN org-wide; ADMIN own warehouse/shop tree only.
  *     tags: [Dashboard]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: cursor
+ *         schema:
+ *           type: string
+ *         description: Opaque cursor from previous page (pagination.nextCursor)
+ *       - in: query
+ *         name: from_date
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Inclusive start of range (ISO)
+ *       - in: query
+ *         name: to_date
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Inclusive end of range (ISO)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *           maximum: 50
  *     responses:
  *       200:
  *         description: Activity history retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ActivityHistoryResponse'
  */
 router.get(
   '/activity-history',

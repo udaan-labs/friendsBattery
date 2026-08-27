@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Friends Battery needs your location to verify you are at your assigned shop or warehouse when checking in or out.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Friends Battery needs your location to verify you are at your assigned shop or warehouse when checking in or out.</string>
 </dict>
 </plist>

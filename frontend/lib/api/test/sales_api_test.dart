@@ -7,10 +7,10 @@ void main() {
   final instance = FriendsBatteryApi().getSalesApi();
 
   group(SalesApi, () {
-    // Return complete purchase history for a customer mobile
+    // Return all sales across all sellers with pagination, search, filters, and shipment tracing (Admin only)
     //
-    //Future apiSalesCustomerMobileGet(String mobile) async
-    test('test apiSalesCustomerMobileGet', () async {
+    //Future<AdminSaleHistoryResponse> apiSalesAdminHistoryGet({ int page, int limit, String search, int sellerId, DateTime fromDate, DateTime toDate, String shipmentStatus }) async
+    test('test apiSalesAdminHistoryGet', () async {
       // TODO
     });
 
@@ -21,16 +21,23 @@ void main() {
       // TODO
     });
 
+    // Return seller's own sales history with pagination, search, and date filtering
+    //
+    //Future<SaleHistoryResponse> apiSalesHistoryGet({ int page, int limit, String searchCustomer, String searchSerial, DateTime fromDate, DateTime toDate, String filter, String date }) async
+    test('test apiSalesHistoryGet', () async {
+      // TODO
+    });
+
     // Create a new sale transaction
     //
-    //Future apiSalesPost(ApiSalesPostRequest apiSalesPostRequest) async
+    //Future<CreateSaleResponse> apiSalesPost(CreateSaleRequest createSaleRequest) async
     test('test apiSalesPost', () async {
       // TODO
     });
 
     // Return a single sale's details by ID
     //
-    //Future apiSalesTransactionIdGet(String transactionId) async
+    //Future<SaleDetailResponse> apiSalesTransactionIdGet(int transactionId) async
     test('test apiSalesTransactionIdGet', () async {
       // TODO
     });

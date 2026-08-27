@@ -6,12 +6,15 @@ class InventoryProductCard extends StatelessWidget {
   final SharedInventoryItemModel item;
   final int index;
   final VoidCallback? onTap;
+  /// Seller/admin pricing + thresholds. Off for employees (stock count only).
+  final bool showPricingMeta;
 
   const InventoryProductCard({
     super.key,
     required this.item,
     required this.index,
     this.onTap,
+    this.showPricingMeta = true,
   });
 
   @override
@@ -106,31 +109,33 @@ class InventoryProductCard extends StatelessWidget {
                                     ? Colors.orange.shade50
                                     : Colors.green.shade50),
                           ),
-                          _buildSmallChip(
-                            icon: Icons.currency_rupee_outlined,
-                            label: 'Min: ₹${item.minPrice.toStringAsFixed(0)}',
-                            color: Colors.blue.shade700,
-                            bgColor: Colors.blue.shade50,
-                          ),
-                          _buildSmallChip(
-                            icon: Icons.admin_panel_settings_outlined,
-                            label: 'Admin Min: ${item.minUnitCountAdmin}',
-                            color: Colors.purple.shade700,
-                            bgColor: Colors.purple.shade50,
-                          ),
-                          _buildSmallChip(
-                            icon: Icons.store_outlined,
-                            label: 'Seller Min: ${item.minUnitCountSeller}',
-                            color: Colors.teal.shade700,
-                            bgColor: Colors.teal.shade50,
-                          ),
-                          if (item.onSale)
+                          if (showPricingMeta) ...[
                             _buildSmallChip(
-                              icon: Icons.local_offer_outlined,
-                              label: 'On Sale',
-                              color: Colors.pink.shade700,
-                              bgColor: Colors.pink.shade50,
+                              icon: Icons.currency_rupee_outlined,
+                              label: 'Min: ₹${item.minPrice.toStringAsFixed(0)}',
+                              color: Colors.blue.shade700,
+                              bgColor: Colors.blue.shade50,
                             ),
+                            _buildSmallChip(
+                              icon: Icons.admin_panel_settings_outlined,
+                              label: 'Admin Min: ${item.minUnitCountAdmin}',
+                              color: Colors.purple.shade700,
+                              bgColor: Colors.purple.shade50,
+                            ),
+                            _buildSmallChip(
+                              icon: Icons.store_outlined,
+                              label: 'Seller Min: ${item.minUnitCountSeller}',
+                              color: Colors.teal.shade700,
+                              bgColor: Colors.teal.shade50,
+                            ),
+                            if (item.onSale)
+                              _buildSmallChip(
+                                icon: Icons.local_offer_outlined,
+                                label: 'On Sale',
+                                color: Colors.pink.shade700,
+                                bgColor: Colors.pink.shade50,
+                              ),
+                          ],
                         ],
                       ),
                     ],

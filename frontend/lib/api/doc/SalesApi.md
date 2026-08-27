@@ -12,12 +12,15 @@ Method | HTTP request | Description
 [**apiSalesAdminHistoryGet**](SalesApi.md#apisalesadminhistoryget) | **GET** /api/sales/admin/history | Return all sales across all sellers with pagination, search, filters, and shipment tracing (Admin only)
 [**apiSalesGet**](SalesApi.md#apisalesget) | **GET** /api/sales | Return all sales based on role (Admin sees all, Seller sees own)
 [**apiSalesHistoryGet**](SalesApi.md#apisaleshistoryget) | **GET** /api/sales/history | Return seller&#39;s own sales history with pagination, search, and date filtering
-[**apiSalesPost**](SalesApi.md#apisalespost) | **POST** /api/sales | Create a new sale transaction
+[**apiSalesPost**](SalesApi.md#apisalespost) | **POST** /api/sales | Create a sale (SA/Admin/Seller own units; EMPLOYEE location stock)
+[**apiSalesRentPost**](SalesApi.md#apisalesrentpost) | **POST** /api/sales/rent | Rent battery out with deposit (unit → RENTED)
+[**apiSalesRentReturnPost**](SalesApi.md#apisalesrentreturnpost) | **POST** /api/sales/rent/return | Return rented battery — fee from deposit, refund rest
+[**apiSalesServicePost**](SalesApi.md#apisalesservicepost) | **POST** /api/sales/service | Create a service bill (no stock move)
 [**apiSalesTransactionIdGet**](SalesApi.md#apisalestransactionidget) | **GET** /api/sales/{transactionId} | Return a single sale&#39;s details by ID
 
 
 # **apiSalesAdminHistoryGet**
-> apiSalesAdminHistoryGet(page, limit, search, sellerId, fromDate, toDate, shipmentStatus)
+> AdminSaleHistoryResponse apiSalesAdminHistoryGet(page, limit, search, sellerId, fromDate, toDate, shipmentStatus)
 
 Return all sales across all sellers with pagination, search, filters, and shipment tracing (Admin only)
 
@@ -35,7 +38,8 @@ final DateTime toDate = 2013-10-20T19:20:30+01:00; // DateTime |
 final String shipmentStatus = shipmentStatus_example; // String | 
 
 try {
-    api.apiSalesAdminHistoryGet(page, limit, search, sellerId, fromDate, toDate, shipmentStatus);
+    final response = api.apiSalesAdminHistoryGet(page, limit, search, sellerId, fromDate, toDate, shipmentStatus);
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling SalesApi->apiSalesAdminHistoryGet: $e\n');
 }
@@ -55,7 +59,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-void (empty response body)
+[**AdminSaleHistoryResponse**](AdminSaleHistoryResponse.md)
 
 ### Authorization
 
@@ -64,7 +68,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -105,7 +109,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiSalesHistoryGet**
-> apiSalesHistoryGet(page, limit, searchCustomer, searchSerial, fromDate, toDate)
+> SaleHistoryResponse apiSalesHistoryGet(page, limit, searchCustomer, searchSerial, fromDate, toDate, filter, date)
 
 Return seller's own sales history with pagination, search, and date filtering
 
@@ -120,9 +124,12 @@ final String searchCustomer = searchCustomer_example; // String |
 final String searchSerial = searchSerial_example; // String | 
 final DateTime fromDate = 2013-10-20T19:20:30+01:00; // DateTime | 
 final DateTime toDate = 2013-10-20T19:20:30+01:00; // DateTime | 
+final String filter = filter_example; // String | 
+final String date = date_example; // String | 
 
 try {
-    api.apiSalesHistoryGet(page, limit, searchCustomer, searchSerial, fromDate, toDate);
+    final response = api.apiSalesHistoryGet(page, limit, searchCustomer, searchSerial, fromDate, toDate, filter, date);
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling SalesApi->apiSalesHistoryGet: $e\n');
 }
@@ -138,10 +145,12 @@ Name | Type | Description  | Notes
  **searchSerial** | **String**|  | [optional] 
  **fromDate** | **DateTime**|  | [optional] 
  **toDate** | **DateTime**|  | [optional] 
+ **filter** | **String**|  | [optional] 
+ **date** | **String**|  | [optional] 
 
 ### Return type
 
-void (empty response body)
+[**SaleHistoryResponse**](SaleHistoryResponse.md)
 
 ### Authorization
 
@@ -150,24 +159,25 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiSalesPost**
-> apiSalesPost(apiSalesPostRequest)
+> CreateSaleResponse apiSalesPost(createSaleRequest)
 
-Create a new sale transaction
+Create a sale (SA/Admin/Seller own units; EMPLOYEE location stock)
 
 ### Example
 ```dart
 import 'package:friends_battery_api/api.dart';
 
 final api = FriendsBatteryApi().getSalesApi();
-final ApiSalesPostRequest apiSalesPostRequest = ; // ApiSalesPostRequest | 
+final CreateSaleRequest createSaleRequest = ; // CreateSaleRequest | 
 
 try {
-    api.apiSalesPost(apiSalesPostRequest);
+    final response = api.apiSalesPost(createSaleRequest);
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling SalesApi->apiSalesPost: $e\n');
 }
@@ -177,11 +187,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **apiSalesPostRequest** | [**ApiSalesPostRequest**](ApiSalesPostRequest.md)|  | 
+ **createSaleRequest** | [**CreateSaleRequest**](CreateSaleRequest.md)|  | 
 
 ### Return type
 
-void (empty response body)
+[**CreateSaleResponse**](CreateSaleResponse.md)
 
 ### Authorization
 
@@ -190,12 +200,135 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiSalesRentPost**
+> CreateRentResponse apiSalesRentPost(createRentRequest)
+
+Rent battery out with deposit (unit → RENTED)
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getSalesApi();
+final CreateRentRequest createRentRequest = ; // CreateRentRequest | 
+
+try {
+    final response = api.apiSalesRentPost(createRentRequest);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling SalesApi->apiSalesRentPost: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **createRentRequest** | [**CreateRentRequest**](CreateRentRequest.md)|  | 
+
+### Return type
+
+[**CreateRentResponse**](CreateRentResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiSalesRentReturnPost**
+> ReturnRentResponse apiSalesRentReturnPost(returnRentRequest)
+
+Return rented battery — fee from deposit, refund rest
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getSalesApi();
+final ReturnRentRequest returnRentRequest = ; // ReturnRentRequest | 
+
+try {
+    final response = api.apiSalesRentReturnPost(returnRentRequest);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling SalesApi->apiSalesRentReturnPost: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **returnRentRequest** | [**ReturnRentRequest**](ReturnRentRequest.md)|  | 
+
+### Return type
+
+[**ReturnRentResponse**](ReturnRentResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiSalesServicePost**
+> CreateServiceBillResponse apiSalesServicePost(createServiceBillRequest)
+
+Create a service bill (no stock move)
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getSalesApi();
+final CreateServiceBillRequest createServiceBillRequest = ; // CreateServiceBillRequest | 
+
+try {
+    final response = api.apiSalesServicePost(createServiceBillRequest);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling SalesApi->apiSalesServicePost: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **createServiceBillRequest** | [**CreateServiceBillRequest**](CreateServiceBillRequest.md)|  | 
+
+### Return type
+
+[**CreateServiceBillResponse**](CreateServiceBillResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiSalesTransactionIdGet**
-> apiSalesTransactionIdGet(transactionId)
+> SaleDetailResponse apiSalesTransactionIdGet(transactionId)
 
 Return a single sale's details by ID
 
@@ -204,10 +337,11 @@ Return a single sale's details by ID
 import 'package:friends_battery_api/api.dart';
 
 final api = FriendsBatteryApi().getSalesApi();
-final String transactionId = transactionId_example; // String | 
+final int transactionId = 56; // int | 
 
 try {
-    api.apiSalesTransactionIdGet(transactionId);
+    final response = api.apiSalesTransactionIdGet(transactionId);
+    print(response);
 } on DioException catch (e) {
     print('Exception when calling SalesApi->apiSalesTransactionIdGet: $e\n');
 }
@@ -217,11 +351,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **transactionId** | **String**|  | 
+ **transactionId** | **int**|  | 
 
 ### Return type
 
-void (empty response body)
+[**SaleDetailResponse**](SaleDetailResponse.md)
 
 ### Authorization
 
@@ -230,7 +364,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

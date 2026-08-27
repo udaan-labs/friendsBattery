@@ -14,7 +14,10 @@ import 'package:friends_battery_api/src/model/api_seller_dashboard_pending_shipm
 import 'package:friends_battery_api/src/model/api_seller_shipments_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_shipments_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_shipments_id_get200_response.dart';
-import 'package:friends_battery_api/src/model/api_shipments_post_request.dart';
+import 'package:friends_battery_api/src/model/create_shipment_request.dart';
+import 'package:friends_battery_api/src/model/create_shipment_response.dart';
+import 'package:friends_battery_api/src/model/error.dart';
+import 'package:friends_battery_api/src/model/seller_shipments_list_response.dart';
 
 class ShipmentsApi {
 
@@ -23,6 +26,85 @@ class ShipmentsApi {
   final Serializers _serializers;
 
   const ShipmentsApi(this._dio, this._serializers);
+
+  /// List shipments for sellers at the employee&#39;s shop location (read-only)
+  /// EMPLOYEE only. Returns NewShipment rows where the seller shares users.location_id with the employee. Does not allow accept/transfer. 
+  ///
+  /// Parameters:
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [SellerShipmentsListResponse] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<SellerShipmentsListResponse>> apiEmployeeShipmentsGet({ 
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/api/employee/shipments';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    SellerShipmentsListResponse? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(SellerShipmentsListResponse),
+      ) as SellerShipmentsListResponse;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<SellerShipmentsListResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
 
   /// Get pending shipments count (Seller only)
   /// 
@@ -342,11 +424,11 @@ class ShipmentsApi {
     );
   }
 
-  /// Create a new shipment (Admin only)
-  /// 
+  /// Transfer stock serials from admin to seller (Admin only)
+  /// Moves existing AVAILABLE admin-owned product units to the seller immediately. Creates shipment record (status ACCEPTED), inventory_transactions (TRANSFERRED), and returns updated inventory counts. 
   ///
   /// Parameters:
-  /// * [apiShipmentsPostRequest] 
+  /// * [createShipmentRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -354,10 +436,10 @@ class ShipmentsApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future]
+  /// Returns a [Future] containing a [Response] with a [CreateShipmentResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<void>> apiShipmentsPost({ 
-    required ApiShipmentsPostRequest apiShipmentsPostRequest,
+  Future<Response<CreateShipmentResponse>> apiShipmentsPost({ 
+    required CreateShipmentRequest createShipmentRequest,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -388,8 +470,8 @@ class ShipmentsApi {
     dynamic _bodyData;
 
     try {
-      const _type = FullType(ApiShipmentsPostRequest);
-      _bodyData = _serializers.serialize(apiShipmentsPostRequest, specifiedType: _type);
+      const _type = FullType(CreateShipmentRequest);
+      _bodyData = _serializers.serialize(createShipmentRequest, specifiedType: _type);
 
     } catch(error, stackTrace) {
       throw DioException(
@@ -412,7 +494,35 @@ class ShipmentsApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    return _response;
+    CreateShipmentResponse? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(CreateShipmentResponse),
+      ) as CreateShipmentResponse;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<CreateShipmentResponse>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
   }
 
   /// Accept a pending shipment (Seller only)

@@ -96,6 +96,16 @@ class ProductsRepository {
     });
   }
 
+  async findByNameAndModel(productNameId, productModelId) {
+    return prisma.product.findFirst({
+      where: {
+        productNameId: BigInt(productNameId),
+        productModelId: BigInt(productModelId)
+      },
+      orderBy: { id: 'asc' }
+    });
+  }
+
   /**
    * Create a new product
    */
@@ -113,34 +123,49 @@ class ProductsRepository {
     });
   }
 
-  /**
-   * Find products that the admin has stock for (stockQuantity > 0)
-   */
-  async findAdminInventoryProducts() {
-    return prisma.product.findMany({
-      where: {
-        stockQuantity: { gt: 0 }
-      },
-      include: {
-        productName: true,
-        productModel: true
-      },
-      orderBy: [
-        { productName: { name: 'asc' } },
-        { productModel: { name: 'asc' } }
-      ]
+  async updateProductConfig(id, data) {
+    return prisma.product.update({
+      where: { id: BigInt(id) },
+      data: {
+        minPrice: data.min_price,
+        onSale: data.on_sale,
+        offerPrice: data.offer_price,
+        minUnitCountAdmin: data.min_unit_count_admin,
+        minUnitCountSeller: data.min_unit_count_seller
+      }
+    });
+  }
+
+  async createCatalogEvent({
+    action,
+    actorId,
+    productNameId,
+    productModelId,
+    productId,
+    payload
+  }) {
+    return prisma.productCatalogEvent.create({
+      data: {
+        action,
+        actorId: BigInt(actorId),
+        productNameId: productNameId != null ? BigInt(productNameId) : null,
+        productModelId: productModelId != null ? BigInt(productModelId) : null,
+        productId: productId != null ? BigInt(productId) : null,
+        payload
+      }
     });
   }
 
   /**
-   * Find products that the user has available (AVAILABLE) inventory for
+   * Find products that have available (AVAILABLE) units matching unitScope.
+   * unitScope: e.g. { ownerId } for seller or { currentLocationId } for employee.
    */
-  async findInventoryProducts(userId) {
+  async findInventoryProducts(unitScope) {
     return prisma.product.findMany({
       where: {
         units: {
           some: {
-            ownerId: BigInt(userId),
+            ...unitScope,
             status: 'AVAILABLE'
           }
         }
@@ -152,7 +177,7 @@ class ProductsRepository {
           select: {
             units: {
               where: {
-                ownerId: BigInt(userId),
+                ...unitScope,
                 status: 'AVAILABLE'
               }
             }

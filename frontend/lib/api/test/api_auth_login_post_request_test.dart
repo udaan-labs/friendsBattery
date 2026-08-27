@@ -17,5 +17,26 @@ void main() {
       // TODO
     });
 
+    // Optional — stored on employee_sessions for EMPLOYEE
+    // String deviceId
+    test('to test the property `deviceId`', () async {
+      // TODO
+    });
+
+    // String ipAddress
+    test('to test the property `ipAddress`', () async {
+      // TODO
+    });
+
+    // String appVersion
+    test('to test the property `appVersion`', () async {
+      // TODO
+    });
+
+    // String firebaseToken
+    test('to test the property `firebaseToken`', () async {
+      // TODO
+    });
+
   });
 }

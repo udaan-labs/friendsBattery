@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../shared/widgets/common_pull_to_refresh.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
-import '../providers/seller_dashboard_controller.dart';
+import '../../../../theme/app_theme.dart';
 import '../providers/seller_dashboard_providers.dart';
 import '../widgets/seller_kpi_grid.dart';
 import '../widgets/seller_quick_actions.dart';
 import '../widgets/recent_sales_list.dart';
 import '../widgets/pending_shipments_list.dart';
 import '../widgets/recent_inventory_list.dart';
-import '../../../../shared/widgets/snackbar_helper.dart';
 import 'seller_shell_screen.dart';
 
 class SellerDashboardScreen extends ConsumerWidget {
@@ -41,34 +39,12 @@ class SellerDashboardScreen extends ConsumerWidget {
             color: const Color(0xFF16A34A),
           ),
         ),
-        actions: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              IconButton(
-                icon: Icon(Icons.notifications, color: const Color(0xFF3E4A3D), size: ResponsiveHelper.isSmallPhone(context) ? 22 : 28),
-                onPressed: () {},
-              ),
-              Positioned(
-                top: 12,
-                right: 12,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFBA1A1A),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(width: ResponsiveHelper.isSmallPhone(context) ? 4 : 8),
-        ],
       ),
       body: SafeArea(
-        child: CommonPullToRefresh(
-          onRefresh: () => ref.read(sellerDashboardControllerProvider).refreshAllData(),
+        child: RefreshIndicator(
+          onRefresh: () => refreshSellerDashboard(ref),
+          color: AppTheme.primary,
+          backgroundColor: Colors.white,
           child: CustomScrollView(
           slivers: [
             SliverPadding(

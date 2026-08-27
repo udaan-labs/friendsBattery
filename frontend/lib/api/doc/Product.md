@@ -9,7 +9,6 @@ import 'package:friends_battery_api/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **String** |  | [optional] 
-**categoryId** | **String** |  | [optional] 
 **productNameId** | **String** |  | [optional] 
 **productModelId** | **String** |  | [optional] 
 **minPrice** | **double** |  | [optional] 
@@ -18,7 +17,6 @@ Name | Type | Description | Notes
 **minUnitCountAdmin** | **int** |  | [optional] 
 **minUnitCountSeller** | **int** |  | [optional] 
 **createdAt** | [**DateTime**](DateTime.md) |  | [optional] 
-**category** | [**Category**](Category.md) |  | [optional] 
 **productName** | [**ProductName**](ProductName.md) |  | [optional] 
 **productModel** | [**ProductModel**](ProductModel.md) |  | [optional] 
 

@@ -1,4 +1,6 @@
 const { prisma } = require('../../config/db');
+const { getDefaultWarehouseId, getUserLocationId } = require('../../shared/utils/location.util');
+const { httpError } = require('../../shared/utils/http-error');
 
 /**
  * Transfers Repository
@@ -85,6 +87,28 @@ class TransfersRepository {
   }
 
   /**
+   * Shipments for shop Admin: sent by admin or received by shop sellers.
+   * @param {number|bigint} adminId
+   * @param {bigint[]} sellerIds
+   */
+  async getShipmentsForShopAdmin(adminId, sellerIds) {
+    const toIds = (sellerIds || []).map((id) => BigInt(id));
+    return prisma.shipment.findMany({
+      where: {
+        OR: [
+          { fromUserId: BigInt(adminId) },
+          ...(toIds.length ? [{ toUserId: { in: toIds } }] : []),
+        ],
+      },
+      include: {
+        fromUser: { select: { id: true, userName: true, shopName: true } },
+        toUser: { select: { id: true, userName: true, shopName: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
    * Fetch shipments for a specific seller (where they are the receiver)
    * Input: sellerId
    * Output: Array of shipments assigned to the seller
@@ -139,6 +163,20 @@ class TransfersRepository {
    */
   async receiveShipment(shipmentId, shipment) {
     return prisma.$transaction(async (tx) => {
+      // Claim PENDING first so concurrent receives cannot both transfer stock
+      const claimed = await tx.shipment.updateMany({
+        where: { id: shipmentId, status: 'PENDING' },
+        data: {
+          status: 'DELIVERED',
+          deliveredOn: new Date(),
+        },
+      });
+      if (claimed.count !== 1) {
+        throw httpError(400, 
+          'Shipment cannot be received. It may already be processed.'
+        );
+      }
+
       // Process each shipment item
       for (const item of shipment.items) {
         // 1. Find available AVAILABLE units owned by admin for this product
@@ -152,25 +190,41 @@ class TransfersRepository {
         });
 
         if (availableUnits.length < item.quantity) {
-          throw new Error(
+          throw httpError(400, 
             `Insufficient admin inventory for product ID ${Number(item.productId)}. Required: ${item.quantity}, Available: ${availableUnits.length}`
           );
         }
 
         const unitIds = availableUnits.map(u => u.id);
+        const fromLoc = await getDefaultWarehouseId(tx);
+        const toLoc = await getUserLocationId(shipment.toUserId, tx);
 
-        // 2. Transfer ownership: update ownerId to seller
-        await tx.productUnit.updateMany({
-          where: { id: { in: unitIds } },
-          data: { ownerId: shipment.toUserId }
+        // 2. Transfer ownership (+ location when seller has one) — only still-AVAILABLE
+        const moved = await tx.productUnit.updateMany({
+          where: {
+            id: { in: unitIds },
+            status: 'AVAILABLE',
+            ownerId: shipment.fromUserId,
+          },
+          data: {
+            ownerId: shipment.toUserId,
+            ...(toLoc ? { currentLocationId: toLoc } : {}),
+          },
         });
+        if (moved.count !== unitIds.length) {
+          throw httpError(409, 
+            'One or more units are no longer available. Contact admin.'
+          );
+        }
 
         // 3. Create immutable ledger entries in inventory_transactions
         const ledgerEntries = unitIds.map(unitId => ({
           productUnitId: unitId,
           fromUserId: shipment.fromUserId,
           toUserId: shipment.toUserId,
-          action: 'TRANSFERRED'
+          action: 'TRANSFERRED',
+          ...(fromLoc ? { fromLocationId: fromLoc } : {}),
+          ...(toLoc ? { toLocationId: toLoc } : {}),
         }));
 
         await tx.inventoryTransaction.createMany({
@@ -178,16 +232,7 @@ class TransfersRepository {
         });
       }
 
-      // 4. Mark shipment as DELIVERED with timestamp
-      const updatedShipment = await tx.shipment.update({
-        where: { id: shipmentId },
-        data: {
-          status: 'DELIVERED',
-          deliveredOn: new Date()
-        }
-      });
-
-      return updatedShipment;
+      return tx.shipment.findUnique({ where: { id: shipmentId } });
     });
   }
 

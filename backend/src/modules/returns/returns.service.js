@@ -1,4 +1,11 @@
 const returnsRepository = require('./returns.repository');
+const { httpError } = require('../../shared/utils/http-error');
+const ROLES = require('../../shared/constants/roles');
+const {
+  resolveAdminShopScope,
+  resolveShopSellerIds,
+} = require('../../shared/utils/shop-scope.util');
+const { prisma } = require('../../config/db');
 
 class ReturnsService {
   /**
@@ -11,42 +18,32 @@ class ReturnsService {
     const { serial_number: serialNumber, reason } = data;
 
     if (!serialNumber || !reason) {
-      const error = new Error('serial_number and reason are required');
-      error.statusCode = 400;
-      throw error;
+      throw httpError(400, 'serial_number and reason are required');
     }
 
     // 1. Find the product unit
     const productUnit = await returnsRepository.getProductUnitBySerialNumber(serialNumber);
     
     if (!productUnit) {
-      const error = new Error(`Product unit with serial number ${serialNumber} not found`);
-      error.statusCode = 404;
-      throw error;
+      throw httpError(404, `Product unit with serial number ${serialNumber} not found`);
     }
 
     // 2. Ensure it's currently sold
     if (productUnit.status !== 'SOLD') {
-      const error = new Error(`Product unit is not in SOLD status. Current status: ${productUnit.status}`);
-      error.statusCode = 400;
-      throw error;
+      throw httpError(400, `Product unit is not in SOLD status. Current status: ${productUnit.status}`);
     }
 
     // 3. Find the latest sales transaction
     const latestSale = await returnsRepository.getLatestSalesTransaction(productUnit.id);
 
     if (!latestSale) {
-      const error = new Error('No sales transaction found for this product unit');
-      error.statusCode = 400;
-      throw error;
+      throw httpError(400, 'No sales transaction found for this product unit');
     }
 
     // 4. Verify that this seller actually sold this item
     // In our YAGNI approach, we just check the latest sale's sellerId
     if (latestSale.sellerId.toString() !== sellerId.toString()) {
-      const error = new Error('You cannot return a product that you did not sell');
-      error.statusCode = 403;
-      throw error;
+      throw httpError(403, 'You cannot return a product that you did not sell');
     }
 
     // 5. Process the return via transaction
@@ -69,16 +66,24 @@ class ReturnsService {
   }
 
   /**
-   * Get return history based on user role
+   * Get return history based on user role.
+   * SA: all · shop Admin: own shop sellers · Seller: own only
    */
   async getReturns(user) {
     const where = {};
-    
-    // If not Admin, filter by user's own returns
-    if (user.role !== 'ADMIN') {
+
+    if (user.role === ROLES.SUPER_ADMIN) {
+      // all
+    } else if (user.role === ROLES.ADMIN) {
+      const scope = resolveAdminShopScope(user);
+      const sellerIds = await resolveShopSellerIds(prisma, scope);
+      where.returnById = {
+        in: (sellerIds || []).map((id) => BigInt(id)),
+      };
+    } else {
       where.returnById = user.id;
     }
-    
+
     const returns = await returnsRepository.getReturns(where);
     
     // Serialize BigInt to string

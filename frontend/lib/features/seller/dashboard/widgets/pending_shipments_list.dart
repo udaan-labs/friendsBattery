@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
 import '../providers/seller_dashboard_providers.dart';
-import '../providers/seller_dashboard_controller.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../core/network/api_client_provider.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
+import '../../../admin/dashboard/widgets/activity_item_tile.dart';
 
 class PendingShipmentsList extends ConsumerStatefulWidget {
   const PendingShipmentsList({super.key});
@@ -17,28 +17,6 @@ class PendingShipmentsList extends ConsumerStatefulWidget {
 
 class _PendingShipmentsListState extends ConsumerState<PendingShipmentsList> {
   bool _isAccepting = false;
-
-  String _getTimeAgo(String? dateStr) {
-    if (dateStr == null) return '';
-    try {
-      final dateTime = DateTime.parse(dateStr);
-      final diff = DateTime.now().difference(dateTime);
-      if (diff.isNegative) {
-        return 'just now';
-      }
-      if (diff.inMinutes < 1) {
-        return 'just now';
-      } else if (diff.inMinutes < 60) {
-        return '${diff.inMinutes}m ago';
-      } else if (diff.inHours < 24) {
-        return '${diff.inHours}h ago';
-      } else {
-        return '${diff.inDays}d ago';
-      }
-    } catch (e) {
-      return dateStr;
-    }
-  }
 
   Future<void> _handleAccept(int shipmentId, String shipmentNumber) async {
     final confirmed = await showDialog<bool>(
@@ -82,7 +60,7 @@ class _PendingShipmentsListState extends ConsumerState<PendingShipmentsList> {
       if (mounted) {
         context.showSuccessSnackBar('Shipment accepted successfully');
         // Refresh stats, pending shipments list, and main inventory
-        await ref.read(sellerDashboardControllerProvider).refreshAllData();
+        await refreshSellerDashboard(ref);
       }
     } catch (e) {
       // Handled automatically by ApiInterceptor
@@ -177,7 +155,7 @@ class _PendingShipmentsListState extends ConsumerState<PendingShipmentsList> {
                         final shipmentNum = shipment.shipmentNumber ?? '';
                         final totalProducts = shipment.items?.length ?? 0;
                         final totalQuantity = shipment.items?.fold<int>(0, (sum, item) => sum + (item.quantity ?? 0)) ?? 0;
-                        final timeAgo = _getTimeAgo(shipment.createdAt);
+                        final timeAgo = relativeTimeLabelFromString(shipment.createdAt);
 
                         return LayoutBuilder(
                           builder: (context, constraints) {
@@ -351,7 +329,7 @@ class _PendingShipmentsListState extends ConsumerState<PendingShipmentsList> {
                   ),
                   const SizedBox(height: 12),
                   ElevatedButton(
-                    onPressed: () => ref.read(sellerDashboardControllerProvider).refreshAllData(),
+                    onPressed: () => refreshSellerDashboard(ref),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primary,
                       minimumSize: const Size(120, 36),
