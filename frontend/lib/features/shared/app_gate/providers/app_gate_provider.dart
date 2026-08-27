@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../../../core/network/api_client_provider.dart';
@@ -106,7 +107,8 @@ class AppGateNotifier extends StateNotifier<AppGateState> {
         checked: true,
         isLoading: false,
       );
-    } catch (_) {
+    } catch (e, st) {
+      debugPrint('[AppGate] Error during check: $e\n$st');
       if (!mounted) return;
       // Fail-open: do not lock users out if status API is unreachable.
       state = AppGateState(
