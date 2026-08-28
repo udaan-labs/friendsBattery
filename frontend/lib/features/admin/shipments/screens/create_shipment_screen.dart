@@ -55,7 +55,6 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
 
   int? _selectedSellerId;
   DateTime? _dispatchDate;
-  DateTime? _expectedArrivalDate;
 
   final List<TransferRowState> _rows = [];
   int _expandedRow = 0;
@@ -301,28 +300,6 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
     if (picked != null && picked != _dispatchDate) {
       setState(() {
         _dispatchDate = picked;
-        if (_expectedArrivalDate != null && _expectedArrivalDate!.isBefore(picked)) {
-          _expectedArrivalDate = null;
-        }
-      });
-    }
-  }
-
-  Future<void> _selectArrivalDate(BuildContext context) async {
-    final today = DateTime.now();
-    final todayStart = DateTime(today.year, today.month, today.day);
-    final minDate = _dispatchDate ?? todayStart;
-
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _expectedArrivalDate ?? minDate,
-      firstDate: minDate,
-      lastDate: minDate.add(const Duration(days: 365)),
-    );
-
-    if (picked != null && picked != _expectedArrivalDate) {
-      setState(() {
-        _expectedArrivalDate = picked;
       });
     }
   }
@@ -337,10 +314,6 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
     }
     if (_dispatchDate == null) {
       context.showErrorSnackBar('Dispatch Date is required');
-      return;
-    }
-    if (_expectedArrivalDate == null) {
-      context.showErrorSnackBar('Expected Arrival Date is required');
       return;
     }
 
@@ -514,89 +487,35 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                                     )),
                           const SizedBox(height: 20),
 
-                          // Dates Row
-                          Builder(
-                            builder: (context) {
-                              final isNarrow = MediaQuery.of(context).size.width < 440;
-                              final datesContent = [
-                                // Dispatch Date
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Dispatch Date',
-                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    InkWell(
-                                      onTap: () => _selectDispatchDate(context),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
-                                        decoration: BoxDecoration(
-                                          border: Border.all(color: Colors.grey[400]!),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              _dispatchDate == null ? 'Select Date' : dateFormat.format(_dispatchDate!),
-                                              style: const TextStyle(fontSize: 14, color: Color(0xFF191C1E)),
-                                            ),
-                                            const Icon(Icons.calendar_today, size: 18, color: Color(0xFF586377)),
-                                          ],
-                                        ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Dispatch Date',
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
+                              ),
+                              const SizedBox(height: 8),
+                              InkWell(
+                                onTap: () => _selectDispatchDate(context),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.grey[400]!),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        _dispatchDate == null ? 'Select Date' : dateFormat.format(_dispatchDate!),
+                                        style: const TextStyle(fontSize: 14, color: Color(0xFF191C1E)),
                                       ),
-                                    ),
-                                  ],
+                                      const Icon(Icons.calendar_today, size: 18, color: Color(0xFF586377)),
+                                    ],
+                                  ),
                                 ),
-                                if (isNarrow) const SizedBox(height: 16) else const SizedBox(width: 16),
-                                // Expected Arrival Date
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Expected Arrival Date',
-                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF191C1E)),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    InkWell(
-                                      onTap: () => _selectArrivalDate(context),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
-                                        decoration: BoxDecoration(
-                                          border: Border.all(color: Colors.grey[400]!),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              _expectedArrivalDate == null ? 'Select Date' : dateFormat.format(_expectedArrivalDate!),
-                                              style: const TextStyle(fontSize: 14, color: Color(0xFF191C1E)),
-                                            ),
-                                            const Icon(Icons.calendar_today, size: 18, color: Color(0xFF586377)),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ];
-
-                              return isNarrow
-                                  ? Column(
-                                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                                      children: datesContent,
-                                    )
-                                  : Row(
-                                      children: [
-                                        Expanded(child: datesContent[0]),
-                                        const SizedBox(width: 16),
-                                        Expanded(child: datesContent[2]),
-                                      ],
-                                    );
-                            },
+                              ),
+                            ],
                           ),
                         ],
                       ),
