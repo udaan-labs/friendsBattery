@@ -13,6 +13,11 @@ Name | Type | Description | Notes
 **assignedLocationId** | **int** |  | [optional] 
 **checkInTime** | [**DateTime**](DateTime.md) |  | [optional] 
 **checkOutTime** | [**DateTime**](DateTime.md) |  | [optional] 
+**checkInLat** | **num** |  | [optional] 
+**checkInLng** | **num** |  | [optional] 
+**lastLat** | **num** |  | [optional] 
+**lastLng** | **num** |  | [optional] 
+**lastSeenAt** | [**DateTime**](DateTime.md) |  | [optional] 
 **status** | **String** |  | [optional] 
 **location** | [**AssignedLocation**](AssignedLocation.md) |  | [optional] 
 

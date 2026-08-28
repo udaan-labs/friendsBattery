@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/widgets/logout_dialog_helper.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
+import '../../attendance/attendance_location_pinger.dart';
 
 final employeeScaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -26,62 +27,67 @@ class EmployeeShellScreen extends ConsumerWidget {
       currentIndex = 3;
     }
 
-    return PopScope(
-      canPop: currentIndex == 0,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && currentIndex != 0) {
-          context.go('/employee/home');
-        }
-      },
-      child: Scaffold(
-        key: employeeScaffoldKey,
-        drawer: _EmployeeDrawer(currentLocation: location, ref: ref),
-        body: child,
-        bottomNavigationBar: !isDesktop
-            ? BottomNavigationBar(
-                currentIndex: currentIndex.clamp(0, 3),
-                type: BottomNavigationBarType.fixed,
-                backgroundColor: const Color(0xFFECEEF0),
-                selectedItemColor: const Color(0xFF16A34A),
-                unselectedItemColor: const Color(0xFF586377),
-                showUnselectedLabels: true,
-                selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
-                unselectedLabelStyle: const TextStyle(fontSize: 10),
-                onTap: (index) {
-                  if (index == 0) {
-                    context.go('/employee/home');
-                  } else if (index == 1) {
-                    context.go('/employee/inventory');
-                  } else if (index == 2) {
-                    context.go('/employee/attendance');
-                  } else if (index == 3) {
-                    context.go('/employee/shipments');
-                  }
-                },
-                items: const [
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.dashboard_outlined),
-                    activeIcon: Icon(Icons.dashboard_rounded),
-                    label: 'Dashboard',
+    return AttendanceLocationPinger(
+      child: PopScope(
+        canPop: currentIndex == 0,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop && currentIndex != 0) {
+            context.go('/employee/home');
+          }
+        },
+        child: Scaffold(
+          key: employeeScaffoldKey,
+          drawer: _EmployeeDrawer(currentLocation: location, ref: ref),
+          body: child,
+          bottomNavigationBar: !isDesktop
+              ? BottomNavigationBar(
+                  currentIndex: currentIndex.clamp(0, 3),
+                  type: BottomNavigationBarType.fixed,
+                  backgroundColor: const Color(0xFFECEEF0),
+                  selectedItemColor: const Color(0xFF16A34A),
+                  unselectedItemColor: const Color(0xFF586377),
+                  showUnselectedLabels: true,
+                  selectedLabelStyle: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11,
                   ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.inventory_2_outlined),
-                    activeIcon: Icon(Icons.inventory_2_rounded),
-                    label: 'Stock',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.fingerprint_outlined),
-                    activeIcon: Icon(Icons.fingerprint),
-                    label: 'Check-in',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.local_shipping_outlined),
-                    activeIcon: Icon(Icons.local_shipping_rounded),
-                    label: 'Shipments',
-                  ),
-                ],
-              )
-            : null,
+                  unselectedLabelStyle: const TextStyle(fontSize: 10),
+                  onTap: (index) {
+                    if (index == 0) {
+                      context.go('/employee/home');
+                    } else if (index == 1) {
+                      context.go('/employee/inventory');
+                    } else if (index == 2) {
+                      context.go('/employee/attendance');
+                    } else if (index == 3) {
+                      context.go('/employee/shipments');
+                    }
+                  },
+                  items: const [
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.dashboard_outlined),
+                      activeIcon: Icon(Icons.dashboard_rounded),
+                      label: 'Dashboard',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.inventory_2_outlined),
+                      activeIcon: Icon(Icons.inventory_2_rounded),
+                      label: 'Stock',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.fingerprint_outlined),
+                      activeIcon: Icon(Icons.fingerprint),
+                      label: 'Check-in',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.local_shipping_outlined),
+                      activeIcon: Icon(Icons.local_shipping_rounded),
+                      label: 'Shipments',
+                    ),
+                  ],
+                )
+              : null,
+        ),
       ),
     );
   }

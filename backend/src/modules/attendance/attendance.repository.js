@@ -83,6 +83,9 @@ class AttendanceRepository {
         checkInLat: lat != null ? lat : null,
         checkInLng: lng != null ? lng : null,
         checkInAddress: address || null,
+        lastLat: lat != null ? lat : null,
+        lastLng: lng != null ? lng : null,
+        lastSeenAt: new Date(),
         status: 'CHECKED_IN',
       },
       include: {
@@ -104,6 +107,28 @@ class AttendanceRepository {
         checkOutLng: lng != null ? lng : null,
         checkOutAddress: address || null,
         status: 'CHECKED_OUT',
+      },
+    });
+    if (result.count === 0) return null;
+    return prisma.employeeAttendance.findUnique({
+      where: { id: BigInt(attendanceId) },
+      include: {
+        assignedLocation: { select: LOCATION_SELECT },
+      },
+    });
+  }
+
+  async updateLastLocation(attendanceId, { lat, lng }) {
+    const result = await prisma.employeeAttendance.updateMany({
+      where: {
+        id: BigInt(attendanceId),
+        status: 'CHECKED_IN',
+        checkOutTime: null,
+      },
+      data: {
+        lastLat: lat,
+        lastLng: lng,
+        lastSeenAt: new Date(),
       },
     });
     if (result.count === 0) return null;

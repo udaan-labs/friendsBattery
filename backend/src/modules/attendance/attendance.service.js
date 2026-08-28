@@ -40,6 +40,9 @@ function mapAttendance(row) {
     check_out_lng: row.checkOutLng != null ? Number(row.checkOutLng) : null,
     check_in_address: row.checkInAddress ?? null,
     check_out_address: row.checkOutAddress ?? null,
+    last_lat: row.lastLat != null ? Number(row.lastLat) : null,
+    last_lng: row.lastLng != null ? Number(row.lastLng) : null,
+    last_seen_at: row.lastSeenAt?.toISOString() ?? null,
     status: row.status,
     location: mapLocation(row.assignedLocation),
   };
@@ -201,6 +204,30 @@ class AttendanceService {
       /* best-effort activity log */
     }
 
+    return mapAttendance(row);
+  }
+
+  async pingLocation(user, rawBody = {}) {
+    const open = await attendanceRepository.findOpenAttendance(user.id);
+    if (!open) fail('Not checked in', 400);
+
+    const { lat, lng } = normalizeGeoBody(rawBody);
+    if (lat == null || lng == null || Number.isNaN(lat) || Number.isNaN(lng)) {
+      fail('GPS coordinates are required', 400);
+    }
+
+    if (open.lastSeenAt) {
+      const elapsed = Date.now() - new Date(open.lastSeenAt).getTime();
+      if (elapsed < 15_000) {
+        return mapAttendance(open);
+      }
+    }
+
+    const row = await attendanceRepository.updateLastLocation(open.id, {
+      lat,
+      lng,
+    });
+    if (!row) fail('Not checked in', 400);
     return mapAttendance(row);
   }
 

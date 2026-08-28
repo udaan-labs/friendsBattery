@@ -19,6 +19,12 @@ class _$ApiEmployeeAttendanceCheckedInGet200ResponseDataInner
   @override
   final num? checkInLng;
   @override
+  final num? lastLat;
+  @override
+  final num? lastLng;
+  @override
+  final DateTime? lastSeenAt;
+  @override
   final String? status;
   @override
   final JsonObject? location;
@@ -39,6 +45,9 @@ class _$ApiEmployeeAttendanceCheckedInGet200ResponseDataInner
     this.checkInTime,
     this.checkInLat,
     this.checkInLng,
+    this.lastLat,
+    this.lastLng,
+    this.lastSeenAt,
     this.status,
     this.location,
     this.employee,
@@ -63,6 +72,9 @@ class _$ApiEmployeeAttendanceCheckedInGet200ResponseDataInner
         checkInTime == other.checkInTime &&
         checkInLat == other.checkInLat &&
         checkInLng == other.checkInLng &&
+        lastLat == other.lastLat &&
+        lastLng == other.lastLng &&
+        lastSeenAt == other.lastSeenAt &&
         status == other.status &&
         location == other.location &&
         employee == other.employee;
@@ -76,6 +88,9 @@ class _$ApiEmployeeAttendanceCheckedInGet200ResponseDataInner
     _$hash = $jc(_$hash, checkInTime.hashCode);
     _$hash = $jc(_$hash, checkInLat.hashCode);
     _$hash = $jc(_$hash, checkInLng.hashCode);
+    _$hash = $jc(_$hash, lastLat.hashCode);
+    _$hash = $jc(_$hash, lastLng.hashCode);
+    _$hash = $jc(_$hash, lastSeenAt.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, location.hashCode);
     _$hash = $jc(_$hash, employee.hashCode);
@@ -93,6 +108,9 @@ class _$ApiEmployeeAttendanceCheckedInGet200ResponseDataInner
           ..add('checkInTime', checkInTime)
           ..add('checkInLat', checkInLat)
           ..add('checkInLng', checkInLng)
+          ..add('lastLat', lastLat)
+          ..add('lastLng', lastLng)
+          ..add('lastSeenAt', lastSeenAt)
           ..add('status', status)
           ..add('location', location)
           ..add('employee', employee))
@@ -128,6 +146,18 @@ class ApiEmployeeAttendanceCheckedInGet200ResponseDataInnerBuilder
   num? get checkInLng => _$this._checkInLng;
   set checkInLng(num? checkInLng) => _$this._checkInLng = checkInLng;
 
+  num? _lastLat;
+  num? get lastLat => _$this._lastLat;
+  set lastLat(num? lastLat) => _$this._lastLat = lastLat;
+
+  num? _lastLng;
+  num? get lastLng => _$this._lastLng;
+  set lastLng(num? lastLng) => _$this._lastLng = lastLng;
+
+  DateTime? _lastSeenAt;
+  DateTime? get lastSeenAt => _$this._lastSeenAt;
+  set lastSeenAt(DateTime? lastSeenAt) => _$this._lastSeenAt = lastSeenAt;
+
   String? _status;
   String? get status => _$this._status;
   set status(String? status) => _$this._status = status;
@@ -152,6 +182,9 @@ class ApiEmployeeAttendanceCheckedInGet200ResponseDataInnerBuilder
       _checkInTime = $v.checkInTime;
       _checkInLat = $v.checkInLat;
       _checkInLng = $v.checkInLng;
+      _lastLat = $v.lastLat;
+      _lastLng = $v.lastLng;
+      _lastSeenAt = $v.lastSeenAt;
       _status = $v.status;
       _location = $v.location;
       _employee = $v.employee;
@@ -185,6 +218,9 @@ class ApiEmployeeAttendanceCheckedInGet200ResponseDataInnerBuilder
           checkInTime: checkInTime,
           checkInLat: checkInLat,
           checkInLng: checkInLng,
+          lastLat: lastLat,
+          lastLng: lastLng,
+          lastSeenAt: lastSeenAt,
           status: status,
           location: location,
           employee: employee,

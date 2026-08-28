@@ -76,6 +76,16 @@ class _$AttendanceRecord extends AttendanceRecord {
   @override
   final DateTime? checkOutTime;
   @override
+  final num? checkInLat;
+  @override
+  final num? checkInLng;
+  @override
+  final num? lastLat;
+  @override
+  final num? lastLng;
+  @override
+  final DateTime? lastSeenAt;
+  @override
   final AttendanceRecordStatusEnum? status;
   @override
   final AssignedLocation? location;
@@ -90,6 +100,11 @@ class _$AttendanceRecord extends AttendanceRecord {
     this.assignedLocationId,
     this.checkInTime,
     this.checkOutTime,
+    this.checkInLat,
+    this.checkInLng,
+    this.lastLat,
+    this.lastLng,
+    this.lastSeenAt,
     this.status,
     this.location,
   }) : super._();
@@ -110,6 +125,11 @@ class _$AttendanceRecord extends AttendanceRecord {
         assignedLocationId == other.assignedLocationId &&
         checkInTime == other.checkInTime &&
         checkOutTime == other.checkOutTime &&
+        checkInLat == other.checkInLat &&
+        checkInLng == other.checkInLng &&
+        lastLat == other.lastLat &&
+        lastLng == other.lastLng &&
+        lastSeenAt == other.lastSeenAt &&
         status == other.status &&
         location == other.location;
   }
@@ -122,6 +142,11 @@ class _$AttendanceRecord extends AttendanceRecord {
     _$hash = $jc(_$hash, assignedLocationId.hashCode);
     _$hash = $jc(_$hash, checkInTime.hashCode);
     _$hash = $jc(_$hash, checkOutTime.hashCode);
+    _$hash = $jc(_$hash, checkInLat.hashCode);
+    _$hash = $jc(_$hash, checkInLng.hashCode);
+    _$hash = $jc(_$hash, lastLat.hashCode);
+    _$hash = $jc(_$hash, lastLng.hashCode);
+    _$hash = $jc(_$hash, lastSeenAt.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, location.hashCode);
     _$hash = $jf(_$hash);
@@ -136,6 +161,11 @@ class _$AttendanceRecord extends AttendanceRecord {
           ..add('assignedLocationId', assignedLocationId)
           ..add('checkInTime', checkInTime)
           ..add('checkOutTime', checkOutTime)
+          ..add('checkInLat', checkInLat)
+          ..add('checkInLng', checkInLng)
+          ..add('lastLat', lastLat)
+          ..add('lastLng', lastLng)
+          ..add('lastSeenAt', lastSeenAt)
           ..add('status', status)
           ..add('location', location))
         .toString();
@@ -168,6 +198,26 @@ class AttendanceRecordBuilder
   set checkOutTime(DateTime? checkOutTime) =>
       _$this._checkOutTime = checkOutTime;
 
+  num? _checkInLat;
+  num? get checkInLat => _$this._checkInLat;
+  set checkInLat(num? checkInLat) => _$this._checkInLat = checkInLat;
+
+  num? _checkInLng;
+  num? get checkInLng => _$this._checkInLng;
+  set checkInLng(num? checkInLng) => _$this._checkInLng = checkInLng;
+
+  num? _lastLat;
+  num? get lastLat => _$this._lastLat;
+  set lastLat(num? lastLat) => _$this._lastLat = lastLat;
+
+  num? _lastLng;
+  num? get lastLng => _$this._lastLng;
+  set lastLng(num? lastLng) => _$this._lastLng = lastLng;
+
+  DateTime? _lastSeenAt;
+  DateTime? get lastSeenAt => _$this._lastSeenAt;
+  set lastSeenAt(DateTime? lastSeenAt) => _$this._lastSeenAt = lastSeenAt;
+
   AttendanceRecordStatusEnum? _status;
   AttendanceRecordStatusEnum? get status => _$this._status;
   set status(AttendanceRecordStatusEnum? status) => _$this._status = status;
@@ -190,6 +240,11 @@ class AttendanceRecordBuilder
       _assignedLocationId = $v.assignedLocationId;
       _checkInTime = $v.checkInTime;
       _checkOutTime = $v.checkOutTime;
+      _checkInLat = $v.checkInLat;
+      _checkInLng = $v.checkInLng;
+      _lastLat = $v.lastLat;
+      _lastLng = $v.lastLng;
+      _lastSeenAt = $v.lastSeenAt;
       _status = $v.status;
       _location = $v.location?.toBuilder();
       _$v = null;
@@ -221,6 +276,11 @@ class AttendanceRecordBuilder
             assignedLocationId: assignedLocationId,
             checkInTime: checkInTime,
             checkOutTime: checkOutTime,
+            checkInLat: checkInLat,
+            checkInLng: checkInLng,
+            lastLat: lastLat,
+            lastLng: lastLng,
+            lastSeenAt: lastSeenAt,
             status: status,
             location: _location?.build(),
           );

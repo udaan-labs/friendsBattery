@@ -223,8 +223,8 @@ class AttendanceApi {
     );
   }
 
-  /// List all currently checked-in employees (Admin / Super Admin)
-  /// Returns open attendance rows with check-in GPS and employee profile. §2 may re-scope Admin to own shop; Super Admin sees all. 
+  /// List currently checked-in employees (Admin / Super Admin / Seller)
+  /// Returns open attendance rows with last GPS (or check-in GPS) and employee profile. Super Admin: all. Shop Admin: own shop staff. Seller: employees at own location. 
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -291,6 +291,107 @@ class AttendanceApi {
     }
 
     return Response<ApiEmployeeAttendanceCheckedInGet200Response>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// Update last GPS while checked in (foreground ping)
+  /// Employee app-open ping. Does not run in background. No geofence reject — stores last known point for admin/seller map. Server ignores pings closer than 15 seconds apart. 
+  ///
+  /// Parameters:
+  /// * [attendanceGeoBody] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [ApiEmployeeAttendanceCheckInPost201Response] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<ApiEmployeeAttendanceCheckInPost201Response>> apiEmployeeAttendanceLocationPost({ 
+    required AttendanceGeoBody attendanceGeoBody,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/api/employee/attendance/location';
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AttendanceGeoBody);
+      _bodyData = _serializers.serialize(attendanceGeoBody, specifiedType: _type);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    ApiEmployeeAttendanceCheckInPost201Response? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(ApiEmployeeAttendanceCheckInPost201Response),
+      ) as ApiEmployeeAttendanceCheckInPost201Response;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<ApiEmployeeAttendanceCheckInPost201Response>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

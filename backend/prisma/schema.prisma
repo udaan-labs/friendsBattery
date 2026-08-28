@@ -227,6 +227,9 @@ model EmployeeAttendance {
   checkOutLng        Decimal?         @map("check_out_lng") @db.Decimal(10, 7)
   checkInAddress     String?          @map("check_in_address") @db.Text
   checkOutAddress    String?          @map("check_out_address") @db.Text
+  lastLat            Decimal?         @map("last_lat") @db.Decimal(10, 7)
+  lastLng            Decimal?         @map("last_lng") @db.Decimal(10, 7)
+  lastSeenAt         DateTime?        @map("last_seen_at") @db.Timestamp()
   status             AttendanceStatus @default(CHECKED_IN)
   createdAt          DateTime         @default(now()) @map("created_at") @db.Timestamp()
 

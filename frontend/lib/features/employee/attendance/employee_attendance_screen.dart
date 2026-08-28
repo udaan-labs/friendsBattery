@@ -133,7 +133,7 @@ class _EmployeeAttendanceScreenState
                     ),
                   const Spacer(),
                   const Text(
-                    'Check-in and check-out require GPS. You must be at your assigned shop or warehouse.',
+                    'Check-in requires GPS at your assigned shop. While checked in, a notification stays on so the map can update even if you leave the app. Check-out stops sharing.',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
                   ),

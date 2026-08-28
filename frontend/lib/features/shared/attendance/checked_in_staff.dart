@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,8 +11,11 @@ class CheckedInStaffItem {
   final int? id;
   final int? employeeId;
   final DateTime? checkInTime;
+  final DateTime? lastSeenAt;
   final num? checkInLat;
   final num? checkInLng;
+  final num? lastLat;
+  final num? lastLng;
   final CheckedInEmployee? employee;
   final CheckedInLocation? location;
 
@@ -18,13 +23,18 @@ class CheckedInStaffItem {
     this.id,
     this.employeeId,
     this.checkInTime,
+    this.lastSeenAt,
     this.checkInLat,
     this.checkInLng,
+    this.lastLat,
+    this.lastLng,
     this.employee,
     this.location,
   });
 
-  bool get hasGps => checkInLat != null && checkInLng != null;
+  num? get mapLat => lastLat ?? checkInLat;
+  num? get mapLng => lastLng ?? checkInLng;
+  bool get hasGps => mapLat != null && mapLng != null;
 }
 
 class CheckedInEmployee {
@@ -53,8 +63,7 @@ Map<String, dynamic>? _jsonObjectMap(Object? value) {
   return null;
 }
 
-final checkedInStaffProvider =
-    FutureProvider.autoDispose<List<CheckedInStaffItem>>((ref) async {
+Future<List<CheckedInStaffItem>> _fetchCheckedIn(Ref ref) async {
   final api = ref.watch(apiClientProvider).getAttendanceApi();
   final response = await api.apiEmployeeAttendanceCheckedInGet();
   final rows = response.data?.data?.toList() ?? [];
@@ -66,8 +75,11 @@ final checkedInStaffProvider =
       id: raw.id,
       employeeId: raw.employeeId,
       checkInTime: raw.checkInTime,
+      lastSeenAt: raw.lastSeenAt,
       checkInLat: raw.checkInLat,
       checkInLng: raw.checkInLng,
+      lastLat: raw.lastLat,
+      lastLng: raw.lastLng,
       employee: emp != null
           ? CheckedInEmployee(
               userName:
@@ -82,6 +94,13 @@ final checkedInStaffProvider =
           : null,
     );
   }).toList();
+}
+
+final checkedInStaffProvider =
+    StreamProvider.autoDispose<List<CheckedInStaffItem>>((ref) async* {
+  yield await _fetchCheckedIn(ref);
+  yield* Stream.periodic(const Duration(seconds: 45))
+      .asyncMap((_) => _fetchCheckedIn(ref));
 });
 
 class CheckedInMap extends StatelessWidget {
@@ -97,14 +116,14 @@ class CheckedInMap extends StatelessWidget {
 
     if (focusedItem != null && focusedItem!.hasGps) {
       center = LatLng(
-        focusedItem!.checkInLat!.toDouble(),
-        focusedItem!.checkInLng!.toDouble(),
+        focusedItem!.mapLat!.toDouble(),
+        focusedItem!.mapLng!.toDouble(),
       );
     }
 
     for (final r in rows) {
       if (!r.hasGps) continue;
-      final point = LatLng(r.checkInLat!.toDouble(), r.checkInLng!.toDouble());
+      final point = LatLng(r.mapLat!.toDouble(), r.mapLng!.toDouble());
       center ??= point;
       final name = r.employee?.userName ?? 'Staff #${r.employeeId}';
       final isFocused = focusedItem != null && r.id == focusedItem!.id;

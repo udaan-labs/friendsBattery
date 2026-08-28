@@ -48,6 +48,18 @@ class AttendanceController {
     }
   }
 
+  async pingLocation(req, res) {
+    try {
+      const data = await attendanceService.pingLocation(
+        { id: Number(req.user.id) },
+        req.body || {}
+      );
+      return successResponse(res, 200, 'Location updated', data);
+    } catch (error) {
+      return handleRouteError(res, error, 'Attendance location ping error:');
+    }
+  }
+
   async listCheckedIn(req, res) {
     try {
       const data = await attendanceService.listCheckedInStaff(req.user);

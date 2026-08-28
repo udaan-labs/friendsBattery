@@ -18,6 +18,11 @@ part 'attendance_record.g.dart';
 /// * [assignedLocationId] 
 /// * [checkInTime] 
 /// * [checkOutTime] 
+/// * [checkInLat] 
+/// * [checkInLng] 
+/// * [lastLat] 
+/// * [lastLng] 
+/// * [lastSeenAt] 
 /// * [status] 
 /// * [location] 
 @BuiltValue()
@@ -36,6 +41,21 @@ abstract class AttendanceRecord implements Built<AttendanceRecord, AttendanceRec
 
   @BuiltValueField(wireName: r'check_out_time')
   DateTime? get checkOutTime;
+
+  @BuiltValueField(wireName: r'check_in_lat')
+  num? get checkInLat;
+
+  @BuiltValueField(wireName: r'check_in_lng')
+  num? get checkInLng;
+
+  @BuiltValueField(wireName: r'last_lat')
+  num? get lastLat;
+
+  @BuiltValueField(wireName: r'last_lng')
+  num? get lastLng;
+
+  @BuiltValueField(wireName: r'last_seen_at')
+  DateTime? get lastSeenAt;
 
   @BuiltValueField(wireName: r'status')
   AttendanceRecordStatusEnum? get status;
@@ -99,6 +119,41 @@ class _$AttendanceRecordSerializer implements PrimitiveSerializer<AttendanceReco
       yield r'check_out_time';
       yield serializers.serialize(
         object.checkOutTime,
+        specifiedType: const FullType.nullable(DateTime),
+      );
+    }
+    if (object.checkInLat != null) {
+      yield r'check_in_lat';
+      yield serializers.serialize(
+        object.checkInLat,
+        specifiedType: const FullType.nullable(num),
+      );
+    }
+    if (object.checkInLng != null) {
+      yield r'check_in_lng';
+      yield serializers.serialize(
+        object.checkInLng,
+        specifiedType: const FullType.nullable(num),
+      );
+    }
+    if (object.lastLat != null) {
+      yield r'last_lat';
+      yield serializers.serialize(
+        object.lastLat,
+        specifiedType: const FullType.nullable(num),
+      );
+    }
+    if (object.lastLng != null) {
+      yield r'last_lng';
+      yield serializers.serialize(
+        object.lastLng,
+        specifiedType: const FullType.nullable(num),
+      );
+    }
+    if (object.lastSeenAt != null) {
+      yield r'last_seen_at';
+      yield serializers.serialize(
+        object.lastSeenAt,
         specifiedType: const FullType.nullable(DateTime),
       );
     }
@@ -175,6 +230,46 @@ class _$AttendanceRecordSerializer implements PrimitiveSerializer<AttendanceReco
           ) as DateTime?;
           if (valueDes == null) continue;
           result.checkOutTime = valueDes;
+          break;
+        case r'check_in_lat':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(num),
+          ) as num?;
+          if (valueDes == null) continue;
+          result.checkInLat = valueDes;
+          break;
+        case r'check_in_lng':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(num),
+          ) as num?;
+          if (valueDes == null) continue;
+          result.checkInLng = valueDes;
+          break;
+        case r'last_lat':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(num),
+          ) as num?;
+          if (valueDes == null) continue;
+          result.lastLat = valueDes;
+          break;
+        case r'last_lng':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(num),
+          ) as num?;
+          if (valueDes == null) continue;
+          result.lastLng = valueDes;
+          break;
+        case r'last_seen_at':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
+          if (valueDes == null) continue;
+          result.lastSeenAt = valueDes;
           break;
         case r'status':
           final valueDes = serializers.deserialize(

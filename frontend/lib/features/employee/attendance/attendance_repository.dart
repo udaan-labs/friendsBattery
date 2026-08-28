@@ -39,6 +39,12 @@ class AttendanceRepository {
 
   Future<bool> openAppSettings() => _location.openAppSettings();
 
+  Future<void> pingCoords(DeviceLocation device) async {
+    await _attendance.apiEmployeeAttendanceLocationPost(
+      attendanceGeoBody: _geoBody(device),
+    );
+  }
+
   Future<AttendanceRecord?> _submit(
     AssignedLocation? assigned, {
     required bool checkIn,
@@ -53,7 +59,15 @@ class AttendanceRepository {
           : await _attendance.apiEmployeeAttendanceCheckOutPost(
               attendanceGeoBody: body,
             );
-      return response.data?.data;
+      final row = response.data?.data;
+      if (checkIn) {
+        try {
+          await _location.requestShiftTracking();
+        } catch (_) {
+          /* still checked in; live map may only update while app is open */
+        }
+      }
+      return row;
     } catch (e) {
       throw Exception(_err(e, checkIn ? 'Check-in failed' : 'Check-out failed'));
     }

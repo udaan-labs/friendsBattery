@@ -214,7 +214,7 @@ Name | Type | Description  | Notes
 
 Transfer stock serials from admin to seller (Admin only)
 
-Moves existing AVAILABLE admin-owned product units to the seller immediately. Creates shipment record (status ACCEPTED), inventory_transactions (TRANSFERRED), and returns updated inventory counts. 
+Marks existing AVAILABLE admin-owned product units as IN_SHIPMENT. Creates shipment record (status PENDING) and inventory_transactions (SHIPPED). Ownership moves to seller when seller accepts the shipment. 
 
 ### Example
 ```dart

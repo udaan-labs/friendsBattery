@@ -17,6 +17,9 @@ part 'api_employee_attendance_checked_in_get200_response_data_inner.g.dart';
 /// * [checkInTime] 
 /// * [checkInLat] 
 /// * [checkInLng] 
+/// * [lastLat] 
+/// * [lastLng] 
+/// * [lastSeenAt] 
 /// * [status] 
 /// * [location] 
 /// * [employee] 
@@ -36,6 +39,15 @@ abstract class ApiEmployeeAttendanceCheckedInGet200ResponseDataInner implements 
 
   @BuiltValueField(wireName: r'check_in_lng')
   num? get checkInLng;
+
+  @BuiltValueField(wireName: r'last_lat')
+  num? get lastLat;
+
+  @BuiltValueField(wireName: r'last_lng')
+  num? get lastLng;
+
+  @BuiltValueField(wireName: r'last_seen_at')
+  DateTime? get lastSeenAt;
 
   @BuiltValueField(wireName: r'status')
   String? get status;
@@ -102,6 +114,27 @@ class _$ApiEmployeeAttendanceCheckedInGet200ResponseDataInnerSerializer implemen
       yield serializers.serialize(
         object.checkInLng,
         specifiedType: const FullType.nullable(num),
+      );
+    }
+    if (object.lastLat != null) {
+      yield r'last_lat';
+      yield serializers.serialize(
+        object.lastLat,
+        specifiedType: const FullType.nullable(num),
+      );
+    }
+    if (object.lastLng != null) {
+      yield r'last_lng';
+      yield serializers.serialize(
+        object.lastLng,
+        specifiedType: const FullType.nullable(num),
+      );
+    }
+    if (object.lastSeenAt != null) {
+      yield r'last_seen_at';
+      yield serializers.serialize(
+        object.lastSeenAt,
+        specifiedType: const FullType.nullable(DateTime),
       );
     }
     if (object.status != null) {
@@ -184,6 +217,30 @@ class _$ApiEmployeeAttendanceCheckedInGet200ResponseDataInnerSerializer implemen
           ) as num?;
           if (valueDes == null) continue;
           result.checkInLng = valueDes;
+          break;
+        case r'last_lat':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(num),
+          ) as num?;
+          if (valueDes == null) continue;
+          result.lastLat = valueDes;
+          break;
+        case r'last_lng':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(num),
+          ) as num?;
+          if (valueDes == null) continue;
+          result.lastLng = valueDes;
+          break;
+        case r'last_seen_at':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
+          if (valueDes == null) continue;
+          result.lastSeenAt = valueDes;
           break;
         case r'status':
           final valueDes = serializers.deserialize(

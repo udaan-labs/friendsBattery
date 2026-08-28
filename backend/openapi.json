@@ -371,6 +371,27 @@
             "format": "date-time",
             "nullable": true
           },
+          "check_in_lat": {
+            "type": "number",
+            "nullable": true
+          },
+          "check_in_lng": {
+            "type": "number",
+            "nullable": true
+          },
+          "last_lat": {
+            "type": "number",
+            "nullable": true
+          },
+          "last_lng": {
+            "type": "number",
+            "nullable": true
+          },
+          "last_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
           "status": {
             "type": "string",
             "enum": [
@@ -7025,10 +7046,63 @@
         }
       }
     },
+    "/api/employee/attendance/location": {
+      "post": {
+        "summary": "Update last GPS while checked in (foreground ping)",
+        "description": "Employee app-open ping. Does not run in background. No geofence reject —\nstores last known point for admin/seller map. Server ignores pings closer\nthan 15 seconds apart.\n",
+        "tags": [
+          "Attendance"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttendanceGeoBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Last location saved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AttendanceRecord"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not checked in or missing GPS"
+          },
+          "403": {
+            "description": "Employee only"
+          }
+        }
+      }
+    },
     "/api/employee/attendance/checked-in": {
       "get": {
-        "summary": "List all currently checked-in employees (Admin / Super Admin)",
-        "description": "Returns open attendance rows with check-in GPS and employee profile.\n§2 may re-scope Admin to own shop; Super Admin sees all.\n",
+        "summary": "List currently checked-in employees (Admin / Super Admin / Seller)",
+        "description": "Returns open attendance rows with last GPS (or check-in GPS) and employee profile.\nSuper Admin: all. Shop Admin: own shop staff. Seller: employees at own location.\n",
         "tags": [
           "Attendance"
         ],
@@ -7074,6 +7148,19 @@
                             "type": "number",
                             "nullable": true
                           },
+                          "last_lat": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "last_lng": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "last_seen_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "nullable": true
+                          },
                           "status": {
                             "type": "string"
                           },
@@ -7092,7 +7179,7 @@
             }
           },
           "403": {
-            "description": "Admin only"
+            "description": "Admin or Seller only"
           }
         }
       }

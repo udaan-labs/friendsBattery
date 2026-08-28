@@ -136,11 +136,56 @@ router.post(
 
 /**
  * @swagger
+ * /api/employee/attendance/location:
+ *   post:
+ *     summary: Update last GPS while checked in
+ *     description: |
+ *       Stores last known point for admin/seller map. No geofence reject.
+ *       Android foreground service / iOS background location may call this while
+ *       the app is not in the foreground. Server ignores pings closer than 15s.
+ *     tags: [Attendance]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/AttendanceGeoBody'
+ *     responses:
+ *       200:
+ *         description: Last location saved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/AttendanceRecord'
+ *       400:
+ *         description: Not checked in or missing GPS
+ *       403:
+ *         description: Employee only
+ */
+router.post(
+  '/location',
+  authenticate,
+  requireEmployee,
+  validateRequest(checkInSchema),
+  attendanceController.pingLocation.bind(attendanceController)
+);
+
+/**
+ * @swagger
  * /api/employee/attendance/checked-in:
  *   get:
  *     summary: List currently checked-in employees (Admin / Super Admin / Seller)
  *     description: |
- *       Returns open attendance rows with check-in GPS and employee profile.
+ *       Returns open attendance rows with last GPS (or check-in GPS) and employee profile.
  *       Super Admin: all. Shop Admin: own shop staff. Seller: employees at own location.
  *     tags: [Attendance]
  *     security:
@@ -174,6 +219,16 @@ router.post(
  *                         nullable: true
  *                       check_in_lng:
  *                         type: number
+ *                         nullable: true
+ *                       last_lat:
+ *                         type: number
+ *                         nullable: true
+ *                       last_lng:
+ *                         type: number
+ *                         nullable: true
+ *                       last_seen_at:
+ *                         type: string
+ *                         format: date-time
  *                         nullable: true
  *                       status:
  *                         type: string

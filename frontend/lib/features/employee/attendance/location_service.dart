@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart' as ph;
 
@@ -32,6 +33,15 @@ class LocationService {
     throw const LocationException(
       'Location permission was denied. Please allow location access to check in.',
     );
+  }
+
+  /// After when-in-use: request Always + notification so Android FGS / iOS background work.
+  Future<void> requestShiftTracking() async {
+    await ensureReady();
+    await ph.Permission.notification.request();
+    var always = await ph.Permission.locationAlways.status;
+    if (always.isGranted) return;
+    await ph.Permission.locationAlways.request();
   }
 
   Future<DeviceLocation> getCurrentLocation() async {
@@ -85,6 +95,50 @@ class LocationService {
           endLongitude: targetLongitude,
         ) <=
         allowedRadiusMeters;
+  }
+
+  /// Live updates while checked in (Android notification service / iOS background location).
+  Stream<DeviceLocation> watchShiftLocation() {
+    return Geolocator.getPositionStream(locationSettings: _shiftSettings).map(
+      (position) => DeviceLocation(
+        latitude: position.latitude,
+        longitude: position.longitude,
+        accuracy: position.accuracy,
+        timestamp: position.timestamp,
+      ),
+    );
+  }
+
+  static LocationSettings get _shiftSettings {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return AndroidSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 15,
+        intervalDuration: const Duration(seconds: 30),
+        foregroundNotificationConfig: const ForegroundNotificationConfig(
+          notificationTitle: 'Checked in',
+          notificationText:
+              'Sharing live location with your shop while you are on shift',
+          notificationChannelName: 'Shift location',
+          enableWakeLock: true,
+          setOngoing: true,
+        ),
+      );
+    }
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return AppleSettings(
+        accuracy: LocationAccuracy.high,
+        activityType: ActivityType.otherNavigation,
+        distanceFilter: 15,
+        pauseLocationUpdatesAutomatically: false,
+        showBackgroundLocationIndicator: true,
+        allowBackgroundLocationUpdates: true,
+      );
+    }
+    return const LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 15,
+    );
   }
 
   Future<bool> openAppSettings() => ph.openAppSettings();
