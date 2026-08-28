@@ -12,6 +12,9 @@ class SellerSaleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final formattedDate = formatAppDateTime(sale.soldAt);
+    final type = sale.saleType.toUpperCase();
+    // SERVICE/RENT ids are not sales_transactions — list card is the view.
+    final openSaleDetails = type != 'SERVICE' && type != 'RENT';
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: 8, horizontal: ResponsiveHelper.responsiveHorizontalMargin(context)),
@@ -31,9 +34,9 @@ class SellerSaleCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
-          onTap: () {
-            context.push('/seller/sales/${sale.id}');
-          },
+          onTap: openSaleDetails
+              ? () => context.push('/seller/sales/${sale.id}')
+              : null,
           child: Padding(
             padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
             child: Column(
@@ -175,27 +178,41 @@ class SellerSaleCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: ResponsiveHelper.isSmallPhone(context) ? 8 : 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF16A34A).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Text(
-                        'Completed',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF16A34A),
-                        ),
-                      ),
-                    ),
+                    _SaleTypeBadge(saleType: type),
                   ],
                 ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SaleTypeBadge extends StatelessWidget {
+  final String saleType;
+  const _SaleTypeBadge({required this.saleType});
+
+  @override
+  Widget build(BuildContext context) {
+    final (label, bg, fg) = switch (saleType) {
+      'SERVICE' => ('SERVICE BILL', const Color(0xFFF3E8FF), const Color(0xFF7E22CE)),
+      'RENT' => ('BATTERY RENT', const Color(0xFFE0F2FE), const Color(0xFF0369A1)),
+      'SCRAP' => ('SCRAP', const Color(0xFFFFF7ED), const Color(0xFFC2410C)),
+      'MECHANIC' => ('MECHANIC', const Color(0xFFEFF6FF), const Color(0xFF1D4ED8)),
+      _ => ('NORMAL', const Color(0xFFF0FDF4), const Color(0xFF15803D)),
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: fg.withValues(alpha: 0.2)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: fg),
       ),
     );
   }

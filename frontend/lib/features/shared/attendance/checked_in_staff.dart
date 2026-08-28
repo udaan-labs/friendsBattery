@@ -34,7 +34,16 @@ class CheckedInStaffItem {
 
   num? get mapLat => lastLat ?? checkInLat;
   num? get mapLng => lastLng ?? checkInLng;
-  bool get hasGps => mapLat != null && mapLng != null;
+  bool get hasGps {
+    final lat = mapLat?.toDouble();
+    final lng = mapLng?.toDouble();
+    return lat != null &&
+        lng != null &&
+        lat.isFinite &&
+        lng.isFinite &&
+        lat.abs() <= 90 &&
+        lng.abs() <= 180;
+  }
 }
 
 class CheckedInEmployee {
@@ -186,18 +195,30 @@ class CheckedInMap extends StatelessWidget {
       );
     }
 
-    return FlutterMap(
-      options: MapOptions(
-        initialCenter: center!,
-        initialZoom: 15,
-      ),
-      children: [
-        TileLayer(
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName: 'com.friendsbattery.app',
-        ),
-        MarkerLayer(markers: markers),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 1 || constraints.maxHeight < 1) {
+          return const SizedBox.expand();
+        }
+        return FlutterMap(
+          options: MapOptions(
+            initialCenter: center!,
+            initialZoom: 15,
+            minZoom: 3,
+            maxZoom: 18,
+          ),
+          children: [
+            TileLayer(
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              userAgentPackageName: 'com.friends.batteryapp',
+              keepBuffer: 0,
+              panBuffer: 0,
+              tileDisplay: const TileDisplay.instantaneous(),
+            ),
+            MarkerLayer(markers: markers),
+          ],
+        );
+      },
     );
   }
 }
