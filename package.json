@@ -2,6 +2,9 @@
   "name": "friends-battery-workspace",
   "version": "1.0.0",
   "scripts": {
+    "dev": ".\\dev.bat",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && flutter run --dart-define=ENV_FILE=.env.local",
     "gen": ".\\generate_api.bat",
     "build-models": "cd frontend/lib/api && dart pub get && dart run build_runner build --delete-conflicting-outputs",
     "tunnel": "node scripts/tunnel.js",

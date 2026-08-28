@@ -1,4 +1,5 @@
 const { prisma } = require('../../config/db');
+const ROLES = require('../../shared/constants/roles');
 
 const LOCATION_SELECT = {
   id: true,
@@ -34,15 +35,20 @@ class AttendanceRepository {
   }
 
   /**
-   * Open check-ins (SA: all · shop Admin: filter by employee parent/location).
-   * @param {{ employeeIds?: bigint[] }|null} [scopeFilter]
+   * Open check-ins (SA: all · shop Admin: employee ids · seller: locationId).
+   * @param {{ employeeIds?: bigint[], locationId?: number }|null} [scopeFilter]
    */
   async findAllOpenAttendances(scopeFilter = null) {
     const where = {
       status: 'CHECKED_IN',
       checkOutTime: null,
     };
-    if (scopeFilter?.employeeIds) {
+    if (scopeFilter?.locationId != null) {
+      where.employee = {
+        locationId: BigInt(scopeFilter.locationId),
+        role: ROLES.EMPLOYEE,
+      };
+    } else if (scopeFilter?.employeeIds) {
       if (scopeFilter.employeeIds.length === 0) {
         return [];
       }

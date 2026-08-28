@@ -4,6 +4,7 @@ import 'package:friends_battery_api/friends_battery_api.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/utils/app_formatters.dart';
 import '../../../../theme/app_theme.dart';
+import '../../../shared/attendance/checked_in_staff.dart';
 import '../../../shared/staff/providers/staff_providers.dart';
 import '../../../shared/staff/widgets/staff_member_group.dart';
 import '../../dashboard/screens/seller_shell_screen.dart';
@@ -115,8 +116,58 @@ class _EmployeeList extends StatelessWidget {
           icon: Icons.badge_rounded,
           members: employees,
           emptyLabel: 'No employees yet. Tap Add employee.',
+          onMemberTap: (m) {
+            final id = m.id;
+            if (id == null) return;
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => _EmployeeMapPage(
+                  employeeId: id,
+                  name: m.userName ?? 'Employee',
+                ),
+              ),
+            );
+          },
         ),
       ],
+    );
+  }
+}
+
+class _EmployeeMapPage extends ConsumerWidget {
+  const _EmployeeMapPage({required this.employeeId, required this.name});
+
+  final int employeeId;
+  final String name;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(checkedInStaffProvider);
+    return Scaffold(
+      backgroundColor: const Color(0xFFF7F9FB),
+      appBar: AppBar(
+        title: Text('Location: $name'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        foregroundColor: const Color(0xFF191C1E),
+      ),
+      body: async.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('$e')),
+        data: (rows) {
+          final match = rows.where((r) => r.employeeId == employeeId).firstOrNull;
+          if (match == null || !match.hasGps) {
+            return Center(
+              child: Text(
+                '$name is not checked in with GPS yet',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Color(0xFF586377)),
+              ),
+            );
+          }
+          return CheckedInMap(rows: [match], focusedItem: match);
+        },
+      ),
     );
   }
 }

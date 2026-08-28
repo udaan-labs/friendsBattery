@@ -6,6 +6,7 @@ const {
   resolveAdminShopScope,
   staffUserWhereForShopScope,
 } = require('../../shared/utils/shop-scope.util');
+const { isSeller } = require('../../shared/utils/role.util');
 
 function fail(message, statusCode, meta) {
   throw httpError(statusCode, message, meta);
@@ -204,20 +205,26 @@ class AttendanceService {
   }
 
   /**
-   * Admin / Super Admin: currently checked-in staff with last check-in GPS.
-   * SA: all. Shop Admin: employees under parent_id or same location_id.
+   * SA: all. Shop Admin: staff in shop scope. Seller: employees at own location_id.
    * @param {{ id: number, role: string, locationId?: number|null }} [user]
    */
   async listCheckedInStaff(user) {
-    const scope = resolveAdminShopScope(user || {});
     let scopeFilter = null;
-    if (scope?.kind === 'shop') {
-      const staffWhere = staffUserWhereForShopScope(scope);
-      const staff = await prisma.user.findMany({
-        where: staffWhere,
-        select: { id: true },
-      });
-      scopeFilter = { employeeIds: staff.map((s) => s.id) };
+    if (isSeller(user)) {
+      const locationId =
+        user.locationId != null ? Number(user.locationId) : null;
+      if (locationId == null || !Number.isFinite(locationId)) return [];
+      scopeFilter = { locationId };
+    } else {
+      const scope = resolveAdminShopScope(user || {});
+      if (scope?.kind === 'shop') {
+        const staffWhere = staffUserWhereForShopScope(scope);
+        const staff = await prisma.user.findMany({
+          where: staffWhere,
+          select: { id: true },
+        });
+        scopeFilter = { employeeIds: staff.map((s) => s.id) };
+      }
     }
 
     const rows = await attendanceRepository.findAllOpenAttendances(scopeFilter);

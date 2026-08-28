@@ -273,6 +273,7 @@ Env files via `--dart-define=ENV_FILE=.env.local` (or `.env.production`). Fronte
 
 | Script | Purpose |
 |--------|---------|
+| `npm run dev` | Launch backend (`nodemon`) + frontend (`flutter run`) from root |
 | `npm run gen` | Export swagger + generate Flutter API client |
 | `npm run build-models` | `build_runner` for API package only |
 | `npm run build-local` / `build-prod` | Release APKs with env file |

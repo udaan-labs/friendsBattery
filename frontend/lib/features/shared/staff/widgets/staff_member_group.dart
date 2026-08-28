@@ -17,6 +17,7 @@ class StaffMemberGroup extends StatelessWidget {
     this.onToggleActive,
     this.onMove,
     this.onChangePassword,
+    this.onMemberTap,
   });
 
   final String title;
@@ -31,6 +32,7 @@ class StaffMemberGroup extends StatelessWidget {
       onToggleActive;
   final Future<void> Function(ShopStaffMember member)? onMove;
   final Future<void> Function(ShopStaffMember member)? onChangePassword;
+  final void Function(ShopStaffMember member)? onMemberTap;
 
   @override
   Widget build(BuildContext context) {
@@ -92,6 +94,7 @@ class StaffMemberGroup extends StatelessWidget {
                 onToggleActive: onToggleActive,
                 onMove: onMove,
                 onChangePassword: onChangePassword,
+                onMemberTap: onMemberTap,
               ),
             ),
         ],
@@ -108,6 +111,7 @@ class _Tile extends StatelessWidget {
     this.onToggleActive,
     this.onMove,
     this.onChangePassword,
+    this.onMemberTap,
   });
 
   final ShopStaffMember member;
@@ -117,6 +121,7 @@ class _Tile extends StatelessWidget {
       onToggleActive;
   final Future<void> Function(ShopStaffMember member)? onMove;
   final Future<void> Function(ShopStaffMember member)? onChangePassword;
+  final void Function(ShopStaffMember member)? onMemberTap;
 
   Future<void> _toggle(BuildContext context) async {
     final cb = onToggleActive;
@@ -142,9 +147,7 @@ class _Tile extends StatelessWidget {
     final canChangePassword = onChangePassword != null && member.id != null;
     final hasMenu = canToggle || canMove || canChangePassword;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
+    final row = Row(
         children: [
           CircleAvatar(
             radius: 18,
@@ -259,7 +262,17 @@ class _Tile extends StatelessWidget {
               ],
             ),
         ],
-      ),
+      );
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: onMemberTap == null
+          ? row
+          : InkWell(
+              onTap: () => onMemberTap!(member),
+              borderRadius: BorderRadius.circular(8),
+              child: row,
+            ),
     );
   }
 }

@@ -5,7 +5,7 @@ const { checkInSchema, checkOutSchema } = require('./attendance.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
 const {
   requireEmployee,
-  requireAdmin,
+  requireAdminOrSeller,
 } = require('../../shared/middleware/role.middleware');
 const { validateRequest } = require('../../shared/middleware/validation.middleware');
 
@@ -138,10 +138,10 @@ router.post(
  * @swagger
  * /api/employee/attendance/checked-in:
  *   get:
- *     summary: List all currently checked-in employees (Admin / Super Admin)
+ *     summary: List currently checked-in employees (Admin / Super Admin / Seller)
  *     description: |
  *       Returns open attendance rows with check-in GPS and employee profile.
- *       §2 may re-scope Admin to own shop; Super Admin sees all.
+ *       Super Admin: all. Shop Admin: own shop staff. Seller: employees at own location.
  *     tags: [Attendance]
  *     security:
  *       - bearerAuth: []
@@ -182,12 +182,12 @@ router.post(
  *                       employee:
  *                         type: object
  *       403:
- *         description: Admin only
+ *         description: Admin or Seller only
  */
 router.get(
   '/checked-in',
   authenticate,
-  requireAdmin,
+  requireAdminOrSeller,
   attendanceController.listCheckedIn.bind(attendanceController)
 );
 

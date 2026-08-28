@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:latlong2/latlong.dart';
-import '../../../../core/network/api_client_provider.dart';
 import '../../../../theme/app_theme.dart';
+import '../../../shared/attendance/checked_in_staff.dart';
 
 /// Super Admin / Admin: employees currently checked in + check-in GPS.
 class CheckedInStaffScreen extends ConsumerStatefulWidget {
@@ -147,7 +145,7 @@ class _CheckedInStaffScreenState extends ConsumerState<CheckedInStaffScreen> {
           if (_showMap) {
             return Stack(
               children: [
-                _CheckedInMap(rows: filtered, focusedItem: _focusedStaff),
+                CheckedInMap(rows: filtered, focusedItem: _focusedStaff),
                 if (_focusedStaff != null)
                   Positioned(
                     top: 16,
@@ -177,7 +175,7 @@ class _CheckedInStaffScreenState extends ConsumerState<CheckedInStaffScreen> {
                 final loc = r.location?.name ?? r.location?.code ?? '—';
                 final when = r.checkInTime?.toLocal().toString().substring(0, 16) ??
                     '—';
-                final hasGps = r.checkInLat != null && r.checkInLng != null;
+                final hasGps = r.hasGps;
                 return Card(
                   elevation: 0,
                   shape: RoundedRectangleBorder(
@@ -234,175 +232,3 @@ class _CheckedInStaffScreenState extends ConsumerState<CheckedInStaffScreen> {
     );
   }
 }
-
-class _CheckedInMap extends StatelessWidget {
-  const _CheckedInMap({required this.rows, this.focusedItem});
-
-  final List<CheckedInStaffItem> rows;
-  final CheckedInStaffItem? focusedItem;
-
-  @override
-  Widget build(BuildContext context) {
-    final markers = <Marker>[];
-    LatLng? center;
-
-    if (focusedItem != null &&
-        focusedItem!.checkInLat != null &&
-        focusedItem!.checkInLng != null) {
-      center = LatLng(
-        focusedItem!.checkInLat!.toDouble(),
-        focusedItem!.checkInLng!.toDouble(),
-      );
-    }
-
-    for (final r in rows) {
-      final lat = r.checkInLat;
-      final lng = r.checkInLng;
-      if (lat == null || lng == null) continue;
-      final point = LatLng(lat.toDouble(), lng.toDouble());
-      center ??= point;
-      final name = r.employee?.userName ?? 'Staff #${r.employeeId}';
-      final isFocused = focusedItem != null && r.id == focusedItem!.id;
-
-      markers.add(
-        Marker(
-          point: point,
-          width: isFocused ? 140 : 120,
-          height: isFocused ? 70 : 60,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: isFocused ? const Color(0xFF006B2C) : const Color(0xFF1E293B),
-                  borderRadius: BorderRadius.circular(8),
-                  border: isFocused ? Border.all(color: Colors.amber, width: 2) : null,
-                  boxShadow: const [
-                    BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2)),
-                  ],
-                ),
-                child: Text(
-                  name,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: isFocused ? 12 : 11,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-              ),
-              Icon(
-                Icons.location_on,
-                color: isFocused ? Colors.amber : const Color(0xFF006B2C),
-                size: isFocused ? 34 : 28,
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (markers.isEmpty) {
-      return const Center(
-        child: Text(
-          'No GPS coordinates on check-in yet',
-          style: TextStyle(color: Color(0xFF586377)),
-        ),
-      );
-    }
-
-    return FlutterMap(
-      options: MapOptions(
-        initialCenter: center!,
-        initialZoom: 13,
-      ),
-      children: [
-        TileLayer(
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName: 'com.friendsbattery.app',
-        ),
-        MarkerLayer(markers: markers),
-      ],
-    );
-  }
-}
-
-/// Presentation row mapped from OpenAPI checked-in payload.
-class CheckedInStaffItem {
-  final int? id;
-  final int? employeeId;
-  final DateTime? checkInTime;
-  final num? checkInLat;
-  final num? checkInLng;
-  final CheckedInEmployee? employee;
-  final CheckedInLocation? location;
-
-  CheckedInStaffItem({
-    this.id,
-    this.employeeId,
-    this.checkInTime,
-    this.checkInLat,
-    this.checkInLng,
-    this.employee,
-    this.location,
-  });
-}
-
-class CheckedInEmployee {
-  final String? userName;
-  CheckedInEmployee({this.userName});
-}
-
-class CheckedInLocation {
-  final String? name;
-  final String? code;
-  CheckedInLocation({this.name, this.code});
-}
-
-Map<String, dynamic>? _jsonObjectMap(Object? value) {
-  if (value == null) return null;
-  if (value is Map<String, dynamic>) return value;
-  if (value is Map) {
-    return value.map((k, v) => MapEntry(k.toString(), v));
-  }
-  // built_value JsonObject
-  try {
-    final v = (value as dynamic).value;
-    if (v is Map) {
-      return v.map((k, val) => MapEntry(k.toString(), val));
-    }
-  } catch (_) {}
-  return null;
-}
-
-final checkedInStaffProvider =
-    FutureProvider.autoDispose<List<CheckedInStaffItem>>((ref) async {
-  final api = ref.watch(apiClientProvider).getAttendanceApi();
-  final response = await api.apiEmployeeAttendanceCheckedInGet();
-  final rows = response.data?.data?.toList() ?? [];
-
-  return rows.map((raw) {
-    final emp = _jsonObjectMap(raw.employee);
-    final loc = _jsonObjectMap(raw.location);
-    return CheckedInStaffItem(
-      id: raw.id,
-      employeeId: raw.employeeId,
-      checkInTime: raw.checkInTime,
-      checkInLat: raw.checkInLat,
-      checkInLng: raw.checkInLng,
-      employee: emp != null
-          ? CheckedInEmployee(
-              userName: emp['user_name']?.toString() ?? emp['userName']?.toString(),
-            )
-          : null,
-      location: loc != null
-          ? CheckedInLocation(
-              name: loc['name']?.toString(),
-              code: loc['code']?.toString(),
-            )
-          : null,
-    );
-  }).toList();
-});
