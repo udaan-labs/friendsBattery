@@ -82,6 +82,8 @@ class SalesRepository {
           serialNumber: saleData.serialNumber,
           vehicleNumber: saleData.vehicleNumber,
           saleType: saleData.saleType,
+          paymentMode: saleData.paymentMode || 'CASH',
+          amountPaid: saleData.amountPaid ?? 0,
           scrapSerial: saleData.scrapSerial ?? null,
         },
       });
@@ -114,6 +116,7 @@ class SalesRepository {
         amount: data.amount,
         vehicleNumber: data.vehicleNumber ?? null,
         place: data.place ?? null,
+        paymentMode: data.paymentMode || 'CASH',
       },
     });
   }
@@ -146,6 +149,7 @@ class SalesRepository {
           customerId: rentData.customerId != null ? BigInt(rentData.customerId) : null,
           serialNumber: rentData.serialNumber,
           deposit: rentData.deposit,
+          paymentMode: rentData.paymentMode || 'CASH',
           status: 'OUT',
         },
       });
@@ -171,6 +175,7 @@ class SalesRepository {
         serialNumber: { equals: clean, mode: 'insensitive' },
         status: 'OUT',
       },
+      include: { customer: { select: { name: true, phone: true } } },
       orderBy: { rentedAt: 'desc' },
     });
   }
@@ -282,7 +287,7 @@ class SalesRepository {
       where: { id: transactionId },
       include: {
         customer: true,
-        seller: { select: { id: true, userName: true, shopName: true } },
+        seller: { select: { id: true, userName: true, shopName: true, locationId: true } },
         product: {
           include: {
             productName: true,
@@ -296,12 +301,55 @@ class SalesRepository {
   /**
    * Fetch complete purchase history for a customer mobile
    */
+  _unpaidWhere(unpaid) {
+    if (!unpaid) return {};
+    return {
+      paymentMode: 'CREDIT',
+      amountPaid: { lt: prisma.salesTransaction.fields.sellPrice },
+    };
+  }
+
+  async addSalePayment(transactionId, amount) {
+    const amt = Number(amount);
+    return prisma.$transaction(async (tx) => {
+      const sale = await tx.salesTransaction.findUnique({
+        where: { id: BigInt(transactionId) },
+      });
+      if (!sale) throw httpError(404, 'Transaction not found');
+      if ((sale.paymentMode || 'CASH') !== 'CREDIT') {
+        throw httpError(400, 'Only credit sales can receive a payment');
+      }
+      const sellPrice = Number(sale.sellPrice);
+      const paid = Number(sale.amountPaid ?? 0);
+      const due = Math.max(0, sellPrice - paid);
+      if (due <= 0) throw httpError(400, 'This sale is already fully paid');
+      if (amt > due) {
+        throw httpError(400, `Amount cannot exceed remaining due (₹${due})`);
+      }
+      const nextPaid = Math.round((paid + amt) * 100) / 100;
+      const n = await tx.salesTransaction.updateMany({
+        where: {
+          id: sale.id,
+          paymentMode: 'CREDIT',
+          amountPaid: sale.amountPaid,
+        },
+        data: { amountPaid: nextPaid },
+      });
+      if (n.count !== 1) {
+        throw httpError(409, 'Payment was updated by someone else. Try again.');
+      }
+    });
+  }
+
   async getSalesHistoryBySeller(sellerId, filters, pagination) {
-    const { searchCustomer, searchSerial, fromDate, toDate } = filters;
+    const { searchCustomer, searchSerial, fromDate, toDate, paymentMode, unpaid, locationId } =
+      filters;
     const { skip, take } = pagination;
 
     const whereClause = {
-      sellerId: BigInt(sellerId),
+      ...(locationId != null
+        ? { seller: { locationId: BigInt(locationId) } }
+        : { sellerId: BigInt(sellerId) }),
       ...(searchCustomer && {
         customer: {
           name: {
@@ -323,6 +371,7 @@ class SalesRepository {
             lte: new Date(toDate),
           },
         }),
+      ...(unpaid ? this._unpaidWhere(true) : paymentMode ? { paymentMode } : {}),
     };
 
     return prisma.salesTransaction.findMany({
@@ -385,9 +434,15 @@ class SalesRepository {
    * Build WHERE clause for admin sales history queries
    */
   _buildAdminWhereClause(filters) {
-    const { search, sellerId, sellerIds, fromDate, toDate, shipmentStatus } = filters;
+    const { search, fromDate, toDate, shipmentStatus, saleType, paymentMode } = filters;
 
     const where = this._sellerScopeWhere(filters);
+
+    if (saleType && saleType !== 'SERVICE' && saleType !== 'RENT') {
+      where.saleType = saleType;
+    }
+    if (filters.unpaid) Object.assign(where, this._unpaidWhere(true));
+    else if (paymentMode) where.paymentMode = paymentMode;
 
     if (fromDate || toDate) {
       where.soldAt = {};
@@ -490,19 +545,24 @@ class SalesRepository {
    * Fetch Service Bills for Admin history
    */
   _sellerScopeWhere(filters) {
-    const { sellerId, sellerIds } = filters || {};
-    if (sellerId) return { sellerId: BigInt(sellerId) };
-    if (sellerIds && Array.isArray(sellerIds)) {
-      return { sellerId: { in: sellerIds.map((id) => BigInt(id)) } };
+    const { sellerId, sellerIds, locationId } = filters || {};
+    const where = {};
+    if (sellerId) where.sellerId = BigInt(sellerId);
+    else if (sellerIds && Array.isArray(sellerIds)) {
+      where.sellerId = { in: sellerIds.map((id) => BigInt(id)) };
     }
-    return {};
+    if (locationId) {
+      where.seller = { locationId: BigInt(locationId) };
+    }
+    return where;
   }
 
   /**
    * Fetch Service Bills for Admin history
    */
-  async getAdminServiceBills(filters) {
+  async getAdminServiceBills(filters, take = 100) {
     const where = this._sellerScopeWhere(filters);
+    if (filters.paymentMode) where.paymentMode = filters.paymentMode;
     if (filters.fromDate || filters.toDate) {
       where.createdAt = {};
       if (filters.fromDate) where.createdAt.gte = new Date(filters.fromDate);
@@ -525,29 +585,35 @@ class SalesRepository {
         seller: { select: { id: true, userName: true, shopName: true } },
       },
       orderBy: { createdAt: 'desc' },
-      take: 100,
+      take,
     });
   }
 
   /**
    * Fetch Battery Rents for Admin history
    */
-  async getAdminBatteryRents(filters) {
+  async getAdminBatteryRents(filters, take = 100) {
     const where = this._sellerScopeWhere(filters);
+    if (filters.paymentMode) where.paymentMode = filters.paymentMode;
+    const and = [];
     if (filters.fromDate || filters.toDate) {
-      where.rentedAt = {};
-      if (filters.fromDate) where.rentedAt.gte = new Date(filters.fromDate);
-      if (filters.toDate) where.rentedAt.lte = new Date(filters.toDate);
+      const range = {};
+      if (filters.fromDate) range.gte = new Date(filters.fromDate);
+      if (filters.toDate) range.lte = new Date(filters.toDate);
+      and.push({ OR: [{ rentedAt: range }, { returnedAt: range }] });
     }
     if (filters.search && filters.search.trim().length > 0) {
       const clean = this._sanitizeSearch(filters.search);
-      where.OR = [
-        { customer: { name: { contains: clean, mode: 'insensitive' } } },
-        { seller: { userName: { contains: clean, mode: 'insensitive' } } },
-        { seller: { shopName: { contains: clean, mode: 'insensitive' } } },
-        { serialNumber: { contains: clean, mode: 'insensitive' } },
-      ];
+      and.push({
+        OR: [
+          { customer: { name: { contains: clean, mode: 'insensitive' } } },
+          { seller: { userName: { contains: clean, mode: 'insensitive' } } },
+          { seller: { shopName: { contains: clean, mode: 'insensitive' } } },
+          { serialNumber: { contains: clean, mode: 'insensitive' } },
+        ],
+      });
     }
+    if (and.length) where.AND = and;
     return prisma.batteryRent.findMany({
       where,
       include: {
@@ -555,7 +621,7 @@ class SalesRepository {
         seller: { select: { id: true, userName: true, shopName: true } },
       },
       orderBy: { rentedAt: 'desc' },
-      take: 100,
+      take,
     });
   }
 }

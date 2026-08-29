@@ -44,9 +44,44 @@ _$adminSaleRecordSaleTypeEnumValues =
       _$adminSaleRecordSaleTypeEnum_RENT,
     ]);
 
+const AdminSaleRecordPaymentModeEnum _$adminSaleRecordPaymentModeEnum_CASH =
+    const AdminSaleRecordPaymentModeEnum._('CASH');
+const AdminSaleRecordPaymentModeEnum _$adminSaleRecordPaymentModeEnum_ONLINE =
+    const AdminSaleRecordPaymentModeEnum._('ONLINE');
+const AdminSaleRecordPaymentModeEnum _$adminSaleRecordPaymentModeEnum_CREDIT =
+    const AdminSaleRecordPaymentModeEnum._('CREDIT');
+
+AdminSaleRecordPaymentModeEnum _$adminSaleRecordPaymentModeEnumValueOf(
+  String name,
+) {
+  switch (name) {
+    case 'CASH':
+      return _$adminSaleRecordPaymentModeEnum_CASH;
+    case 'ONLINE':
+      return _$adminSaleRecordPaymentModeEnum_ONLINE;
+    case 'CREDIT':
+      return _$adminSaleRecordPaymentModeEnum_CREDIT;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<AdminSaleRecordPaymentModeEnum>
+_$adminSaleRecordPaymentModeEnumValues =
+    BuiltSet<AdminSaleRecordPaymentModeEnum>(
+      const <AdminSaleRecordPaymentModeEnum>[
+        _$adminSaleRecordPaymentModeEnum_CASH,
+        _$adminSaleRecordPaymentModeEnum_ONLINE,
+        _$adminSaleRecordPaymentModeEnum_CREDIT,
+      ],
+    );
+
 Serializer<AdminSaleRecordSaleTypeEnum>
 _$adminSaleRecordSaleTypeEnumSerializer =
     _$AdminSaleRecordSaleTypeEnumSerializer();
+Serializer<AdminSaleRecordPaymentModeEnum>
+_$adminSaleRecordPaymentModeEnumSerializer =
+    _$AdminSaleRecordPaymentModeEnumSerializer();
 
 class _$AdminSaleRecordSaleTypeEnumSerializer
     implements PrimitiveSerializer<AdminSaleRecordSaleTypeEnum> {
@@ -87,6 +122,41 @@ class _$AdminSaleRecordSaleTypeEnumSerializer
   );
 }
 
+class _$AdminSaleRecordPaymentModeEnumSerializer
+    implements PrimitiveSerializer<AdminSaleRecordPaymentModeEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'CASH': 'CASH',
+    'ONLINE': 'ONLINE',
+    'CREDIT': 'CREDIT',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'CASH': 'CASH',
+    'ONLINE': 'ONLINE',
+    'CREDIT': 'CREDIT',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[AdminSaleRecordPaymentModeEnum];
+  @override
+  final String wireName = 'AdminSaleRecordPaymentModeEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    AdminSaleRecordPaymentModeEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  AdminSaleRecordPaymentModeEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => AdminSaleRecordPaymentModeEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$AdminSaleRecord extends AdminSaleRecord {
   @override
   final int? id;
@@ -102,6 +172,12 @@ class _$AdminSaleRecord extends AdminSaleRecord {
   final String? vehicleNumber;
   @override
   final AdminSaleRecordSaleTypeEnum? saleType;
+  @override
+  final AdminSaleRecordPaymentModeEnum? paymentMode;
+  @override
+  final num? amountPaid;
+  @override
+  final num? amountDue;
   @override
   final String? scrapSerial;
   @override
@@ -132,6 +208,9 @@ class _$AdminSaleRecord extends AdminSaleRecord {
     this.serialNumber,
     this.vehicleNumber,
     this.saleType,
+    this.paymentMode,
+    this.amountPaid,
+    this.amountDue,
     this.scrapSerial,
     this.serviceType,
     this.rentStatus,
@@ -160,6 +239,9 @@ class _$AdminSaleRecord extends AdminSaleRecord {
         serialNumber == other.serialNumber &&
         vehicleNumber == other.vehicleNumber &&
         saleType == other.saleType &&
+        paymentMode == other.paymentMode &&
+        amountPaid == other.amountPaid &&
+        amountDue == other.amountDue &&
         scrapSerial == other.scrapSerial &&
         serviceType == other.serviceType &&
         rentStatus == other.rentStatus &&
@@ -181,6 +263,9 @@ class _$AdminSaleRecord extends AdminSaleRecord {
     _$hash = $jc(_$hash, serialNumber.hashCode);
     _$hash = $jc(_$hash, vehicleNumber.hashCode);
     _$hash = $jc(_$hash, saleType.hashCode);
+    _$hash = $jc(_$hash, paymentMode.hashCode);
+    _$hash = $jc(_$hash, amountPaid.hashCode);
+    _$hash = $jc(_$hash, amountDue.hashCode);
     _$hash = $jc(_$hash, scrapSerial.hashCode);
     _$hash = $jc(_$hash, serviceType.hashCode);
     _$hash = $jc(_$hash, rentStatus.hashCode);
@@ -204,6 +289,9 @@ class _$AdminSaleRecord extends AdminSaleRecord {
           ..add('serialNumber', serialNumber)
           ..add('vehicleNumber', vehicleNumber)
           ..add('saleType', saleType)
+          ..add('paymentMode', paymentMode)
+          ..add('amountPaid', amountPaid)
+          ..add('amountDue', amountDue)
           ..add('scrapSerial', scrapSerial)
           ..add('serviceType', serviceType)
           ..add('rentStatus', rentStatus)
@@ -250,6 +338,19 @@ class AdminSaleRecordBuilder
   AdminSaleRecordSaleTypeEnum? get saleType => _$this._saleType;
   set saleType(AdminSaleRecordSaleTypeEnum? saleType) =>
       _$this._saleType = saleType;
+
+  AdminSaleRecordPaymentModeEnum? _paymentMode;
+  AdminSaleRecordPaymentModeEnum? get paymentMode => _$this._paymentMode;
+  set paymentMode(AdminSaleRecordPaymentModeEnum? paymentMode) =>
+      _$this._paymentMode = paymentMode;
+
+  num? _amountPaid;
+  num? get amountPaid => _$this._amountPaid;
+  set amountPaid(num? amountPaid) => _$this._amountPaid = amountPaid;
+
+  num? _amountDue;
+  num? get amountDue => _$this._amountDue;
+  set amountDue(num? amountDue) => _$this._amountDue = amountDue;
 
   String? _scrapSerial;
   String? get scrapSerial => _$this._scrapSerial;
@@ -304,6 +405,9 @@ class AdminSaleRecordBuilder
       _serialNumber = $v.serialNumber;
       _vehicleNumber = $v.vehicleNumber;
       _saleType = $v.saleType;
+      _paymentMode = $v.paymentMode;
+      _amountPaid = $v.amountPaid;
+      _amountDue = $v.amountDue;
       _scrapSerial = $v.scrapSerial;
       _serviceType = $v.serviceType;
       _rentStatus = $v.rentStatus;
@@ -344,6 +448,9 @@ class AdminSaleRecordBuilder
             serialNumber: serialNumber,
             vehicleNumber: vehicleNumber,
             saleType: saleType,
+            paymentMode: paymentMode,
+            amountPaid: amountPaid,
+            amountDue: amountDue,
             scrapSerial: scrapSerial,
             serviceType: serviceType,
             rentStatus: rentStatus,

@@ -22,6 +22,9 @@ part 'sale_record.g.dart';
 /// * [serialNumber] 
 /// * [vehicleNumber] 
 /// * [saleType] 
+/// * [paymentMode] 
+/// * [amountPaid] 
+/// * [amountDue] 
 /// * [scrapSerial] 
 /// * [serviceType] 
 /// * [rentStatus] 
@@ -55,6 +58,16 @@ abstract class SaleRecord implements Built<SaleRecord, SaleRecordBuilder> {
   @BuiltValueField(wireName: r'sale_type')
   SaleRecordSaleTypeEnum? get saleType;
   // enum saleTypeEnum {  NORMAL,  SCRAP,  MECHANIC,  SERVICE,  RENT,  };
+
+  @BuiltValueField(wireName: r'payment_mode')
+  SaleRecordPaymentModeEnum? get paymentMode;
+  // enum paymentModeEnum {  CASH,  ONLINE,  CREDIT,  };
+
+  @BuiltValueField(wireName: r'amount_paid')
+  num? get amountPaid;
+
+  @BuiltValueField(wireName: r'amount_due')
+  num? get amountDue;
 
   @BuiltValueField(wireName: r'scrap_serial')
   String? get scrapSerial;
@@ -156,6 +169,27 @@ class _$SaleRecordSerializer implements PrimitiveSerializer<SaleRecord> {
       yield serializers.serialize(
         object.saleType,
         specifiedType: const FullType(SaleRecordSaleTypeEnum),
+      );
+    }
+    if (object.paymentMode != null) {
+      yield r'payment_mode';
+      yield serializers.serialize(
+        object.paymentMode,
+        specifiedType: const FullType(SaleRecordPaymentModeEnum),
+      );
+    }
+    if (object.amountPaid != null) {
+      yield r'amount_paid';
+      yield serializers.serialize(
+        object.amountPaid,
+        specifiedType: const FullType(num),
+      );
+    }
+    if (object.amountDue != null) {
+      yield r'amount_due';
+      yield serializers.serialize(
+        object.amountDue,
+        specifiedType: const FullType(num),
       );
     }
     if (object.scrapSerial != null) {
@@ -301,6 +335,27 @@ class _$SaleRecordSerializer implements PrimitiveSerializer<SaleRecord> {
           ) as SaleRecordSaleTypeEnum;
           result.saleType = valueDes;
           break;
+        case r'payment_mode':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(SaleRecordPaymentModeEnum),
+          ) as SaleRecordPaymentModeEnum;
+          result.paymentMode = valueDes;
+          break;
+        case r'amount_paid':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(num),
+          ) as num;
+          result.amountPaid = valueDes;
+          break;
+        case r'amount_due':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(num),
+          ) as num;
+          result.amountDue = valueDes;
+          break;
         case r'scrap_serial':
           final valueDes = serializers.deserialize(
             value,
@@ -424,5 +479,22 @@ class SaleRecordSaleTypeEnum extends EnumClass {
 
   static BuiltSet<SaleRecordSaleTypeEnum> get values => _$saleRecordSaleTypeEnumValues;
   static SaleRecordSaleTypeEnum valueOf(String name) => _$saleRecordSaleTypeEnumValueOf(name);
+}
+
+class SaleRecordPaymentModeEnum extends EnumClass {
+
+  @BuiltValueEnumConst(wireName: r'CASH')
+  static const SaleRecordPaymentModeEnum CASH = _$saleRecordPaymentModeEnum_CASH;
+  @BuiltValueEnumConst(wireName: r'ONLINE')
+  static const SaleRecordPaymentModeEnum ONLINE = _$saleRecordPaymentModeEnum_ONLINE;
+  @BuiltValueEnumConst(wireName: r'CREDIT')
+  static const SaleRecordPaymentModeEnum CREDIT = _$saleRecordPaymentModeEnum_CREDIT;
+
+  static Serializer<SaleRecordPaymentModeEnum> get serializer => _$saleRecordPaymentModeEnumSerializer;
+
+  const SaleRecordPaymentModeEnum._(String name): super(name);
+
+  static BuiltSet<SaleRecordPaymentModeEnum> get values => _$saleRecordPaymentModeEnumValues;
+  static SaleRecordPaymentModeEnum valueOf(String name) => _$saleRecordPaymentModeEnumValueOf(name);
 }
 

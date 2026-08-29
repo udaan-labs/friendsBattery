@@ -18,8 +18,11 @@ class TransfersRepository {
     return prisma.user.findFirst({
       where: {
         id: sellerId,
-        role: 'SELLER'
-      }
+        role: 'SELLER',
+      },
+      include: {
+        location: { select: { id: true, type: true, warehouseId: true } },
+      },
     });
   }
 

@@ -7,13 +7,15 @@ const {
   createRentSchema,
   returnRentSchema,
   viewSaleSchema,
+  payCreditSchema,
   salesHistorySchema,
   adminSalesHistorySchema,
 } = require('./sales.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
+const ROLES = require('../../shared/constants/roles');
 const {
   requireAdmin,
-  requireSeller,
+  requireRole,
   requireAdminOrSeller,
   requireAdminOrSellerOrEmployee,
 } = require('../../shared/middleware/role.middleware');
@@ -218,6 +220,17 @@ router.get(
  *         name: date
  *         schema:
  *           type: string
+ *       - in: query
+ *         name: paymentMode
+ *         schema:
+ *           type: string
+ *           enum: [CASH, ONLINE, CREDIT]
+ *         description: Filter by payment
+ *       - in: query
+ *         name: unpaid
+ *         schema:
+ *           type: boolean
+ *         description: CREDIT sales with remaining due
  *     responses:
  *       200:
  *         description: Seller sales history fetched successfully
@@ -229,7 +242,7 @@ router.get(
 router.get(
   '/history',
   authenticate,
-  requireSeller,
+  requireRole(ROLES.SELLER, ROLES.EMPLOYEE),
   validateRequest(salesHistorySchema),
   salesController.getSalesHistory
 );
@@ -251,6 +264,7 @@ router.get(
  *         schema:
  *           type: integer
  *           default: 10
+ *           maximum: 2000
  *       - in: query
  *         name: search
  *         schema:
@@ -261,6 +275,28 @@ router.get(
  *         schema:
  *           type: integer
  *         description: Filter by specific seller ID
+ *       - in: query
+ *         name: locationId
+ *         schema:
+ *           type: integer
+ *         description: Filter by shop location (seller.location_id)
+ *       - in: query
+ *         name: saleType
+ *         schema:
+ *           type: string
+ *           enum: [NORMAL, SCRAP, MECHANIC, SERVICE, RENT]
+ *         description: Filter by bill type
+ *       - in: query
+ *         name: paymentMode
+ *         schema:
+ *           type: string
+ *           enum: [CASH, ONLINE, CREDIT]
+ *         description: Filter by payment
+ *       - in: query
+ *         name: unpaid
+ *         schema:
+ *           type: boolean
+ *         description: CREDIT sales with remaining due
  *       - in: query
  *         name: fromDate
  *         schema:
@@ -296,6 +332,48 @@ router.get(
 
 /**
  * @swagger
+ * /api/sales/{transactionId}/pay:
+ *   post:
+ *     summary: Collect remaining credit on a unit sale
+ *     tags: [Sales]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: transactionId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/PayCreditRequest'
+ *     responses:
+ *       200:
+ *         description: Payment recorded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SaleDetailResponse'
+ *       400:
+ *         description: Amount exceeds due or not a credit sale
+ *       404:
+ *         description: Transaction not found
+ *       409:
+ *         description: Concurrent payment on the same sale
+ */
+router.post(
+  '/:transactionId/pay',
+  authenticate,
+  requireAdminOrSellerOrEmployee,
+  validateRequest(payCreditSchema),
+  salesController.payCredit
+);
+
+/**
+ * @swagger
  * /api/sales/{transactionId}:
  *   get:
  *     summary: Return a single sale's details by ID
@@ -321,7 +399,7 @@ router.get(
 router.get(
   '/:transactionId',
   authenticate,
-  requireAdminOrSeller,
+  requireAdminOrSellerOrEmployee,
   validateRequest(viewSaleSchema),
   salesController.getSaleById
 );

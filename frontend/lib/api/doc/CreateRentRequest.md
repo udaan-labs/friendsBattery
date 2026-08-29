@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **customerName** | **String** |  | 
 **customerNumber** | **String** |  | 
 **deposit** | **num** |  | 
+**paymentMode** | **String** |  | [optional] [default to 'CASH']
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

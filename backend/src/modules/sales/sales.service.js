@@ -64,9 +64,15 @@ class SalesService {
     throw httpError(403, 'Forbidden: You cannot return this rent');
   }
 
-  /**
-   * Format sale object for consistent API response
-   */
+  _saleMoney(sale) {
+    const amount_paid = Number(sale.amountPaid ?? 0);
+    return {
+      payment_mode: sale.paymentMode || 'CASH',
+      amount_paid,
+      amount_due: Math.max(0, Number(sale.sellPrice) - amount_paid),
+    };
+  }
+
   _formatSale(sale) {
     return {
       id: Number(sale.id),
@@ -76,6 +82,7 @@ class SalesService {
       serial_number: sale.serialNumber,
       vehicle_number: sale.vehicleNumber,
       sale_type: sale.saleType || 'NORMAL',
+      ...this._saleMoney(sale),
       scrap_serial: sale.scrapSerial || null,
       sold_at: sale.soldAt,
       quantity: 1,
@@ -147,6 +154,12 @@ class SalesService {
       );
     }
 
+    const paymentMode = data.payment_mode || 'CASH';
+    const amountPaid =
+      paymentMode === 'CREDIT'
+        ? Number(data.amount_paid ?? 0)
+        : sellPrice;
+
     const sale = await salesRepository.createSaleTransaction({
       productUnitId: productUnit.id,
       productId: productUnit.productId,
@@ -157,6 +170,8 @@ class SalesService {
       serialNumber: productUnit.serialNumber,
       vehicleNumber: data.vehicle_number,
       saleType,
+      paymentMode,
+      amountPaid,
       scrapSerial: saleType === 'SCRAP' ? data.scrap_serial || null : null,
       claimByLocationId: isEmployee ? actor.locationId : null,
     });
@@ -182,6 +197,7 @@ class SalesService {
       amount: Number(data.amount),
       vehicleNumber: data.vehicle_number,
       place: data.place,
+      paymentMode: data.payment_mode || 'CASH',
     });
 
     return { service_bill_id: Number(bill.id) };
@@ -221,6 +237,7 @@ class SalesService {
       customerId: customer.id,
       serialNumber: productUnit.serialNumber,
       deposit,
+      paymentMode: data.payment_mode || 'CASH',
       claimByLocationId: isEmployee ? actor.locationId : null,
     });
 
@@ -270,6 +287,8 @@ class SalesService {
       deposit,
       rent_fee: rentFee,
       refund_amount: refundAmount,
+      customer_name: open.customer?.name || null,
+      customer_number: open.customer?.phone || null,
     };
   }
 
@@ -288,7 +307,7 @@ class SalesService {
     } else {
       sales = await salesRepository.getSalesBySeller(user.id);
     }
-    return sales.map(this._formatSale);
+    return sales.map((s) => this._formatSale(s));
   }
 
   /**
@@ -306,15 +325,43 @@ class SalesService {
       const sellerIds = await resolveShopSellerIds(prisma, scope);
       inShop = (sellerIds || []).some((id) => Number(id) === Number(sale.sellerId));
     }
-    assertAccess(user, { kind: 'sale', sellerId: sale.sellerId, inShop });
+    assertAccess(user, {
+      kind: 'sale',
+      sellerId: sale.sellerId,
+      inShop,
+      locationId: sale.seller?.locationId ?? null,
+    });
     return this._formatSale(sale);
+  }
+
+  async payCredit(transactionId, data, user) {
+    const sale = await salesRepository.findSaleById(transactionId);
+    if (!sale) {
+      throw httpError(404, 'Transaction not found');
+    }
+    let inShop = false;
+    if (user?.role === ROLES.ADMIN) {
+      const scope = resolveAdminShopScope(user);
+      const sellerIds = await resolveShopSellerIds(prisma, scope);
+      inShop = (sellerIds || []).some((id) => Number(id) === Number(sale.sellerId));
+    }
+    assertAccess(user, {
+      kind: 'sale',
+      sellerId: sale.sellerId,
+      inShop,
+      locationId: sale.seller?.locationId ?? null,
+    });
+
+    await salesRepository.addSalePayment(sale.id, Number(data.amount));
+    const updated = await salesRepository.findSaleById(transactionId);
+    return this._formatSale(updated);
   }
 
   /**
    * Get sales history for a specific customer mobile
    */
 
-  async getSalesHistory(sellerId, query) {
+  async getSalesHistory(actor, query) {
     const { page, limit, skip, take } = parsePagination(query, { defaultLimit: 10 });
     let { searchCustomer, searchSerial, fromDate, toDate, filter, date } = query;
 
@@ -337,24 +384,36 @@ class SalesService {
       toDate = undefined;
     }
 
+    const isEmployee = actor.role === ROLES.EMPLOYEE;
+    if (isEmployee && actor.locationId == null) {
+      throw httpError(400, 'Your account has no shop location. Contact admin.');
+    }
+
+    const sellerId = actor.id;
     const filters = {
-      sellerId,
+      sellerId: isEmployee ? undefined : sellerId,
+      locationId: isEmployee ? actor.locationId : undefined,
       searchCustomer,
       searchSerial,
       search: searchCustomer || searchSerial,
       fromDate,
       toDate,
+      paymentMode: query.paymentMode,
+      unpaid: query.unpaid,
     };
 
+    const skipServiceRent = Boolean(query.unpaid);
+    // ponytail: in-memory merge cap; SQL union if a shop exceeds 2000 rows
+    const fetchTake = Math.min(2000, Math.max(take, 200));
     const [sales, serviceBills, batteryRents] = await Promise.all([
-      salesRepository.getSalesHistoryBySeller(sellerId, filters, { skip: 0, take: 200 }),
-      salesRepository.getAdminServiceBills(filters),
-      salesRepository.getAdminBatteryRents(filters),
+      salesRepository.getSalesHistoryBySeller(sellerId, filters, { skip: 0, take: fetchTake }),
+      skipServiceRent ? [] : salesRepository.getAdminServiceBills(filters, fetchTake),
+      skipServiceRent ? [] : salesRepository.getAdminBatteryRents(filters, fetchTake),
     ]);
 
-    const formattedSales = sales.map(this._formatSale);
+    const formattedSales = sales.map((s) => this._formatSale(s));
     const formattedServiceBills = serviceBills.map(this._formatServiceBill);
-    const formattedRents = batteryRents.map(this._formatBatteryRent);
+    const formattedRents = batteryRents.flatMap((r) => this._rentHistoryRows(r));
 
     const combined = [...formattedSales, ...formattedServiceBills, ...formattedRents];
     combined.sort((a, b) => new Date(b.sold_at) - new Date(a.sold_at));
@@ -384,6 +443,7 @@ class SalesService {
       serial_number: sale.serialNumber,
       vehicle_number: sale.vehicleNumber,
       sale_type: sale.saleType || 'NORMAL',
+      ...this._saleMoney(sale),
       scrap_serial: sale.scrapSerial || null,
       seller: sale.seller
         ? {
@@ -439,6 +499,7 @@ class SalesService {
       serial_number: bill.vehicleNumber || bill.place || 'N/A',
       vehicle_number: bill.vehicleNumber || null,
       sale_type: 'SERVICE',
+      payment_mode: bill.paymentMode || 'CASH',
       service_type: bill.serviceType,
       place: bill.place || null,
       scrap_serial: null,
@@ -467,20 +528,8 @@ class SalesService {
     };
   }
 
-  _formatBatteryRent(rent) {
+  _rentParty(rent) {
     return {
-      id: Number(rent.id),
-      sold_at: rent.rentedAt,
-      quantity: 1,
-      sell_price: Number(rent.deposit),
-      serial_number: rent.serialNumber,
-      vehicle_number: null,
-      sale_type: 'RENT',
-      rent_status: rent.status,
-      deposit: Number(rent.deposit),
-      service_type: null,
-      scrap_serial: null,
-      place: null,
       seller: rent.seller
         ? {
             id: Number(rent.seller.id),
@@ -495,13 +544,49 @@ class SalesService {
             phone: rent.customer.phone,
           }
         : null,
+    };
+  }
+
+  /** Out bill always; plus a return bill when the unit is back. */
+  _rentHistoryRows(rent) {
+    const party = this._rentParty(rent);
+    const out = {
+      id: Number(rent.id),
+      sold_at: rent.rentedAt,
+      quantity: 1,
+      sell_price: Number(rent.deposit),
+      serial_number: rent.serialNumber,
+      vehicle_number: null,
+      sale_type: 'RENT',
+      payment_mode: rent.paymentMode || 'CASH',
+      rent_status: 'OUT',
+      deposit: Number(rent.deposit),
+      service_type: null,
+      scrap_serial: null,
+      place: null,
+      ...party,
       product: {
         product_name: 'Battery Rent',
-        product_model: `Rent (${rent.status})`,
+        product_model: 'Rent out',
         category: 'Rental',
       },
       shipment: null,
     };
+    if (rent.status !== 'RETURNED' || rent.returnedAt == null) return [out];
+    return [
+      out,
+      {
+        ...out,
+        sold_at: rent.returnedAt,
+        sell_price: Number(rent.rentFee || 0),
+        rent_status: 'RETURNED',
+        product: {
+          product_name: 'Battery Rent Return',
+          product_model: `Against RENT-${Number(rent.id)}`,
+          category: 'Rental',
+        },
+      },
+    ];
   }
 
   /**
@@ -511,9 +596,9 @@ class SalesService {
    */
   async getAdminSalesHistory(query, user) {
     const { page, limit, skip, take } = parsePagination(query, { defaultLimit: 10 });
-    const { search, sellerId, fromDate, toDate, shipmentStatus } = query;
+    const { search, sellerId, locationId, saleType, paymentMode, fromDate, toDate, shipmentStatus, unpaid } = query;
 
-    const filters = { search, sellerId, fromDate, toDate, shipmentStatus };
+    const filters = { search, sellerId, locationId, saleType, paymentMode, fromDate, toDate, shipmentStatus, unpaid };
 
     const scope = resolveAdminShopScope(user || {});
     if (scope?.kind === 'shop') {
@@ -521,15 +606,22 @@ class SalesService {
       filters.sellerIds = sellerIds || [];
     }
 
+    // ponytail: in-memory merge cap; SQL union if a shop exceeds 2000 rows
+    const fetchTake = Math.min(2000, Math.max(take, 200));
+    const wantSales = !saleType || saleType === 'NORMAL' || saleType === 'SCRAP' || saleType === 'MECHANIC';
+    const wantService = !unpaid && (!saleType || saleType === 'SERVICE');
+    const wantRent = !unpaid && (!saleType || saleType === 'RENT');
     const [sales, serviceBills, batteryRents] = await Promise.all([
-      salesRepository.getAdminSalesHistory(filters, { skip: 0, take: 200 }),
-      salesRepository.getAdminServiceBills(filters),
-      salesRepository.getAdminBatteryRents(filters),
+      wantSales
+        ? salesRepository.getAdminSalesHistory(filters, { skip: 0, take: fetchTake })
+        : [],
+      wantService ? salesRepository.getAdminServiceBills(filters, fetchTake) : [],
+      wantRent ? salesRepository.getAdminBatteryRents(filters, fetchTake) : [],
     ]);
 
     const formattedSales = sales.map((s) => this._formatAdminSale(s));
     const formattedServiceBills = serviceBills.map((b) => this._formatServiceBill(b));
-    const formattedRents = batteryRents.map((r) => this._formatBatteryRent(r));
+    const formattedRents = batteryRents.flatMap((r) => this._rentHistoryRows(r));
 
     const combined = [...formattedSales, ...formattedServiceBills, ...formattedRents];
     combined.sort((a, b) => new Date(b.sold_at) - new Date(a.sold_at));

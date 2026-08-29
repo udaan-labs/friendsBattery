@@ -123,6 +123,7 @@ doc/LoginUserEmployeeRole.md
 doc/LoginUserLocation.md
 doc/NextEmployeeUserIdData.md
 doc/NextEmployeeUserIdResponse.md
+doc/PayCreditRequest.md
 doc/Product.md
 doc/ProductConfigItem.md
 doc/ProductCreated.md
@@ -339,6 +340,7 @@ lib/src/model/login_user_employee_role.dart
 lib/src/model/login_user_location.dart
 lib/src/model/next_employee_user_id_data.dart
 lib/src/model/next_employee_user_id_response.dart
+lib/src/model/pay_credit_request.dart
 lib/src/model/product.dart
 lib/src/model/product_config_item.dart
 lib/src/model/product_created.dart

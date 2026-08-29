@@ -485,7 +485,24 @@ module.exports = {
         nullable: true,
         description: 'Old battery serial when sale_type=SCRAP',
       },
+      payment_mode: {
+        type: 'string',
+        enum: ['CASH', 'ONLINE', 'CREDIT'],
+        default: 'CASH',
+        description: 'CREDIT = unpaid or partial',
+      },
+      amount_paid: {
+        type: 'number',
+        description: 'Paid now when payment_mode is CREDIT (0..sell_price). Ignored for CASH/ONLINE.',
+      },
     }
+  },
+  PayCreditRequest: {
+    type: 'object',
+    required: ['amount'],
+    properties: {
+      amount: { type: 'number', description: 'Amount to collect against remaining due' },
+    },
   },
   CreateSaleResult: {
     type: 'object',
@@ -524,6 +541,11 @@ module.exports = {
         nullable: true,
         description: 'Required when service_type is JUMPSTART',
       },
+      payment_mode: {
+        type: 'string',
+        enum: ['CASH', 'ONLINE', 'CREDIT'],
+        default: 'CASH',
+      },
     },
   },
   CreateServiceBillResult: {
@@ -548,6 +570,11 @@ module.exports = {
       customer_name: { type: 'string' },
       customer_number: { type: 'string' },
       deposit: { type: 'number', example: 1000 },
+      payment_mode: {
+        type: 'string',
+        enum: ['CASH', 'ONLINE', 'CREDIT'],
+        default: 'CASH',
+      },
     },
   },
   CreateRentResult: {
@@ -586,6 +613,8 @@ module.exports = {
       deposit: { type: 'number' },
       rent_fee: { type: 'number' },
       refund_amount: { type: 'number' },
+      customer_name: { type: 'string', nullable: true },
+      customer_number: { type: 'string', nullable: true },
     },
   },
   ReturnRentResponse: {
@@ -630,6 +659,9 @@ module.exports = {
       serial_number: { type: 'string' },
       vehicle_number: { type: 'string', nullable: true },
       sale_type: { type: 'string', enum: ['NORMAL', 'SCRAP', 'MECHANIC', 'SERVICE', 'RENT'] },
+      payment_mode: { type: 'string', enum: ['CASH', 'ONLINE', 'CREDIT'] },
+      amount_paid: { type: 'number' },
+      amount_due: { type: 'number' },
       scrap_serial: { type: 'string', nullable: true },
       service_type: { type: 'string', nullable: true },
       rent_status: { type: 'string', nullable: true },
@@ -691,6 +723,9 @@ module.exports = {
       serial_number: { type: 'string' },
       vehicle_number: { type: 'string', nullable: true },
       sale_type: { type: 'string', enum: ['NORMAL', 'SCRAP', 'MECHANIC', 'SERVICE', 'RENT'] },
+      payment_mode: { type: 'string', enum: ['CASH', 'ONLINE', 'CREDIT'] },
+      amount_paid: { type: 'number' },
+      amount_due: { type: 'number' },
       scrap_serial: { type: 'string', nullable: true },
       service_type: { type: 'string', nullable: true },
       rent_status: { type: 'string', nullable: true },

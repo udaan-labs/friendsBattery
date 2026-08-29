@@ -57,6 +57,9 @@ class ShipmentsRepository {
         id: BigInt(sellerId),
         role: 'SELLER',
       },
+      include: {
+        location: { select: { id: true, type: true, warehouseId: true } },
+      },
     });
   }
 

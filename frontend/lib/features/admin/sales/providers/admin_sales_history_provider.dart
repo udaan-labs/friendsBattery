@@ -39,6 +39,10 @@ class AdminSalesHistoryState {
   final String searchQuery;
   final AdminSalesPeriod period;
   final DateTime? customDate;
+  final int? locationId;
+  final String? saleType;
+  final String? paymentMode;
+  final bool unpaid;
   final int currentPage;
   final int totalPages;
   final int total;
@@ -51,6 +55,10 @@ class AdminSalesHistoryState {
     this.searchQuery = '',
     this.period = AdminSalesPeriod.all,
     this.customDate,
+    this.locationId,
+    this.saleType,
+    this.paymentMode,
+    this.unpaid = false,
     this.currentPage = 1,
     this.totalPages = 1,
     this.total = 0,
@@ -71,6 +79,13 @@ class AdminSalesHistoryState {
     AdminSalesPeriod? period,
     DateTime? customDate,
     bool clearCustomDate = false,
+    int? locationId,
+    bool clearLocationId = false,
+    String? saleType,
+    bool clearSaleType = false,
+    String? paymentMode,
+    bool clearPaymentMode = false,
+    bool? unpaid,
     int? currentPage,
     int? totalPages,
     int? total,
@@ -83,6 +98,10 @@ class AdminSalesHistoryState {
       searchQuery: searchQuery ?? this.searchQuery,
       period: period ?? this.period,
       customDate: clearCustomDate ? null : customDate ?? this.customDate,
+      locationId: clearLocationId ? null : locationId ?? this.locationId,
+      saleType: clearSaleType ? null : saleType ?? this.saleType,
+      paymentMode: clearPaymentMode ? null : paymentMode ?? this.paymentMode,
+      unpaid: unpaid ?? this.unpaid,
       currentPage: currentPage ?? this.currentPage,
       totalPages: totalPages ?? this.totalPages,
       total: total ?? this.total,
@@ -105,7 +124,7 @@ class AdminSalesHistoryNotifier
 
   DateTime _endOfDay(DateTime d) => DateTime(d.year, d.month, d.day, 23, 59, 59, 999);
 
-  ({String? from, String? to}) _dateRangeFor(AdminSalesPeriod period) {
+  ({String? from, String? to}) dateRangeFor(AdminSalesPeriod period) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     if (period == AdminSalesPeriod.all) return (from: null, to: null);
@@ -136,13 +155,17 @@ class AdminSalesHistoryNotifier
       );
     }
 
-    final range = _dateRangeFor(state.period);
+    final range = dateRangeFor(state.period);
 
     try {
       final result = await _repository.getAdminSalesHistory(
         page: 1,
         limit: _pageSize,
         search: state.searchQuery.isNotEmpty ? state.searchQuery : null,
+        locationId: state.locationId,
+        saleType: state.saleType,
+        paymentMode: state.paymentMode,
+        unpaid: state.unpaid,
         fromDate: range.from,
         toDate: range.to,
       );
@@ -168,13 +191,17 @@ class AdminSalesHistoryNotifier
 
     state = state.copyWith(isLoadingMore: true);
     final nextPage = state.currentPage + 1;
-    final range = _dateRangeFor(state.period);
+    final range = dateRangeFor(state.period);
 
     try {
       final result = await _repository.getAdminSalesHistory(
         page: nextPage,
         limit: _pageSize,
         search: state.searchQuery.isNotEmpty ? state.searchQuery : null,
+        locationId: state.locationId,
+        saleType: state.saleType,
+        paymentMode: state.paymentMode,
+        unpaid: state.unpaid,
         fromDate: range.from,
         toDate: range.to,
       );
@@ -206,6 +233,39 @@ class AdminSalesHistoryNotifier
   void setCustomDate(DateTime date) {
     state = state.copyWith(period: AdminSalesPeriod.custom, customDate: date);
     fetchSales(isRefresh: true);
+  }
+
+  void setLocationId(int? locationId) {
+    state = state.copyWith(
+      locationId: locationId,
+      clearLocationId: locationId == null,
+    );
+    fetchSales(isRefresh: true);
+  }
+
+  void setSaleType(String? saleType) {
+    state = state.copyWith(
+      saleType: saleType,
+      clearSaleType: saleType == null,
+    );
+    fetchSales(isRefresh: true);
+  }
+
+  void setPaymentMode(String? paymentMode, {bool unpaid = false}) {
+    state = state.copyWith(
+      paymentMode: paymentMode,
+      clearPaymentMode: paymentMode == null,
+      unpaid: unpaid,
+    );
+    fetchSales(isRefresh: true);
+  }
+
+  Future<void> collectCredit({
+    required int saleId,
+    required double amount,
+  }) async {
+    await _repository.payCredit(saleId: saleId, amount: amount);
+    await fetchSales(isRefresh: true);
   }
 }
 

@@ -16,6 +16,8 @@ part 'return_rent_result.g.dart';
 /// * [deposit] 
 /// * [rentFee] 
 /// * [refundAmount] 
+/// * [customerName] 
+/// * [customerNumber] 
 @BuiltValue()
 abstract class ReturnRentResult implements Built<ReturnRentResult, ReturnRentResultBuilder> {
   @BuiltValueField(wireName: r'rent_id')
@@ -32,6 +34,12 @@ abstract class ReturnRentResult implements Built<ReturnRentResult, ReturnRentRes
 
   @BuiltValueField(wireName: r'refund_amount')
   num? get refundAmount;
+
+  @BuiltValueField(wireName: r'customer_name')
+  String? get customerName;
+
+  @BuiltValueField(wireName: r'customer_number')
+  String? get customerNumber;
 
   ReturnRentResult._();
 
@@ -91,6 +99,20 @@ class _$ReturnRentResultSerializer implements PrimitiveSerializer<ReturnRentResu
         specifiedType: const FullType(num),
       );
     }
+    if (object.customerName != null) {
+      yield r'customer_name';
+      yield serializers.serialize(
+        object.customerName,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.customerNumber != null) {
+      yield r'customer_number';
+      yield serializers.serialize(
+        object.customerNumber,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
   }
 
   @override
@@ -148,6 +170,22 @@ class _$ReturnRentResultSerializer implements PrimitiveSerializer<ReturnRentResu
             specifiedType: const FullType(num),
           ) as num;
           result.refundAmount = valueDes;
+          break;
+        case r'customer_name':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.customerName = valueDes;
+          break;
+        case r'customer_number':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.customerNumber = valueDes;
           break;
         default:
           unhandled.add(key);

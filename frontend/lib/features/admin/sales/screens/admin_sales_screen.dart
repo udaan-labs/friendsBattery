@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:share_plus/share_plus.dart';
 import '../../../../theme/app_theme.dart';
-import '../../../../shared/widgets/responsive_helper.dart';
+import '../../../../shared/widgets/sales_view_toggle.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
+import '../../../seller/sales/widgets/pay_credit_sheet.dart';
+import '../models/admin_sale_history.dart';
 import '../providers/admin_sales_history_provider.dart';
 import '../widgets/admin_sale_history_card.dart';
-import '../widgets/admin_sales_period_chips.dart';
+import '../widgets/admin_sale_history_list_tile.dart';
+import '../widgets/admin_sales_filter_bar.dart';
+import '../widgets/admin_sales_pdf_preview.dart';
+import '../widgets/admin_sales_pdf_sheet.dart';
 
 class AdminSalesScreen extends ConsumerStatefulWidget {
   const AdminSalesScreen({super.key});
@@ -19,6 +23,8 @@ class AdminSalesScreen extends ConsumerStatefulWidget {
 class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  bool _exporting = false;
+  bool _cardView = true;
 
   @override
   void initState() {
@@ -50,26 +56,59 @@ class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
         .fetchSales(isRefresh: true);
   }
 
-  Future<void> _shareReport(AdminSalesHistoryState state) async {
-    final period = state.period.label(state.customDate);
-    final buf = StringBuffer()
-      ..writeln('Friends Battery — Sales report ($period)')
-      ..writeln('Total sales: ${state.total}')
-      ..writeln(
-          'Revenue (loaded page sample): ₹${state.totalRevenue.toStringAsFixed(0)}')
-      ..writeln('---');
-    for (final s in state.sales.take(50)) {
-      buf.writeln(
-        '${s.soldAt.toIso8601String().substring(0, 10)} · ${s.shopName} · '
-        '${s.productName} ${s.productModel} · ₹${s.sellPrice.toStringAsFixed(0)} · ${s.serialNumber}',
+  Future<void> _collect(AdminSaleHistory sale) async {
+    final paid = await showPayCreditSheet(context, amountDue: sale.amountDue);
+    if (paid == null || !mounted) return;
+    try {
+      await ref.read(adminSalesHistoryProvider.notifier).collectCredit(
+            saleId: sale.id,
+            amount: paid,
+          );
+      if (mounted) context.showSuccessSnackBar('Payment recorded');
+    } catch (e) {
+      if (mounted) context.showErrorSnackBar('$e');
+    }
+  }
+
+  Future<void> _exportPdf() async {
+    if (_exporting) return;
+    final choice = await showAdminSalesPdfSheet(context);
+    if (choice == null || !mounted) return;
+    setState(() => _exporting = true);
+    try {
+      final range = ref.read(adminSalesHistoryProvider.notifier).dateRangeFor(choice.period);
+      final page = await ref.read(adminSalesRepositoryProvider).getAdminSalesHistory(
+            page: 1,
+            limit: 2000,
+            locationId: choice.locationId,
+            saleType: choice.saleType,
+            paymentMode: choice.paymentMode,
+            fromDate: range.from,
+            toDate: range.to,
+          );
+      if (!mounted) return;
+      if (page.data.isEmpty) {
+        context.showErrorSnackBar('No sales to export');
+        return;
+      }
+      final filters =
+          '${choice.saleType ?? 'All types'} · ${choice.paymentMode ?? 'All pay'} · ${choice.locationId == null ? 'All shops' : page.data.first.shopName}';
+      if (!mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => AdminSalesPdfPreview(
+            sales: page.data,
+            period: choice.period.label(null),
+            total: page.total,
+            filters: filters,
+          ),
+        ),
       );
+    } catch (e) {
+      if (mounted) context.showErrorSnackBar(e.toString());
+    } finally {
+      if (mounted) setState(() => _exporting = false);
     }
-    if (state.total > state.sales.length) {
-      buf.writeln('… and ${state.total - state.sales.length} more (not listed)');
-    }
-    // ignore: deprecated_member_use
-    await Share.share(buf.toString(), subject: 'Sales report — $period');
-    if (mounted) context.showSuccessSnackBar('Report shared');
   }
 
   @override
@@ -119,65 +158,21 @@ class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
             },
           ),
           actions: [
-            IconButton(
-              tooltip: 'Share report',
-              icon: const Icon(Icons.ios_share_rounded, color: Color(0xFF0F172A)),
-              onPressed: state.isLoading || state.sales.isEmpty
-                  ? null
-                  : () => _shareReport(state),
+            SalesViewToggle(
+              cardView: _cardView,
+              onChanged: (v) => setState(() => _cardView = v),
             ),
           ],
         ),
         body: SafeArea(
           child: Column(
             children: [
-              const AdminSalesPeriodChips(),
-
-              // ── Search bar ──────────────────────────────────────────────
-              Container(
-                color: Colors.white,
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: _onSearchChanged,
-                  decoration: InputDecoration(
-                    hintText: ResponsiveHelper.isSmallPhone(context)
-                        ? 'Search sales...'
-                        : 'Search customer, seller, shop, product, serial...',
-                    hintStyle:
-                        const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
-                    prefixIcon: const Icon(Icons.search_rounded,
-                        color: Color(0xFF64748B), size: 20),
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear_rounded,
-                                color: Color(0xFF64748B), size: 18),
-                            onPressed: () {
-                              _searchController.clear();
-                              _onSearchChanged('');
-                            },
-                          )
-                        : null,
-                    filled: true,
-                    fillColor: const Color(0xFFF8FAFC),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: const BorderSide(
-                          color: AppTheme.primary, width: 1.5),
-                    ),
-                  ),
-                ),
+              AdminSalesFilterBar(
+                searchController: _searchController,
+                onSearch: _onSearchChanged,
+                exporting: _exporting,
+                onExport: _exportPdf,
               ),
-
               const Divider(height: 1, thickness: 1, color: Color(0xFFE2E8F0)),
 
               // ── List body ───────────────────────────────────────────────
@@ -318,15 +313,21 @@ class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
       );
     }
 
-    // Sales list with pagination
-    return ListView.builder(
+    return ListView.separated(
       controller: _scrollController,
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+      padding: _cardView
+          ? const EdgeInsets.fromLTRB(16, 12, 16, 20)
+          : const EdgeInsets.only(bottom: 20),
       itemCount: state.sales.length + (state.isLoadingMore ? 1 : 0),
+      separatorBuilder: (_, index) {
+        if (_cardView || index >= state.sales.length - 1) {
+          return const SizedBox.shrink();
+        }
+        return const Divider(height: 1, color: Color(0xFFE2E8F0));
+      },
       itemBuilder: (context, index) {
         if (index == state.sales.length) {
-          // Pagination loader at the bottom
           return const Padding(
             padding: EdgeInsets.symmetric(vertical: 16),
             child: Center(
@@ -341,7 +342,26 @@ class _AdminSalesScreenState extends ConsumerState<AdminSalesScreen> {
             ),
           );
         }
-        return AdminSaleHistoryCard(sale: state.sales[index]);
+        final sale = state.sales[index];
+        final onPay = sale.hasCreditDue ? () => _collect(sale) : null;
+        void openBill() => context.push(
+              '/admin/sales/${sale.id}',
+              extra: sale.toSellerSale(),
+            );
+        if (_cardView) {
+          return AdminSaleHistoryCard(
+            key: ValueKey(sale.billNumber),
+            sale: sale,
+            onPay: onPay,
+            onOpen: openBill,
+          );
+        }
+        return AdminSaleHistoryListTile(
+          key: ValueKey(sale.billNumber),
+          sale: sale,
+          onPay: onPay,
+          onOpen: openBill,
+        );
       },
     );
   }

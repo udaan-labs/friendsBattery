@@ -14,6 +14,8 @@ class SellerSalesState {
   final String searchQuery; // Combines customer or serial search based on what user types
   final String filter; // 'today', 'all', 'date'
   final DateTime? selectedDate;
+  final String? paymentMode;
+  final bool unpaid;
 
   SellerSalesState({
     this.sales = const [],
@@ -22,6 +24,8 @@ class SellerSalesState {
     this.searchQuery = '',
     this.filter = 'today',
     this.selectedDate,
+    this.paymentMode,
+    this.unpaid = false,
   });
 
   SellerSalesState copyWith({
@@ -31,6 +35,9 @@ class SellerSalesState {
     String? searchQuery,
     String? filter,
     DateTime? selectedDate,
+    String? paymentMode,
+    bool clearPaymentMode = false,
+    bool? unpaid,
   }) {
     return SellerSalesState(
       sales: sales ?? this.sales,
@@ -39,6 +46,8 @@ class SellerSalesState {
       searchQuery: searchQuery ?? this.searchQuery,
       filter: filter ?? this.filter,
       selectedDate: selectedDate ?? this.selectedDate,
+      paymentMode: clearPaymentMode ? null : paymentMode ?? this.paymentMode,
+      unpaid: unpaid ?? this.unpaid,
     );
   }
 }
@@ -65,6 +74,8 @@ class SellerSalesNotifier extends StateNotifier<SellerSalesState> {
         searchSerial: state.searchQuery,
         filter: state.filter,
         date: state.selectedDate?.toIso8601String(),
+        paymentMode: state.paymentMode,
+        unpaid: state.unpaid,
       );
       state = state.copyWith(sales: sales, isLoading: false, error: null);
     } catch (e) {
@@ -85,6 +96,23 @@ class SellerSalesNotifier extends StateNotifier<SellerSalesState> {
   void updateSearch(String query) {
     state = state.copyWith(searchQuery: query);
     fetchSales();
+  }
+
+  void setPaymentMode(String? paymentMode, {bool unpaid = false}) {
+    state = state.copyWith(
+      paymentMode: paymentMode,
+      clearPaymentMode: paymentMode == null,
+      unpaid: unpaid,
+    );
+    fetchSales();
+  }
+
+  Future<void> collectCredit({
+    required int saleId,
+    required double amount,
+  }) async {
+    await _repository.payCredit(saleId: saleId, amount: amount);
+    await fetchSales(isRefresh: true);
   }
 }
 

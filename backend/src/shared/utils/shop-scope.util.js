@@ -105,12 +105,20 @@ function isUserInShopScope(target, scope) {
   }
   const effectiveWarehouseId =
     scope.locationType === 'WAREHOUSE' ? scope.locationId : scope.warehouseId;
-  if (
-    effectiveWarehouseId != null &&
-    target.location?.warehouseId != null &&
-    Number(target.location.warehouseId) === Number(effectiveWarehouseId)
-  ) {
-    return true;
+  if (effectiveWarehouseId != null) {
+    if (
+      target.locationId != null &&
+      Number(target.locationId) === Number(effectiveWarehouseId)
+    ) {
+      return true;
+    }
+    // Shop staff: callers must include location.warehouseId (parent_id may be SA).
+    if (
+      target.location?.warehouseId != null &&
+      Number(target.location.warehouseId) === Number(effectiveWarehouseId)
+    ) {
+      return true;
+    }
   }
   return false;
 }
@@ -216,7 +224,7 @@ if (require.main === module) {
   });
   assert.deepStrictEqual(
     resolveAdminShopScope({ role: 'ADMIN', id: 5, locationId: 9 }),
-    { kind: 'shop', adminId: 5, locationId: 9, locationType: null }
+    { kind: 'shop', adminId: 5, locationId: 9, locationType: null, warehouseId: null }
   );
   assert.deepStrictEqual(
     resolveAdminShopScope({
@@ -225,11 +233,17 @@ if (require.main === module) {
       locationId: 9,
       location: { type: 'WAREHOUSE' },
     }),
-    { kind: 'shop', adminId: 5, locationId: 9, locationType: 'WAREHOUSE' }
+    { kind: 'shop', adminId: 5, locationId: 9, locationType: 'WAREHOUSE', warehouseId: null }
   );
   assert.ok(
     isUserInShopScope(
       { id: 10, parentId: 99, locationId: 2, location: { warehouseId: 9 } },
+      { kind: 'shop', adminId: 5, locationId: 9, locationType: 'WAREHOUSE' }
+    )
+  );
+  assert.ok(
+    isUserInShopScope(
+      { id: 11, parentId: 99, locationId: 9 },
       { kind: 'shop', adminId: 5, locationId: 9, locationType: 'WAREHOUSE' }
     )
   );

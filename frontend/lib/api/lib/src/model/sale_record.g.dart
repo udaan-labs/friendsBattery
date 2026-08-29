@@ -43,8 +43,37 @@ final BuiltSet<SaleRecordSaleTypeEnum> _$saleRecordSaleTypeEnumValues =
       _$saleRecordSaleTypeEnum_RENT,
     ]);
 
+const SaleRecordPaymentModeEnum _$saleRecordPaymentModeEnum_CASH =
+    const SaleRecordPaymentModeEnum._('CASH');
+const SaleRecordPaymentModeEnum _$saleRecordPaymentModeEnum_ONLINE =
+    const SaleRecordPaymentModeEnum._('ONLINE');
+const SaleRecordPaymentModeEnum _$saleRecordPaymentModeEnum_CREDIT =
+    const SaleRecordPaymentModeEnum._('CREDIT');
+
+SaleRecordPaymentModeEnum _$saleRecordPaymentModeEnumValueOf(String name) {
+  switch (name) {
+    case 'CASH':
+      return _$saleRecordPaymentModeEnum_CASH;
+    case 'ONLINE':
+      return _$saleRecordPaymentModeEnum_ONLINE;
+    case 'CREDIT':
+      return _$saleRecordPaymentModeEnum_CREDIT;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<SaleRecordPaymentModeEnum> _$saleRecordPaymentModeEnumValues =
+    BuiltSet<SaleRecordPaymentModeEnum>(const <SaleRecordPaymentModeEnum>[
+      _$saleRecordPaymentModeEnum_CASH,
+      _$saleRecordPaymentModeEnum_ONLINE,
+      _$saleRecordPaymentModeEnum_CREDIT,
+    ]);
+
 Serializer<SaleRecordSaleTypeEnum> _$saleRecordSaleTypeEnumSerializer =
     _$SaleRecordSaleTypeEnumSerializer();
+Serializer<SaleRecordPaymentModeEnum> _$saleRecordPaymentModeEnumSerializer =
+    _$SaleRecordPaymentModeEnumSerializer();
 
 class _$SaleRecordSaleTypeEnumSerializer
     implements PrimitiveSerializer<SaleRecordSaleTypeEnum> {
@@ -85,6 +114,41 @@ class _$SaleRecordSaleTypeEnumSerializer
   );
 }
 
+class _$SaleRecordPaymentModeEnumSerializer
+    implements PrimitiveSerializer<SaleRecordPaymentModeEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'CASH': 'CASH',
+    'ONLINE': 'ONLINE',
+    'CREDIT': 'CREDIT',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'CASH': 'CASH',
+    'ONLINE': 'ONLINE',
+    'CREDIT': 'CREDIT',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[SaleRecordPaymentModeEnum];
+  @override
+  final String wireName = 'SaleRecordPaymentModeEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    SaleRecordPaymentModeEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  SaleRecordPaymentModeEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => SaleRecordPaymentModeEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$SaleRecord extends SaleRecord {
   @override
   final int? id;
@@ -100,6 +164,12 @@ class _$SaleRecord extends SaleRecord {
   final String? vehicleNumber;
   @override
   final SaleRecordSaleTypeEnum? saleType;
+  @override
+  final SaleRecordPaymentModeEnum? paymentMode;
+  @override
+  final num? amountPaid;
+  @override
+  final num? amountDue;
   @override
   final String? scrapSerial;
   @override
@@ -132,6 +202,9 @@ class _$SaleRecord extends SaleRecord {
     this.serialNumber,
     this.vehicleNumber,
     this.saleType,
+    this.paymentMode,
+    this.amountPaid,
+    this.amountDue,
     this.scrapSerial,
     this.serviceType,
     this.rentStatus,
@@ -161,6 +234,9 @@ class _$SaleRecord extends SaleRecord {
         serialNumber == other.serialNumber &&
         vehicleNumber == other.vehicleNumber &&
         saleType == other.saleType &&
+        paymentMode == other.paymentMode &&
+        amountPaid == other.amountPaid &&
+        amountDue == other.amountDue &&
         scrapSerial == other.scrapSerial &&
         serviceType == other.serviceType &&
         rentStatus == other.rentStatus &&
@@ -183,6 +259,9 @@ class _$SaleRecord extends SaleRecord {
     _$hash = $jc(_$hash, serialNumber.hashCode);
     _$hash = $jc(_$hash, vehicleNumber.hashCode);
     _$hash = $jc(_$hash, saleType.hashCode);
+    _$hash = $jc(_$hash, paymentMode.hashCode);
+    _$hash = $jc(_$hash, amountPaid.hashCode);
+    _$hash = $jc(_$hash, amountDue.hashCode);
     _$hash = $jc(_$hash, scrapSerial.hashCode);
     _$hash = $jc(_$hash, serviceType.hashCode);
     _$hash = $jc(_$hash, rentStatus.hashCode);
@@ -207,6 +286,9 @@ class _$SaleRecord extends SaleRecord {
           ..add('serialNumber', serialNumber)
           ..add('vehicleNumber', vehicleNumber)
           ..add('saleType', saleType)
+          ..add('paymentMode', paymentMode)
+          ..add('amountPaid', amountPaid)
+          ..add('amountDue', amountDue)
           ..add('scrapSerial', scrapSerial)
           ..add('serviceType', serviceType)
           ..add('rentStatus', rentStatus)
@@ -253,6 +335,19 @@ class SaleRecordBuilder implements Builder<SaleRecord, SaleRecordBuilder> {
   SaleRecordSaleTypeEnum? _saleType;
   SaleRecordSaleTypeEnum? get saleType => _$this._saleType;
   set saleType(SaleRecordSaleTypeEnum? saleType) => _$this._saleType = saleType;
+
+  SaleRecordPaymentModeEnum? _paymentMode;
+  SaleRecordPaymentModeEnum? get paymentMode => _$this._paymentMode;
+  set paymentMode(SaleRecordPaymentModeEnum? paymentMode) =>
+      _$this._paymentMode = paymentMode;
+
+  num? _amountPaid;
+  num? get amountPaid => _$this._amountPaid;
+  set amountPaid(num? amountPaid) => _$this._amountPaid = amountPaid;
+
+  num? _amountDue;
+  num? get amountDue => _$this._amountDue;
+  set amountDue(num? amountDue) => _$this._amountDue = amountDue;
 
   String? _scrapSerial;
   String? get scrapSerial => _$this._scrapSerial;
@@ -309,6 +404,9 @@ class SaleRecordBuilder implements Builder<SaleRecord, SaleRecordBuilder> {
       _serialNumber = $v.serialNumber;
       _vehicleNumber = $v.vehicleNumber;
       _saleType = $v.saleType;
+      _paymentMode = $v.paymentMode;
+      _amountPaid = $v.amountPaid;
+      _amountDue = $v.amountDue;
       _scrapSerial = $v.scrapSerial;
       _serviceType = $v.serviceType;
       _rentStatus = $v.rentStatus;
@@ -350,6 +448,9 @@ class SaleRecordBuilder implements Builder<SaleRecord, SaleRecordBuilder> {
             serialNumber: serialNumber,
             vehicleNumber: vehicleNumber,
             saleType: saleType,
+            paymentMode: paymentMode,
+            amountPaid: amountPaid,
+            amountDue: amountDue,
             scrapSerial: scrapSerial,
             serviceType: serviceType,
             rentStatus: rentStatus,

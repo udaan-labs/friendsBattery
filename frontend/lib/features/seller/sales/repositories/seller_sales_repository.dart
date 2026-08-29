@@ -21,6 +21,10 @@ class SellerSalesRepository {
       customerName: s.customer?.name,
       customerPhone: s.customer?.phone,
       saleType: s.saleType?.name ?? 'NORMAL',
+      paymentMode: s.paymentMode?.name ?? 'CASH',
+      amountPaid: (s.amountPaid ?? 0).toDouble(),
+      amountDue: (s.amountDue ?? 0).toDouble(),
+      rentStatus: s.rentStatus,
       scrapSerial: s.scrapSerial,
     );
   }
@@ -30,6 +34,8 @@ class SellerSalesRepository {
     String? searchSerial,
     String filter = 'today',
     String? date,
+    String? paymentMode,
+    bool unpaid = false,
     int page = 1,
     int limit = 50,
   }) async {
@@ -43,6 +49,8 @@ class SellerSalesRepository {
           (searchSerial != null && searchSerial.isNotEmpty) ? searchSerial : null,
       filter: filter,
       date: (date != null && date.isNotEmpty) ? date : null,
+      paymentMode: paymentMode,
+      unpaid: unpaid ? true : null,
     );
 
     final rows = response.data?.data?.data?.toList() ?? [];
@@ -78,6 +86,8 @@ class SellerSalesRepository {
     String? vehicleNumber,
     required num sellPrice,
     String saleType = 'NORMAL',
+    String paymentMode = 'CASH',
+    num? amountPaid,
     String? scrapSerial,
   }) async {
     final body = CreateSaleRequest((b) {
@@ -91,6 +101,10 @@ class SellerSalesRepository {
       }
       b.sellPrice = sellPrice;
       b.saleType = CreateSaleRequestSaleTypeEnum.valueOf(saleType);
+      b.paymentMode = CreateSaleRequestPaymentModeEnum.valueOf(paymentMode);
+      if (amountPaid != null) {
+        b.amountPaid = amountPaid;
+      }
       if (scrapSerial != null && scrapSerial.isNotEmpty) {
         b.scrapSerial = scrapSerial;
       }
@@ -107,6 +121,7 @@ class SellerSalesRepository {
     required String customerNumber,
     String? vehicleNumber,
     String? place,
+    String paymentMode = 'CASH',
   }) async {
     final body = CreateServiceBillRequest((b) {
       b.serviceType =
@@ -120,6 +135,7 @@ class SellerSalesRepository {
       if (place != null && place.isNotEmpty) {
         b.place = place;
       }
+      b.paymentMode = CreateServiceBillRequestPaymentModeEnum.valueOf(paymentMode);
     });
 
     final response =
@@ -132,12 +148,14 @@ class SellerSalesRepository {
     required String customerName,
     required String customerNumber,
     required num deposit,
+    String paymentMode = 'CASH',
   }) async {
     final body = CreateRentRequest((b) {
       b.serialNumber = serialNumber;
       b.customerName = customerName;
       b.customerNumber = customerNumber;
       b.deposit = deposit;
+      b.paymentMode = CreateRentRequestPaymentModeEnum.valueOf(paymentMode);
     });
     final response = await _sales.apiSalesRentPost(createRentRequest: body);
     final d = response.data?.data;
@@ -162,5 +180,23 @@ class SellerSalesRepository {
       throw Exception(response.data?.message ?? 'Failed to return rent');
     }
     return d;
+  }
+
+  Future<SellerSale> payCredit({
+    required int saleId,
+    required num amount,
+  }) async {
+    final body = PayCreditRequest((b) {
+      b.amount = amount;
+    });
+    final response = await _sales.apiSalesTransactionIdPayPost(
+      transactionId: saleId,
+      payCreditRequest: body,
+    );
+    final d = response.data?.data;
+    if (d == null) {
+      throw Exception(response.data?.message ?? 'Failed to record payment');
+    }
+    return _mapSale(d);
   }
 }

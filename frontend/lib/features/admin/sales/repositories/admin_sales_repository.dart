@@ -18,6 +18,9 @@ class AdminSalesRepository {
       serialNumber: s.serialNumber ?? 'N/A',
       vehicleNumber: s.vehicleNumber,
       saleType: s.saleType?.name ?? 'NORMAL',
+      paymentMode: s.paymentMode?.name ?? 'CASH',
+      amountPaid: (s.amountPaid ?? 0).toDouble(),
+      amountDue: (s.amountDue ?? 0).toDouble(),
       scrapSerial: s.scrapSerial,
       serviceType: s.serviceType,
       rentStatus: s.rentStatus,
@@ -49,6 +52,10 @@ class AdminSalesRepository {
     int limit = 10,
     String? search,
     int? sellerId,
+    int? locationId,
+    String? saleType,
+    String? paymentMode,
+    bool unpaid = false,
     String? fromDate,
     String? toDate,
     String? shipmentStatus,
@@ -58,6 +65,10 @@ class AdminSalesRepository {
       limit: limit,
       search: (search != null && search.isNotEmpty) ? search : null,
       sellerId: sellerId,
+      locationId: locationId,
+      saleType: saleType,
+      paymentMode: paymentMode,
+      unpaid: unpaid ? true : null,
       fromDate: (fromDate != null && fromDate.isNotEmpty)
           ? DateTime.tryParse(fromDate)
           : null,
@@ -74,6 +85,19 @@ class AdminSalesRepository {
       page: pageData?.page ?? page,
       limit: pageData?.limit ?? limit,
       totalPages: pageData?.totalPages ?? 1,
+    );
+  }
+
+  Future<void> payCredit({
+    required int saleId,
+    required num amount,
+  }) async {
+    final body = PayCreditRequest((b) {
+      b.amount = amount;
+    });
+    await _sales.apiSalesTransactionIdPayPost(
+      transactionId: saleId,
+      payCreditRequest: body,
     );
   }
 }

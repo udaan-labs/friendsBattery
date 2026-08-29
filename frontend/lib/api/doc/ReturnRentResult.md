@@ -13,6 +13,8 @@ Name | Type | Description | Notes
 **deposit** | **num** |  | [optional] 
 **rentFee** | **num** |  | [optional] 
 **refundAmount** | **num** |  | [optional] 
+**customerName** | **String** |  | [optional] 
+**customerNumber** | **String** |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

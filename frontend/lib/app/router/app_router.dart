@@ -28,6 +28,7 @@ import '../../features/seller/dashboard/models/sale_success_data.dart';
 import '../../features/seller/dashboard/screens/seller_return_product_screen.dart';
 import '../../features/seller/sales/screens/seller_sales_history_screen.dart';
 import '../../features/seller/sales/screens/seller_sale_details_screen.dart';
+import '../../features/seller/sales/models/seller_sale.dart';
 import '../../features/shared/inventory/screens/current_inventory_screen.dart';
 import '../../features/shared/inventory/screens/inventory_product_detail_screen.dart';
 import '../../features/admin/accounts/screens/accounts_screen.dart';
@@ -336,6 +337,20 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const AdminSalesScreen(),
           ),
           GoRoute(
+            path: '/admin/sales/:id',
+            builder: (context, state) {
+              final id = int.tryParse(state.pathParameters['id'] ?? '');
+              if (id == null) {
+                return const Scaffold(body: Center(child: Text('Invalid sale')));
+              }
+              return SellerSaleDetailsScreen(
+                saleId: id,
+                historyPath: '/admin/sales',
+                initial: state.extra is SellerSale ? state.extra as SellerSale : null,
+              );
+            },
+          ),
+          GoRoute(
             path: '/admin/create-bill',
             builder: (context, state) => const CreateBillScreen(),
           ),
@@ -435,7 +450,10 @@ final routerProvider = Provider<GoRouter>((ref) {
               if (id == null) {
                 return const Scaffold(body: Center(child: Text('Invalid sale')));
               }
-              return SellerSaleDetailsScreen(saleId: id);
+              return SellerSaleDetailsScreen(
+                saleId: id,
+                initial: state.extra is SellerSale ? state.extra as SellerSale : null,
+              );
             },
           ),
           GoRoute(
@@ -497,6 +515,27 @@ final routerProvider = Provider<GoRouter>((ref) {
                 );
               }
               return SaleSuccessScreen(saleData: saleData);
+            },
+          ),
+          GoRoute(
+            path: '/employee/sales-history',
+            builder: (context, state) => const SellerSalesHistoryScreen(
+              detailsPathPrefix: '/employee/sales',
+              homePath: '/employee/home',
+            ),
+          ),
+          GoRoute(
+            path: '/employee/sales/:id',
+            builder: (context, state) {
+              final id = int.tryParse(state.pathParameters['id'] ?? '');
+              if (id == null) {
+                return const Scaffold(body: Center(child: Text('Invalid sale')));
+              }
+              return SellerSaleDetailsScreen(
+                saleId: id,
+                historyPath: '/employee/sales-history',
+                initial: state.extra is SellerSale ? state.extra as SellerSale : null,
+              );
             },
           ),
           GoRoute(

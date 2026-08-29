@@ -21,6 +21,8 @@ part 'create_sale_request.g.dart';
 /// * [sellPrice] 
 /// * [saleType] - SCRAP/MECHANIC waive product min price; SCRAP requires scrap_serial
 /// * [scrapSerial] - Old battery serial when sale_type=SCRAP
+/// * [paymentMode] - CREDIT = unpaid or partial
+/// * [amountPaid] - Paid now when payment_mode is CREDIT (0..sell_price). Ignored for CASH/ONLINE.
 @BuiltValue()
 abstract class CreateSaleRequest implements Built<CreateSaleRequest, CreateSaleRequestBuilder> {
   @BuiltValueField(wireName: r'product_name_id')
@@ -53,13 +55,23 @@ abstract class CreateSaleRequest implements Built<CreateSaleRequest, CreateSaleR
   @BuiltValueField(wireName: r'scrap_serial')
   String? get scrapSerial;
 
+  /// CREDIT = unpaid or partial
+  @BuiltValueField(wireName: r'payment_mode')
+  CreateSaleRequestPaymentModeEnum? get paymentMode;
+  // enum paymentModeEnum {  CASH,  ONLINE,  CREDIT,  };
+
+  /// Paid now when payment_mode is CREDIT (0..sell_price). Ignored for CASH/ONLINE.
+  @BuiltValueField(wireName: r'amount_paid')
+  num? get amountPaid;
+
   CreateSaleRequest._();
 
   factory CreateSaleRequest([void updates(CreateSaleRequestBuilder b)]) = _$CreateSaleRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CreateSaleRequestBuilder b) => b
-      ..saleType = CreateSaleRequestSaleTypeEnum.valueOf('NORMAL');
+      ..saleType = CreateSaleRequestSaleTypeEnum.valueOf('NORMAL')
+      ..paymentMode = CreateSaleRequestPaymentModeEnum.valueOf('CASH');
 
   @BuiltValueSerializer(custom: true)
   static Serializer<CreateSaleRequest> get serializer => _$CreateSaleRequestSerializer();
@@ -126,6 +138,20 @@ class _$CreateSaleRequestSerializer implements PrimitiveSerializer<CreateSaleReq
       yield serializers.serialize(
         object.scrapSerial,
         specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.paymentMode != null) {
+      yield r'payment_mode';
+      yield serializers.serialize(
+        object.paymentMode,
+        specifiedType: const FullType(CreateSaleRequestPaymentModeEnum),
+      );
+    }
+    if (object.amountPaid != null) {
+      yield r'amount_paid';
+      yield serializers.serialize(
+        object.amountPaid,
+        specifiedType: const FullType(num),
       );
     }
   }
@@ -216,6 +242,20 @@ class _$CreateSaleRequestSerializer implements PrimitiveSerializer<CreateSaleReq
           if (valueDes == null) continue;
           result.scrapSerial = valueDes;
           break;
+        case r'payment_mode':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CreateSaleRequestPaymentModeEnum),
+          ) as CreateSaleRequestPaymentModeEnum;
+          result.paymentMode = valueDes;
+          break;
+        case r'amount_paid':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(num),
+          ) as num;
+          result.amountPaid = valueDes;
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -263,5 +303,25 @@ class CreateSaleRequestSaleTypeEnum extends EnumClass {
 
   static BuiltSet<CreateSaleRequestSaleTypeEnum> get values => _$createSaleRequestSaleTypeEnumValues;
   static CreateSaleRequestSaleTypeEnum valueOf(String name) => _$createSaleRequestSaleTypeEnumValueOf(name);
+}
+
+class CreateSaleRequestPaymentModeEnum extends EnumClass {
+
+  /// CREDIT = unpaid or partial
+  @BuiltValueEnumConst(wireName: r'CASH')
+  static const CreateSaleRequestPaymentModeEnum CASH = _$createSaleRequestPaymentModeEnum_CASH;
+  /// CREDIT = unpaid or partial
+  @BuiltValueEnumConst(wireName: r'ONLINE')
+  static const CreateSaleRequestPaymentModeEnum ONLINE = _$createSaleRequestPaymentModeEnum_ONLINE;
+  /// CREDIT = unpaid or partial
+  @BuiltValueEnumConst(wireName: r'CREDIT')
+  static const CreateSaleRequestPaymentModeEnum CREDIT = _$createSaleRequestPaymentModeEnum_CREDIT;
+
+  static Serializer<CreateSaleRequestPaymentModeEnum> get serializer => _$createSaleRequestPaymentModeEnumSerializer;
+
+  const CreateSaleRequestPaymentModeEnum._(String name): super(name);
+
+  static BuiltSet<CreateSaleRequestPaymentModeEnum> get values => _$createSaleRequestPaymentModeEnumValues;
+  static CreateSaleRequestPaymentModeEnum valueOf(String name) => _$createSaleRequestPaymentModeEnumValueOf(name);
 }
 

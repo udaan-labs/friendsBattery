@@ -992,6 +992,32 @@
             "type": "string",
             "nullable": true,
             "description": "Old battery serial when sale_type=SCRAP"
+          },
+          "payment_mode": {
+            "type": "string",
+            "enum": [
+              "CASH",
+              "ONLINE",
+              "CREDIT"
+            ],
+            "default": "CASH",
+            "description": "CREDIT = unpaid or partial"
+          },
+          "amount_paid": {
+            "type": "number",
+            "description": "Paid now when payment_mode is CREDIT (0..sell_price). Ignored for CASH/ONLINE."
+          }
+        }
+      },
+      "PayCreditRequest": {
+        "type": "object",
+        "required": [
+          "amount"
+        ],
+        "properties": {
+          "amount": {
+            "type": "number",
+            "description": "Amount to collect against remaining due"
           }
         }
       },
@@ -1053,6 +1079,15 @@
             "type": "string",
             "nullable": true,
             "description": "Required when service_type is JUMPSTART"
+          },
+          "payment_mode": {
+            "type": "string",
+            "enum": [
+              "CASH",
+              "ONLINE",
+              "CREDIT"
+            ],
+            "default": "CASH"
           }
         }
       },
@@ -1099,6 +1134,15 @@
           "deposit": {
             "type": "number",
             "example": 1000
+          },
+          "payment_mode": {
+            "type": "string",
+            "enum": [
+              "CASH",
+              "ONLINE",
+              "CREDIT"
+            ],
+            "default": "CASH"
           }
         }
       },
@@ -1164,6 +1208,14 @@
           },
           "refund_amount": {
             "type": "number"
+          },
+          "customer_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "customer_number": {
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -1254,6 +1306,20 @@
               "SERVICE",
               "RENT"
             ]
+          },
+          "payment_mode": {
+            "type": "string",
+            "enum": [
+              "CASH",
+              "ONLINE",
+              "CREDIT"
+            ]
+          },
+          "amount_paid": {
+            "type": "number"
+          },
+          "amount_due": {
+            "type": "number"
           },
           "scrap_serial": {
             "type": "string",
@@ -1400,6 +1466,20 @@
               "SERVICE",
               "RENT"
             ]
+          },
+          "payment_mode": {
+            "type": "string",
+            "enum": [
+              "CASH",
+              "ONLINE",
+              "CREDIT"
+            ]
+          },
+          "amount_paid": {
+            "type": "number"
+          },
+          "amount_due": {
+            "type": "number"
           },
           "scrap_serial": {
             "type": "string",
@@ -5130,6 +5210,27 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "in": "query",
+            "name": "paymentMode",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CASH",
+                "ONLINE",
+                "CREDIT"
+              ]
+            },
+            "description": "Filter by payment"
+          },
+          {
+            "in": "query",
+            "name": "unpaid",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "CREDIT sales with remaining due"
           }
         ],
         "responses": {
@@ -5166,7 +5267,8 @@
             "name": "limit",
             "schema": {
               "type": "integer",
-              "default": 10
+              "default": 10,
+              "maximum": 2000
             }
           },
           {
@@ -5184,6 +5286,50 @@
               "type": "integer"
             },
             "description": "Filter by specific seller ID"
+          },
+          {
+            "in": "query",
+            "name": "locationId",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filter by shop location (seller.location_id)"
+          },
+          {
+            "in": "query",
+            "name": "saleType",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "NORMAL",
+                "SCRAP",
+                "MECHANIC",
+                "SERVICE",
+                "RENT"
+              ]
+            },
+            "description": "Filter by bill type"
+          },
+          {
+            "in": "query",
+            "name": "paymentMode",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CASH",
+                "ONLINE",
+                "CREDIT"
+              ]
+            },
+            "description": "Filter by payment"
+          },
+          {
+            "in": "query",
+            "name": "unpaid",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "CREDIT sales with remaining due"
           },
           {
             "in": "query",
@@ -5227,6 +5373,60 @@
           },
           "403": {
             "description": "Forbidden — Admin access required"
+          }
+        }
+      }
+    },
+    "/api/sales/{transactionId}/pay": {
+      "post": {
+        "summary": "Collect remaining credit on a unit sale",
+        "tags": [
+          "Sales"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transactionId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PayCreditRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleDetailResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Amount exceeds due or not a credit sale"
+          },
+          "404": {
+            "description": "Transaction not found"
+          },
+          "409": {
+            "description": "Concurrent payment on the same sale"
           }
         }
       }
@@ -7048,8 +7248,8 @@
     },
     "/api/employee/attendance/location": {
       "post": {
-        "summary": "Update last GPS while checked in (foreground ping)",
-        "description": "Employee app-open ping. Does not run in background. No geofence reject —\nstores last known point for admin/seller map. Server ignores pings closer\nthan 15 seconds apart.\n",
+        "summary": "Update last GPS while checked in",
+        "description": "Stores last known point for admin/seller map. No geofence reject.\nAndroid foreground service / iOS background location may call this while\nthe app is not in the foreground. Server ignores pings closer than 15s.\n",
         "tags": [
           "Attendance"
         ],

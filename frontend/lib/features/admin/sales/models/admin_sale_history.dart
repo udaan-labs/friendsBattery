@@ -1,3 +1,6 @@
+import '../../../../shared/utils/bill_display.dart';
+import '../../../seller/sales/models/seller_sale.dart';
+
 /// UI presentation models for admin sales history.
 ///
 /// Populated only by mapping OpenAPI [AdminSaleRecord] in [AdminSalesRepository].
@@ -42,6 +45,9 @@ class AdminSaleHistory {
   final String productName;
 
   final String saleType;
+  final String paymentMode;
+  final double amountPaid;
+  final double amountDue;
   final String? scrapSerial;
   final String? serviceType;
   final String? rentStatus;
@@ -51,6 +57,43 @@ class AdminSaleHistory {
   // Shipment (optional)
   final AdminShipmentInfo? shipment;
 
+  String get billNumber =>
+      billNumberFor(id: id, saleType: saleType, rentStatus: rentStatus);
+
+  bool get hasUnitSerial => billHasUnitSerial(saleType);
+
+  bool get hasCreditDue => billHasCreditDue(
+        paymentMode: paymentMode,
+        saleType: saleType,
+        amountDue: amountDue,
+      );
+
+  String get paymentLabel => billPaymentLabel(
+        paymentMode: paymentMode,
+        hasCreditDue: hasCreditDue,
+        amountDue: amountDue,
+      );
+
+  SellerSale toSellerSale() => SellerSale(
+        id: id,
+        productName: productName,
+        productModel: productModel,
+        serialNumber: hasUnitSerial
+            ? serialNumber
+            : (vehicleNumber ?? place ?? serialNumber),
+        quantity: quantity,
+        sellPrice: sellPrice,
+        soldAt: soldAt,
+        customerName: customerName,
+        customerPhone: customerPhone,
+        saleType: saleType,
+        paymentMode: paymentMode,
+        amountPaid: amountPaid,
+        amountDue: amountDue,
+        rentStatus: rentStatus,
+        scrapSerial: scrapSerial,
+      );
+
   AdminSaleHistory({
     required this.id,
     required this.soldAt,
@@ -59,6 +102,9 @@ class AdminSaleHistory {
     required this.serialNumber,
     this.vehicleNumber,
     this.saleType = 'NORMAL',
+    this.paymentMode = 'CASH',
+    this.amountPaid = 0,
+    this.amountDue = 0,
     this.scrapSerial,
     this.serviceType,
     this.rentStatus,

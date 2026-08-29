@@ -68,7 +68,7 @@ Class | Method | HTTP request | Description
 [*AttendanceApi*](doc/AttendanceApi.md) | [**apiEmployeeAttendanceCheckInPost**](doc/AttendanceApi.md#apiemployeeattendancecheckinpost) | **POST** /api/employee/attendance/check-in | Check in at assigned shop location
 [*AttendanceApi*](doc/AttendanceApi.md) | [**apiEmployeeAttendanceCheckOutPost**](doc/AttendanceApi.md#apiemployeeattendancecheckoutpost) | **POST** /api/employee/attendance/check-out | Check out (close open attendance)
 [*AttendanceApi*](doc/AttendanceApi.md) | [**apiEmployeeAttendanceCheckedInGet**](doc/AttendanceApi.md#apiemployeeattendancecheckedinget) | **GET** /api/employee/attendance/checked-in | List currently checked-in employees (Admin / Super Admin / Seller)
-[*AttendanceApi*](doc/AttendanceApi.md) | [**apiEmployeeAttendanceLocationPost**](doc/AttendanceApi.md#apiemployeeattendancelocationpost) | **POST** /api/employee/attendance/location | Update last GPS while checked in (foreground ping)
+[*AttendanceApi*](doc/AttendanceApi.md) | [**apiEmployeeAttendanceLocationPost**](doc/AttendanceApi.md#apiemployeeattendancelocationpost) | **POST** /api/employee/attendance/location | Update last GPS while checked in
 [*AttendanceApi*](doc/AttendanceApi.md) | [**apiEmployeeAttendanceStatusGet**](doc/AttendanceApi.md#apiemployeeattendancestatusget) | **GET** /api/employee/attendance/status | Current check-in status for employee
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthActivatePut**](doc/AuthApi.md#apiauthactivateput) | **PUT** /api/auth/activate | Activate and verify a user account
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthLoginPost**](doc/AuthApi.md#apiauthloginpost) | **POST** /api/auth/login | Login with User ID and password
@@ -110,6 +110,7 @@ Class | Method | HTTP request | Description
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesRentReturnPost**](doc/SalesApi.md#apisalesrentreturnpost) | **POST** /api/sales/rent/return | Return rented battery — fee from deposit, refund rest
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesServicePost**](doc/SalesApi.md#apisalesservicepost) | **POST** /api/sales/service | Create a service bill (no stock move)
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesTransactionIdGet**](doc/SalesApi.md#apisalestransactionidget) | **GET** /api/sales/{transactionId} | Return a single sale&#39;s details by ID
+[*SalesApi*](doc/SalesApi.md) | [**apiSalesTransactionIdPayPost**](doc/SalesApi.md#apisalestransactionidpaypost) | **POST** /api/sales/{transactionId}/pay | Collect remaining credit on a unit sale
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiEmployeeShipmentsGet**](doc/ShipmentsApi.md#apiemployeeshipmentsget) | **GET** /api/employee/shipments | List shipments for sellers at the employee&#39;s shop location (read-only)
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiSellerDashboardPendingShipmentsGet**](doc/ShipmentsApi.md#apisellerdashboardpendingshipmentsget) | **GET** /api/seller/dashboard/pending-shipments | Get pending shipments count (Seller only)
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiSellerShipmentsGet**](doc/ShipmentsApi.md#apisellershipmentsget) | **GET** /api/seller/shipments | List shipments for seller (Seller only)
@@ -259,6 +260,7 @@ Class | Method | HTTP request | Description
  - [LoginUserLocation](doc/LoginUserLocation.md)
  - [NextEmployeeUserIdData](doc/NextEmployeeUserIdData.md)
  - [NextEmployeeUserIdResponse](doc/NextEmployeeUserIdResponse.md)
+ - [PayCreditRequest](doc/PayCreditRequest.md)
  - [Product](doc/Product.md)
  - [ProductConfigItem](doc/ProductConfigItem.md)
  - [ProductCreated](doc/ProductCreated.md)

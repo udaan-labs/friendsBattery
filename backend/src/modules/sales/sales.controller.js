@@ -99,12 +99,26 @@ class SalesController {
 
   async getSalesHistory(req, res) {
     try {
-      const sellerId = req.user.id;
-      const query = req.query;
-      const history = await salesService.getSalesHistory(sellerId, query);
+      const history = await salesService.getSalesHistory(
+        {
+          id: req.user.id,
+          role: req.user.role,
+          locationId: req.user.locationId ?? null,
+        },
+        req.query
+      );
       return successResponse(res, 200, 'Seller sales history fetched successfully', history);
     } catch (error) {
       return handleRouteError(res, error, 'Get Sales History Error:');
+    }
+  }
+
+  async payCredit(req, res) {
+    try {
+      const sale = await salesService.payCredit(Number(req.params.transactionId), req.body, req.user);
+      return successResponse(res, 200, 'Payment recorded', sale);
+    } catch (error) {
+      return handleRouteError(res, error, 'Pay Credit Error:');
     }
   }
 
