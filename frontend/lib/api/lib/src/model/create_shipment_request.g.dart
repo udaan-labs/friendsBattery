@@ -10,14 +10,16 @@ class _$CreateShipmentRequest extends CreateShipmentRequest {
   @override
   final int sellerId;
   @override
-  final BuiltList<CreateShipmentItem> items;
+  final BuiltList<String> serialNumbers;
 
   factory _$CreateShipmentRequest([
     void Function(CreateShipmentRequestBuilder)? updates,
   ]) => (CreateShipmentRequestBuilder()..update(updates))._build();
 
-  _$CreateShipmentRequest._({required this.sellerId, required this.items})
-    : super._();
+  _$CreateShipmentRequest._({
+    required this.sellerId,
+    required this.serialNumbers,
+  }) : super._();
   @override
   CreateShipmentRequest rebuild(
     void Function(CreateShipmentRequestBuilder) updates,
@@ -32,14 +34,14 @@ class _$CreateShipmentRequest extends CreateShipmentRequest {
     if (identical(other, this)) return true;
     return other is CreateShipmentRequest &&
         sellerId == other.sellerId &&
-        items == other.items;
+        serialNumbers == other.serialNumbers;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, sellerId.hashCode);
-    _$hash = $jc(_$hash, items.hashCode);
+    _$hash = $jc(_$hash, serialNumbers.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -48,7 +50,7 @@ class _$CreateShipmentRequest extends CreateShipmentRequest {
   String toString() {
     return (newBuiltValueToStringHelper(r'CreateShipmentRequest')
           ..add('sellerId', sellerId)
-          ..add('items', items))
+          ..add('serialNumbers', serialNumbers))
         .toString();
   }
 }
@@ -61,10 +63,11 @@ class CreateShipmentRequestBuilder
   int? get sellerId => _$this._sellerId;
   set sellerId(int? sellerId) => _$this._sellerId = sellerId;
 
-  ListBuilder<CreateShipmentItem>? _items;
-  ListBuilder<CreateShipmentItem> get items =>
-      _$this._items ??= ListBuilder<CreateShipmentItem>();
-  set items(ListBuilder<CreateShipmentItem>? items) => _$this._items = items;
+  ListBuilder<String>? _serialNumbers;
+  ListBuilder<String> get serialNumbers =>
+      _$this._serialNumbers ??= ListBuilder<String>();
+  set serialNumbers(ListBuilder<String>? serialNumbers) =>
+      _$this._serialNumbers = serialNumbers;
 
   CreateShipmentRequestBuilder() {
     CreateShipmentRequest._defaults(this);
@@ -74,7 +77,7 @@ class CreateShipmentRequestBuilder
     final $v = _$v;
     if ($v != null) {
       _sellerId = $v.sellerId;
-      _items = $v.items.toBuilder();
+      _serialNumbers = $v.serialNumbers.toBuilder();
       _$v = null;
     }
     return this;
@@ -104,13 +107,13 @@ class CreateShipmentRequestBuilder
               r'CreateShipmentRequest',
               'sellerId',
             ),
-            items: items.build(),
+            serialNumbers: serialNumbers.build(),
           );
     } catch (_) {
       late String _$failedField;
       try {
-        _$failedField = 'items';
-        items.build();
+        _$failedField = 'serialNumbers';
+        serialNumbers.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'CreateShipmentRequest',

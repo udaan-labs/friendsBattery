@@ -88,8 +88,6 @@ class _$CreateShipmentResult extends CreateShipmentResult {
   final int? transferredUnits;
   @override
   final int? sellerId;
-  @override
-  final BuiltList<TransferInventoryCount>? inventory;
 
   factory _$CreateShipmentResult([
     void Function(CreateShipmentResultBuilder)? updates,
@@ -101,7 +99,6 @@ class _$CreateShipmentResult extends CreateShipmentResult {
     this.status,
     this.transferredUnits,
     this.sellerId,
-    this.inventory,
   }) : super._();
   @override
   CreateShipmentResult rebuild(
@@ -120,8 +117,7 @@ class _$CreateShipmentResult extends CreateShipmentResult {
         shipmentNumber == other.shipmentNumber &&
         status == other.status &&
         transferredUnits == other.transferredUnits &&
-        sellerId == other.sellerId &&
-        inventory == other.inventory;
+        sellerId == other.sellerId;
   }
 
   @override
@@ -132,7 +128,6 @@ class _$CreateShipmentResult extends CreateShipmentResult {
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, transferredUnits.hashCode);
     _$hash = $jc(_$hash, sellerId.hashCode);
-    _$hash = $jc(_$hash, inventory.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -144,8 +139,7 @@ class _$CreateShipmentResult extends CreateShipmentResult {
           ..add('shipmentNumber', shipmentNumber)
           ..add('status', status)
           ..add('transferredUnits', transferredUnits)
-          ..add('sellerId', sellerId)
-          ..add('inventory', inventory))
+          ..add('sellerId', sellerId))
         .toString();
   }
 }
@@ -176,12 +170,6 @@ class CreateShipmentResultBuilder
   int? get sellerId => _$this._sellerId;
   set sellerId(int? sellerId) => _$this._sellerId = sellerId;
 
-  ListBuilder<TransferInventoryCount>? _inventory;
-  ListBuilder<TransferInventoryCount> get inventory =>
-      _$this._inventory ??= ListBuilder<TransferInventoryCount>();
-  set inventory(ListBuilder<TransferInventoryCount>? inventory) =>
-      _$this._inventory = inventory;
-
   CreateShipmentResultBuilder() {
     CreateShipmentResult._defaults(this);
   }
@@ -194,7 +182,6 @@ class CreateShipmentResultBuilder
       _status = $v.status;
       _transferredUnits = $v.transferredUnits;
       _sellerId = $v.sellerId;
-      _inventory = $v.inventory?.toBuilder();
       _$v = null;
     }
     return this;
@@ -214,32 +201,15 @@ class CreateShipmentResultBuilder
   CreateShipmentResult build() => _build();
 
   _$CreateShipmentResult _build() {
-    _$CreateShipmentResult _$result;
-    try {
-      _$result =
-          _$v ??
-          _$CreateShipmentResult._(
-            shipmentId: shipmentId,
-            shipmentNumber: shipmentNumber,
-            status: status,
-            transferredUnits: transferredUnits,
-            sellerId: sellerId,
-            inventory: _inventory?.build(),
-          );
-    } catch (_) {
-      late String _$failedField;
-      try {
-        _$failedField = 'inventory';
-        _inventory?.build();
-      } catch (e) {
-        throw BuiltValueNestedFieldError(
-          r'CreateShipmentResult',
-          _$failedField,
-          e.toString(),
+    final _$result =
+        _$v ??
+        _$CreateShipmentResult._(
+          shipmentId: shipmentId,
+          shipmentNumber: shipmentNumber,
+          status: status,
+          transferredUnits: transferredUnits,
+          sellerId: sellerId,
         );
-      }
-      rethrow;
-    }
     replace(_$result);
     return _$result;
   }

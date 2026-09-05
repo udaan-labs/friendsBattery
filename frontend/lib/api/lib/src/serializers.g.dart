@@ -107,7 +107,6 @@ Serializers _$serializers =
           ..add(CreateServiceBillRequestServiceTypeEnum.serializer)
           ..add(CreateServiceBillResponse.serializer)
           ..add(CreateServiceBillResult.serializer)
-          ..add(CreateShipmentItem.serializer)
           ..add(CreateShipmentRequest.serializer)
           ..add(CreateShipmentResponse.serializer)
           ..add(CreateShipmentResult.serializer)
@@ -214,7 +213,6 @@ Serializers _$serializers =
           ..add(ShopStaffResponse.serializer)
           ..add(TransferEmployeeRequest.serializer)
           ..add(TransferEmployeeResponse.serializer)
-          ..add(TransferInventoryCount.serializer)
           ..add(UpdateLocationRequest.serializer)
           ..add(UpdateLocationResponse.serializer)
           ..add(UpdateStockRequest.serializer)
@@ -327,12 +325,6 @@ Serializers _$serializers =
               const FullType(ApiTransfersPostRequestItemsInner),
             ]),
             () => ListBuilder<ApiTransfersPostRequestItemsInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(CreateShipmentItem),
-            ]),
-            () => ListBuilder<CreateShipmentItem>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(EmployeeAction)]),
@@ -449,12 +441,6 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),
             () => ListBuilder<String>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(TransferInventoryCount),
-            ]),
-            () => ListBuilder<TransferInventoryCount>(),
           ))
         .build();
 

@@ -3,19 +3,14 @@ const { z } = require('zod');
 const createShipmentSchema = z.object({
   body: z.object({
     sellerId: z.coerce.number().int().positive('Seller ID must be a positive integer'),
-    items: z
-      .array(
-        z.object({
-          product_name_id: z.coerce.number().int().positive('Product Name ID must be a positive integer'),
-          product_model_id: z.coerce.number().int().positive('Product Model ID must be a positive integer'),
-          serial_numbers: z
-            .array(z.string().trim().min(1, 'Serial number cannot be empty').max(100))
-            .min(1, 'At least one serial number is required')
-            .max(500),
-          price_per_piece: z.coerce.number().nonnegative('Price per piece must be non-negative').optional(),
-        })
-      )
-      .min(1, 'At least one item is required'),
+    serial_numbers: z
+      .array(z.string().trim().min(1, 'Serial number cannot be empty').max(100))
+      .min(1, 'At least one serial number is required')
+      .max(500)
+      .refine(
+        (serials) => new Set(serials.map((s) => s.toLowerCase())).size === serials.length,
+        { message: 'Duplicate serial numbers in the transfer request' }
+      ),
   }),
 });
 

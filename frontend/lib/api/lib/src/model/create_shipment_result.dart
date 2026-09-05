@@ -4,7 +4,6 @@
 
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
-import 'package:friends_battery_api/src/model/transfer_inventory_count.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -18,7 +17,6 @@ part 'create_shipment_result.g.dart';
 /// * [status] 
 /// * [transferredUnits] 
 /// * [sellerId] 
-/// * [inventory] 
 @BuiltValue()
 abstract class CreateShipmentResult implements Built<CreateShipmentResult, CreateShipmentResultBuilder> {
   @BuiltValueField(wireName: r'shipmentId')
@@ -36,9 +34,6 @@ abstract class CreateShipmentResult implements Built<CreateShipmentResult, Creat
 
   @BuiltValueField(wireName: r'sellerId')
   int? get sellerId;
-
-  @BuiltValueField(wireName: r'inventory')
-  BuiltList<TransferInventoryCount>? get inventory;
 
   CreateShipmentResult._();
 
@@ -98,13 +93,6 @@ class _$CreateShipmentResultSerializer implements PrimitiveSerializer<CreateShip
         specifiedType: const FullType(int),
       );
     }
-    if (object.inventory != null) {
-      yield r'inventory';
-      yield serializers.serialize(
-        object.inventory,
-        specifiedType: const FullType(BuiltList, [FullType(TransferInventoryCount)]),
-      );
-    }
   }
 
   @override
@@ -162,13 +150,6 @@ class _$CreateShipmentResultSerializer implements PrimitiveSerializer<CreateShip
             specifiedType: const FullType(int),
           ) as int;
           result.sellerId = valueDes;
-          break;
-        case r'inventory':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(TransferInventoryCount)]),
-          ) as BuiltList<TransferInventoryCount>;
-          result.inventory.replace(valueDes);
           break;
         default:
           unhandled.add(key);

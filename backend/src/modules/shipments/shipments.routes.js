@@ -32,6 +32,7 @@ const employeeRouter = express.Router();
  *   post:
  *     summary: Transfer stock serials from admin to seller (Admin only)
  *     description: |
+ *       Body is sellerId + serial_numbers only. Product name/model are resolved from each unit.
  *       Marks existing AVAILABLE admin-owned product units as IN_SHIPMENT.
  *       Creates shipment record (status PENDING) and inventory_transactions (SHIPPED).
  *       Ownership moves to seller when seller accepts the shipment.
@@ -52,7 +53,7 @@ const employeeRouter = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/CreateShipmentResponse'
  *       400:
- *         description: Invalid serials, product, or payload
+ *         description: Invalid serials or payload
  *         content:
  *           application/json:
  *             schema:

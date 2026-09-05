@@ -29,59 +29,13 @@ class ShipmentsService {
       }
     }
 
-    const allSerials = [];
-    const perItemSerials = [];
-    for (const item of data.items) {
-      const serials = [];
-      for (const raw of item.serial_numbers) {
-        const serial = String(raw).trim();
-        if (!serial) {
-          throw httpError(400, 'Serial number cannot be empty');
-        }
-        serials.push(serial);
-        allSerials.push(serial);
-      }
-      perItemSerials.push(serials);
-    }
+    const serials = (data.serial_numbers || []).map((raw) => String(raw).trim());
 
-    if (new Set(allSerials).size !== allSerials.length) {
-      throw httpError(400, 'Duplicate serial numbers in the transfer request');
-    }
-
-    const resolvedItems = [];
-    for (let i = 0; i < data.items.length; i++) {
-      const item = data.items[i];
-      const product = await prisma.product.findFirst({
-        where: {
-          productNameId: BigInt(item.product_name_id),
-          productModelId: BigInt(item.product_model_id),
-        },
-        include: {
-          productName: { select: { name: true } },
-          productModel: { select: { name: true } },
-        },
-      });
-
-      if (!product) {
-        throw httpError(400, 
-          `Product not found for Name ID ${item.product_name_id} and Model ID ${item.product_model_id}`
-        );
-      }
-
-      resolvedItems.push({
-        product,
-        serials: perItemSerials[i],
-        pricePerPiece: item.price_per_piece,
-      });
-    }
-
-    const result = await shipmentsRepository.transferUnitsToSeller({
+    return shipmentsRepository.transferUnitsToSeller({
       sellerId: data.sellerId,
       adminId,
-      resolvedItems,
+      serials,
     });
-
-    return result;
   }
 
   async getPendingShipmentsCount(sellerId) {
@@ -232,10 +186,6 @@ class ShipmentsService {
     };
   }
 
-  /**
-   * Seller accept kept for any legacy PENDING shipments.
-   * New transfers complete ownership on admin create (see createShipment).
-   */
   async acceptShipment(shipmentId, sellerId) {
     const shipment = await shipmentsRepository.findShipmentById(shipmentId);
     if (!shipment) {

@@ -9,7 +9,7 @@ import 'package:friends_battery_api/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **sellerId** | **int** |  | 
-**items** | [**BuiltList&lt;CreateShipmentItem&gt;**](CreateShipmentItem.md) |  | 
+**serialNumbers** | **BuiltList&lt;String&gt;** | Serials of AVAILABLE units owned by the admin. Product is resolved from each unit. | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

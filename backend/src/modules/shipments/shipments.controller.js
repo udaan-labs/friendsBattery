@@ -10,7 +10,7 @@ class ShipmentsController {
       return successResponse(
         res,
         201,
-        `Transferred ${result.transferredUnits} unit(s) to seller successfully`,
+        `Shipment created with ${result.transferredUnits} unit(s)`,
         result
       );
     } catch (error) {

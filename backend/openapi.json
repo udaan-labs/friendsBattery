@@ -2876,76 +2876,27 @@
           }
         }
       },
-      "CreateShipmentItem": {
-        "type": "object",
-        "required": [
-          "product_name_id",
-          "product_model_id",
-          "serial_numbers"
-        ],
-        "properties": {
-          "product_name_id": {
-            "type": "integer",
-            "minimum": 1
-          },
-          "product_model_id": {
-            "type": "integer",
-            "minimum": 1
-          },
-          "serial_numbers": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          "price_per_piece": {
-            "type": "number",
-            "minimum": 0
-          }
-        }
-      },
       "CreateShipmentRequest": {
         "type": "object",
         "required": [
           "sellerId",
-          "items"
+          "serial_numbers"
         ],
         "properties": {
           "sellerId": {
             "type": "integer",
             "minimum": 1
           },
-          "items": {
+          "serial_numbers": {
             "type": "array",
             "minItems": 1,
+            "maxItems": 500,
             "items": {
-              "$ref": "#/components/schemas/CreateShipmentItem"
-            }
-          }
-        }
-      },
-      "TransferInventoryCount": {
-        "type": "object",
-        "properties": {
-          "productId": {
-            "type": "integer"
-          },
-          "productName": {
-            "type": "string"
-          },
-          "productModel": {
-            "type": "string"
-          },
-          "transferred": {
-            "type": "integer"
-          },
-          "adminAvailable": {
-            "type": "integer"
-          },
-          "sellerAvailable": {
-            "type": "integer"
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "description": "Serials of AVAILABLE units owned by the admin. Product is resolved from each unit."
           }
         }
       },
@@ -2971,12 +2922,6 @@
           },
           "sellerId": {
             "type": "integer"
-          },
-          "inventory": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TransferInventoryCount"
-            }
           }
         }
       },
@@ -4511,7 +4456,7 @@
     "/api/shipments": {
       "post": {
         "summary": "Transfer stock serials from admin to seller (Admin only)",
-        "description": "Marks existing AVAILABLE admin-owned product units as IN_SHIPMENT.\nCreates shipment record (status PENDING) and inventory_transactions (SHIPPED).\nOwnership moves to seller when seller accepts the shipment.\n",
+        "description": "Body is sellerId + serial_numbers only. Product name/model are resolved from each unit.\nMarks existing AVAILABLE admin-owned product units as IN_SHIPMENT.\nCreates shipment record (status PENDING) and inventory_transactions (SHIPPED).\nOwnership moves to seller when seller accepts the shipment.\n",
         "tags": [
           "Shipments"
         ],
@@ -4542,7 +4487,7 @@
             }
           },
           "400": {
-            "description": "Invalid serials, product, or payload",
+            "description": "Invalid serials or payload",
             "content": {
               "application/json": {
                 "schema": {

@@ -214,7 +214,7 @@ Name | Type | Description  | Notes
 
 Transfer stock serials from admin to seller (Admin only)
 
-Marks existing AVAILABLE admin-owned product units as IN_SHIPMENT. Creates shipment record (status PENDING) and inventory_transactions (SHIPPED). Ownership moves to seller when seller accepts the shipment. 
+Body is sellerId + serial_numbers only. Product name/model are resolved from each unit. Marks existing AVAILABLE admin-owned product units as IN_SHIPMENT. Creates shipment record (status PENDING) and inventory_transactions (SHIPPED). Ownership moves to seller when seller accepts the shipment. 
 
 ### Example
 ```dart

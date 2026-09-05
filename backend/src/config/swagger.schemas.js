@@ -1460,41 +1460,18 @@ module.exports = {
   },
 
   // ── Admin → Seller serial transfer (POST /api/shipments) ─────────────────
-  CreateShipmentItem: {
+  CreateShipmentRequest: {
     type: 'object',
-    required: ['product_name_id', 'product_model_id', 'serial_numbers'],
+    required: ['sellerId', 'serial_numbers'],
     properties: {
-      product_name_id: { type: 'integer', minimum: 1 },
-      product_model_id: { type: 'integer', minimum: 1 },
+      sellerId: { type: 'integer', minimum: 1 },
       serial_numbers: {
         type: 'array',
         minItems: 1,
-        items: { type: 'string', minLength: 1 }
-      },
-      price_per_piece: { type: 'number', minimum: 0 }
-    }
-  },
-  CreateShipmentRequest: {
-    type: 'object',
-    required: ['sellerId', 'items'],
-    properties: {
-      sellerId: { type: 'integer', minimum: 1 },
-      items: {
-        type: 'array',
-        minItems: 1,
-        items: { $ref: '#/components/schemas/CreateShipmentItem' }
+        maxItems: 500,
+        items: { type: 'string', minLength: 1, maxLength: 100 },
+        description: 'Serials of AVAILABLE units owned by the admin. Product is resolved from each unit.'
       }
-    }
-  },
-  TransferInventoryCount: {
-    type: 'object',
-    properties: {
-      productId: { type: 'integer' },
-      productName: { type: 'string' },
-      productModel: { type: 'string' },
-      transferred: { type: 'integer' },
-      adminAvailable: { type: 'integer' },
-      sellerAvailable: { type: 'integer' }
     }
   },
   CreateShipmentResult: {
@@ -1504,11 +1481,7 @@ module.exports = {
       shipmentNumber: { type: 'string' },
       status: { type: 'string', enum: ['PENDING', 'ACCEPTED', 'REJECTED'] },
       transferredUnits: { type: 'integer' },
-      sellerId: { type: 'integer' },
-      inventory: {
-        type: 'array',
-        items: { $ref: '#/components/schemas/TransferInventoryCount' }
-      }
+      sellerId: { type: 'integer' }
     }
   },
   CreateShipmentResponse: {

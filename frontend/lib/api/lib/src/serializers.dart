@@ -94,7 +94,6 @@ import 'package:friends_battery_api/src/model/create_sale_result.dart';
 import 'package:friends_battery_api/src/model/create_service_bill_request.dart';
 import 'package:friends_battery_api/src/model/create_service_bill_response.dart';
 import 'package:friends_battery_api/src/model/create_service_bill_result.dart';
-import 'package:friends_battery_api/src/model/create_shipment_item.dart';
 import 'package:friends_battery_api/src/model/create_shipment_request.dart';
 import 'package:friends_battery_api/src/model/create_shipment_response.dart';
 import 'package:friends_battery_api/src/model/create_shipment_result.dart';
@@ -187,7 +186,6 @@ import 'package:friends_battery_api/src/model/shop_staff_member.dart';
 import 'package:friends_battery_api/src/model/shop_staff_response.dart';
 import 'package:friends_battery_api/src/model/transfer_employee_request.dart';
 import 'package:friends_battery_api/src/model/transfer_employee_response.dart';
-import 'package:friends_battery_api/src/model/transfer_inventory_count.dart';
 import 'package:friends_battery_api/src/model/update_location_request.dart';
 import 'package:friends_battery_api/src/model/update_location_response.dart';
 import 'package:friends_battery_api/src/model/update_stock_request.dart';
@@ -283,7 +281,6 @@ part 'serializers.g.dart';
   CreateServiceBillRequest,
   CreateServiceBillResponse,
   CreateServiceBillResult,
-  CreateShipmentItem,
   CreateShipmentRequest,
   CreateShipmentResponse,
   CreateShipmentResult,
@@ -376,7 +373,6 @@ part 'serializers.g.dart';
   ShopStaffResponse,
   TransferEmployeeRequest,
   TransferEmployeeResponse,
-  TransferInventoryCount,
   UpdateLocationRequest,
   UpdateLocationResponse,
   UpdateStockRequest,
