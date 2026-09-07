@@ -34,6 +34,7 @@ class ShipmentsService {
     return shipmentsRepository.transferUnitsToSeller({
       sellerId: data.sellerId,
       adminId,
+      actorRole: actor?.role,
       serials,
     });
   }
@@ -202,6 +203,45 @@ class ShipmentsService {
     return {
       success: true,
       message: 'Shipment accepted successfully',
+    };
+  }
+
+  /**
+   * Cancel/reject PENDING shipment. Admin: shop/org scope. Seller: own only.
+   * Restores IN_SHIPMENT → AVAILABLE + ledger (atomic with status claim).
+   */
+  async cancelShipment(shipmentId, actor) {
+    const shipment = await shipmentsRepository.findShipmentById(shipmentId);
+    if (!shipment) {
+      throw httpError(404, 'Shipment not found');
+    }
+
+    if (actor.role === ROLES.SELLER) {
+      if (Number(shipment.sellerId) !== Number(actor.id)) {
+        throw httpError(403, 'Forbidden: You can only reject your own shipments');
+      }
+    } else if (actor.role === ROLES.ADMIN) {
+      if (Number(shipment.createdByAdminId) !== Number(actor.id)) {
+        const seller = await prisma.user.findUnique({
+          where: { id: BigInt(shipment.sellerId) },
+          select: { id: true, parentId: true, locationId: true },
+        });
+        const scope = resolveAdminShopScope(actor);
+        if (!seller || !isUserInShopScope(seller, scope)) {
+          throw httpError(403, 'Forbidden: You do not have access to this shipment');
+        }
+      }
+    } else if (actor.role !== ROLES.SUPER_ADMIN) {
+      throw httpError(403, 'Forbidden: Admin or Seller access required');
+    }
+
+    await shipmentsRepository.rejectPendingShipment(shipmentId, shipment.items);
+
+    return {
+      success: true,
+      message: 'Shipment cancelled successfully',
+      shipmentId: Number(shipment.id),
+      status: 'REJECTED',
     };
   }
 }

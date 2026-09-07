@@ -20,6 +20,12 @@ const acceptShipmentSchema = z.object({
   })
 });
 
+const cancelShipmentSchema = z.object({
+  params: z.object({
+    shipmentId: z.string().regex(/^\d+$/, 'Shipment ID must be numeric').transform(Number),
+  }),
+});
+
 const viewShipmentSchema = z.object({
   params: z.object({
     id: z.string().regex(/^\d+$/, 'Shipment ID must be numeric').transform(Number),
@@ -29,5 +35,6 @@ const viewShipmentSchema = z.object({
 module.exports = {
   createShipmentSchema,
   acceptShipmentSchema,
+  cancelShipmentSchema,
   viewShipmentSchema,
 };

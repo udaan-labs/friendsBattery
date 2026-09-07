@@ -1,4 +1,5 @@
 const { prisma } = require('../../config/db');
+const { httpError } = require('../../shared/utils/http-error');
 
 /**
  * Inventory Repository
@@ -136,14 +137,15 @@ class InventoryRepository {
   }
 
   /**
-   * Updates inventory units status or ownership.
+   * Atomic claim: UPDATE WHERE id + claimWhere (status/owner), like sales.
    */
-  async updateInventory(unitIds, data, tx = prisma) {
+  async claimUnits(unitIds, claimWhere, data, tx = prisma) {
     return tx.productUnit.updateMany({
       where: {
-        id: { in: unitIds }
+        id: { in: unitIds },
+        ...claimWhere,
       },
-      data
+      data,
     });
   }
 
@@ -176,31 +178,26 @@ class InventoryRepository {
   }
 
   /**
-   * Removes a unit by setting status to DEFECTIVE and creating audit log.
+   * Removes a unit by atomic AVAILABLE→DEFECTIVE claim + audit log.
    */
   async removeUnit(unitId, actorId) {
     return prisma.$transaction(async (tx) => {
-      const unit = await tx.productUnit.update({
-        where: { id: unitId },
-        data: { status: 'DEFECTIVE' }
+      const claimed = await tx.productUnit.updateMany({
+        where: { id: unitId, status: 'AVAILABLE' },
+        data: { status: 'DEFECTIVE' },
       });
+      if (claimed.count !== 1) {
+        throw httpError(409, 'Unit is no longer AVAILABLE');
+      }
+      const unit = await tx.productUnit.findUnique({ where: { id: unitId } });
       await tx.inventoryTransaction.create({
         data: {
           productUnitId: unitId,
           toUserId: actorId,
-          action: 'RETURNED'
+          action: 'ADJUSTED',
         }
       });
       return unit;
-    });
-  }
-
-  /**
-   * Finds a seller by ID
-   */
-  async findSeller(sellerId) {
-    return prisma.user.findUnique({
-      where: { id: sellerId }
     });
   }
 
@@ -209,43 +206,6 @@ class InventoryRepository {
    */
   async createInventoryTransaction(data, tx = prisma) {
     return tx.inventoryTransaction.createMany({
-      data
-    });
-  }
-
-  /**
-   * Retrieves inventory history.
-   */
-  async findHistory(filters, { skip, take }) {
-    return prisma.inventoryTransaction.findMany({
-      where: filters,
-      include: {
-        productUnit: {
-          include: { product: true }
-        },
-        fromUser: { select: { userName: true, shopName: true } },
-        toUser: { select: { userName: true, shopName: true } }
-      },
-      skip: skip !== undefined ? Number(skip) : undefined,
-      take: take !== undefined ? Number(take) : undefined,
-      orderBy: { timestamp: 'desc' }
-    });
-  }
-
-  /**
-   * Create a shipment record.
-   */
-  async createShipment(data, tx = prisma) {
-    return tx.shipment.create({
-      data
-    });
-  }
-
-  /**
-   * Create shipment item records.
-   */
-  async createShipmentItem(data, tx = prisma) {
-    return tx.shipmentItem.createMany({
       data
     });
   }

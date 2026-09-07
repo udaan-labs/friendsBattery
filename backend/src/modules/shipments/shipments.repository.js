@@ -2,14 +2,23 @@ const { prisma } = require('../../config/db');
 const { getDefaultWarehouseId, getUserLocationId } = require('../../shared/utils/location.util');
 const { httpError } = require('../../shared/utils/http-error');
 
-async function resolveUnitsForSerials(tx, { adminId, serials }) {
-  const ownerId = BigInt(adminId);
+/**
+ * Resolve AVAILABLE units by serial.
+ * SA: any AVAILABLE unit (org stock). Admin: ownerId = actor.
+ */
+async function resolveUnitsForSerials(tx, { adminId, actorRole, serials }) {
+  const where = {
+    status: 'AVAILABLE',
+    OR: serials.map((s) => ({ serialNumber: { equals: s, mode: 'insensitive' } })),
+  };
+  if (actorRole !== 'SUPER_ADMIN') {
+    where.ownerId = BigInt(adminId);
+  } else {
+    // SA ships admin-like stock only (not seller/employee owned)
+    where.ownerType = { in: ['ADMIN', 'SUPER_ADMIN'] };
+  }
   const existing = await tx.productUnit.findMany({
-    where: {
-      status: 'AVAILABLE',
-      ownerId,
-      OR: serials.map((s) => ({ serialNumber: { equals: s, mode: 'insensitive' } })),
-    },
+    where,
     include: {
       product: { select: { id: true, productNameId: true, productModelId: true } },
     },
@@ -66,13 +75,13 @@ class ShipmentsRepository {
   /**
    * Atomic admin → seller serial transfer. Serials must already exist on admin units.
    * Product is resolved from each unit (no name/model in the request).
-   * @param {{ sellerId: number, adminId: number, serials: string[] }} data
+   * @param {{ sellerId: number, adminId: number, actorRole?: string, serials: string[] }} data
    */
   async transferUnitsToSeller(data) {
-    const { sellerId, adminId, serials } = data;
+    const { sellerId, adminId, actorRole, serials } = data;
 
     return prisma.$transaction(async (tx) => {
-      const allUnits = await resolveUnitsForSerials(tx, { adminId, serials });
+      const allUnits = await resolveUnitsForSerials(tx, { adminId, actorRole, serials });
       const byProduct = new Map();
       for (const unit of allUnits) {
         const pid = Number(unit.productId);
@@ -86,12 +95,17 @@ class ShipmentsRepository {
       const boundItems = [...byProduct.values()];
       const unitIds = allUnits.map((u) => u.id);
 
+      const claimWhere = {
+        id: { in: unitIds },
+        status: 'AVAILABLE',
+      };
+      if (actorRole !== 'SUPER_ADMIN') {
+        claimWhere.ownerId = BigInt(adminId);
+      } else {
+        claimWhere.ownerType = { in: ['ADMIN', 'SUPER_ADMIN'] };
+      }
       const moved = await tx.productUnit.updateMany({
-        where: {
-          id: { in: unitIds },
-          status: 'AVAILABLE',
-          ownerId: BigInt(adminId),
-        },
+        where: claimWhere,
         data: { status: 'IN_SHIPMENT' },
       });
       if (moved.count !== unitIds.length) {
@@ -126,22 +140,15 @@ class ShipmentsRepository {
       const toLoc = await getUserLocationId(sellerId, tx);
 
       await tx.inventoryTransaction.createMany({
-        data: unitIds.map((productUnitId) => ({
-          productUnitId,
-          fromUserId: BigInt(adminId),
+        data: allUnits.map((u) => ({
+          productUnitId: u.id,
+          fromUserId: u.ownerId,
           toUserId: BigInt(sellerId),
           action: 'SHIPPED',
           ...(fromLoc ? { fromLocationId: fromLoc } : {}),
           ...(toLoc ? { toLocationId: toLoc } : {}),
         })),
       });
-
-      for (const r of boundItems) {
-        await tx.product.update({
-          where: { id: r.product.id },
-          data: { stockQuantity: { decrement: r.units.length } },
-        });
-      }
 
       return {
         shipmentId: Number(shipment.id),
@@ -322,12 +329,10 @@ class ShipmentsRepository {
   }
 
   /**
-   * Legacy PENDING shipments only — transfer ownership on seller accept.
-   * Atomic: claim PENDING→ACCEPTED first; only move AVAILABLE admin-owned units.
+   * PENDING → ACCEPTED. Atomic: claim shipment row first; claim units by id+status.
    */
   async acceptPendingShipment(shipmentId, items, sellerId) {
     return prisma.$transaction(async (tx) => {
-      // Claim row so concurrent accepts cannot both succeed
       const claimed = await tx.newShipment.updateMany({
         where: { id: BigInt(shipmentId), status: 'PENDING' },
         data: {
@@ -336,7 +341,7 @@ class ShipmentsRepository {
         },
       });
       if (claimed.count !== 1) {
-        throw httpError(400, 
+        throw httpError(400,
           'Shipment cannot be accepted. It may already be processed.'
         );
       }
@@ -352,18 +357,15 @@ class ShipmentsRepository {
           .map((id) => BigInt(id));
 
         if (productUnitIds.length > 0) {
-          // Never force SOLD/transferred units back to AVAILABLE under seller
-          const adminOwnerId = updatedShipment.createdByAdminId;
           const locked = await tx.productUnit.findMany({
             where: {
               id: { in: productUnitIds },
-              status: { in: ['IN_SHIPMENT', 'AVAILABLE'] },
-              ownerId: adminOwnerId,
+              status: 'IN_SHIPMENT',
             },
-            select: { id: true },
+            select: { id: true, ownerId: true, productId: true },
           });
           if (locked.length !== productUnitIds.length) {
-            throw httpError(409, 
+            throw httpError(409,
               'One or more serials are no longer available for this shipment. Contact admin.'
             );
           }
@@ -372,9 +374,10 @@ class ShipmentsRepository {
           const toLoc = await getUserLocationId(sellerId, tx);
           const lockedIds = locked.map((u) => u.id);
 
-          await tx.productUnit.updateMany({
+          const moved = await tx.productUnit.updateMany({
             where: {
               id: { in: lockedIds },
+              status: 'IN_SHIPMENT',
             },
             data: {
               ownerId: BigInt(sellerId),
@@ -383,11 +386,16 @@ class ShipmentsRepository {
               ...(toLoc ? { currentLocationId: toLoc } : {}),
             },
           });
+          if (moved.count !== lockedIds.length) {
+            throw httpError(409,
+              'One or more serials are no longer available for this shipment. Contact admin.'
+            );
+          }
 
           await tx.inventoryTransaction.createMany({
-            data: lockedIds.map((productUnitId) => ({
-              productUnitId,
-              fromUserId: updatedShipment.createdByAdminId,
+            data: locked.map((u) => ({
+              productUnitId: u.id,
+              fromUserId: u.ownerId,
               toUserId: BigInt(sellerId),
               action: 'RECEIVED',
               ...(fromLoc ? { fromLocationId: fromLoc } : {}),
@@ -398,6 +406,76 @@ class ShipmentsRepository {
       }
 
       return updatedShipment;
+    });
+  }
+
+  /**
+   * PENDING → REJECTED. Atomic: claim shipment; restore IN_SHIPMENT → AVAILABLE + ledger.
+   */
+  async rejectPendingShipment(shipmentId, items) {
+    return prisma.$transaction(async (tx) => {
+      const claimed = await tx.newShipment.updateMany({
+        where: { id: BigInt(shipmentId), status: 'PENDING' },
+        data: { status: 'REJECTED' },
+      });
+      if (claimed.count !== 1) {
+        throw httpError(400,
+          'Shipment cannot be cancelled. It may already be processed.'
+        );
+      }
+
+      const shipment = await tx.newShipment.findUnique({
+        where: { id: BigInt(shipmentId) },
+      });
+
+      const productUnitIds = (items || [])
+        .map((item) => item.productUnitId)
+        .filter((id) => id != null)
+        .map((id) => BigInt(id));
+
+      if (productUnitIds.length > 0) {
+        const units = await tx.productUnit.findMany({
+          where: {
+            id: { in: productUnitIds },
+            status: 'IN_SHIPMENT',
+          },
+          select: { id: true, ownerId: true, productId: true },
+        });
+        if (units.length !== productUnitIds.length) {
+          throw httpError(409,
+            'One or more serials are no longer in shipment. Contact admin.'
+          );
+        }
+
+        const unitIds = units.map((u) => u.id);
+        const restored = await tx.productUnit.updateMany({
+          where: {
+            id: { in: unitIds },
+            status: 'IN_SHIPMENT',
+          },
+          data: { status: 'AVAILABLE' },
+        });
+        if (restored.count !== unitIds.length) {
+          throw httpError(409,
+            'One or more serials are no longer in shipment. Contact admin.'
+          );
+        }
+
+        const toLoc = await getDefaultWarehouseId(tx);
+        // Cancel hold: unit never became seller-owned; restore to current owner.
+        await tx.inventoryTransaction.createMany({
+          data: units.map((u) => ({
+            productUnitId: u.id,
+            fromUserId: null,
+            toUserId: u.ownerId,
+            action: 'RECEIVED',
+            ...(toLoc ? { toLocationId: toLoc } : {}),
+          })),
+        });
+
+      }
+
+      return shipment;
     });
   }
 }

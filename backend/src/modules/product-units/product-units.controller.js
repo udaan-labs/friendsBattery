@@ -1,6 +1,11 @@
 const { prisma } = require('../../config/db');
 const { successResponse, errorResponse } = require('../../shared/utils/response');
-const { isAdminLikeRole } = require('../../shared/utils/role.util');
+const {
+  resolveAdminShopScope,
+  isUserInShopScope,
+  isLocationInShopScope,
+} = require('../../shared/utils/shop-scope.util');
+const ROLES = require('../../shared/constants/roles');
 
 const verifyProduct = async (req, res, next) => {
   try {
@@ -23,8 +28,14 @@ const verifyProduct = async (req, res, next) => {
             productModel: true,
           }
         },
-        owner: true,
+        owner: {
+          include: { location: { select: { warehouseId: true } } },
+        },
+        currentLocation: {
+          select: { id: true, warehouseId: true },
+        },
         sales: {
+          orderBy: { soldAt: 'desc' },
           include: {
             seller: true,
             customer: true
@@ -47,16 +58,47 @@ const verifyProduct = async (req, res, next) => {
     // Default deny. EMPLOYEE must not see customer/sale/ledger via verify.
     const role = req.user.role;
     let isAuthorized = false;
-    if (isAdminLikeRole(role)) {
+    if (role === ROLES.SUPER_ADMIN) {
       isAuthorized = true;
-    } else if (role === 'SELLER') {
+    } else if (role === ROLES.ADMIN) {
+      const scope = resolveAdminShopScope(req.user);
+      if (isUserInShopScope(productUnit.owner, scope)) {
+        isAuthorized = true;
+      } else if (
+        productUnit.currentLocation &&
+        isLocationInShopScope(productUnit.currentLocation, scope)
+      ) {
+        isAuthorized = true;
+      }
+    } else if (role === ROLES.SELLER) {
       if (String(productUnit.ownerId) === String(req.user.id)) {
         isAuthorized = true;
       } else {
         const saleByThisSeller = productUnit.sales.find(
           (s) => String(s.sellerId) === String(req.user.id)
         );
-        if (saleByThisSeller) isAuthorized = true;
+        if (saleByThisSeller) {
+          isAuthorized = true;
+        } else {
+          // Shop peer sale (employee/other seller) — same location or parent as returns.
+          const sale = productUnit.sales?.[0]; // orderBy soldAt desc
+          const saleSeller = sale?.seller;
+          if (saleSeller) {
+            if (
+              req.user.locationId != null &&
+              saleSeller.locationId != null &&
+              Number(req.user.locationId) === Number(saleSeller.locationId)
+            ) {
+              isAuthorized = true;
+            } else if (
+              req.user.parentId != null &&
+              saleSeller.parentId != null &&
+              Number(req.user.parentId) === Number(saleSeller.parentId)
+            ) {
+              isAuthorized = true;
+            }
+          }
+        }
       }
     }
 
@@ -64,7 +106,7 @@ const verifyProduct = async (req, res, next) => {
       return errorResponse(res, 404, 'Product not found');
     }
 
-    const sale = productUnit.sales && productUnit.sales.length > 0 ? productUnit.sales[productUnit.sales.length - 1] : null;
+    const sale = productUnit.sales?.[0] ?? null;
 
     // Calculate warranty expiry if sold
     let warrantyExpiry = null;

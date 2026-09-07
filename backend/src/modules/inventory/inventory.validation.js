@@ -45,31 +45,6 @@ const adjustInventorySchema = z.object({
   })
 });
 
-// Schema for POST /inventory/transfer
-const transferInventorySchema = z.object({
-  body: z.object({
-    seller_id: z.number().int().positive({ message: 'Invalid seller id' }),
-    products: z.array(
-      z.object({
-        product_id: z.number().int().positive({ message: 'Invalid product id' }),
-        quantity: z.number().int().positive({ message: 'Invalid quantity' })
-      })
-    ).min(1, { message: 'Empty products array not allowed' })
-  })
-});
-
-// Schema for GET /inventory/history
-const getHistorySchema = z.object({
-  query: z.object({
-    from_date: z.string().optional(),
-    to_date: z.string().optional(),
-    product_id: z.string().regex(/^\d+$/).transform(Number).optional(),
-    seller_id: z.string().regex(/^\d+$/).transform(Number).optional(),
-    page: z.string().regex(/^\d+$/).transform(Number).refine(val => val > 0, { message: 'Page must be positive' }).optional(),
-    limit: z.string().regex(/^\d+$/).transform(Number).refine(val => val > 0, { message: 'Limit must be positive' }).optional(),
-  })
-});
-
 // Schema for POST /inventory/update-stock
 const updateStockSchema = z.object({
   body: z.object({
@@ -138,8 +113,6 @@ module.exports = {
   getInventorySchema,
   getInventoryItemSchema,
   adjustInventorySchema,
-  transferInventorySchema,
-  getHistorySchema,
   updateStockSchema,
   getProductDetailsSchema,
   getAvailableSerialsSchema,

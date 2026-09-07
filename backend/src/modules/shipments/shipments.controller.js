@@ -95,6 +95,16 @@ class ShipmentsController {
       return handleRouteError(res, error, 'Accept Shipment Error:');
     }
   }
+
+  async cancelShipment(req, res) {
+    try {
+      const shipmentId = Number(req.params.shipmentId);
+      const result = await shipmentsService.cancelShipment(shipmentId, req.user);
+      return successResponse(res, 200, 'Shipment cancelled successfully', result);
+    } catch (error) {
+      return handleRouteError(res, error, 'Cancel Shipment Error:');
+    }
+  }
 }
 
 module.exports = new ShipmentsController();

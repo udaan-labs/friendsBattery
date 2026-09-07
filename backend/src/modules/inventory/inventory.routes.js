@@ -5,8 +5,6 @@ const {
   getInventorySchema, 
   getInventoryItemSchema, 
   adjustInventorySchema, 
-  transferInventorySchema, 
-  getHistorySchema,
   updateStockSchema,
   getProductDetailsSchema,
   getAvailableSerialsSchema,
@@ -174,50 +172,6 @@ router.get(
   inventoryController.getInventoryDetails
 );
 
-
-/**
- * @swagger
- * /api/inventory/history:
- *   get:
- *     summary: Return inventory movement history
- *     tags: [Inventory]
- *     parameters:
- *       - in: query
- *         name: from_date
- *         schema:
- *           type: string
- *           format: date
- *       - in: query
- *         name: to_date
- *         schema:
- *           type: string
- *           format: date
- *       - in: query
- *         name: product_id
- *         schema:
- *           type: integer
- *       - in: query
- *         name: seller_id
- *         schema:
- *           type: integer
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Inventory history fetched successfully
- */
-router.get(
-  '/history', 
-  authenticate, 
-  validateRequest(getHistorySchema), 
-  inventoryController.getHistory
-);
 
 /**
  * @swagger
@@ -412,47 +366,6 @@ router.patch(
   requireAdmin, 
   validateRequest(adjustInventorySchema), 
   inventoryController.adjustInventory
-);
-
-/**
- * @swagger
- * /api/inventory/transfer:
- *   post:
- *     summary: Transfer inventory from admin to seller
- *     tags: [Inventory]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - seller_id
- *               - products
- *             properties:
- *               seller_id:
- *                 type: integer
- *               products:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     product_id:
- *                       type: integer
- *                     quantity:
- *                       type: integer
- *     responses:
- *       200:
- *         description: Inventory transferred successfully
- *       400:
- *         description: Invalid seller or insufficient stock
- */
-router.post(
-  '/transfer', 
-  authenticate, 
-  requireAdmin, 
-  validateRequest(transferInventorySchema), 
-  inventoryController.transferInventory
 );
 
 /**
