@@ -41,6 +41,7 @@ enum TransactionAction {
   TRANSFERRED
   RENTED
   RENT_RETURNED
+  ADJUSTED
 }
 
 enum RentStatus {
@@ -143,8 +144,6 @@ model User {
   ownedUnits             ProductUnit[]          @relation("UnitOwner")
   transactionsFrom       InventoryTransaction[] @relation("TransactionFromUser")
   transactionsTo         InventoryTransaction[] @relation("TransactionToUser")
-  stockRequestsMade      StockRequest[]         @relation("StockRequestSeller")
-  stockRequestsReceived  StockRequest[]         @relation("StockRequestToUser")
   shipmentsSent          Shipment[]             @relation("ShipmentFromUser")
   shipmentsReceived      Shipment[]             @relation("ShipmentToUser")
   adminShipmentsSent     NewShipment[]          @relation("AdminShipmentSent")
@@ -306,7 +305,6 @@ model Product {
   productModel ProductModel @relation(fields: [productModelId], references: [id])
 
   units             ProductUnit[]
-  stockRequestItems StockRequestItem[]
   salesTransactions SalesTransaction[] @relation("ProductSold")
   replacedInSales   SalesTransaction[] @relation("ProductReplaced")
   returns           ReturnProduct[]
@@ -395,33 +393,7 @@ model InventoryTransaction {
   @@map("inventory_transactions")
 }
 
-model StockRequest {
-  id         BigInt      @id @default(autoincrement())
-  sellerId   BigInt      @map("seller_id")
-  requestTo  BigInt      @map("request_to")
-  status     OrderStatus @default(PENDING)
-  createdAt  DateTime    @default(now()) @map("created_at") @db.Timestamp()
-  approvedAt DateTime?   @map("approved_at") @db.Timestamp()
-
-  seller   User               @relation("StockRequestSeller", fields: [sellerId], references: [id])
-  receiver User               @relation("StockRequestToUser", fields: [requestTo], references: [id])
-  items    StockRequestItem[]
-
-  @@map("stock_requests")
-}
-
-model StockRequestItem {
-  id                BigInt @id @default(autoincrement())
-  stockRequestId    BigInt @map("stock_request_id")
-  productId         BigInt @map("product_id")
-  requestedQuantity Int    @map("requested_quantity")
-
-  request StockRequest @relation(fields: [stockRequestId], references: [id], onDelete: Cascade)
-  product Product      @relation(fields: [productId], references: [id])
-
-  @@map("stock_request_items")
-}
-
+/// Legacy quantity transfers table — API removed (Phase2 B7/D1). Drop in a later migration.
 model Shipment {
   id                   BigInt      @id @default(autoincrement())
   fromUserId           BigInt      @map("from_user_id")
@@ -440,6 +412,7 @@ model Shipment {
   @@map("transfers")
 }
 
+/// Legacy — paired with Shipment / transfers. API removed; drop with Shipment later.
 model ShipmentItem {
   id                  BigInt   @id @default(autoincrement())
   shipmentId          BigInt   @map("shipment_id")

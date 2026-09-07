@@ -8,7 +8,7 @@ class ReturnsRepository {
   async getProductUnitBySerialNumber(serialNumber) {
     return prisma.productUnit.findUnique({
       where: { serialNumber },
-      include: { product: true }
+      include: { product: true },
     });
   }
 
@@ -19,32 +19,39 @@ class ReturnsRepository {
     return prisma.salesTransaction.findFirst({
       where: { productUnitId },
       orderBy: { soldAt: 'desc' },
-      include: { customer: true }
+      include: { customer: true },
     });
   }
 
   /**
-   * Process the return transaction
-   * Updates product unit status, creates ReturnProduct record, logs inventory transaction
+   * Process return: claim SOLD → restockStatus, ReturnProduct row, ledger.
    */
   async processReturn(data) {
-    const { productUnitId, productId, transactionId, serialNumber, reason, sellerId } = data;
+    const {
+      productUnitId,
+      productId,
+      transactionId,
+      serialNumber,
+      reason,
+      actorId,
+      ownerType,
+      restockStatus,
+    } = data;
 
     return prisma.$transaction(async (tx) => {
-      // 1. Atomic claim — only one concurrent return can flip SOLD → RETURNED
       const claimed = await tx.productUnit.updateMany({
         where: {
           id: productUnitId,
           status: 'SOLD',
         },
         data: {
-          status: 'RETURNED',
-          ownerId: sellerId,
-          ownerType: 'SELLER',
+          status: restockStatus,
+          ownerId: actorId,
+          ownerType,
         },
       });
       if (claimed.count !== 1) {
-        throw httpError(409, 
+        throw httpError(409,
           'Product is no longer in SOLD status (already returned or sold again).'
         );
       }
@@ -53,7 +60,6 @@ class ReturnsRepository {
         where: { id: productUnitId },
       });
 
-      // 2. Create ReturnProduct record
       const returnRecord = await tx.returnProduct.create({
         data: {
           transactionId,
@@ -61,23 +67,37 @@ class ReturnsRepository {
           serialNumber,
           reason,
           returnType: 'CUSTOMER_RETURN',
-          returnById: sellerId, // The seller who processed it
-        }
+          returnById: actorId,
+        },
       });
 
-      // 3. Create InventoryTransaction to log the movement
+      // Clear due without inventing cash: write sellPrice down to amountPaid.
+      const sale = await tx.salesTransaction.findUnique({
+        where: { id: transactionId },
+        select: { sellPrice: true, amountPaid: true },
+      });
+      if (sale) {
+        const paid = Number(sale.amountPaid ?? 0);
+        if (paid < Number(sale.sellPrice)) {
+          await tx.salesTransaction.update({
+            where: { id: transactionId },
+            data: { sellPrice: sale.amountPaid ?? 0 },
+          });
+        }
+      }
+
       await tx.inventoryTransaction.create({
         data: {
           productUnitId,
-          fromUserId: null, // Returned by customer (no user id)
-          toUserId: sellerId,
-          action: 'RETURNED'
-        }
+          fromUserId: null,
+          toUserId: actorId,
+          action: 'RETURNED',
+        },
       });
 
       return {
         updatedUnit,
-        returnRecord
+        returnRecord,
       };
     });
   }
@@ -93,10 +113,10 @@ class ReturnsRepository {
         product: {
           include: {
             productName: true,
-            productModel: true
-          }
-        }
-      }
+            productModel: true,
+          },
+        },
+      },
     });
   }
 }

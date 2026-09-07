@@ -77,7 +77,7 @@ app.use('/api/products', productsRoutes.productRouter);
 app.use('/api/returns', require('./modules/returns/returns.routes'));
 app.use('/api/sales', require('./modules/sales/sales.routes'));
 app.use('/api/shops', require('./modules/shops/shops.routes'));
-app.use('/api/transfers', require('./modules/transfers/transfers.routes'));
+// Legacy /api/transfers removed (Phase2 B7/D1) — use /api/shipments
 app.use('/api/users', require('./modules/users/users.routes'));
 
 // 404 handler

@@ -21,8 +21,6 @@ async function main() {
     await del('shipments (new)', () => tx.newShipment.deleteMany({}));
     await del('transfer_items', () => tx.shipmentItem.deleteMany({}));
     await del('transfers', () => tx.shipment.deleteMany({}));
-    await del('stock_request_items', () => tx.stockRequestItem.deleteMany({}));
-    await del('stock_requests', () => tx.stockRequest.deleteMany({}));
     await del('product_units', () => tx.productUnit.deleteMany({}));
     
     // Reset product stock counts to 0

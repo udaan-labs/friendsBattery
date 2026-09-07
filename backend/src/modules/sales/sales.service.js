@@ -6,6 +6,7 @@ const {
   resolveAdminShopScope,
   resolveShopSellerIds,
   isUserInShopScope,
+  isLocationInShopScope,
 } = require('../../shared/utils/shop-scope.util');
 const { prisma } = require('../../config/db');
 const { assertAccess } = require('../../shared/utils/access.util');
@@ -385,14 +386,34 @@ class SalesService {
     }
 
     const isEmployee = actor.role === ROLES.EMPLOYEE;
+    const isSeller = actor.role === ROLES.SELLER;
     if (isEmployee && actor.locationId == null) {
       throw httpError(400, 'Your account has no shop location. Contact admin.');
     }
 
     const sellerId = actor.id;
-    const filters = {
-      sellerId: isEmployee ? undefined : sellerId,
-      locationId: isEmployee ? actor.locationId : undefined,
+    // Seller: include employee (and peer) sales at same location / under same admin
+    let filters;
+    if (isEmployee) {
+      filters = {
+        sellerId: undefined,
+        locationId: actor.locationId,
+      };
+    } else if (isSeller && actor.locationId != null) {
+      filters = {
+        sellerId: undefined,
+        locationId: actor.locationId,
+      };
+    } else if (isSeller && actor.parentId != null) {
+      filters = {
+        sellerId: undefined,
+        peerParentId: actor.parentId,
+        includeSellerId: sellerId,
+      };
+    } else {
+      filters = { sellerId, locationId: undefined };
+    }
+    Object.assign(filters, {
       searchCustomer,
       searchSerial,
       search: searchCustomer || searchSerial,
@@ -400,7 +421,7 @@ class SalesService {
       toDate,
       paymentMode: query.paymentMode,
       unpaid: query.unpaid,
-    };
+    });
 
     const skipServiceRent = Boolean(query.unpaid);
     // ponytail: in-memory merge cap; SQL union if a shop exceeds 2000 rows
@@ -604,6 +625,23 @@ class SalesService {
     if (scope?.kind === 'shop') {
       const sellerIds = await resolveShopSellerIds(prisma, scope);
       filters.sellerIds = sellerIds || [];
+      if (filters.sellerId != null) {
+        const allowed = (sellerIds || []).some(
+          (id) => Number(id) === Number(filters.sellerId)
+        );
+        if (!allowed) {
+          throw httpError(403, 'Forbidden: seller is not under your shop');
+        }
+      }
+      if (filters.locationId != null) {
+        const loc = await prisma.location.findUnique({
+          where: { id: BigInt(filters.locationId) },
+          select: { id: true, warehouseId: true },
+        });
+        if (!loc || !isLocationInShopScope(loc, scope)) {
+          throw httpError(403, 'Forbidden: location is not under your shop');
+        }
+      }
     }
 
     // ponytail: in-memory merge cap; SQL union if a shop exceeds 2000 rows

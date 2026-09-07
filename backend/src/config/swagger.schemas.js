@@ -74,29 +74,6 @@ module.exports = {
       data: { $ref: '#/components/schemas/LoginData' }
     }
   },
-  LoginOtpChallengeData: {
-    type: 'object',
-    properties: {
-      requires_otp: { type: 'boolean' },
-      challenge_id: { type: 'string' },
-      expires_in: { type: 'integer', description: 'Seconds until OTP expires' },
-      phone_masked: { type: 'string', nullable: true },
-      otp: {
-        type: 'string',
-        nullable: true,
-        description: 'Only when OTP_ECHO=1 (debug)',
-      },
-    },
-  },
-  LoginOtpChallengeResponse: {
-    type: 'object',
-    properties: {
-      success: { type: 'boolean' },
-      message: { type: 'string' },
-      data: { $ref: '#/components/schemas/LoginOtpChallengeData' },
-    },
-  },
-
   RegisterData: {
     type: 'object',
     properties: {
@@ -1290,7 +1267,12 @@ module.exports = {
     required: ['serial_number', 'reason'],
     properties: {
       serial_number: { type: 'string' },
-      reason: { type: 'string' }
+      reason: { type: 'string' },
+      restock_as: {
+        type: 'string',
+        enum: ['AVAILABLE', 'DEFECTIVE'],
+        description: 'Restock status after return. Default AVAILABLE (sellable).',
+      },
     }
   },
   CreateReturnResult: {
@@ -1345,7 +1327,7 @@ module.exports = {
       productUnitId: { type: 'string' },
       fromUserId: { type: 'string', nullable: true },
       toUserId: { type: 'string' },
-      action: { type: 'string', enum: ['RECEIVED', 'SHIPPED', 'SOLD', 'RETURNED', 'TRANSFERRED'] },
+      action: { type: 'string', enum: ['RECEIVED', 'SHIPPED', 'SOLD', 'RETURNED', 'TRANSFERRED', 'RENTED', 'RENT_RETURNED', 'ADJUSTED'] },
       timestamp: { type: 'string', format: 'date-time' }
     }
   },

@@ -49,9 +49,6 @@ async function main() {
     await del('shipments (new)', () => tx.newShipment.deleteMany({}));
     await del('transfer_items', () => tx.shipmentItem.deleteMany({}));
     await del('transfers', () => tx.shipment.deleteMany({}));
-    await del('stock_request_items', () => tx.stockRequestItem.deleteMany({}));
-    await del('stock_requests', () => tx.stockRequest.deleteMany({}));
-
     await del('product_units', () => tx.productUnit.deleteMany({}));
     await del('products', () => tx.product.deleteMany({}));
     await del('product_models', () => tx.productModel.deleteMany({}));

@@ -1,17 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const returnsController = require('./returns.controller');
+const { processReturnSchema } = require('./returns.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
-const {
-  requireSeller,
-  requireAdminOrSeller,
-} = require('../../shared/middleware/role.middleware');
+const { requireAdminOrSeller } = require('../../shared/middleware/role.middleware');
+const { validateRequest } = require('../../shared/middleware/validation.middleware');
 
 /**
  * @swagger
  * /api/returns:
  *   post:
- *     summary: Process a product return (seller)
+ *     summary: Process a product return (seller or admin)
+ *     description: |
+ *       Restocks the unit as AVAILABLE (default, sellable) or DEFECTIVE.
+ *       Shop seller/admin may return sales by shop staff (including employees), not only self.
  *     tags: [Returns]
  *     security:
  *       - bearerAuth: []
@@ -34,15 +36,24 @@ const {
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Sale not in actor shop scope
+ *       409:
+ *         description: Unit no longer SOLD (race)
  */
-// Route to submit/process a product return (seller only — not employee)
-router.post('/', authenticate, requireSeller, returnsController.processReturn);
+router.post(
+  '/',
+  authenticate,
+  requireAdminOrSeller,
+  validateRequest(processReturnSchema),
+  returnsController.processReturn
+);
 
 /**
  * @swagger
  * /api/returns:
  *   get:
- *     summary: List product returns (seller own, admin all)
+ *     summary: List product returns (seller own, admin shop/all)
  *     tags: [Returns]
  *     security:
  *       - bearerAuth: []
@@ -60,7 +71,6 @@ router.post('/', authenticate, requireSeller, returnsController.processReturn);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-// Route to list product returns (admin all / seller own)
 router.get('/', authenticate, requireAdminOrSeller, returnsController.getReturns);
 
 module.exports = router;

@@ -342,14 +342,41 @@ class SalesRepository {
   }
 
   async getSalesHistoryBySeller(sellerId, filters, pagination) {
-    const { searchCustomer, searchSerial, fromDate, toDate, paymentMode, unpaid, locationId } =
-      filters;
+    const {
+      searchCustomer,
+      searchSerial,
+      fromDate,
+      toDate,
+      paymentMode,
+      unpaid,
+      locationId,
+      peerParentId,
+      includeSellerId,
+    } = filters;
     const { skip, take } = pagination;
 
+    let sellerScope;
+    if (locationId != null) {
+      sellerScope = { seller: { locationId: BigInt(locationId) } };
+    } else if (peerParentId != null) {
+      const selfId = BigInt(includeSellerId ?? sellerId);
+      sellerScope = {
+        seller: {
+          OR: [
+            { id: selfId },
+            {
+              parentId: BigInt(peerParentId),
+              role: { in: ['SELLER', 'EMPLOYEE'] },
+            },
+          ],
+        },
+      };
+    } else {
+      sellerScope = { sellerId: BigInt(sellerId) };
+    }
+
     const whereClause = {
-      ...(locationId != null
-        ? { seller: { locationId: BigInt(locationId) } }
-        : { sellerId: BigInt(sellerId) }),
+      ...sellerScope,
       ...(searchCustomer && {
         customer: {
           name: {
@@ -545,14 +572,34 @@ class SalesRepository {
    * Fetch Service Bills for Admin history
    */
   _sellerScopeWhere(filters) {
-    const { sellerId, sellerIds, locationId } = filters || {};
+    const { sellerId, sellerIds, locationId, peerParentId, includeSellerId } = filters || {};
     const where = {};
-    if (sellerId) where.sellerId = BigInt(sellerId);
-    else if (sellerIds && Array.isArray(sellerIds)) {
+    if (peerParentId != null) {
+      const selfId = BigInt(includeSellerId ?? sellerId);
+      where.seller = {
+        OR: [
+          { id: selfId },
+          {
+            parentId: BigInt(peerParentId),
+            role: { in: ['SELLER', 'EMPLOYEE'] },
+          },
+        ],
+      };
+      if (locationId) {
+        where.seller = {
+          AND: [where.seller, { locationId: BigInt(locationId) }],
+        };
+      }
+      return where;
+    }
+    if (sellerId) {
+      where.sellerId = BigInt(sellerId);
+    } else if (sellerIds && Array.isArray(sellerIds)) {
       where.sellerId = { in: sellerIds.map((id) => BigInt(id)) };
     }
+    // Optional location filter must AND with shop seller scope — never replace it.
     if (locationId) {
-      where.seller = { locationId: BigInt(locationId) };
+      where.seller = { ...(where.seller || {}), locationId: BigInt(locationId) };
     }
     return where;
   }
