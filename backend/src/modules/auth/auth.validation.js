@@ -22,18 +22,12 @@ const loginSchema = z.object({
   // Optional — used for employee_sessions on EMPLOYEE login
   device_id: z.string().optional(),
   app_version: z.string().optional(),
-  firebase_token: z.string().optional(),
 });
 
 const activateSchema = z.object({
   user_id: z.string().min(1),
   is_active: z.boolean(),
   is_verified: z.boolean()
-});
-
-const verifyLoginOtpSchema = z.object({
-  challenge_id: z.string().min(1),
-  otp: z.string().min(4).max(8),
 });
 
 const validateRegister = (req, res, next) => {
@@ -70,18 +64,8 @@ const validateActivate = (req, res, next) => {
   }
 };
 
-const validateVerifyLoginOtp = (req, res, next) => {
-  try {
-    req.body = verifyLoginOtpSchema.parse(req.body);
-    next();
-  } catch {
-    return errorResponse(res, 400, 'challenge_id and otp are required');
-  }
-};
-
 module.exports = {
   validateRegister,
   validateLogin,
   validateActivate,
-  validateVerifyLoginOtp,
 };

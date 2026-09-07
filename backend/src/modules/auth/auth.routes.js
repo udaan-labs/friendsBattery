@@ -5,7 +5,6 @@ const {
   validateRegister,
   validateLogin,
   validateActivate,
-  validateVerifyLoginOtp,
 } = require('./auth.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
 const {
@@ -176,8 +175,6 @@ router.post(
  *                 type: string
  *               app_version:
  *                 type: string
- *               firebase_token:
- *                 type: string
  *     responses:
  *       200:
  *         description: Login successful
@@ -205,42 +202,6 @@ router.post(
  *               $ref: '#/components/schemas/Error'
  */
 router.post('/login', validateLogin, authController.login);
-
-/**
- * @swagger
- * /api/auth/verify-otp:
- *   post:
- *     summary: Complete login with OTP
- *     description: Exchange login OTP challenge for auth_id / auth_key.
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [challenge_id, otp]
- *             properties:
- *               challenge_id:
- *                 type: string
- *               otp:
- *                 type: string
- *                 example: "123456"
- *     responses:
- *       200:
- *         description: Login successful
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/LoginResponse'
- *       401:
- *         description: Invalid / expired OTP
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- */
-router.post('/verify-otp', validateVerifyLoginOtp, authController.verifyLoginOtp);
 
 /**
  * @swagger

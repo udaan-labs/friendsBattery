@@ -35,19 +35,15 @@ function resolveAdminShopScope(user) {
   return null;
 }
 
-/** parentId = admin, same location, or shops under warehouse network */
+/** parentId = admin, same location; warehouse admin also gets shops under WH */
 function _shopOr(scope) {
   const or = [{ parentId: BigInt(scope.adminId) }];
   if (scope.locationId != null) {
     or.push({ locationId: BigInt(scope.locationId) });
   }
-
-  const effectiveWarehouseId =
-    scope.locationType === 'WAREHOUSE' ? scope.locationId : scope.warehouseId;
-
-  if (effectiveWarehouseId != null) {
-    const whId = BigInt(effectiveWarehouseId);
-    or.push({ locationId: whId });
+  // Shop admin must NOT bleed to sibling shops via location.warehouseId.
+  if (scope.locationType === 'WAREHOUSE' && scope.locationId != null) {
+    const whId = BigInt(scope.locationId);
     or.push({ location: { warehouseId: whId } });
   }
   return or;
@@ -103,19 +99,16 @@ function isUserInShopScope(target, scope) {
   ) {
     return true;
   }
-  const effectiveWarehouseId =
-    scope.locationType === 'WAREHOUSE' ? scope.locationId : scope.warehouseId;
-  if (effectiveWarehouseId != null) {
+  if (scope.locationType === 'WAREHOUSE' && scope.locationId != null) {
     if (
       target.locationId != null &&
-      Number(target.locationId) === Number(effectiveWarehouseId)
+      Number(target.locationId) === Number(scope.locationId)
     ) {
       return true;
     }
-    // Shop staff: callers must include location.warehouseId (parent_id may be SA).
     if (
       target.location?.warehouseId != null &&
-      Number(target.location.warehouseId) === Number(effectiveWarehouseId)
+      Number(target.location.warehouseId) === Number(scope.locationId)
     ) {
       return true;
     }
@@ -123,17 +116,15 @@ function isUserInShopScope(target, scope) {
   return false;
 }
 
-/** Own location, or (warehouse admin) a shop whose warehouse_id is this warehouse. */
+/** Own location, or (warehouse admin only) a shop whose warehouse_id is this warehouse. */
 function isLocationInShopScope(loc, scope) {
   if (!scope || scope.kind === 'org') return true;
   if (!loc || scope.kind !== 'shop' || scope.locationId == null) return false;
   if (Number(loc.id) === Number(scope.locationId)) return true;
-  const effectiveWarehouseId =
-    scope.locationType === 'WAREHOUSE' ? scope.locationId : scope.warehouseId;
   if (
-    effectiveWarehouseId != null &&
+    scope.locationType === 'WAREHOUSE' &&
     loc.warehouseId != null &&
-    Number(loc.warehouseId) === Number(effectiveWarehouseId)
+    Number(loc.warehouseId) === Number(scope.locationId)
   ) {
     return true;
   }
@@ -258,6 +249,31 @@ if (require.main === module) {
     !isUserInShopScope(
       { id: 10, parentId: 99, locationId: 1 },
       { kind: 'shop', adminId: 5, locationId: 9 }
+    )
+  );
+  // Shop admin must not see sibling shop staff via shared warehouseId
+  assert.ok(
+    !isUserInShopScope(
+      { id: 20, parentId: 99, locationId: 2, location: { warehouseId: 9 } },
+      {
+        kind: 'shop',
+        adminId: 5,
+        locationId: 1,
+        locationType: 'SHOP',
+        warehouseId: 9,
+      }
+    )
+  );
+  assert.ok(
+    !isLocationInShopScope(
+      { id: 2, warehouseId: 9 },
+      {
+        kind: 'shop',
+        adminId: 5,
+        locationId: 1,
+        locationType: 'SHOP',
+        warehouseId: 9,
+      }
     )
   );
   assert.ok(
