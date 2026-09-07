@@ -185,7 +185,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   : 'Registration successful.',
         );
         if (_asSeller) {
-          DataSync.afterSellerMutation(ref);
+          DataSync.afterStaffMutation(ref);
         }
         if (_selectedShopLocationId != null) {
           ref.invalidate(locationStaffProvider(_selectedShopLocationId!));

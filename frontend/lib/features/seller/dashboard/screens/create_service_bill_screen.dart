@@ -301,6 +301,7 @@ class _CreateServiceBillScreenState
               BillPaymentModePicker(
                 value: _paymentMode,
                 onChanged: (v) => setState(() => _paymentMode = v),
+                allowCredit: false,
               ),
               const SizedBox(height: 24),
               FilledButton(

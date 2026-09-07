@@ -34,7 +34,7 @@ abstract class InventoryTransaction implements Built<InventoryTransaction, Inven
 
   @BuiltValueField(wireName: r'action')
   InventoryTransactionActionEnum? get action;
-  // enum actionEnum {  RECEIVED,  SHIPPED,  SOLD,  RETURNED,  TRANSFERRED,  };
+  // enum actionEnum {  RECEIVED,  SHIPPED,  SOLD,  RETURNED,  TRANSFERRED,  RENTED,  RENT_RETURNED,  ADJUSTED,  };
 
   @BuiltValueField(wireName: r'timestamp')
   DateTime? get timestamp;
@@ -211,6 +211,12 @@ class InventoryTransactionActionEnum extends EnumClass {
   static const InventoryTransactionActionEnum RETURNED = _$inventoryTransactionActionEnum_RETURNED;
   @BuiltValueEnumConst(wireName: r'TRANSFERRED')
   static const InventoryTransactionActionEnum TRANSFERRED = _$inventoryTransactionActionEnum_TRANSFERRED;
+  @BuiltValueEnumConst(wireName: r'RENTED')
+  static const InventoryTransactionActionEnum RENTED = _$inventoryTransactionActionEnum_RENTED;
+  @BuiltValueEnumConst(wireName: r'RENT_RETURNED')
+  static const InventoryTransactionActionEnum RENT_RETURNED = _$inventoryTransactionActionEnum_RENT_RETURNED;
+  @BuiltValueEnumConst(wireName: r'ADJUSTED')
+  static const InventoryTransactionActionEnum ADJUSTED = _$inventoryTransactionActionEnum_ADJUSTED;
 
   static Serializer<InventoryTransactionActionEnum> get serializer => _$inventoryTransactionActionEnumSerializer;
 

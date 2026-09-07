@@ -5,12 +5,15 @@ class BillPaymentModePicker extends StatelessWidget {
   final String value;
   final ValueChanged<String> onChanged;
   final Widget? creditExtra;
+  /// When false, CREDIT tile is hidden (service/rent have no pay-later API).
+  final bool allowCredit;
 
   const BillPaymentModePicker({
     super.key,
     required this.value,
     required this.onChanged,
     this.creditExtra,
+    this.allowCredit = true,
   });
 
   @override
@@ -28,11 +31,13 @@ class BillPaymentModePicker extends StatelessWidget {
             _tile(value: 'CASH', label: 'Cash', icon: Icons.payments_outlined),
             const SizedBox(width: 8),
             _tile(value: 'ONLINE', label: 'Online', icon: Icons.smartphone_outlined),
-            const SizedBox(width: 8),
-            _tile(value: 'CREDIT', label: 'Credit', icon: Icons.schedule_outlined),
+            if (allowCredit) ...[
+              const SizedBox(width: 8),
+              _tile(value: 'CREDIT', label: 'Credit', icon: Icons.schedule_outlined),
+            ],
           ],
         ),
-        if (value == 'CREDIT') ...[
+        if (allowCredit && value == 'CREDIT') ...[
           const Padding(
             padding: EdgeInsets.only(top: 8),
             child: Text(

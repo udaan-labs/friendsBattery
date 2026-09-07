@@ -32,7 +32,6 @@ Serializers _$serializers =
           ..add(ApiAuthActivatePutRequest.serializer)
           ..add(ApiAuthLoginPostRequest.serializer)
           ..add(ApiAuthRegisterPostRequest.serializer)
-          ..add(ApiAuthVerifyOtpPostRequest.serializer)
           ..add(ApiDashboardStatsGet200Response.serializer)
           ..add(ApiEmployeeAttendanceCheckInPost201Response.serializer)
           ..add(ApiEmployeeAttendanceCheckedInGet200Response.serializer)
@@ -52,8 +51,6 @@ Serializers _$serializers =
                 .serializer,
           )
           ..add(ApiInventoryDetailsGet200ResponseDataPagination.serializer)
-          ..add(ApiInventoryTransferPostRequest.serializer)
-          ..add(ApiInventoryTransferPostRequestProductsInner.serializer)
           ..add(ApiSellerDashboardPendingShipmentsGet200Response.serializer)
           ..add(ApiSellerDashboardPendingShipmentsGet200ResponseData.serializer)
           ..add(ApiSellerDashboardStatsGet200Response.serializer)
@@ -67,8 +64,6 @@ Serializers _$serializers =
           ..add(ApiShipmentsIdGet200ResponseData.serializer)
           ..add(ApiShipmentsIdGet200ResponseDataItemsInner.serializer)
           ..add(ApiShipmentsIdGet200ResponseDataSeller.serializer)
-          ..add(ApiTransfersPostRequest.serializer)
-          ..add(ApiTransfersPostRequestItemsInner.serializer)
           ..add(AppStatus.serializer)
           ..add(AppStatusResponse.serializer)
           ..add(AssignedLocation.serializer)
@@ -95,6 +90,7 @@ Serializers _$serializers =
           ..add(CreateRentResponse.serializer)
           ..add(CreateRentResult.serializer)
           ..add(CreateReturnRequest.serializer)
+          ..add(CreateReturnRequestRestockAsEnum.serializer)
           ..add(CreateReturnResponse.serializer)
           ..add(CreateReturnResult.serializer)
           ..add(CreateSaleRequest.serializer)
@@ -140,8 +136,6 @@ Serializers _$serializers =
           ..add(LocationItemTypeEnum.serializer)
           ..add(LocationsListResponse.serializer)
           ..add(LoginData.serializer)
-          ..add(LoginOtpChallengeData.serializer)
-          ..add(LoginOtpChallengeResponse.serializer)
           ..add(LoginResponse.serializer)
           ..add(LoginUser.serializer)
           ..add(LoginUserEmployeeRole.serializer)
@@ -287,12 +281,6 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
-              const FullType(ApiInventoryTransferPostRequestProductsInner),
-            ]),
-            () => ListBuilder<ApiInventoryTransferPostRequestProductsInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
               const FullType(ApiSellerShipmentsGet200ResponseDataInner),
             ]),
             () => ListBuilder<ApiSellerShipmentsGet200ResponseDataInner>(),
@@ -319,12 +307,6 @@ Serializers _$serializers =
               const FullType(ApiShipmentsIdGet200ResponseDataItemsInner),
             ]),
             () => ListBuilder<ApiShipmentsIdGet200ResponseDataItemsInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(ApiTransfersPostRequestItemsInner),
-            ]),
-            () => ListBuilder<ApiTransfersPostRequestItemsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(EmployeeAction)]),

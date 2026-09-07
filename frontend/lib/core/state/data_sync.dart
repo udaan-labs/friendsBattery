@@ -101,11 +101,6 @@ class DataSync {
     }
   }
 
-  /// Seller registered (admin flow).
-  static void afterSellerMutation(WidgetRef ref) {
-    afterStaffMutation(ref);
-  }
-
   /// Staff member (Seller or Employee) created, updated, or status toggled.
   static void afterStaffMutation(WidgetRef ref) {
     ref.invalidate(sellersProvider);

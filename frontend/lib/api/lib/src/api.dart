@@ -21,7 +21,6 @@ import 'package:friends_battery_api/src/api/returns_api.dart';
 import 'package:friends_battery_api/src/api/sales_api.dart';
 import 'package:friends_battery_api/src/api/shipments_api.dart';
 import 'package:friends_battery_api/src/api/shops_api.dart';
-import 'package:friends_battery_api/src/api/transfers_api.dart';
 import 'package:friends_battery_api/src/api/users_api.dart';
 
 class FriendsBatteryApi {
@@ -188,12 +187,6 @@ class FriendsBatteryApi {
   /// by doing that all interceptors will not be executed
   ShopsApi getShopsApi() {
     return ShopsApi(dio, serializers);
-  }
-
-  /// Get TransfersApi instance, base route and serializer can be overridden by a given but be careful,
-  /// by doing that all interceptors will not be executed
-  TransfersApi getTransfersApi() {
-    return TransfersApi(dio, serializers);
   }
 
   /// Get UsersApi instance, base route and serializer can be overridden by a given but be careful,

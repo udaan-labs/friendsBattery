@@ -16,6 +16,7 @@ Method | HTTP request | Description
 [**apiShipmentsIdGet**](ShipmentsApi.md#apishipmentsidget) | **GET** /api/shipments/{id} | Get shipment details by ID (Admin or Seller)
 [**apiShipmentsPost**](ShipmentsApi.md#apishipmentspost) | **POST** /api/shipments | Transfer stock serials from admin to seller (Admin only)
 [**apiShipmentsShipmentIdAcceptPost**](ShipmentsApi.md#apishipmentsshipmentidacceptpost) | **POST** /api/shipments/{shipmentId}/accept | Accept a pending shipment (Seller only)
+[**apiShipmentsShipmentIdCancelPost**](ShipmentsApi.md#apishipmentsshipmentidcancelpost) | **POST** /api/shipments/{shipmentId}/cancel | Cancel or reject a pending shipment (Admin or Seller)
 
 
 # **apiEmployeeShipmentsGet**
@@ -290,6 +291,48 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: application/json
+ - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiShipmentsShipmentIdCancelPost**
+> apiShipmentsShipmentIdCancelPost(shipmentId)
+
+Cancel or reject a pending shipment (Admin or Seller)
+
+PENDING only. Claims status → REJECTED atomically, restores units IN_SHIPMENT → AVAILABLE, and appends inventory_transactions (RECEIVED). Admin: shipments they created or in shop scope. Seller: own shipments only. 
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getShipmentsApi();
+final int shipmentId = 56; // int | 
+
+try {
+    api.apiShipmentsShipmentIdCancelPost(shipmentId);
+} on DioException catch (e) {
+    print('Exception when calling ShipmentsApi->apiShipmentsShipmentIdCancelPost: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **shipmentId** | **int**|  | 
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

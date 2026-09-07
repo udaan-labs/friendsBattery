@@ -6,9 +6,6 @@ import '../../shared/inventory/providers/inventory_provider.dart';
 import '../attendance/attendance_repository.dart';
 import '../repository/employee_shipments_repository.dart';
 
-/// Employee greeting profile (same shape as seller session profile).
-typedef EmployeeProfile = SessionProfile;
-
 final employeeProfileProvider = Provider<SessionProfile>((ref) {
   return SessionProfile.fromSession(
     fallbackName: 'Employee',

@@ -28,8 +28,9 @@ class _AttendanceLocationPingerState
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Only AsyncData counts — loading/error must not keep FGS alive (C8).
       _sync(
-        ref.read(employeeAttendanceStatusProvider).valueOrNull?.isCheckedIn ==
+        ref.read(employeeAttendanceStatusProvider).asData?.value.isCheckedIn ==
             true,
       );
     });
@@ -83,6 +84,7 @@ class _AttendanceLocationPingerState
   }
 
   Future<void> _send(DeviceLocation loc) async {
+    if (!_wantTracking) return;
     final now = DateTime.now();
     if (_lastPing != null && now.difference(_lastPing!).inSeconds < 20) {
       return;
@@ -96,7 +98,8 @@ class _AttendanceLocationPingerState
   @override
   Widget build(BuildContext context) {
     ref.listen(employeeAttendanceStatusProvider, (prev, next) {
-      _sync(next.valueOrNull?.isCheckedIn == true);
+      // asData: invalidate/loading after checkout stops stream immediately.
+      _sync(next.asData?.value.isCheckedIn == true);
     });
     return widget.child;
   }

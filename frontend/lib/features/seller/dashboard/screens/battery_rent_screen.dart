@@ -227,6 +227,7 @@ class _BatteryRentScreenState extends ConsumerState<BatteryRentScreen> {
                 BillPaymentModePicker(
                   value: _paymentMode,
                   onChanged: (v) => setState(() => _paymentMode = v),
+                  allowCredit: false,
                 ),
               ] else ...[
                 const SizedBox(height: 16),
@@ -241,6 +242,7 @@ class _BatteryRentScreenState extends ConsumerState<BatteryRentScreen> {
                   validator: (v) {
                     final n = num.tryParse(v?.trim() ?? '');
                     if (n == null || n < 0) return 'Fee required';
+                    // Deposit lives on the open rent row; backend rejects fee > deposit.
                     return null;
                   },
                 ),

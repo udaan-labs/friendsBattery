@@ -17,6 +17,13 @@ const InventoryTransactionActionEnum _$inventoryTransactionActionEnum_RETURNED =
 const InventoryTransactionActionEnum
 _$inventoryTransactionActionEnum_TRANSFERRED =
     const InventoryTransactionActionEnum._('TRANSFERRED');
+const InventoryTransactionActionEnum _$inventoryTransactionActionEnum_RENTED =
+    const InventoryTransactionActionEnum._('RENTED');
+const InventoryTransactionActionEnum
+_$inventoryTransactionActionEnum_RENT_RETURNED =
+    const InventoryTransactionActionEnum._('RENT_RETURNED');
+const InventoryTransactionActionEnum _$inventoryTransactionActionEnum_ADJUSTED =
+    const InventoryTransactionActionEnum._('ADJUSTED');
 
 InventoryTransactionActionEnum _$inventoryTransactionActionEnumValueOf(
   String name,
@@ -32,6 +39,12 @@ InventoryTransactionActionEnum _$inventoryTransactionActionEnumValueOf(
       return _$inventoryTransactionActionEnum_RETURNED;
     case 'TRANSFERRED':
       return _$inventoryTransactionActionEnum_TRANSFERRED;
+    case 'RENTED':
+      return _$inventoryTransactionActionEnum_RENTED;
+    case 'RENT_RETURNED':
+      return _$inventoryTransactionActionEnum_RENT_RETURNED;
+    case 'ADJUSTED':
+      return _$inventoryTransactionActionEnum_ADJUSTED;
     default:
       throw ArgumentError(name);
   }
@@ -46,6 +59,9 @@ _$inventoryTransactionActionEnumValues =
         _$inventoryTransactionActionEnum_SOLD,
         _$inventoryTransactionActionEnum_RETURNED,
         _$inventoryTransactionActionEnum_TRANSFERRED,
+        _$inventoryTransactionActionEnum_RENTED,
+        _$inventoryTransactionActionEnum_RENT_RETURNED,
+        _$inventoryTransactionActionEnum_ADJUSTED,
       ],
     );
 
@@ -61,6 +77,9 @@ class _$InventoryTransactionActionEnumSerializer
     'SOLD': 'SOLD',
     'RETURNED': 'RETURNED',
     'TRANSFERRED': 'TRANSFERRED',
+    'RENTED': 'RENTED',
+    'RENT_RETURNED': 'RENT_RETURNED',
+    'ADJUSTED': 'ADJUSTED',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'RECEIVED': 'RECEIVED',
@@ -68,6 +87,9 @@ class _$InventoryTransactionActionEnumSerializer
     'SOLD': 'SOLD',
     'RETURNED': 'RETURNED',
     'TRANSFERRED': 'TRANSFERRED',
+    'RENTED': 'RENTED',
+    'RENT_RETURNED': 'RENT_RETURNED',
+    'ADJUSTED': 'ADJUSTED',
   };
 
   @override

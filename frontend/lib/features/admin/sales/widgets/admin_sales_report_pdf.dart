@@ -11,7 +11,8 @@ pw.Document buildAdminSalesPdf({
   String filters = '',
 }) {
   final truncated = total > sales.length;
-  final revenue = sales.fold<double>(0, (s, r) => s + r.sellPrice);
+  final booked = sales.fold<double>(0, (s, r) => s + r.sellPrice);
+  final collected = sales.fold<double>(0, (s, r) => s + r.amountPaid);
   final doc = pw.Document();
   doc.addPage(
     pw.MultiPage(
@@ -24,7 +25,7 @@ pw.Document buildAdminSalesPdf({
               style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 4),
           pw.Text(
-            '$period  ·  $filters  ·  ${sales.length} row(s)  ·  ₹${revenue.toStringAsFixed(0)}'
+            '$period  ·  $filters  ·  ${sales.length} row(s)  ·  collected ₹${collected.toStringAsFixed(0)}  ·  booked ₹${booked.toStringAsFixed(0)}'
             '${truncated ? '  ·  truncated (max 2000 of $total)' : ''}',
             style: const pw.TextStyle(fontSize: 9),
           ),
@@ -36,7 +37,7 @@ pw.Document buildAdminSalesPdf({
           headerStyle: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
           cellStyle: const pw.TextStyle(fontSize: 7),
           cellAlignment: pw.Alignment.centerLeft,
-          headers: const ['Date', 'Bill', 'Shop', 'Type', 'Pay', 'Product', 'Serial', 'Customer', '₹'],
+          headers: const ['Date', 'Bill', 'Shop', 'Type', 'Pay', 'Product', 'Serial', 'Customer', 'Booked', 'Paid'],
           data: [
             for (final s in sales)
               [
@@ -49,6 +50,7 @@ pw.Document buildAdminSalesPdf({
                 s.hasUnitSerial ? s.serialNumber : '—',
                 s.customerName ?? '—',
                 s.sellPrice.toStringAsFixed(0),
+                s.amountPaid.toStringAsFixed(0),
               ],
           ],
         ),

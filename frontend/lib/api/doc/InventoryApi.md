@@ -13,11 +13,9 @@ Method | HTTP request | Description
 [**apiInventoryAvailableSerialsGet**](InventoryApi.md#apiinventoryavailableserialsget) | **GET** /api/inventory/available-serials | Fetch available serial numbers for a product owned by the authenticated user
 [**apiInventoryDetailsGet**](InventoryApi.md#apiinventorydetailsget) | **GET** /api/inventory/details | Return a complete inventory summary grouped by Product Name and Product Model
 [**apiInventoryGet**](InventoryApi.md#apiinventoryget) | **GET** /api/inventory | Return logged-in user&#39;s inventory
-[**apiInventoryHistoryGet**](InventoryApi.md#apiinventoryhistoryget) | **GET** /api/inventory/history | Return inventory movement history
 [**apiInventoryProductDetailsGet**](InventoryApi.md#apiinventoryproductdetailsget) | **GET** /api/inventory/product-details | Fetch details of a product (stock count &amp; min sell price) by product name and model IDs
 [**apiInventoryProductIdGet**](InventoryApi.md#apiinventoryproductidget) | **GET** /api/inventory/{productId} | Return one inventory item
 [**apiInventoryScanForSaleGet**](InventoryApi.md#apiinventoryscanforsaleget) | **GET** /api/inventory/scan-for-sale | Scan serial for sale (owner stock; EMPLOYEE &#x3D; location stock)
-[**apiInventoryTransferPost**](InventoryApi.md#apiinventorytransferpost) | **POST** /api/inventory/transfer | Transfer inventory from admin to seller
 [**apiInventoryUnitSerialNumberDelete**](InventoryApi.md#apiinventoryunitserialnumberdelete) | **DELETE** /api/inventory/unit/{serialNumber} | Remove a specific serial number unit from inventory (Admin only)
 [**apiInventoryUpdateStockPost**](InventoryApi.md#apiinventoryupdatestockpost) | **POST** /api/inventory/update-stock | Update admin&#39;s own inventory stock (Admin only)
 
@@ -204,56 +202,6 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **apiInventoryHistoryGet**
-> apiInventoryHistoryGet(fromDate, toDate, productId, sellerId, page, limit)
-
-Return inventory movement history
-
-### Example
-```dart
-import 'package:friends_battery_api/api.dart';
-
-final api = FriendsBatteryApi().getInventoryApi();
-final Date fromDate = 2013-10-20; // Date | 
-final Date toDate = 2013-10-20; // Date | 
-final int productId = 56; // int | 
-final int sellerId = 56; // int | 
-final int page = 56; // int | 
-final int limit = 56; // int | 
-
-try {
-    api.apiInventoryHistoryGet(fromDate, toDate, productId, sellerId, page, limit);
-} on DioException catch (e) {
-    print('Exception when calling InventoryApi->apiInventoryHistoryGet: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **fromDate** | **Date**|  | [optional] 
- **toDate** | **Date**|  | [optional] 
- **productId** | **int**|  | [optional] 
- **sellerId** | **int**|  | [optional] 
- **page** | **int**|  | [optional] 
- **limit** | **int**|  | [optional] 
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-[bearerAuth](../README.md#bearerAuth)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: Not defined
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
 # **apiInventoryProductDetailsGet**
 > ProductStockDetailsResponse apiInventoryProductDetailsGet(productNameId, productModelId)
 
@@ -378,46 +326,6 @@ Name | Type | Description  | Notes
 
  - **Content-Type**: Not defined
  - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **apiInventoryTransferPost**
-> apiInventoryTransferPost(apiInventoryTransferPostRequest)
-
-Transfer inventory from admin to seller
-
-### Example
-```dart
-import 'package:friends_battery_api/api.dart';
-
-final api = FriendsBatteryApi().getInventoryApi();
-final ApiInventoryTransferPostRequest apiInventoryTransferPostRequest = ; // ApiInventoryTransferPostRequest | 
-
-try {
-    api.apiInventoryTransferPost(apiInventoryTransferPostRequest);
-} on DioException catch (e) {
-    print('Exception when calling InventoryApi->apiInventoryTransferPost: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **apiInventoryTransferPostRequest** | [**ApiInventoryTransferPostRequest**](ApiInventoryTransferPostRequest.md)|  | 
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-[bearerAuth](../README.md#bearerAuth)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

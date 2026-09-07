@@ -3,7 +3,7 @@
 **Canvas (open this in Obsidian):** [[Role Chain Workflow]]  
 **Todos:** `docs/ROADMAP.md` · commands: `/todo` · `/todo-done` · `/todo-undone` · `/todo-sync`
 
-**Next:** §1 Super Admin
+**Next:** §6c C7 — run smoke checklist `docs/SMOKE_AUDIT_FIXES.md`. Code queue mostly done; do not commit until smoke pass.
 
 ## Chain
 

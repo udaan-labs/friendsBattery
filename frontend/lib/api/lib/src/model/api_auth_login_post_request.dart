@@ -16,7 +16,6 @@ part 'api_auth_login_post_request.g.dart';
 /// * [deviceId] - Optional — stored on employee_sessions for EMPLOYEE
 /// * [ipAddress] 
 /// * [appVersion] 
-/// * [firebaseToken] 
 @BuiltValue()
 abstract class ApiAuthLoginPostRequest implements Built<ApiAuthLoginPostRequest, ApiAuthLoginPostRequestBuilder> {
   @BuiltValueField(wireName: r'user_id')
@@ -34,9 +33,6 @@ abstract class ApiAuthLoginPostRequest implements Built<ApiAuthLoginPostRequest,
 
   @BuiltValueField(wireName: r'app_version')
   String? get appVersion;
-
-  @BuiltValueField(wireName: r'firebase_token')
-  String? get firebaseToken;
 
   ApiAuthLoginPostRequest._();
 
@@ -89,13 +85,6 @@ class _$ApiAuthLoginPostRequestSerializer implements PrimitiveSerializer<ApiAuth
       yield r'app_version';
       yield serializers.serialize(
         object.appVersion,
-        specifiedType: const FullType(String),
-      );
-    }
-    if (object.firebaseToken != null) {
-      yield r'firebase_token';
-      yield serializers.serialize(
-        object.firebaseToken,
         specifiedType: const FullType(String),
       );
     }
@@ -156,13 +145,6 @@ class _$ApiAuthLoginPostRequestSerializer implements PrimitiveSerializer<ApiAuth
             specifiedType: const FullType(String),
           ) as String;
           result.appVersion = valueDes;
-          break;
-        case r'firebase_token':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
-          result.firebaseToken = valueDes;
           break;
         default:
           unhandled.add(key);

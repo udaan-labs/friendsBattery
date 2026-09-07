@@ -75,7 +75,6 @@ Class | Method | HTTP request | Description
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthLogoutPost**](doc/AuthApi.md#apiauthlogoutpost) | **POST** /api/auth/logout | End session (closes employee_sessions for EMPLOYEE)
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthRegisterAdminPost**](doc/AuthApi.md#apiauthregisteradminpost) | **POST** /api/auth/register-admin | Super Admin creates a shop or warehouse Admin
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthRegisterPost**](doc/AuthApi.md#apiauthregisterpost) | **POST** /api/auth/register | Register a new seller
-[*AuthApi*](doc/AuthApi.md) | [**apiAuthVerifyOtpPost**](doc/AuthApi.md#apiauthverifyotppost) | **POST** /api/auth/verify-otp | Complete login with OTP
 [*DashboardApi*](doc/DashboardApi.md) | [**apiDashboardActivityHistoryGet**](doc/DashboardApi.md#apidashboardactivityhistoryget) | **GET** /api/dashboard/activity-history | Get paginated activity history (Admin only)
 [*DashboardApi*](doc/DashboardApi.md) | [**apiDashboardRecentActivityGet**](doc/DashboardApi.md#apidashboardrecentactivityget) | **GET** /api/dashboard/recent-activity | Get recent activity feed (Admin only)
 [*DashboardApi*](doc/DashboardApi.md) | [**apiDashboardStatsGet**](doc/DashboardApi.md#apidashboardstatsget) | **GET** /api/dashboard/stats | Get dashboard statistics
@@ -85,11 +84,9 @@ Class | Method | HTTP request | Description
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryAvailableSerialsGet**](doc/InventoryApi.md#apiinventoryavailableserialsget) | **GET** /api/inventory/available-serials | Fetch available serial numbers for a product owned by the authenticated user
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryDetailsGet**](doc/InventoryApi.md#apiinventorydetailsget) | **GET** /api/inventory/details | Return a complete inventory summary grouped by Product Name and Product Model
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryGet**](doc/InventoryApi.md#apiinventoryget) | **GET** /api/inventory | Return logged-in user&#39;s inventory
-[*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryHistoryGet**](doc/InventoryApi.md#apiinventoryhistoryget) | **GET** /api/inventory/history | Return inventory movement history
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryProductDetailsGet**](doc/InventoryApi.md#apiinventoryproductdetailsget) | **GET** /api/inventory/product-details | Fetch details of a product (stock count &amp; min sell price) by product name and model IDs
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryProductIdGet**](doc/InventoryApi.md#apiinventoryproductidget) | **GET** /api/inventory/{productId} | Return one inventory item
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryScanForSaleGet**](doc/InventoryApi.md#apiinventoryscanforsaleget) | **GET** /api/inventory/scan-for-sale | Scan serial for sale (owner stock; EMPLOYEE &#x3D; location stock)
-[*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryTransferPost**](doc/InventoryApi.md#apiinventorytransferpost) | **POST** /api/inventory/transfer | Transfer inventory from admin to seller
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryUnitSerialNumberDelete**](doc/InventoryApi.md#apiinventoryunitserialnumberdelete) | **DELETE** /api/inventory/unit/{serialNumber} | Remove a specific serial number unit from inventory (Admin only)
 [*InventoryApi*](doc/InventoryApi.md) | [**apiInventoryUpdateStockPost**](doc/InventoryApi.md#apiinventoryupdatestockpost) | **POST** /api/inventory/update-stock | Update admin&#39;s own inventory stock (Admin only)
 [*ProductUnitsApi*](doc/ProductUnitsApi.md) | [**apiProductUnitsVerifyPost**](doc/ProductUnitsApi.md#apiproductunitsverifypost) | **POST** /api/product-units/verify | Verify a product unit by serial or QR
@@ -100,8 +97,8 @@ Class | Method | HTTP request | Description
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsProductModelsPost**](doc/ProductsApi.md#apiproductsproductmodelspost) | **POST** /api/products/product-models | Create a product model
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsProductNamesGet**](doc/ProductsApi.md#apiproductsproductnamesget) | **GET** /api/products/product-names | Return all product names
 [*ProductsApi*](doc/ProductsApi.md) | [**apiProductsProductNamesPost**](doc/ProductsApi.md#apiproductsproductnamespost) | **POST** /api/products/product-names | Create a product name
-[*ReturnsApi*](doc/ReturnsApi.md) | [**apiReturnsGet**](doc/ReturnsApi.md#apireturnsget) | **GET** /api/returns | List product returns (seller own, admin all)
-[*ReturnsApi*](doc/ReturnsApi.md) | [**apiReturnsPost**](doc/ReturnsApi.md#apireturnspost) | **POST** /api/returns | Process a product return (seller)
+[*ReturnsApi*](doc/ReturnsApi.md) | [**apiReturnsGet**](doc/ReturnsApi.md#apireturnsget) | **GET** /api/returns | List product returns (seller own, admin shop/all)
+[*ReturnsApi*](doc/ReturnsApi.md) | [**apiReturnsPost**](doc/ReturnsApi.md#apireturnspost) | **POST** /api/returns | Process a product return (seller or admin)
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesAdminHistoryGet**](doc/SalesApi.md#apisalesadminhistoryget) | **GET** /api/sales/admin/history | Return all sales across all sellers with pagination, search, filters, and shipment tracing (Admin only)
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesGet**](doc/SalesApi.md#apisalesget) | **GET** /api/sales | Return all sales based on role (Admin sees all, Seller sees own)
 [*SalesApi*](doc/SalesApi.md) | [**apiSalesHistoryGet**](doc/SalesApi.md#apisaleshistoryget) | **GET** /api/sales/history | Return seller&#39;s own sales history with pagination, search, and date filtering
@@ -118,6 +115,7 @@ Class | Method | HTTP request | Description
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiShipmentsIdGet**](doc/ShipmentsApi.md#apishipmentsidget) | **GET** /api/shipments/{id} | Get shipment details by ID (Admin or Seller)
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiShipmentsPost**](doc/ShipmentsApi.md#apishipmentspost) | **POST** /api/shipments | Transfer stock serials from admin to seller (Admin only)
 [*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiShipmentsShipmentIdAcceptPost**](doc/ShipmentsApi.md#apishipmentsshipmentidacceptpost) | **POST** /api/shipments/{shipmentId}/accept | Accept a pending shipment (Seller only)
+[*ShipmentsApi*](doc/ShipmentsApi.md) | [**apiShipmentsShipmentIdCancelPost**](doc/ShipmentsApi.md#apishipmentsshipmentidcancelpost) | **POST** /api/shipments/{shipmentId}/cancel | Cancel or reject a pending shipment (Admin or Seller)
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsEmployeeRolesGet**](doc/ShopsApi.md#apishopsemployeerolesget) | **GET** /api/shops/employee-roles | List job titles for employees (Manager, Cashier, …)
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsEmployeesEmployeeIdGet**](doc/ShopsApi.md#apishopsemployeesemployeeidget) | **GET** /api/shops/employees/{employeeId} | Admin view one employee (profile + check-in/check-out only)
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsEmployeesEmployeeIdLocationPatch**](doc/ShopsApi.md#apishopsemployeesemployeeidlocationpatch) | **PATCH** /api/shops/employees/{employeeId}/location | Move an admin, seller, or employee
@@ -132,11 +130,6 @@ Class | Method | HTTP request | Description
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsSellersNextUserIdGet**](doc/ShopsApi.md#apishopssellersnextuseridget) | **GET** /api/shops/sellers/next-user-id | Preview next auto-generated seller user_id (SEL001, SEL002, …)
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsSellersSellerIdGet**](doc/ShopsApi.md#apishopssellersselleridget) | **GET** /api/shops/sellers/{sellerId} | Return one seller
 [*ShopsApi*](doc/ShopsApi.md) | [**apiShopsSellersSellerIdStaffGet**](doc/ShopsApi.md#apishopssellersselleridstaffget) | **GET** /api/shops/sellers/{sellerId}/staff | Sellers and employees at the same shop location as this seller
-[*TransfersApi*](doc/TransfersApi.md) | [**apiTransfersGet**](doc/TransfersApi.md#apitransfersget) | **GET** /api/transfers | Return all shipments (Admin gets all, Seller gets own)
-[*TransfersApi*](doc/TransfersApi.md) | [**apiTransfersPost**](doc/TransfersApi.md#apitransferspost) | **POST** /api/transfers | Create a new shipment from Admin to Seller
-[*TransfersApi*](doc/TransfersApi.md) | [**apiTransfersShipmentIdCancelPatch**](doc/TransfersApi.md#apitransfersshipmentidcancelpatch) | **PATCH** /api/transfers/{shipmentId}/cancel | Admin cancels a pending shipment
-[*TransfersApi*](doc/TransfersApi.md) | [**apiTransfersShipmentIdGet**](doc/TransfersApi.md#apitransfersshipmentidget) | **GET** /api/transfers/{shipmentId} | Return complete shipment details by ID
-[*TransfersApi*](doc/TransfersApi.md) | [**apiTransfersShipmentIdReceivePatch**](doc/TransfersApi.md#apitransfersshipmentidreceivepatch) | **PATCH** /api/transfers/{shipmentId}/receive | Seller receives and confirms a shipment delivery
 [*UsersApi*](doc/UsersApi.md) | [**apiUsersGet**](doc/UsersApi.md#apiusersget) | **GET** /api/users | List admins, sellers, and employees
 [*UsersApi*](doc/UsersApi.md) | [**apiUsersIdActivePatch**](doc/UsersApi.md#apiusersidactivepatch) | **PATCH** /api/users/{id}/active | Activate or deactivate an admin, seller, or employee
 [*UsersApi*](doc/UsersApi.md) | [**apiUsersIdPasswordPatch**](doc/UsersApi.md#apiusersidpasswordpatch) | **PATCH** /api/users/{id}/password | Reset or change password for a seller or employee
@@ -165,7 +158,6 @@ Class | Method | HTTP request | Description
  - [ApiAuthActivatePutRequest](doc/ApiAuthActivatePutRequest.md)
  - [ApiAuthLoginPostRequest](doc/ApiAuthLoginPostRequest.md)
  - [ApiAuthRegisterPostRequest](doc/ApiAuthRegisterPostRequest.md)
- - [ApiAuthVerifyOtpPostRequest](doc/ApiAuthVerifyOtpPostRequest.md)
  - [ApiDashboardStatsGet200Response](doc/ApiDashboardStatsGet200Response.md)
  - [ApiEmployeeAttendanceCheckInPost201Response](doc/ApiEmployeeAttendanceCheckInPost201Response.md)
  - [ApiEmployeeAttendanceCheckedInGet200Response](doc/ApiEmployeeAttendanceCheckedInGet200Response.md)
@@ -177,8 +169,6 @@ Class | Method | HTTP request | Description
  - [ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner](doc/ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner.md)
  - [ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner](doc/ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner.md)
  - [ApiInventoryDetailsGet200ResponseDataPagination](doc/ApiInventoryDetailsGet200ResponseDataPagination.md)
- - [ApiInventoryTransferPostRequest](doc/ApiInventoryTransferPostRequest.md)
- - [ApiInventoryTransferPostRequestProductsInner](doc/ApiInventoryTransferPostRequestProductsInner.md)
  - [ApiSellerDashboardPendingShipmentsGet200Response](doc/ApiSellerDashboardPendingShipmentsGet200Response.md)
  - [ApiSellerDashboardPendingShipmentsGet200ResponseData](doc/ApiSellerDashboardPendingShipmentsGet200ResponseData.md)
  - [ApiSellerDashboardStatsGet200Response](doc/ApiSellerDashboardStatsGet200Response.md)
@@ -192,8 +182,6 @@ Class | Method | HTTP request | Description
  - [ApiShipmentsIdGet200ResponseData](doc/ApiShipmentsIdGet200ResponseData.md)
  - [ApiShipmentsIdGet200ResponseDataItemsInner](doc/ApiShipmentsIdGet200ResponseDataItemsInner.md)
  - [ApiShipmentsIdGet200ResponseDataSeller](doc/ApiShipmentsIdGet200ResponseDataSeller.md)
- - [ApiTransfersPostRequest](doc/ApiTransfersPostRequest.md)
- - [ApiTransfersPostRequestItemsInner](doc/ApiTransfersPostRequestItemsInner.md)
  - [AppStatus](doc/AppStatus.md)
  - [AppStatusResponse](doc/AppStatusResponse.md)
  - [AssignedLocation](doc/AssignedLocation.md)
@@ -251,8 +239,6 @@ Class | Method | HTTP request | Description
  - [LocationItem](doc/LocationItem.md)
  - [LocationsListResponse](doc/LocationsListResponse.md)
  - [LoginData](doc/LoginData.md)
- - [LoginOtpChallengeData](doc/LoginOtpChallengeData.md)
- - [LoginOtpChallengeResponse](doc/LoginOtpChallengeResponse.md)
  - [LoginResponse](doc/LoginResponse.md)
  - [LoginUser](doc/LoginUser.md)
  - [LoginUserEmployeeRole](doc/LoginUserEmployeeRole.md)
