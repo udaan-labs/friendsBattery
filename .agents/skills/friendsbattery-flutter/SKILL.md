@@ -17,7 +17,7 @@ repo. Project docs win if anything conflicts:
 | Topic | Source |
 |-------|--------|
 | Networking / models | `docs/OPENAPI.md` |
-| UI / structure / theme | `docs/frontend-guidelines.md` |
+| UI / structure / theme | `docs/frontend-guidelines.md` & `.agents/skills/m3/SKILL.md` (Material 3) |
 | Global + domain rules | `AGENTS.md` |
 
 YAGNI + Ponytail: smallest working change for **this** feature only.
