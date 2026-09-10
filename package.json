@@ -9,6 +9,7 @@
     "gen": ".\\generate_api.bat",
     "build-models": "cd frontend/lib/api && dart pub get && dart run build_runner build --delete-conflicting-outputs",
     "tunnel": "node scripts/tunnel.js",
+    "backend": ".\\dev-tunnel.bat",
     "build-prod": "cd frontend && flutter build apk --release --split-per-abi --dart-define=ENV_FILE=.env.production",
     "build-local": "cd frontend && flutter build apk --release --split-per-abi --dart-define=ENV_FILE=.env.local",
     "migrate-prod": "cd backend && node scripts/migrate-prod.js",
