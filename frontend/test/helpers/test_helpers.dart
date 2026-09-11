@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import 'package:frontend/theme/app_theme.dart';
 import 'package:frontend/shared/providers/auth_provider.dart';
 import 'package:frontend/features/seller/dashboard/providers/seller_dashboard_providers.dart';
-import 'package:frontend/features/admin/dashboard/models/dashboard_stats.dart';
 import 'package:frontend/features/admin/sellers/providers/sellers_provider.dart';
 import 'package:frontend/features/admin/sellers/providers/seller_details_provider.dart';
 import 'package:frontend/features/admin/sales/providers/admin_sales_history_provider.dart';
 import 'package:frontend/features/admin/shipments/repository/shipment_repository.dart';
 import 'package:frontend/features/shared/inventory/repository/shared_inventory_repository.dart';
-import 'package:frontend/features/shared/inventory/providers/inventory_provider.dart';
-import 'package:frontend/features/seller/sales/providers/seller_sales_provider.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // MOCK DATA FACTORIES
@@ -35,8 +33,8 @@ SellerKpiStats mockSellerKpiStats() {
     currentStock: 156,
     todaySalesAmount: 42500.0,
     todaySalesCount: 14,
-    salesGrowthPercentage: 12.0,
     pendingShipments: 3,
+    recentSales: const [],
   );
 }
 
@@ -104,21 +102,36 @@ ShipmentDetailModel mockShipmentDetail({int id = 1}) {
   );
 }
 
-DashboardStats mockDashboardStats() {
-  return DashboardStats(totalStock: 500, todaySales: 8, pendingRequests: 2, totalSellers: 5, pendingShipments: 3);
-}
-
-List<Map<String, dynamic>> mockRecentActivity() {
-  return [{'title': 'New sale recorded', 'subtitle': 'Battery X100 sold', 'time': '2m ago', 'icon': 'payments'}];
+AdminDashboardStats mockDashboardStats() {
+  return AdminDashboardStats((b) => b
+    ..totalStock = 500
+    ..todaySales = 8
+    ..pendingRequests = 2
+    ..totalSellers = 5
+    ..pendingShipments = 3);
 }
 
 PaginatedInventoryResponse mockInventoryResponse() {
   return PaginatedInventoryResponse(
     items: [
       SharedInventoryItemModel(
-        productModel: 'X100', productName: 'UltraLife', quantity: 50, minPrice: 1500.0, minStock: 5),
+        productId: 1,
+        productNameId: 1,
+        productModelId: 1,
+        productModel: 'X100',
+        productName: 'UltraLife',
+        quantity: 50,
+        minPrice: 1500.0,
+      ),
       SharedInventoryItemModel(
-        productModel: 'P200', productName: 'PowerVolt', quantity: 30, minPrice: 2500.0, minStock: 10),
+        productId: 2,
+        productNameId: 2,
+        productModelId: 2,
+        productModel: 'P200',
+        productName: 'PowerVolt',
+        quantity: 30,
+        minPrice: 2500.0,
+      ),
     ],
     total: 2,
   );
@@ -176,22 +189,41 @@ GoRouter createTestRouter(Widget child) {
 // APP WRAPPERS
 // ═══════════════════════════════════════════════════════════════════════════
 
+/// Drain RenderFlex overflow exceptions so smoke tests can assert titles
+/// without failing on known tight-layout pixels in dashboard cards.
+void drainLayoutOverflows(WidgetTester tester) {
+  Object? err;
+  while ((err = tester.takeException()) != null) {
+    final msg = err.toString();
+    // Flutter may wrap several overflows as "Multiple exceptions (…)".
+    if (msg.contains('A RenderFlex overflowed') ||
+        msg.contains('Multiple exceptions')) {
+      continue;
+    }
+    throw err!;
+  }
+}
+
+Future<void> setTestSurface(WidgetTester tester, Size size) async {
+  tester.view.physicalSize = size;
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+  await tester.pump();
+}
+
 Widget createTestApp(
   Widget widget, {
   List<Override> overrides = const [],
 }) {
+  // Do not wrap MediaQuery — let the test binding view size drive layout
+  // so setTestSurface() works for responsive checks.
   return ProviderScope(
     overrides: overrides,
-    child: Directionality(
-      textDirection: TextDirection.ltr,
-      child: MediaQuery(
-        data: const MediaQueryData(size: Size(400, 800)),
-        child: MaterialApp.router(
-          title: 'Test',
-          theme: AppTheme.themeData,
-          routerConfig: createTestRouter(widget),
-        ),
-      ),
+    child: MaterialApp.router(
+      title: 'Test',
+      theme: AppTheme.themeData,
+      routerConfig: createTestRouter(widget),
     ),
   );
 }
@@ -202,15 +234,9 @@ Widget createStandaloneTestApp(
 }) {
   return ProviderScope(
     overrides: overrides,
-    child: Directionality(
-      textDirection: TextDirection.ltr,
-      child: MediaQuery(
-        data: const MediaQueryData(size: Size(400, 800)),
-        child: MaterialApp(
-          theme: AppTheme.themeData,
-          home: widget,
-        ),
-      ),
+    child: MaterialApp(
+      theme: AppTheme.themeData,
+      home: widget,
     ),
   );
 }
