@@ -4,9 +4,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/state/data_sync.dart';
+import '../../../../shared/providers/auth_provider.dart';
 import '../../../../shared/widgets/scanner_screen.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
 import '../../sales/providers/seller_sales_provider.dart';
+import '../models/sale_success_data.dart';
+import '../widgets/bill_payment_mode_picker.dart';
 
 /// Rent out with deposit, or return (fee from deposit → refund).
 class BatteryRentScreen extends ConsumerStatefulWidget {
@@ -26,6 +29,7 @@ class _BatteryRentScreenState extends ConsumerState<BatteryRentScreen> {
 
   /// out | return
   String _mode = 'out';
+  String _paymentMode = 'CASH';
   bool _isSubmitting = false;
 
   @override
@@ -56,30 +60,51 @@ class _BatteryRentScreenState extends ConsumerState<BatteryRentScreen> {
       final repo = ref.read(sellerSalesRepositoryProvider);
       if (_mode == 'out') {
         final deposit = num.parse(_depositController.text.trim());
+        final customerName = _customerNameController.text.trim();
+        final customerNumber = _customerMobileController.text.trim();
+        final serial = _serialController.text.trim();
         final r = await repo.createRent(
-          serialNumber: _serialController.text.trim(),
-          customerName: _customerNameController.text.trim(),
-          customerNumber: _customerMobileController.text.trim(),
+          serialNumber: serial,
+          customerName: customerName,
+          customerNumber: customerNumber,
           deposit: deposit,
+          paymentMode: _paymentMode,
         );
         if (!mounted) return;
         DataSync.afterSaleMutation(ref);
         context.showSuccessSnackBar(
           'Rented out · deposit ₹${r.deposit ?? deposit}',
         );
-        context.pop();
+        _goShare(
+          customerName: customerName,
+          customerNumber: customerNumber,
+          productName: 'Battery Rent',
+          serialNumber: r.serialNumber ?? serial,
+          amount: (r.deposit ?? deposit).toDouble(),
+          invoiceNumber: 'RENT-${r.rentId}',
+          paymentMode: _paymentMode,
+        );
       } else {
         final fee = num.parse(_feeController.text.trim());
+        final serial = _serialController.text.trim();
         final r = await repo.returnRent(
-          serialNumber: _serialController.text.trim(),
+          serialNumber: serial,
           rentFee: fee,
         );
         if (!mounted) return;
         DataSync.afterSaleMutation(ref);
+        final refund = r.refundAmount ?? 0;
         context.showSuccessSnackBar(
-          'Returned · fee ₹${r.rentFee ?? fee} · refund ₹${r.refundAmount ?? 0}',
+          'Returned · fee ₹${r.rentFee ?? fee} · refund ₹$refund',
         );
-        context.pop();
+        _goShare(
+          customerName: r.customerName ?? '',
+          customerNumber: r.customerNumber ?? '',
+          productName: 'Battery Rent Return · refund ₹$refund',
+          serialNumber: r.serialNumber ?? serial,
+          amount: (r.rentFee ?? fee).toDouble(),
+          invoiceNumber: 'RET-${r.rentId}',
+        );
       }
     } catch (e) {
       // DioExceptions handled by ApiInterceptor (same as CreateBillScreen)
@@ -89,6 +114,42 @@ class _BatteryRentScreenState extends ConsumerState<BatteryRentScreen> {
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
+  }
+
+  void _goShare({
+    required String customerName,
+    required String customerNumber,
+    required String productName,
+    required String serialNumber,
+    required double amount,
+    required String invoiceNumber,
+    String paymentMode = 'CASH',
+  }) {
+    final role = ref.read(authProvider).role;
+    final successPath = switch (role) {
+      UserRole.admin || UserRole.superAdmin => '/admin/sale-success',
+      UserRole.employee => '/employee/sale-success',
+      _ => '/seller/sale-success',
+    };
+    final sellerLabel = switch (role) {
+      UserRole.admin || UserRole.superAdmin => 'Friends Battery Admin',
+      UserRole.employee => 'Friends Battery Employee',
+      _ => 'Friends Battery Seller',
+    };
+    context.go(
+      successPath,
+      extra: SaleSuccessData(
+        customerName: customerName,
+        customerNumber: customerNumber,
+        productName: productName,
+        serialNumber: serialNumber,
+        sellPrice: amount,
+        invoiceNumber: invoiceNumber,
+        saleDate: DateTime.now(),
+        sellerName: sellerLabel,
+        paymentMode: paymentMode,
+      ),
+    );
   }
 
   @override
@@ -162,6 +223,12 @@ class _BatteryRentScreenState extends ConsumerState<BatteryRentScreen> {
                     return null;
                   },
                 ),
+                const SizedBox(height: 16),
+                BillPaymentModePicker(
+                  value: _paymentMode,
+                  onChanged: (v) => setState(() => _paymentMode = v),
+                  allowCredit: false,
+                ),
               ] else ...[
                 const SizedBox(height: 16),
                 TextFormField(
@@ -175,6 +242,7 @@ class _BatteryRentScreenState extends ConsumerState<BatteryRentScreen> {
                   validator: (v) {
                     final n = num.tryParse(v?.trim() ?? '');
                     if (n == null || n < 0) return 'Fee required';
+                    // Deposit lives on the open rent row; backend rejects fee > deposit.
                     return null;
                   },
                 ),

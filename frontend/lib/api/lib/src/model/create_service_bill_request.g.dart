@@ -52,9 +52,46 @@ _$createServiceBillRequestServiceTypeEnumValues =
       ],
     );
 
+const CreateServiceBillRequestPaymentModeEnum
+_$createServiceBillRequestPaymentModeEnum_CASH =
+    const CreateServiceBillRequestPaymentModeEnum._('CASH');
+const CreateServiceBillRequestPaymentModeEnum
+_$createServiceBillRequestPaymentModeEnum_ONLINE =
+    const CreateServiceBillRequestPaymentModeEnum._('ONLINE');
+const CreateServiceBillRequestPaymentModeEnum
+_$createServiceBillRequestPaymentModeEnum_CREDIT =
+    const CreateServiceBillRequestPaymentModeEnum._('CREDIT');
+
+CreateServiceBillRequestPaymentModeEnum
+_$createServiceBillRequestPaymentModeEnumValueOf(String name) {
+  switch (name) {
+    case 'CASH':
+      return _$createServiceBillRequestPaymentModeEnum_CASH;
+    case 'ONLINE':
+      return _$createServiceBillRequestPaymentModeEnum_ONLINE;
+    case 'CREDIT':
+      return _$createServiceBillRequestPaymentModeEnum_CREDIT;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<CreateServiceBillRequestPaymentModeEnum>
+_$createServiceBillRequestPaymentModeEnumValues =
+    BuiltSet<CreateServiceBillRequestPaymentModeEnum>(
+      const <CreateServiceBillRequestPaymentModeEnum>[
+        _$createServiceBillRequestPaymentModeEnum_CASH,
+        _$createServiceBillRequestPaymentModeEnum_ONLINE,
+        _$createServiceBillRequestPaymentModeEnum_CREDIT,
+      ],
+    );
+
 Serializer<CreateServiceBillRequestServiceTypeEnum>
 _$createServiceBillRequestServiceTypeEnumSerializer =
     _$CreateServiceBillRequestServiceTypeEnumSerializer();
+Serializer<CreateServiceBillRequestPaymentModeEnum>
+_$createServiceBillRequestPaymentModeEnumSerializer =
+    _$CreateServiceBillRequestPaymentModeEnumSerializer();
 
 class _$CreateServiceBillRequestServiceTypeEnumSerializer
     implements PrimitiveSerializer<CreateServiceBillRequestServiceTypeEnum> {
@@ -97,6 +134,43 @@ class _$CreateServiceBillRequestServiceTypeEnumSerializer
   );
 }
 
+class _$CreateServiceBillRequestPaymentModeEnumSerializer
+    implements PrimitiveSerializer<CreateServiceBillRequestPaymentModeEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'CASH': 'CASH',
+    'ONLINE': 'ONLINE',
+    'CREDIT': 'CREDIT',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'CASH': 'CASH',
+    'ONLINE': 'ONLINE',
+    'CREDIT': 'CREDIT',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    CreateServiceBillRequestPaymentModeEnum,
+  ];
+  @override
+  final String wireName = 'CreateServiceBillRequestPaymentModeEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    CreateServiceBillRequestPaymentModeEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  CreateServiceBillRequestPaymentModeEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => CreateServiceBillRequestPaymentModeEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$CreateServiceBillRequest extends CreateServiceBillRequest {
   @override
   final CreateServiceBillRequestServiceTypeEnum serviceType;
@@ -110,6 +184,8 @@ class _$CreateServiceBillRequest extends CreateServiceBillRequest {
   final String? vehicleNumber;
   @override
   final String? place;
+  @override
+  final CreateServiceBillRequestPaymentModeEnum? paymentMode;
 
   factory _$CreateServiceBillRequest([
     void Function(CreateServiceBillRequestBuilder)? updates,
@@ -122,6 +198,7 @@ class _$CreateServiceBillRequest extends CreateServiceBillRequest {
     required this.customerNumber,
     this.vehicleNumber,
     this.place,
+    this.paymentMode,
   }) : super._();
   @override
   CreateServiceBillRequest rebuild(
@@ -141,7 +218,8 @@ class _$CreateServiceBillRequest extends CreateServiceBillRequest {
         customerName == other.customerName &&
         customerNumber == other.customerNumber &&
         vehicleNumber == other.vehicleNumber &&
-        place == other.place;
+        place == other.place &&
+        paymentMode == other.paymentMode;
   }
 
   @override
@@ -153,6 +231,7 @@ class _$CreateServiceBillRequest extends CreateServiceBillRequest {
     _$hash = $jc(_$hash, customerNumber.hashCode);
     _$hash = $jc(_$hash, vehicleNumber.hashCode);
     _$hash = $jc(_$hash, place.hashCode);
+    _$hash = $jc(_$hash, paymentMode.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -165,7 +244,8 @@ class _$CreateServiceBillRequest extends CreateServiceBillRequest {
           ..add('customerName', customerName)
           ..add('customerNumber', customerNumber)
           ..add('vehicleNumber', vehicleNumber)
-          ..add('place', place))
+          ..add('place', place)
+          ..add('paymentMode', paymentMode))
         .toString();
   }
 }
@@ -203,6 +283,12 @@ class CreateServiceBillRequestBuilder
   String? get place => _$this._place;
   set place(String? place) => _$this._place = place;
 
+  CreateServiceBillRequestPaymentModeEnum? _paymentMode;
+  CreateServiceBillRequestPaymentModeEnum? get paymentMode =>
+      _$this._paymentMode;
+  set paymentMode(CreateServiceBillRequestPaymentModeEnum? paymentMode) =>
+      _$this._paymentMode = paymentMode;
+
   CreateServiceBillRequestBuilder() {
     CreateServiceBillRequest._defaults(this);
   }
@@ -216,6 +302,7 @@ class CreateServiceBillRequestBuilder
       _customerNumber = $v.customerNumber;
       _vehicleNumber = $v.vehicleNumber;
       _place = $v.place;
+      _paymentMode = $v.paymentMode;
       _$v = null;
     }
     return this;
@@ -260,6 +347,7 @@ class CreateServiceBillRequestBuilder
           ),
           vehicleNumber: vehicleNumber,
           place: place,
+          paymentMode: paymentMode,
         );
     replace(_$result);
     return _$result;

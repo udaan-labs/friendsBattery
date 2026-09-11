@@ -6,15 +6,20 @@ import '../models/seller_sale.dart';
 
 class SellerSaleCard extends StatelessWidget {
   final SellerSale sale;
+  final String detailsPathPrefix;
+  final VoidCallback? onPay;
 
-  const SellerSaleCard({super.key, required this.sale});
+  const SellerSaleCard({
+    super.key,
+    required this.sale,
+    this.detailsPathPrefix = '/seller/sales',
+    this.onPay,
+  });
 
   @override
   Widget build(BuildContext context) {
     final formattedDate = formatAppDateTime(sale.soldAt);
     final type = sale.saleType.toUpperCase();
-    // SERVICE/RENT ids are not sales_transactions — list card is the view.
-    final openSaleDetails = type != 'SERVICE' && type != 'RENT';
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: 8, horizontal: ResponsiveHelper.responsiveHorizontalMargin(context)),
@@ -34,9 +39,10 @@ class SellerSaleCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
-          onTap: openSaleDetails
-              ? () => context.push('/seller/sales/${sale.id}')
-              : null,
+          onTap: () => context.push(
+            '$detailsPathPrefix/${sale.id}',
+            extra: sale,
+          ),
           child: Padding(
             padding: EdgeInsets.all(ResponsiveHelper.cardPadding(context)),
             child: Column(
@@ -52,7 +58,7 @@ class SellerSaleCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            sale.productName,
+                            '${sale.productName} -- ${sale.productModel}',
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -63,9 +69,10 @@ class SellerSaleCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            sale.productModel,
+                            sale.billNumber,
                             style: const TextStyle(
                               fontSize: 12,
+                              fontWeight: FontWeight.w600,
                               color: Color(0xFF586377),
                             ),
                           ),
@@ -130,7 +137,11 @@ class SellerSaleCard extends StatelessWidget {
                         children: [
                           Row(
                             children: [
-                              Expanded(child: _InfoItem(icon: Icons.tag_rounded, label: 'Serial No', value: sale.serialNumber)),
+                              Expanded(child: _InfoItem(
+                                icon: sale.hasUnitSerial ? Icons.tag_rounded : Icons.directions_car_outlined,
+                                label: sale.hasUnitSerial ? 'Serial No' : 'Vehicle',
+                                value: sale.hasUnitSerial ? sale.serialNumber : (sale.serialNumber == 'N/A' ? '—' : sale.serialNumber),
+                              )),
                               const SizedBox(width: 8),
                               Expanded(child: _InfoItem(icon: Icons.inventory_2_outlined, label: 'Quantity', value: sale.quantity.toString())),
                             ],
@@ -140,7 +151,11 @@ class SellerSaleCard extends StatelessWidget {
                     }
                     return Row(
                       children: [
-                        Expanded(child: _InfoItem(icon: Icons.tag_rounded, label: 'Serial No', value: sale.serialNumber)),
+                        Expanded(child: _InfoItem(
+                          icon: sale.hasUnitSerial ? Icons.tag_rounded : Icons.directions_car_outlined,
+                          label: sale.hasUnitSerial ? 'Serial No' : 'Vehicle',
+                          value: sale.hasUnitSerial ? sale.serialNumber : (sale.serialNumber == 'N/A' ? '—' : sale.serialNumber),
+                        )),
                         Expanded(child: _InfoItem(icon: Icons.inventory_2_outlined, label: 'Quantity', value: sale.quantity.toString())),
                       ],
                     );
@@ -178,9 +193,25 @@ class SellerSaleCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    _SaleTypeBadge(saleType: type),
+                    _SaleTypeBadge(
+                      saleType: type,
+                      rentReturned: sale.rentStatus?.toUpperCase() == 'RETURNED',
+                    ),
+                    const SizedBox(width: 6),
+                    _PaymentBadge(label: sale.paymentLabel, unpaid: sale.hasCreditDue),
                   ],
                 ),
+                if (onPay != null) ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: OutlinedButton(
+                      onPressed: onPay,
+                      child: const Text('Collect payment'),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -192,13 +223,16 @@ class SellerSaleCard extends StatelessWidget {
 
 class _SaleTypeBadge extends StatelessWidget {
   final String saleType;
-  const _SaleTypeBadge({required this.saleType});
+  final bool rentReturned;
+  const _SaleTypeBadge({required this.saleType, this.rentReturned = false});
 
   @override
   Widget build(BuildContext context) {
     final (label, bg, fg) = switch (saleType) {
       'SERVICE' => ('SERVICE BILL', const Color(0xFFF3E8FF), const Color(0xFF7E22CE)),
-      'RENT' => ('BATTERY RENT', const Color(0xFFE0F2FE), const Color(0xFF0369A1)),
+      'RENT' => rentReturned
+          ? ('RENT RETURN', const Color(0xFFE0E7FF), const Color(0xFF3730A3))
+          : ('BATTERY RENT', const Color(0xFFE0F2FE), const Color(0xFF0369A1)),
       'SCRAP' => ('SCRAP', const Color(0xFFFFF7ED), const Color(0xFFC2410C)),
       'MECHANIC' => ('MECHANIC', const Color(0xFFEFF6FF), const Color(0xFF1D4ED8)),
       _ => ('NORMAL', const Color(0xFFF0FDF4), const Color(0xFF15803D)),
@@ -214,6 +248,27 @@ class _SaleTypeBadge extends StatelessWidget {
         label,
         style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: fg),
       ),
+    );
+  }
+}
+
+class _PaymentBadge extends StatelessWidget {
+  final String label;
+  final bool unpaid;
+  const _PaymentBadge({required this.label, required this.unpaid});
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = unpaid ? const Color(0xFFFFF7ED) : const Color(0xFFF1F5F9);
+    final fg = unpaid ? const Color(0xFFC2410C) : const Color(0xFF475569);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: fg.withValues(alpha: 0.2)),
+      ),
+      child: Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: fg)),
     );
   }
 }

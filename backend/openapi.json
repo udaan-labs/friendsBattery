@@ -188,44 +188,6 @@
           }
         }
       },
-      "LoginOtpChallengeData": {
-        "type": "object",
-        "properties": {
-          "requires_otp": {
-            "type": "boolean"
-          },
-          "challenge_id": {
-            "type": "string"
-          },
-          "expires_in": {
-            "type": "integer",
-            "description": "Seconds until OTP expires"
-          },
-          "phone_masked": {
-            "type": "string",
-            "nullable": true
-          },
-          "otp": {
-            "type": "string",
-            "nullable": true,
-            "description": "Only when OTP_ECHO=1 (debug)"
-          }
-        }
-      },
-      "LoginOtpChallengeResponse": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean"
-          },
-          "message": {
-            "type": "string"
-          },
-          "data": {
-            "$ref": "#/components/schemas/LoginOtpChallengeData"
-          }
-        }
-      },
       "RegisterData": {
         "type": "object",
         "properties": {
@@ -992,6 +954,32 @@
             "type": "string",
             "nullable": true,
             "description": "Old battery serial when sale_type=SCRAP"
+          },
+          "payment_mode": {
+            "type": "string",
+            "enum": [
+              "CASH",
+              "ONLINE",
+              "CREDIT"
+            ],
+            "default": "CASH",
+            "description": "CREDIT = unpaid or partial"
+          },
+          "amount_paid": {
+            "type": "number",
+            "description": "Paid now when payment_mode is CREDIT (0..sell_price). Ignored for CASH/ONLINE."
+          }
+        }
+      },
+      "PayCreditRequest": {
+        "type": "object",
+        "required": [
+          "amount"
+        ],
+        "properties": {
+          "amount": {
+            "type": "number",
+            "description": "Amount to collect against remaining due"
           }
         }
       },
@@ -1053,6 +1041,15 @@
             "type": "string",
             "nullable": true,
             "description": "Required when service_type is JUMPSTART"
+          },
+          "payment_mode": {
+            "type": "string",
+            "enum": [
+              "CASH",
+              "ONLINE",
+              "CREDIT"
+            ],
+            "default": "CASH"
           }
         }
       },
@@ -1099,6 +1096,15 @@
           "deposit": {
             "type": "number",
             "example": 1000
+          },
+          "payment_mode": {
+            "type": "string",
+            "enum": [
+              "CASH",
+              "ONLINE",
+              "CREDIT"
+            ],
+            "default": "CASH"
           }
         }
       },
@@ -1164,6 +1170,14 @@
           },
           "refund_amount": {
             "type": "number"
+          },
+          "customer_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "customer_number": {
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -1254,6 +1268,20 @@
               "SERVICE",
               "RENT"
             ]
+          },
+          "payment_mode": {
+            "type": "string",
+            "enum": [
+              "CASH",
+              "ONLINE",
+              "CREDIT"
+            ]
+          },
+          "amount_paid": {
+            "type": "number"
+          },
+          "amount_due": {
+            "type": "number"
           },
           "scrap_serial": {
             "type": "string",
@@ -1400,6 +1428,20 @@
               "SERVICE",
               "RENT"
             ]
+          },
+          "payment_mode": {
+            "type": "string",
+            "enum": [
+              "CASH",
+              "ONLINE",
+              "CREDIT"
+            ]
+          },
+          "amount_paid": {
+            "type": "number"
+          },
+          "amount_due": {
+            "type": "number"
           },
           "scrap_serial": {
             "type": "string",
@@ -2391,6 +2433,14 @@
           },
           "reason": {
             "type": "string"
+          },
+          "restock_as": {
+            "type": "string",
+            "enum": [
+              "AVAILABLE",
+              "DEFECTIVE"
+            ],
+            "description": "Restock status after return. Default AVAILABLE (sellable)."
           }
         }
       },
@@ -2525,7 +2575,10 @@
               "SHIPPED",
               "SOLD",
               "RETURNED",
-              "TRANSFERRED"
+              "TRANSFERRED",
+              "RENTED",
+              "RENT_RETURNED",
+              "ADJUSTED"
             ]
           },
           "timestamp": {
@@ -2796,76 +2849,27 @@
           }
         }
       },
-      "CreateShipmentItem": {
-        "type": "object",
-        "required": [
-          "product_name_id",
-          "product_model_id",
-          "serial_numbers"
-        ],
-        "properties": {
-          "product_name_id": {
-            "type": "integer",
-            "minimum": 1
-          },
-          "product_model_id": {
-            "type": "integer",
-            "minimum": 1
-          },
-          "serial_numbers": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          "price_per_piece": {
-            "type": "number",
-            "minimum": 0
-          }
-        }
-      },
       "CreateShipmentRequest": {
         "type": "object",
         "required": [
           "sellerId",
-          "items"
+          "serial_numbers"
         ],
         "properties": {
           "sellerId": {
             "type": "integer",
             "minimum": 1
           },
-          "items": {
+          "serial_numbers": {
             "type": "array",
             "minItems": 1,
+            "maxItems": 500,
             "items": {
-              "$ref": "#/components/schemas/CreateShipmentItem"
-            }
-          }
-        }
-      },
-      "TransferInventoryCount": {
-        "type": "object",
-        "properties": {
-          "productId": {
-            "type": "integer"
-          },
-          "productName": {
-            "type": "string"
-          },
-          "productModel": {
-            "type": "string"
-          },
-          "transferred": {
-            "type": "integer"
-          },
-          "adminAvailable": {
-            "type": "integer"
-          },
-          "sellerAvailable": {
-            "type": "integer"
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "description": "Serials of AVAILABLE units owned by the admin. Product is resolved from each unit."
           }
         }
       },
@@ -2891,12 +2895,6 @@
           },
           "sellerId": {
             "type": "integer"
-          },
-          "inventory": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TransferInventoryCount"
-            }
           }
         }
       },
@@ -3654,158 +3652,6 @@
         }
       }
     },
-    "/api/transfers": {
-      "post": {
-        "summary": "Create a new shipment from Admin to Seller",
-        "tags": [
-          "Transfers"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "seller_id": {
-                    "type": "integer"
-                  },
-                  "items": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "product_id": {
-                          "type": "integer"
-                        },
-                        "quantity": {
-                          "type": "integer"
-                        },
-                        "price_per_piece": {
-                          "type": "number"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Shipment created successfully"
-          },
-          "403": {
-            "description": "Admin access required"
-          }
-        }
-      },
-      "get": {
-        "summary": "Return all shipments (Admin gets all, Seller gets own)",
-        "tags": [
-          "Transfers"
-        ],
-        "responses": {
-          "200": {
-            "description": "Shipments fetched successfully"
-          }
-        }
-      }
-    },
-    "/api/transfers/{shipmentId}": {
-      "get": {
-        "summary": "Return complete shipment details by ID",
-        "tags": [
-          "Transfers"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "shipmentId",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Shipment details fetched successfully"
-          },
-          "403": {
-            "description": "Unauthorized access"
-          },
-          "404": {
-            "description": "Shipment not found"
-          }
-        }
-      }
-    },
-    "/api/transfers/{shipmentId}/receive": {
-      "patch": {
-        "summary": "Seller receives and confirms a shipment delivery",
-        "tags": [
-          "Transfers"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "shipmentId",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Shipment received successfully"
-          },
-          "400": {
-            "description": "Shipment is not in PENDING status"
-          },
-          "403": {
-            "description": "Seller access required or shipment not assigned"
-          },
-          "404": {
-            "description": "Shipment not found"
-          }
-        }
-      }
-    },
-    "/api/transfers/{shipmentId}/cancel": {
-      "patch": {
-        "summary": "Admin cancels a pending shipment",
-        "tags": [
-          "Transfers"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "shipmentId",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Shipment cancelled successfully"
-          },
-          "400": {
-            "description": "Shipment is not in PENDING status"
-          },
-          "403": {
-            "description": "Admin access required"
-          },
-          "404": {
-            "description": "Shipment not found"
-          }
-        }
-      }
-    },
     "/api/shops/sellers": {
       "get": {
         "summary": "Return all sellers",
@@ -4431,7 +4277,7 @@
     "/api/shipments": {
       "post": {
         "summary": "Transfer stock serials from admin to seller (Admin only)",
-        "description": "Marks existing AVAILABLE admin-owned product units as IN_SHIPMENT.\nCreates shipment record (status PENDING) and inventory_transactions (SHIPPED).\nOwnership moves to seller when seller accepts the shipment.\n",
+        "description": "Body is sellerId + serial_numbers only. Product name/model are resolved from each unit.\nMarks existing AVAILABLE admin-owned product units as IN_SHIPMENT.\nCreates shipment record (status PENDING) and inventory_transactions (SHIPPED).\nOwnership moves to seller when seller accepts the shipment.\n",
         "tags": [
           "Shipments"
         ],
@@ -4462,7 +4308,7 @@
             }
           },
           "400": {
-            "description": "Invalid serials, product, or payload",
+            "description": "Invalid serials or payload",
             "content": {
               "application/json": {
                 "schema": {
@@ -4747,6 +4593,47 @@
           },
           "404": {
             "description": "Shipment not found"
+          }
+        }
+      }
+    },
+    "/api/shipments/{shipmentId}/cancel": {
+      "post": {
+        "summary": "Cancel or reject a pending shipment (Admin or Seller)",
+        "description": "PENDING only. Claims status → REJECTED atomically, restores units\nIN_SHIPMENT → AVAILABLE, and appends inventory_transactions (RECEIVED).\nAdmin: shipments they created or in shop scope. Seller: own shipments only.\n",
+        "tags": [
+          "Shipments"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shipmentId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shipment cancelled; units restored to AVAILABLE"
+          },
+          "400": {
+            "description": "Shipment not in PENDING status"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Shipment not found"
+          },
+          "409": {
+            "description": "Units no longer in shipment (race)"
           }
         }
       }
@@ -5130,6 +5017,27 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "in": "query",
+            "name": "paymentMode",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CASH",
+                "ONLINE",
+                "CREDIT"
+              ]
+            },
+            "description": "Filter by payment"
+          },
+          {
+            "in": "query",
+            "name": "unpaid",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "CREDIT sales with remaining due"
           }
         ],
         "responses": {
@@ -5166,7 +5074,8 @@
             "name": "limit",
             "schema": {
               "type": "integer",
-              "default": 10
+              "default": 10,
+              "maximum": 2000
             }
           },
           {
@@ -5184,6 +5093,50 @@
               "type": "integer"
             },
             "description": "Filter by specific seller ID"
+          },
+          {
+            "in": "query",
+            "name": "locationId",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filter by shop location (seller.location_id)"
+          },
+          {
+            "in": "query",
+            "name": "saleType",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "NORMAL",
+                "SCRAP",
+                "MECHANIC",
+                "SERVICE",
+                "RENT"
+              ]
+            },
+            "description": "Filter by bill type"
+          },
+          {
+            "in": "query",
+            "name": "paymentMode",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CASH",
+                "ONLINE",
+                "CREDIT"
+              ]
+            },
+            "description": "Filter by payment"
+          },
+          {
+            "in": "query",
+            "name": "unpaid",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "CREDIT sales with remaining due"
           },
           {
             "in": "query",
@@ -5231,6 +5184,60 @@
         }
       }
     },
+    "/api/sales/{transactionId}/pay": {
+      "post": {
+        "summary": "Collect remaining credit on a unit sale",
+        "tags": [
+          "Sales"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transactionId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PayCreditRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleDetailResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Amount exceeds due or not a credit sale"
+          },
+          "404": {
+            "description": "Transaction not found"
+          },
+          "409": {
+            "description": "Concurrent payment on the same sale"
+          }
+        }
+      }
+    },
     "/api/sales/{transactionId}": {
       "get": {
         "summary": "Return a single sale's details by ID",
@@ -5271,7 +5278,8 @@
     },
     "/api/returns": {
       "post": {
-        "summary": "Process a product return (seller)",
+        "summary": "Process a product return (seller or admin)",
+        "description": "Restocks the unit as AVAILABLE (default, sellable) or DEFECTIVE.\nShop seller/admin may return sales by shop staff (including employees), not only self.\n",
         "tags": [
           "Returns"
         ],
@@ -5310,11 +5318,17 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Sale not in actor shop scope"
+          },
+          "409": {
+            "description": "Unit no longer SOLD (race)"
           }
         }
       },
       "get": {
-        "summary": "List product returns (seller own, admin all)",
+        "summary": "List product returns (seller own, admin shop/all)",
         "tags": [
           "Returns"
         ],
@@ -5881,65 +5895,6 @@
         }
       }
     },
-    "/api/inventory/history": {
-      "get": {
-        "summary": "Return inventory movement history",
-        "tags": [
-          "Inventory"
-        ],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "from_date",
-            "schema": {
-              "type": "string",
-              "format": "date"
-            }
-          },
-          {
-            "in": "query",
-            "name": "to_date",
-            "schema": {
-              "type": "string",
-              "format": "date"
-            }
-          },
-          {
-            "in": "query",
-            "name": "product_id",
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "in": "query",
-            "name": "seller_id",
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "in": "query",
-            "name": "page",
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Inventory history fetched successfully"
-          }
-        }
-      }
-    },
     "/api/inventory/product-details": {
       "get": {
         "summary": "Fetch details of a product (stock count & min sell price) by product name and model IDs",
@@ -6191,55 +6146,6 @@
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/api/inventory/transfer": {
-      "post": {
-        "summary": "Transfer inventory from admin to seller",
-        "tags": [
-          "Inventory"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "seller_id",
-                  "products"
-                ],
-                "properties": {
-                  "seller_id": {
-                    "type": "integer"
-                  },
-                  "products": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "product_id": {
-                          "type": "integer"
-                        },
-                        "quantity": {
-                          "type": "integer"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Inventory transferred successfully"
-          },
-          "400": {
-            "description": "Invalid seller or insufficient stock"
           }
         }
       }
@@ -6715,9 +6621,6 @@
                   },
                   "app_version": {
                     "type": "string"
-                  },
-                  "firebase_token": {
-                    "type": "string"
                   }
                 }
               }
@@ -6757,60 +6660,6 @@
           },
           "403": {
             "description": "Inactive / Unverified Account",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/auth/verify-otp": {
-      "post": {
-        "summary": "Complete login with OTP",
-        "description": "Exchange login OTP challenge for auth_id / auth_key.",
-        "tags": [
-          "Auth"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "challenge_id",
-                  "otp"
-                ],
-                "properties": {
-                  "challenge_id": {
-                    "type": "string"
-                  },
-                  "otp": {
-                    "type": "string",
-                    "example": "123456"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Login successful",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LoginResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Invalid / expired OTP",
             "content": {
               "application/json": {
                 "schema": {
@@ -7048,8 +6897,8 @@
     },
     "/api/employee/attendance/location": {
       "post": {
-        "summary": "Update last GPS while checked in (foreground ping)",
-        "description": "Employee app-open ping. Does not run in background. No geofence reject —\nstores last known point for admin/seller map. Server ignores pings closer\nthan 15 seconds apart.\n",
+        "summary": "Update last GPS while checked in",
+        "description": "Stores last known point for admin/seller map. No geofence reject.\nAndroid foreground service / iOS background location may call this while\nthe app is not in the foreground. Server ignores pings closer than 15s.\n",
         "tags": [
           "Attendance"
         ],
@@ -7232,10 +7081,6 @@
     {
       "name": "Users",
       "description": "Super Admin account list and activate / deactivate"
-    },
-    {
-      "name": "Transfers",
-      "description": "Shipment / Transfer management APIs"
     },
     {
       "name": "Shops",

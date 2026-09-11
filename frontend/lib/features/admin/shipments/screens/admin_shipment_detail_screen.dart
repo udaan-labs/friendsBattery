@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/shipment_provider.dart';
 import '../repository/shipment_repository.dart';
 import '../widgets/shipment_detail_widgets.dart';
+import '../widgets/shipment_pdf.dart';
 import 'package:frontend/shared/common.dart';
 import '../../../../theme/app_theme.dart';
 
@@ -33,6 +34,18 @@ class AdminShipmentDetailScreen extends ConsumerWidget {
               context.canPop() ? context.pop() : context.go('/admin/shipments'),
         ),
         actions: [
+          if (detailState.valueOrNull != null)
+            IconButton(
+              icon: const Icon(Icons.share_outlined, color: Color(0xFF3E4A3D)),
+              tooltip: 'Share PDF',
+              onPressed: () async {
+                try {
+                  await shareShipmentPdf(detailState.valueOrNull!);
+                } catch (e) {
+                  if (context.mounted) context.showFriendlyError(e);
+                }
+              },
+            ),
           IconButton(
             icon: const Icon(Icons.refresh_rounded, color: Color(0xFF3E4A3D)),
             onPressed: () =>

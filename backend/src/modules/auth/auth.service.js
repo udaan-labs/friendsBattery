@@ -6,9 +6,11 @@ const authRepository = require('./auth.repository');
 const ROLES = require('../../shared/constants/roles');
 const { httpError } = require('../../shared/utils/http-error');
 const { titleName } = require('../../shared/utils/title-name');
+const { assertAccess } = require('../../shared/utils/access.util');
 const orgEventsRepository = require('../../shared/org-events.repository');
-const otpService = require('../otp/otp.service');
 const shopsService = require('../shops/shops.service');
+
+const ACTIVATE_TARGET_ROLES = new Set([ROLES.ADMIN, ROLES.SELLER, ROLES.EMPLOYEE]);
 
 class AuthService {
   /**
@@ -235,7 +237,7 @@ class AuthService {
   }
 
   /** Password login → JWT. */
-  async loginUser({ user_id, password, device_id, ip_address, app_version, firebase_token }) {
+  async loginUser({ user_id, password, device_id, ip_address, app_version }) {
     const user = await authRepository.findUserByUserId(user_id);
     if (!user) {
       throw httpError(401, 'Invalid User ID');
@@ -259,39 +261,11 @@ class AuthService {
       throw httpError(403, 'login after some time');
     }
 
-    // ponytail: password login only — OTP/SMS later
     return this._completeLogin(user, {
       device_id,
       ip_address,
       app_version,
-      firebase_token,
     });
-  }
-
-  /**
-   * Step 2 — verify login OTP, issue JWT (+ employee session when needed).
-   */
-  async verifyLoginOtp({ challenge_id, otp }) {
-    const verified = otpService.verifyChallenge({
-      challengeId: challenge_id,
-      code: otp,
-      purpose: 'login',
-    });
-
-    const meta = verified.meta || {};
-    const user = await authRepository.findUserByUserId(meta.user_id);
-    if (!user || Number(user.id) !== Number(meta.userDbId)) {
-      throw httpError(401, 'OTP session invalid. Login again.');
-    }
-
-    if (!user.isActive) {
-      throw httpError(403, 'cant not login');
-    }
-    if (!user.isVerified) {
-      throw httpError(403, 'login after some time');
-    }
-
-    return this._completeLogin(user, meta);
   }
 
   async _completeLogin(user, meta = {}) {
@@ -307,7 +281,6 @@ class AuthService {
         deviceId: meta.device_id,
         ipAddress: meta.ip_address,
         appVersion: meta.app_version,
-        firebaseToken: meta.firebase_token,
       });
       sessionId = Number(session.id);
     }
@@ -382,11 +355,21 @@ class AuthService {
     };
   }
 
-  async activateUser({ user_id, is_active, is_verified }) {
+  async activateUser({ actor, user_id, is_active, is_verified }) {
     const user = await authRepository.findUserByUserId(user_id);
     if (!user) {
       throw httpError(404, 'Invalid User ID');
     }
+    if (!actor) {
+      throw httpError(401, 'Unauthorized');
+    }
+    if (Number(user.id) === Number(actor.id)) {
+      throw httpError(403, 'Cannot change your own account');
+    }
+    if (!ACTIVATE_TARGET_ROLES.has(user.role)) {
+      throw httpError(403, 'Cannot change this account');
+    }
+    assertAccess(actor, { kind: 'user', target: user });
 
     const updatedUser = await authRepository.updateUserStatus(user_id, is_active, is_verified);
 

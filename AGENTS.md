@@ -18,7 +18,7 @@ Inventory and stock management for batteries: admin (wholesaler) and seller role
 1. Before implementing backend work → read `docs/architecture.md` (at least the request path + domain rules).
 2. Before wiring or changing any frontend API usage → read `docs/OPENAPI.md`.
 3. Before new screens / providers / widgets → read `docs/frontend-guidelines.md`.
-4. Before planning, coding, or reviewing → load & follow skills in `.agents/skills/` (`karpathy-guidelines`, `ponytail`, `friendsbattery-flutter`, `todo`).
+4. Before planning, coding, or reviewing → load & follow skills in `.agents/skills/` (`karpathy-guidelines`, `ponytail`, `friendsbattery-flutter`, `m3`, `todo`).
 5. If code and a doc disagree on **layers or OpenAPI/Dio**, fix code to match the doc (or update the doc only when introducing a real new pattern).
 6. Prefer linking/citing these paths in plans; do not restate full copies of them in every reply.
 7. **Never trust the frontend.** Every API: auth + role + Zod + IDOR (`assertAccess` or scoped `WHERE`). Identity/owner/seller/location from `req.user` only. No IDOR.
@@ -31,6 +31,7 @@ AI Agents **must** load and follow the corresponding skills under `.agents/skill
 | **karpathy-guidelines** | `.agents/skills/karpathy-guidelines/SKILL.md` | Eliminate LLM coding mistakes (Think before coding, Simplicity first, Surgical changes, Goal-driven execution) |
 | **ponytail** | `.agents/skills/ponytail/SKILL.md` | Ultra-minimalist code, zero bloat, YAGNI, simplest production-ready solution |
 | **friendsbattery-flutter** | `.agents/skills/friendsbattery-flutter/SKILL.md` | Flutter Riverpod UI + OpenAPI models + Dio transport only |
+| **m3** | `.agents/skills/m3/SKILL.md` | Material Design 3 (M3) UI standards (FilledButton, M3 Cards, NavigationBar, SearchBar, token theme) |
 | **todo** | `.agents/skills/todo/SKILL.md` | Roadmap & Obsidian canvas workflow management |
 
 Repo layout for docs and skills:

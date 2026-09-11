@@ -3,6 +3,7 @@ const shipmentsController = require('./shipments.controller');
 const {
   createShipmentSchema,
   acceptShipmentSchema,
+  cancelShipmentSchema,
   viewShipmentSchema,
 } = require('./shipments.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
@@ -32,6 +33,7 @@ const employeeRouter = express.Router();
  *   post:
  *     summary: Transfer stock serials from admin to seller (Admin only)
  *     description: |
+ *       Body is sellerId + serial_numbers only. Product name/model are resolved from each unit.
  *       Marks existing AVAILABLE admin-owned product units as IN_SHIPMENT.
  *       Creates shipment record (status PENDING) and inventory_transactions (SHIPPED).
  *       Ownership moves to seller when seller accepts the shipment.
@@ -52,7 +54,7 @@ const employeeRouter = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/CreateShipmentResponse'
  *       400:
- *         description: Invalid serials, product, or payload
+ *         description: Invalid serials or payload
  *         content:
  *           application/json:
  *             schema:
@@ -267,6 +269,44 @@ shipmentsRouter.post(
   requireSeller,
   validateRequest(acceptShipmentSchema),
   shipmentsController.acceptShipment.bind(shipmentsController)
+);
+
+/**
+ * @swagger
+ * /api/shipments/{shipmentId}/cancel:
+ *   post:
+ *     summary: Cancel or reject a pending shipment (Admin or Seller)
+ *     description: |
+ *       PENDING only. Claims status → REJECTED atomically, restores units
+ *       IN_SHIPMENT → AVAILABLE, and appends inventory_transactions (RECEIVED).
+ *       Admin: shipments they created or in shop scope. Seller: own shipments only.
+ *     tags: [Shipments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: shipmentId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Shipment cancelled; units restored to AVAILABLE
+ *       400:
+ *         description: Shipment not in PENDING status
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Shipment not found
+ *       409:
+ *         description: Units no longer in shipment (race)
+ */
+shipmentsRouter.post(
+  '/:shipmentId/cancel',
+  authenticate,
+  requireAdminOrSeller,
+  validateRequest(cancelShipmentSchema),
+  shipmentsController.cancelShipment.bind(shipmentsController)
 );
 
 /**

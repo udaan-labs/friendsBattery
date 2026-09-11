@@ -12,7 +12,7 @@ Method | HTTP request | Description
 [**apiEmployeeAttendanceCheckInPost**](AttendanceApi.md#apiemployeeattendancecheckinpost) | **POST** /api/employee/attendance/check-in | Check in at assigned shop location
 [**apiEmployeeAttendanceCheckOutPost**](AttendanceApi.md#apiemployeeattendancecheckoutpost) | **POST** /api/employee/attendance/check-out | Check out (close open attendance)
 [**apiEmployeeAttendanceCheckedInGet**](AttendanceApi.md#apiemployeeattendancecheckedinget) | **GET** /api/employee/attendance/checked-in | List currently checked-in employees (Admin / Super Admin / Seller)
-[**apiEmployeeAttendanceLocationPost**](AttendanceApi.md#apiemployeeattendancelocationpost) | **POST** /api/employee/attendance/location | Update last GPS while checked in (foreground ping)
+[**apiEmployeeAttendanceLocationPost**](AttendanceApi.md#apiemployeeattendancelocationpost) | **POST** /api/employee/attendance/location | Update last GPS while checked in
 [**apiEmployeeAttendanceStatusGet**](AttendanceApi.md#apiemployeeattendancestatusget) | **GET** /api/employee/attendance/status | Current check-in status for employee
 
 
@@ -140,9 +140,9 @@ This endpoint does not need any parameter.
 # **apiEmployeeAttendanceLocationPost**
 > ApiEmployeeAttendanceCheckInPost201Response apiEmployeeAttendanceLocationPost(attendanceGeoBody)
 
-Update last GPS while checked in (foreground ping)
+Update last GPS while checked in
 
-Employee app-open ping. Does not run in background. No geofence reject — stores last known point for admin/seller map. Server ignores pings closer than 15 seconds apart. 
+Stores last known point for admin/seller map. No geofence reject. Android foreground service / iOS background location may call this while the app is not in the foreground. Server ignores pings closer than 15s. 
 
 ### Example
 ```dart

@@ -10,7 +10,7 @@ class ShipmentsController {
       return successResponse(
         res,
         201,
-        `Transferred ${result.transferredUnits} unit(s) to seller successfully`,
+        `Shipment created with ${result.transferredUnits} unit(s)`,
         result
       );
     } catch (error) {
@@ -93,6 +93,16 @@ class ShipmentsController {
       return successResponse(res, 200, 'Shipment accepted successfully', result);
     } catch (error) {
       return handleRouteError(res, error, 'Accept Shipment Error:');
+    }
+  }
+
+  async cancelShipment(req, res) {
+    try {
+      const shipmentId = Number(req.params.shipmentId);
+      const result = await shipmentsService.cancelShipment(shipmentId, req.user);
+      return successResponse(res, 200, 'Shipment cancelled successfully', result);
+    } catch (error) {
+      return handleRouteError(res, error, 'Cancel Shipment Error:');
     }
   }
 }

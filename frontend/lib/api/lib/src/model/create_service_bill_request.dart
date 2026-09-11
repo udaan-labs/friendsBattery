@@ -18,6 +18,7 @@ part 'create_service_bill_request.g.dart';
 /// * [customerNumber] 
 /// * [vehicleNumber] 
 /// * [place] - Required when service_type is JUMPSTART
+/// * [paymentMode] 
 @BuiltValue()
 abstract class CreateServiceBillRequest implements Built<CreateServiceBillRequest, CreateServiceBillRequestBuilder> {
   @BuiltValueField(wireName: r'service_type')
@@ -40,12 +41,17 @@ abstract class CreateServiceBillRequest implements Built<CreateServiceBillReques
   @BuiltValueField(wireName: r'place')
   String? get place;
 
+  @BuiltValueField(wireName: r'payment_mode')
+  CreateServiceBillRequestPaymentModeEnum? get paymentMode;
+  // enum paymentModeEnum {  CASH,  ONLINE,  CREDIT,  };
+
   CreateServiceBillRequest._();
 
   factory CreateServiceBillRequest([void updates(CreateServiceBillRequestBuilder b)]) = _$CreateServiceBillRequest;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CreateServiceBillRequestBuilder b) => b;
+  static void _defaults(CreateServiceBillRequestBuilder b) => b
+      ..paymentMode = CreateServiceBillRequestPaymentModeEnum.valueOf('CASH');
 
   @BuiltValueSerializer(custom: true)
   static Serializer<CreateServiceBillRequest> get serializer => _$CreateServiceBillRequestSerializer();
@@ -95,6 +101,13 @@ class _$CreateServiceBillRequestSerializer implements PrimitiveSerializer<Create
       yield serializers.serialize(
         object.place,
         specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.paymentMode != null) {
+      yield r'payment_mode';
+      yield serializers.serialize(
+        object.paymentMode,
+        specifiedType: const FullType(CreateServiceBillRequestPaymentModeEnum),
       );
     }
   }
@@ -164,6 +177,13 @@ class _$CreateServiceBillRequestSerializer implements PrimitiveSerializer<Create
           if (valueDes == null) continue;
           result.place = valueDes;
           break;
+        case r'payment_mode':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CreateServiceBillRequestPaymentModeEnum),
+          ) as CreateServiceBillRequestPaymentModeEnum;
+          result.paymentMode = valueDes;
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -212,5 +232,22 @@ class CreateServiceBillRequestServiceTypeEnum extends EnumClass {
 
   static BuiltSet<CreateServiceBillRequestServiceTypeEnum> get values => _$createServiceBillRequestServiceTypeEnumValues;
   static CreateServiceBillRequestServiceTypeEnum valueOf(String name) => _$createServiceBillRequestServiceTypeEnumValueOf(name);
+}
+
+class CreateServiceBillRequestPaymentModeEnum extends EnumClass {
+
+  @BuiltValueEnumConst(wireName: r'CASH')
+  static const CreateServiceBillRequestPaymentModeEnum CASH = _$createServiceBillRequestPaymentModeEnum_CASH;
+  @BuiltValueEnumConst(wireName: r'ONLINE')
+  static const CreateServiceBillRequestPaymentModeEnum ONLINE = _$createServiceBillRequestPaymentModeEnum_ONLINE;
+  @BuiltValueEnumConst(wireName: r'CREDIT')
+  static const CreateServiceBillRequestPaymentModeEnum CREDIT = _$createServiceBillRequestPaymentModeEnum_CREDIT;
+
+  static Serializer<CreateServiceBillRequestPaymentModeEnum> get serializer => _$createServiceBillRequestPaymentModeEnumSerializer;
+
+  const CreateServiceBillRequestPaymentModeEnum._(String name): super(name);
+
+  static BuiltSet<CreateServiceBillRequestPaymentModeEnum> get values => _$createServiceBillRequestPaymentModeEnumValues;
+  static CreateServiceBillRequestPaymentModeEnum valueOf(String name) => _$createServiceBillRequestPaymentModeEnumValueOf(name);
 }
 

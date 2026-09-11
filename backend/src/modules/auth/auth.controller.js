@@ -41,7 +41,7 @@ class AuthController {
 
   async login(req, res) {
     try {
-      const { user_id, password, device_id, app_version, firebase_token } = req.body;
+      const { user_id, password, device_id, app_version } = req.body;
       const ip_address =
         req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() ||
         req.ip ||
@@ -54,21 +54,10 @@ class AuthController {
         device_id,
         ip_address,
         app_version,
-        firebase_token,
       });
       return successResponse(res, 200, 'Login successful', result);
     } catch (error) {
       return handleRouteError(res, error, 'Login Error:');
-    }
-  }
-
-  async verifyLoginOtp(req, res) {
-    try {
-      const { challenge_id, otp } = req.body;
-      const result = await authService.verifyLoginOtp({ challenge_id, otp });
-      return successResponse(res, 200, 'Login successful', result);
-    } catch (error) {
-      return handleRouteError(res, error, 'Login OTP Error:');
     }
   }
 
@@ -88,7 +77,12 @@ class AuthController {
   async activate(req, res) {
     try {
       const { user_id, is_active, is_verified } = req.body;
-      const result = await authService.activateUser({ user_id, is_active, is_verified });
+      const result = await authService.activateUser({
+        actor: req.user,
+        user_id,
+        is_active,
+        is_verified,
+      });
       return successResponse(res, 200, 'User status updated successfully', result);
     } catch (error) {
       return handleRouteError(res, error, 'Activate Error:');

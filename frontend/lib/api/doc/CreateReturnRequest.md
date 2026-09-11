@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **serialNumber** | **String** |  | 
 **reason** | **String** |  | 
+**restockAs** | **String** | Restock status after return. Default AVAILABLE (sellable). | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

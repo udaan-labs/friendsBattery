@@ -302,8 +302,8 @@ class AttendanceApi {
     );
   }
 
-  /// Update last GPS while checked in (foreground ping)
-  /// Employee app-open ping. Does not run in background. No geofence reject — stores last known point for admin/seller map. Server ignores pings closer than 15 seconds apart. 
+  /// Update last GPS while checked in
+  /// Stores last known point for admin/seller map. No geofence reject. Android foreground service / iOS background location may call this while the app is not in the foreground. Server ignores pings closer than 15s. 
   ///
   /// Parameters:
   /// * [attendanceGeoBody] 

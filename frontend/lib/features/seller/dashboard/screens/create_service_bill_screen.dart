@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
 import '../../sales/providers/seller_sales_provider.dart';
+import '../widgets/bill_payment_mode_picker.dart';
 
 /// Default charges (UI prefill only; backend accepts any positive amount).
 const _defaultAmounts = <String, num>{
@@ -43,6 +44,7 @@ class _CreateServiceBillScreenState
   final _placeController = TextEditingController();
 
   String _serviceType = 'BATTERY_CHECK_2W';
+  String _paymentMode = 'CASH';
   bool _isSubmitting = false;
 
   bool get _needsPlace => _serviceType == 'JUMPSTART';
@@ -72,6 +74,7 @@ class _CreateServiceBillScreenState
 
   void _showShareModal(
     BuildContext context, {
+    required String billNumber,
     required String serviceTypeLabel,
     required num amount,
     required String customerName,
@@ -83,6 +86,7 @@ class _CreateServiceBillScreenState
     final shareText = StringBuffer()
       ..writeln('🧾 *SERVICE RECEIPT*')
       ..writeln('--------------------------------')
+      ..writeln('🧾 Bill: $billNumber')
       ..writeln('📅 Date: $dateStr')
       ..writeln('👤 Customer: $customerName ($customerNumber)')
       ..writeln('🛠️ Service: $serviceTypeLabel')
@@ -174,7 +178,7 @@ class _CreateServiceBillScreenState
 
     setState(() => _isSubmitting = true);
     try {
-      await ref.read(sellerSalesRepositoryProvider).createServiceBill(
+      final billId = await ref.read(sellerSalesRepositoryProvider).createServiceBill(
             serviceType: _serviceType,
             amount: amount,
             customerName: _customerNameController.text.trim(),
@@ -183,10 +187,12 @@ class _CreateServiceBillScreenState
                 ? null
                 : _vehicleNumberController.text.trim(),
             place: _needsPlace ? _placeController.text.trim() : null,
+            paymentMode: _paymentMode,
           );
       if (!mounted) return;
       _showShareModal(
         context,
+        billNumber: 'SRV-$billId',
         serviceTypeLabel: _serviceLabels[_serviceType] ?? _serviceType,
         amount: amount,
         customerName: _customerNameController.text.trim(),
@@ -291,6 +297,12 @@ class _CreateServiceBillScreenState
                       (v == null || v.trim().isEmpty) ? 'Place required' : null,
                 ),
               ],
+              const SizedBox(height: 16),
+              BillPaymentModePicker(
+                value: _paymentMode,
+                onChanged: (v) => setState(() => _paymentMode = v),
+                allowCredit: false,
+              ),
               const SizedBox(height: 24),
               FilledButton(
                 onPressed: _isSubmitting ? null : _submit,

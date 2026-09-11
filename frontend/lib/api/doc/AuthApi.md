@@ -14,7 +14,6 @@ Method | HTTP request | Description
 [**apiAuthLogoutPost**](AuthApi.md#apiauthlogoutpost) | **POST** /api/auth/logout | End session (closes employee_sessions for EMPLOYEE)
 [**apiAuthRegisterAdminPost**](AuthApi.md#apiauthregisteradminpost) | **POST** /api/auth/register-admin | Super Admin creates a shop or warehouse Admin
 [**apiAuthRegisterPost**](AuthApi.md#apiauthregisterpost) | **POST** /api/auth/register | Register a new seller
-[**apiAuthVerifyOtpPost**](AuthApi.md#apiauthverifyotppost) | **POST** /api/auth/verify-otp | Complete login with OTP
 
 
 # **apiAuthActivatePut**
@@ -208,49 +207,6 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**RegisterResponse**](RegisterResponse.md)
-
-### Authorization
-
-[bearerAuth](../README.md#bearerAuth)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **apiAuthVerifyOtpPost**
-> LoginResponse apiAuthVerifyOtpPost(apiAuthVerifyOtpPostRequest)
-
-Complete login with OTP
-
-Exchange login OTP challenge for auth_id / auth_key.
-
-### Example
-```dart
-import 'package:friends_battery_api/api.dart';
-
-final api = FriendsBatteryApi().getAuthApi();
-final ApiAuthVerifyOtpPostRequest apiAuthVerifyOtpPostRequest = ; // ApiAuthVerifyOtpPostRequest | 
-
-try {
-    final response = api.apiAuthVerifyOtpPost(apiAuthVerifyOtpPostRequest);
-    print(response);
-} on DioException catch (e) {
-    print('Exception when calling AuthApi->apiAuthVerifyOtpPost: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **apiAuthVerifyOtpPostRequest** | [**ApiAuthVerifyOtpPostRequest**](ApiAuthVerifyOtpPostRequest.md)|  | 
-
-### Return type
-
-[**LoginResponse**](LoginResponse.md)
 
 ### Authorization
 

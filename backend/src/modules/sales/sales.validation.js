@@ -26,6 +26,11 @@ const moneyPositive = z
   .number()
   .positive('Must be a positive number')
   .max(9_999_999_999.99);
+const moneyNonNegative = z
+  .number()
+  .min(0, 'Cannot be negative')
+  .max(9_999_999_999.99);
+const paymentMode = z.enum(['CASH', 'ONLINE', 'CREDIT']).optional().default('CASH');
 
 /**
  * Validation schema for creating a sale.
@@ -43,6 +48,8 @@ const createSaleSchema = z.object({
       sell_price: moneyPositive,
       /** NORMAL (default) | SCRAP | MECHANIC */
       sale_type: z.enum(['NORMAL', 'SCRAP', 'MECHANIC']).optional().default('NORMAL'),
+      payment_mode: paymentMode,
+      amount_paid: moneyNonNegative.optional(),
       scrap_serial: optionalStr(100),
     })
     .superRefine((body, ctx) => {
@@ -53,7 +60,24 @@ const createSaleSchema = z.object({
           path: ['scrap_serial'],
         });
       }
+      const paid = body.amount_paid;
+      if (paid != null && paid > body.sell_price) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Amount paid cannot exceed sell price',
+          path: ['amount_paid'],
+        });
+      }
     }),
+});
+
+const payCreditSchema = z.object({
+  params: z.object({
+    transactionId: z.string().regex(/^\d+$/, 'Transaction ID must be numeric').transform(Number),
+  }),
+  body: z.object({
+    amount: moneyPositive,
+  }),
 });
 
 /** Rent unit out with deposit. */
@@ -63,6 +87,7 @@ const createRentSchema = z.object({
     customer_name: customerName,
     customer_number: customerNumber,
     deposit: moneyPositive,
+    payment_mode: paymentMode,
   }),
 });
 
@@ -93,6 +118,7 @@ const createServiceBillSchema = z.object({
       customer_number: customerNumber,
       vehicle_number: optionalStr(50),
       place: optionalStr(200),
+      payment_mode: paymentMode,
     })
     .superRefine((body, ctx) => {
       if (body.service_type === 'JUMPSTART' && !body.place) {
@@ -124,6 +150,11 @@ const salesHistorySchema = z.object({
     toDate: z.string().optional(),
     filter: z.enum(['today', 'date', 'all']).optional(),
     date: z.string().optional(),
+    paymentMode: z.enum(['CASH', 'ONLINE', 'CREDIT']).optional(),
+    unpaid: z
+      .enum(['true', 'false', '1', '0'])
+      .optional()
+      .transform((v) => v === 'true' || v === '1'),
   }),
 });
 
@@ -135,9 +166,21 @@ const salesHistorySchema = z.object({
 const adminSalesHistorySchema = z.object({
   query: z.object({
     page: z.string().optional().default('1').transform(Number),
-    limit: z.string().optional().default('10').transform(Number),
+    limit: z
+      .string()
+      .optional()
+      .default('10')
+      .transform(Number)
+      .refine((n) => n >= 1 && n <= 2000, 'limit must be 1–2000'),
     search: z.string().optional(),
     sellerId: z.string().regex(/^\d+$/, 'Seller ID must be numeric').transform(Number).optional(),
+    locationId: z.string().regex(/^\d+$/, 'Location ID must be numeric').transform(Number).optional(),
+    saleType: z.enum(['NORMAL', 'SCRAP', 'MECHANIC', 'SERVICE', 'RENT']).optional(),
+    paymentMode: z.enum(['CASH', 'ONLINE', 'CREDIT']).optional(),
+    unpaid: z
+      .enum(['true', 'false', '1', '0'])
+      .optional()
+      .transform((v) => v === 'true' || v === '1'),
     fromDate: z.string().optional(),
     toDate: z.string().optional(),
     shipmentStatus: z.enum(['PENDING', 'ACCEPTED', 'REJECTED']).optional(),
@@ -150,6 +193,7 @@ module.exports = {
   createRentSchema,
   returnRentSchema,
   viewSaleSchema,
+  payCreditSchema,
   salesHistorySchema,
   adminSalesHistorySchema,
 };

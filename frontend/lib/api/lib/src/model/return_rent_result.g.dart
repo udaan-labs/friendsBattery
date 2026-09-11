@@ -17,6 +17,10 @@ class _$ReturnRentResult extends ReturnRentResult {
   final num? rentFee;
   @override
   final num? refundAmount;
+  @override
+  final String? customerName;
+  @override
+  final String? customerNumber;
 
   factory _$ReturnRentResult([
     void Function(ReturnRentResultBuilder)? updates,
@@ -28,6 +32,8 @@ class _$ReturnRentResult extends ReturnRentResult {
     this.deposit,
     this.rentFee,
     this.refundAmount,
+    this.customerName,
+    this.customerNumber,
   }) : super._();
   @override
   ReturnRentResult rebuild(void Function(ReturnRentResultBuilder) updates) =>
@@ -45,7 +51,9 @@ class _$ReturnRentResult extends ReturnRentResult {
         serialNumber == other.serialNumber &&
         deposit == other.deposit &&
         rentFee == other.rentFee &&
-        refundAmount == other.refundAmount;
+        refundAmount == other.refundAmount &&
+        customerName == other.customerName &&
+        customerNumber == other.customerNumber;
   }
 
   @override
@@ -56,6 +64,8 @@ class _$ReturnRentResult extends ReturnRentResult {
     _$hash = $jc(_$hash, deposit.hashCode);
     _$hash = $jc(_$hash, rentFee.hashCode);
     _$hash = $jc(_$hash, refundAmount.hashCode);
+    _$hash = $jc(_$hash, customerName.hashCode);
+    _$hash = $jc(_$hash, customerNumber.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -67,7 +77,9 @@ class _$ReturnRentResult extends ReturnRentResult {
           ..add('serialNumber', serialNumber)
           ..add('deposit', deposit)
           ..add('rentFee', rentFee)
-          ..add('refundAmount', refundAmount))
+          ..add('refundAmount', refundAmount)
+          ..add('customerName', customerName)
+          ..add('customerNumber', customerNumber))
         .toString();
   }
 }
@@ -96,6 +108,15 @@ class ReturnRentResultBuilder
   num? get refundAmount => _$this._refundAmount;
   set refundAmount(num? refundAmount) => _$this._refundAmount = refundAmount;
 
+  String? _customerName;
+  String? get customerName => _$this._customerName;
+  set customerName(String? customerName) => _$this._customerName = customerName;
+
+  String? _customerNumber;
+  String? get customerNumber => _$this._customerNumber;
+  set customerNumber(String? customerNumber) =>
+      _$this._customerNumber = customerNumber;
+
   ReturnRentResultBuilder() {
     ReturnRentResult._defaults(this);
   }
@@ -108,6 +129,8 @@ class ReturnRentResultBuilder
       _deposit = $v.deposit;
       _rentFee = $v.rentFee;
       _refundAmount = $v.refundAmount;
+      _customerName = $v.customerName;
+      _customerNumber = $v.customerNumber;
       _$v = null;
     }
     return this;
@@ -135,6 +158,8 @@ class ReturnRentResultBuilder
           deposit: deposit,
           rentFee: rentFee,
           refundAmount: refundAmount,
+          customerName: customerName,
+          customerNumber: customerNumber,
         );
     replace(_$result);
     return _$result;

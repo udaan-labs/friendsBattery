@@ -37,9 +37,46 @@ _$createSaleRequestSaleTypeEnumValues = BuiltSet<CreateSaleRequestSaleTypeEnum>(
   ],
 );
 
+const CreateSaleRequestPaymentModeEnum _$createSaleRequestPaymentModeEnum_CASH =
+    const CreateSaleRequestPaymentModeEnum._('CASH');
+const CreateSaleRequestPaymentModeEnum
+_$createSaleRequestPaymentModeEnum_ONLINE =
+    const CreateSaleRequestPaymentModeEnum._('ONLINE');
+const CreateSaleRequestPaymentModeEnum
+_$createSaleRequestPaymentModeEnum_CREDIT =
+    const CreateSaleRequestPaymentModeEnum._('CREDIT');
+
+CreateSaleRequestPaymentModeEnum _$createSaleRequestPaymentModeEnumValueOf(
+  String name,
+) {
+  switch (name) {
+    case 'CASH':
+      return _$createSaleRequestPaymentModeEnum_CASH;
+    case 'ONLINE':
+      return _$createSaleRequestPaymentModeEnum_ONLINE;
+    case 'CREDIT':
+      return _$createSaleRequestPaymentModeEnum_CREDIT;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<CreateSaleRequestPaymentModeEnum>
+_$createSaleRequestPaymentModeEnumValues =
+    BuiltSet<CreateSaleRequestPaymentModeEnum>(
+      const <CreateSaleRequestPaymentModeEnum>[
+        _$createSaleRequestPaymentModeEnum_CASH,
+        _$createSaleRequestPaymentModeEnum_ONLINE,
+        _$createSaleRequestPaymentModeEnum_CREDIT,
+      ],
+    );
+
 Serializer<CreateSaleRequestSaleTypeEnum>
 _$createSaleRequestSaleTypeEnumSerializer =
     _$CreateSaleRequestSaleTypeEnumSerializer();
+Serializer<CreateSaleRequestPaymentModeEnum>
+_$createSaleRequestPaymentModeEnumSerializer =
+    _$CreateSaleRequestPaymentModeEnumSerializer();
 
 class _$CreateSaleRequestSaleTypeEnumSerializer
     implements PrimitiveSerializer<CreateSaleRequestSaleTypeEnum> {
@@ -76,6 +113,41 @@ class _$CreateSaleRequestSaleTypeEnumSerializer
   );
 }
 
+class _$CreateSaleRequestPaymentModeEnumSerializer
+    implements PrimitiveSerializer<CreateSaleRequestPaymentModeEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'CASH': 'CASH',
+    'ONLINE': 'ONLINE',
+    'CREDIT': 'CREDIT',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'CASH': 'CASH',
+    'ONLINE': 'ONLINE',
+    'CREDIT': 'CREDIT',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[CreateSaleRequestPaymentModeEnum];
+  @override
+  final String wireName = 'CreateSaleRequestPaymentModeEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    CreateSaleRequestPaymentModeEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  CreateSaleRequestPaymentModeEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => CreateSaleRequestPaymentModeEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$CreateSaleRequest extends CreateSaleRequest {
   @override
   final int productNameId;
@@ -95,6 +167,10 @@ class _$CreateSaleRequest extends CreateSaleRequest {
   final CreateSaleRequestSaleTypeEnum? saleType;
   @override
   final String? scrapSerial;
+  @override
+  final CreateSaleRequestPaymentModeEnum? paymentMode;
+  @override
+  final num? amountPaid;
 
   factory _$CreateSaleRequest([
     void Function(CreateSaleRequestBuilder)? updates,
@@ -110,6 +186,8 @@ class _$CreateSaleRequest extends CreateSaleRequest {
     required this.sellPrice,
     this.saleType,
     this.scrapSerial,
+    this.paymentMode,
+    this.amountPaid,
   }) : super._();
   @override
   CreateSaleRequest rebuild(void Function(CreateSaleRequestBuilder) updates) =>
@@ -131,7 +209,9 @@ class _$CreateSaleRequest extends CreateSaleRequest {
         vehicleNumber == other.vehicleNumber &&
         sellPrice == other.sellPrice &&
         saleType == other.saleType &&
-        scrapSerial == other.scrapSerial;
+        scrapSerial == other.scrapSerial &&
+        paymentMode == other.paymentMode &&
+        amountPaid == other.amountPaid;
   }
 
   @override
@@ -146,6 +226,8 @@ class _$CreateSaleRequest extends CreateSaleRequest {
     _$hash = $jc(_$hash, sellPrice.hashCode);
     _$hash = $jc(_$hash, saleType.hashCode);
     _$hash = $jc(_$hash, scrapSerial.hashCode);
+    _$hash = $jc(_$hash, paymentMode.hashCode);
+    _$hash = $jc(_$hash, amountPaid.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -161,7 +243,9 @@ class _$CreateSaleRequest extends CreateSaleRequest {
           ..add('vehicleNumber', vehicleNumber)
           ..add('sellPrice', sellPrice)
           ..add('saleType', saleType)
-          ..add('scrapSerial', scrapSerial))
+          ..add('scrapSerial', scrapSerial)
+          ..add('paymentMode', paymentMode)
+          ..add('amountPaid', amountPaid))
         .toString();
   }
 }
@@ -211,6 +295,15 @@ class CreateSaleRequestBuilder
   String? get scrapSerial => _$this._scrapSerial;
   set scrapSerial(String? scrapSerial) => _$this._scrapSerial = scrapSerial;
 
+  CreateSaleRequestPaymentModeEnum? _paymentMode;
+  CreateSaleRequestPaymentModeEnum? get paymentMode => _$this._paymentMode;
+  set paymentMode(CreateSaleRequestPaymentModeEnum? paymentMode) =>
+      _$this._paymentMode = paymentMode;
+
+  num? _amountPaid;
+  num? get amountPaid => _$this._amountPaid;
+  set amountPaid(num? amountPaid) => _$this._amountPaid = amountPaid;
+
   CreateSaleRequestBuilder() {
     CreateSaleRequest._defaults(this);
   }
@@ -227,6 +320,8 @@ class CreateSaleRequestBuilder
       _sellPrice = $v.sellPrice;
       _saleType = $v.saleType;
       _scrapSerial = $v.scrapSerial;
+      _paymentMode = $v.paymentMode;
+      _amountPaid = $v.amountPaid;
       _$v = null;
     }
     return this;
@@ -282,6 +377,8 @@ class CreateSaleRequestBuilder
           ),
           saleType: saleType,
           scrapSerial: scrapSerial,
+          paymentMode: paymentMode,
+          amountPaid: amountPaid,
         );
     replace(_$result);
     return _$result;

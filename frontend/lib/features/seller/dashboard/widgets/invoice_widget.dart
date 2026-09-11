@@ -14,6 +14,8 @@ class InvoiceWidget extends StatelessWidget {
   final double sellingPrice;
   final String warrantyDetails;
   final String sellerName;
+  final String paymentMode;
+  final double? amountPaid;
 
   const InvoiceWidget({
     super.key,
@@ -29,6 +31,8 @@ class InvoiceWidget extends StatelessWidget {
     required this.sellingPrice,
     this.warrantyDetails = '',
     required this.sellerName,
+    this.paymentMode = 'CASH',
+    this.amountPaid,
   });
 
   @override
@@ -165,16 +169,36 @@ class InvoiceWidget extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           // Total Amount
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              const Text('Total Amount Paid: ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              Text(
-                '₹${sellingPrice.toStringAsFixed(2)}',
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF006B2C)),
-              ),
-            ],
-          ),
+          if (paymentMode.toUpperCase() == 'CREDIT') ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                const Text('Paid now: ', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                Text('₹${(amountPaid ?? 0).toStringAsFixed(2)}'),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                const Text('Due (credit): ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                Text(
+                  '₹${(sellingPrice - (amountPaid ?? 0)).clamp(0, sellingPrice).toStringAsFixed(2)}',
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFFC2410C)),
+                ),
+              ],
+            ),
+          ] else
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                const Text('Total Amount Paid: ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                Text(
+                  '₹${sellingPrice.toStringAsFixed(2)}',
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF006B2C)),
+                ),
+              ],
+            ),
           const SizedBox(height: 32),
           // Footer
           Center(

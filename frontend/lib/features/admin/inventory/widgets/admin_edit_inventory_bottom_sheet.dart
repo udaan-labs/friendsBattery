@@ -1,10 +1,8 @@
-import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/state/data_sync.dart';
-import '../../../../core/storage/session_manager.dart';
 import '../../../../shared/widgets/snackbar_helper.dart';
 import '../../../shared/inventory/providers/inventory_provider.dart';
 import '../../../shared/inventory/repository/shared_inventory_repository.dart';
@@ -23,7 +21,6 @@ class AdminEditInventoryBottomSheet extends ConsumerStatefulWidget {
 
 class _AdminEditInventoryBottomSheetState extends ConsumerState<AdminEditInventoryBottomSheet> {
   final _formKey = GlobalKey<FormState>();
-  final _removeQuantityController = TextEditingController();
   final _minPriceController = TextEditingController();
   final _minAdminQuantityController = TextEditingController();
   final _minSellerQuantityController = TextEditingController();
@@ -42,7 +39,6 @@ class _AdminEditInventoryBottomSheetState extends ConsumerState<AdminEditInvento
 
   @override
   void dispose() {
-    _removeQuantityController.dispose();
     _minPriceController.dispose();
     _minAdminQuantityController.dispose();
     _minSellerQuantityController.dispose();
@@ -51,12 +47,11 @@ class _AdminEditInventoryBottomSheetState extends ConsumerState<AdminEditInvento
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() => _isSubmitting = true);
 
     try {
       final repo = ref.read(sharedInventoryRepositoryProvider);
-      final quantityToRemove = int.tryParse(_removeQuantityController.text) ?? 0;
       final minPrice = num.tryParse(_minPriceController.text);
       final minAdminQty = int.tryParse(_minAdminQuantityController.text);
       final minSellerQty = int.tryParse(_minSellerQuantityController.text);
@@ -72,22 +67,6 @@ class _AdminEditInventoryBottomSheetState extends ConsumerState<AdminEditInvento
           minUnitCountAdmin: minAdminQty,
           minUnitCountSeller: minSellerQty,
           onSale: _onSale,
-        );
-      }
-
-      if (quantityToRemove > 0) {
-        final session = await SessionManager.getSessionData();
-        final authIdStr = session['auth_id'] ?? '';
-        int userId = 0;
-        try {
-          final decoded = utf8.decode(base64Decode(authIdStr));
-          userId = int.parse(decoded.split(':')[0]);
-        } catch (_) {}
-
-        await repo.adjustInventory(
-          productId: widget.item.productId,
-          userId: userId,
-          adjustmentQuantity: -quantityToRemove,
         );
       }
 
@@ -276,30 +255,7 @@ class _AdminEditInventoryBottomSheetState extends ConsumerState<AdminEditInvento
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Remove Quantity',
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                  ),
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _removeQuantityController,
-                    keyboardType: TextInputType.number,
-                    enabled: _isEditing,
-                    decoration: InputDecoration(
-                      hintText: 'Enter units to remove (optional)',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    ),
-                    validator: (value) {
-                      if (value != null && value.isNotEmpty) {
-                        final val = int.tryParse(value);
-                        if (val == null || val < 0) return 'Enter a valid positive number';
-                        if (val > widget.item.quantity) return 'Cannot remove more than current stock';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
+                  // ponytail: qty remove disabled — scrap via serial chips only (C4/B10)
                   const Text(
                     'Minimum Sell Price',
                     style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),

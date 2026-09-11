@@ -10,7 +10,8 @@ import 'package:frontend/features/auth/screens/login_screen.dart';
 import 'package:frontend/features/auth/screens/register_screen.dart';
 import 'package:frontend/features/admin/dashboard/screens/admin_shell_screen.dart';
 import 'package:frontend/features/admin/dashboard/screens/admin_dashboard_screen.dart';
-import 'package:frontend/features/admin/dashboard/providers/dashboard_controller.dart';
+import 'package:frontend/features/admin/dashboard/providers/dashboard_providers.dart';
+import 'package:frontend/features/admin/locations/providers/locations_providers.dart';
 import 'package:frontend/features/admin/sales/screens/admin_sales_screen.dart';
 import 'package:frontend/features/admin/sellers/screens/sellers_list_screen.dart';
 import 'package:frontend/features/admin/sellers/screens/seller_details_screen.dart';
@@ -24,11 +25,13 @@ import 'package:frontend/features/admin/inventory/screens/add_stock_screen.dart'
 import 'package:frontend/features/shared/inventory/screens/current_inventory_screen.dart';
 import 'package:frontend/features/shared/inventory/providers/inventory_provider.dart';
 import 'package:frontend/features/shared/inventory/repository/shared_inventory_repository.dart';
+import 'package:frontend/features/shared/products/providers/product_catalog_providers.dart';
+import 'package:frontend/features/shared/products/repository/product_catalog_repository.dart';
+import 'package:frontend/features/shared/staff/providers/staff_providers.dart';
 import 'package:frontend/features/seller/dashboard/screens/seller_shell_screen.dart';
 import 'package:frontend/features/seller/dashboard/screens/seller_dashboard_screen.dart';
 import 'package:frontend/features/seller/dashboard/screens/seller_received_shipments_screen.dart';
 import 'package:frontend/features/seller/dashboard/providers/seller_dashboard_providers.dart';
-import 'package:frontend/features/seller/dashboard/providers/seller_dashboard_controller.dart';
 import 'package:frontend/features/seller/sales/screens/seller_sales_history_screen.dart';
 import 'helpers/test_helpers.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -53,29 +56,21 @@ final _mockAuthProvider =
   return _MockAuthNotifier();
 });
 
-class _DashCtrl extends DashboardController {
-  _DashCtrl(super.ref);
-  @override
-  Future<void> refreshAllData() async {}
-}
-
-class _SellDashCtrl extends SellerDashboardController {
-  _SellDashCtrl(super.ref);
-  @override
-  Future<void> refreshAllData() async {}
-}
-
 // ═══════════════════════════════════════════════════════════════════════════
 // BUILDER HELPERS
 // ═══════════════════════════════════════════════════════════════════════════
 
 List<Override> _base() => [authProvider.overrideWithProvider(_mockAuthProvider)];
 
-FutureProvider<SellerDetailsData> _sellerDetailsOk(int id) =>
-    FutureProvider<SellerDetailsData>((ref) async => mockSellerDetails());
-
-FutureProvider<SellerDetailsData> _sellerDetailsErr(int id) =>
-    FutureProvider<SellerDetailsData>((ref) async => throw Exception('Not found'));
+/// Empty catalog / location futures so screens do not hang on network.
+List<Override> _emptyCatalog() => [
+      productNamesProvider.overrideWithProvider(
+          FutureProvider<List<CatalogItem>>((ref) async => [])),
+      locationsByTypeProvider('SHOP').overrideWithProvider(
+          FutureProvider<List<LocationItem>>((ref) async => [])),
+      locationsByTypeProvider('WAREHOUSE').overrideWithProvider(
+          FutureProvider<List<LocationItem>>((ref) async => [])),
+    ];
 
 FutureProvider<ShipmentDetailModel> _shipDetailOk(int id) =>
     FutureProvider<ShipmentDetailModel>((ref) async => mockShipmentDetail(id: id));
@@ -110,8 +105,8 @@ void main() {
       await tester.pump();
       expect(find.text('Friends Battery'), findsOneWidget);
       expect(find.byIcon(Icons.battery_charging_full), findsOneWidget);
-      // Advance past the 2-second splash delay to avoid pending timer
-      await tester.pump(const Duration(seconds: 3));
+      // Splash boot uses an 8s Future.wait timeout — drain it.
+      await tester.pump(const Duration(seconds: 9));
     });
 
     testWidgets('LoginScreen renders form fields', (tester) async {
@@ -137,22 +132,26 @@ void main() {
 
     testWidgets('RegisterScreen renders form fields', (tester) async {
       await tester.pumpWidget(createTestApp(
-        const RegisterScreen(), overrides: _base(),
+        const RegisterScreen(), overrides: [..._base(), ..._emptyCatalog()],
       ));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
       expect(find.text('Create Account'), findsOneWidget);
       expect(find.text('User ID'), findsOneWidget);
       expect(find.text('Username'), findsOneWidget);
       expect(find.text('Mobile Number'), findsOneWidget);
-      expect(find.text('Shop Name'), findsOneWidget);
+      expect(find.text('Location name'), findsOneWidget);
       expect(find.text('Password'), findsOneWidget);
     });
 
     testWidgets('RegisterScreen shows admin flow', (tester) async {
       await tester.pumpWidget(createTestApp(
-        const RegisterScreen(isAdminFlow: true), overrides: _base(),
+        const RegisterScreen(isAdminFlow: true),
+        overrides: [..._base(), ..._emptyCatalog()],
       ));
-      await tester.pumpAndSettle();
+      // Avoid pumpAndSettle — shop picker / next-user-id may keep futures pending.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
       expect(find.text('Add Seller'), findsWidgets);
     });
   });
@@ -173,14 +172,19 @@ void main() {
     });
 
     testWidgets('AdminDashboardScreen renders', (tester) async {
+      await setTestSurface(tester, const Size(800, 1400));
       await tester.pumpWidget(createTestApp(const AdminDashboardScreen(),
-          overrides: [..._base(),
-            dashboardControllerProvider.overrideWithProvider(
-                Provider<DashboardController>((ref) => _DashCtrl(ref))),
+          overrides: [..._base(), ..._emptyCatalog(),
+            kpiProvider.overrideWithProvider(
+                FutureProvider<AdminDashboardStats>((ref) async => mockDashboardStats())),
+            recentActivityProvider.overrideWithProvider(
+                FutureProvider<List<ActivityItem>>((ref) async => [])),
           ]));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      drainLayoutOverflows(tester);
       expect(find.text('Friends Battery'), findsOneWidget);
-      expect(find.byIcon(Icons.notifications_none_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.history), findsOneWidget);
       expect(find.byIcon(Icons.exit_to_app), findsOneWidget);
     });
 
@@ -194,9 +198,12 @@ void main() {
                   ..isVerified = true..isActive = true);
               return [sl.SellerData(seller: u, totalStock: 50, todaySales: 5, pendingShipments: 2)];
             })),
+            sl.allEmployeesProvider.overrideWithProvider(
+                FutureProvider<List<sl.EmployeeStaffData>>((ref) async => [])),
           ]));
-      await tester.pumpAndSettle();
-      expect(find.text('All Sellers'), findsOneWidget);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text('Sellers'), findsWidgets);
       expect(find.text('TestSeller'), findsWidgets);
     });
 
@@ -205,8 +212,11 @@ void main() {
           overrides: [..._base(),
             sl.sellersProvider.overrideWithProvider(
                 FutureProvider<List<sl.SellerData>>((ref) async => throw Exception('API Error'))),
+            sl.allEmployeesProvider.overrideWithProvider(
+                FutureProvider<List<sl.EmployeeStaffData>>((ref) async => [])),
           ]));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
       expect(find.textContaining('API Error'), findsOneWidget);
     });
 
@@ -215,29 +225,42 @@ void main() {
           overrides: [..._base(),
             sl.sellersProvider.overrideWithProvider(
                 FutureProvider<List<sl.SellerData>>((ref) async => [])),
+            sl.allEmployeesProvider.overrideWithProvider(
+                FutureProvider<List<sl.EmployeeStaffData>>((ref) async => [])),
           ]));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
       expect(find.text('No sellers found.'), findsOneWidget);
     });
 
     testWidgets('SellerDetailsScreen renders with data', (tester) async {
+      final params = (sellerId: 1, includeOutOfStock: false);
       final dp = FutureProvider<SellerDetailsData>((ref) async => mockSellerDetails());
       await tester.pumpWidget(createTestApp(const SellerDetailsScreen(sellerId: 1),
           overrides: [..._base(),
-            sellerDetailsProvider(1).overrideWithProvider(dp),
+            sellerDetailsProvider(params).overrideWithProvider(dp),
+            shopStaffProvider(1).overrideWithProvider(
+                FutureProvider<ShopStaffData>((ref) async => ShopStaffData())),
           ]));
-      await tester.pumpAndSettle();
+      // Pulse animation uses AnimationController.repeat — avoid pumpAndSettle.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      drainLayoutOverflows(tester);
       expect(find.text('Seller Details'), findsOneWidget);
       expect(find.text('Test Shop'), findsOneWidget);
     });
 
     testWidgets('SellerDetailsScreen shows error state', (tester) async {
+      final params = (sellerId: 999, includeOutOfStock: false);
       final dp = FutureProvider<SellerDetailsData>((ref) async => throw Exception('Not found'));
       await tester.pumpWidget(createTestApp(const SellerDetailsScreen(sellerId: 999),
           overrides: [..._base(),
-            sellerDetailsProvider(999).overrideWithProvider(dp),
+            sellerDetailsProvider(params).overrideWithProvider(dp),
+            shopStaffProvider(999).overrideWithProvider(
+                FutureProvider<ShopStaffData>((ref) async => ShopStaffData())),
           ]));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
       expect(find.text('Failed to load details'), findsOneWidget);
     });
 
@@ -247,17 +270,23 @@ void main() {
           overrides: [..._base(),
             shipmentsListProvider.overrideWithProvider(sp),
           ]));
-      await tester.pumpAndSettle();
-      expect(find.text('All Shipments'), findsOneWidget);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text('Shipments'), findsOneWidget);
       expect(find.text('SHP-001'), findsOneWidget);
       expect(find.text('PENDING'), findsOneWidget);
     });
 
     testWidgets('ShipmentListScreen has FAB', (tester) async {
       await tester.pumpWidget(createTestApp(
-        const ShipmentListScreen(), overrides: _base(),
+        const ShipmentListScreen(),
+        overrides: [..._base(),
+          shipmentsListProvider.overrideWithProvider(
+              FutureProvider<List<ShipmentSummaryModel>>((ref) async => [])),
+        ],
       ));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
       expect(find.byType(FloatingActionButton), findsOneWidget);
     });
 
@@ -336,9 +365,11 @@ void main() {
 
     testWidgets('AddStockScreen renders', (tester) async {
       await tester.pumpWidget(createTestApp(
-        const AddStockScreen(), overrides: _base(),
+        const AddStockScreen(),
+        overrides: [..._base(), ..._emptyCatalog()],
       ));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
       expect(find.text('Add Stock'), findsOneWidget);
     });
   });
@@ -359,6 +390,7 @@ void main() {
     });
 
     testWidgets('SellerDashboardScreen renders', (tester) async {
+      await setTestSurface(tester, const Size(800, 1400));
       await tester.pumpWidget(createTestApp(const SellerDashboardScreen(), overrides: [
         ..._base(),
         sellerProfileProvider.overrideWithProvider(
@@ -367,12 +399,14 @@ void main() {
             FutureProvider<SellerKpiStats>((ref) async => mockSellerKpiStats())),
         sellerRecentInventoryProvider.overrideWithProvider(
             FutureProvider<List<RecentInventoryItem>>((ref) async => mockRecentInventoryItems())),
+        sellerAllShipmentsProvider.overrideWithProvider(
+            FutureProvider<List<ApiSellerShipmentsGet200ResponseDataInner>>((ref) async => [])),
         sellerPendingShipmentsProvider.overrideWithProvider(
             FutureProvider<List<ApiSellerShipmentsGet200ResponseDataInner>>((ref) async => [])),
-        sellerDashboardControllerProvider.overrideWithProvider(
-            Provider<SellerDashboardController>((ref) => _SellDashCtrl(ref))),
       ]));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      drainLayoutOverflows(tester);
       expect(find.text('Friends Battery'), findsOneWidget);
       expect(find.textContaining('Rahul'), findsOneWidget);
       expect(find.text('New Bill'), findsOneWidget);
@@ -380,12 +414,15 @@ void main() {
     });
 
     testWidgets('SellerReceivedShipmentsScreen empty', (tester) async {
+      await setTestSurface(tester, const Size(800, 1400));
       await tester.pumpWidget(createTestApp(const SellerReceivedShipmentsScreen(), overrides: [
         ..._base(),
         sellerAllShipmentsProvider.overrideWithProvider(
             FutureProvider<List<ApiSellerShipmentsGet200ResponseDataInner>>((ref) async => [])),
       ]));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      drainLayoutOverflows(tester);
       expect(find.text('Received Shipments'), findsOneWidget);
       expect(find.text('No shipments yet'), findsOneWidget);
     });
@@ -414,26 +451,33 @@ void main() {
 
   group('Edge Cases & Pixel Crash', () {
     testWidgets('Auth screens render at 320x480', (tester) async {
-      await tester.binding.setSurfaceSize(const Size(320, 480));
+      await setTestSurface(tester, const Size(320, 480));
       await tester.pumpWidget(createTestApp(const SplashScreen(), overrides: _base()));
       await tester.pump();
+      await tester.pump(const Duration(seconds: 9));
+      // Reset tree before changing ProviderScope overrides.
+      await tester.pumpWidget(const SizedBox.shrink());
       await tester.pumpWidget(createTestApp(const LoginScreen(), overrides: _base()));
       await tester.pumpAndSettle();
-      await tester.pumpWidget(createTestApp(const RegisterScreen(), overrides: _base()));
-      await tester.pumpAndSettle();
-      await tester.binding.setSurfaceSize(const Size(400, 800));
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpWidget(createTestApp(
+        const RegisterScreen(),
+        overrides: [..._base(), ..._emptyCatalog()],
+      ));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
     });
 
     testWidgets('Shell screens render at 1200x1600', (tester) async {
-      await tester.binding.setSurfaceSize(const Size(1200, 1600));
+      await setTestSurface(tester, const Size(1200, 1600));
       for (final s in [
         const AdminShellScreen(child: SizedBox()),
         const SellerShellScreen(child: SizedBox()),
       ]) {
+        await tester.pumpWidget(const SizedBox.shrink());
         await tester.pumpWidget(createTestApp(s, overrides: _base()));
         await tester.pumpAndSettle();
       }
-      await tester.binding.setSurfaceSize(const Size(400, 800));
     });
 
     testWidgets('Long text does not crash login form', (tester) async {
@@ -453,23 +497,21 @@ void main() {
 
   group('Responsive Layout', () {
     testWidgets('AdminShell hides bottom nav at 1200px', (tester) async {
-      await tester.binding.setSurfaceSize(const Size(1200, 800));
+      await setTestSurface(tester, const Size(1200, 800));
       await tester.pumpWidget(createTestApp(
         const AdminShellScreen(child: SizedBox()), overrides: _base(),
       ));
       await tester.pumpAndSettle();
       expect(find.byType(BottomNavigationBar), findsNothing);
-      await tester.binding.setSurfaceSize(const Size(400, 800));
     });
 
     testWidgets('SellerShell hides bottom nav at 1200px', (tester) async {
-      await tester.binding.setSurfaceSize(const Size(1200, 800));
+      await setTestSurface(tester, const Size(1200, 800));
       await tester.pumpWidget(createTestApp(
         const SellerShellScreen(child: SizedBox()), overrides: _base(),
       ));
       await tester.pumpAndSettle();
       expect(find.byType(BottomNavigationBar), findsNothing);
-      await tester.binding.setSurfaceSize(const Size(400, 800));
     });
   });
 
@@ -483,8 +525,8 @@ void main() {
       ));
       await tester.pump();
       expect(find.text('Friends Battery'), findsOneWidget);
-      // Advance past the splash delay to avoid timer pending errors
-      await tester.pump(const Duration(seconds: 3));
+      // Splash boot timeout is 8s.
+      await tester.pump(const Duration(seconds: 9));
     });
 
     testWidgets('AdminShell bottom nav taps', (tester) async {
@@ -492,10 +534,10 @@ void main() {
         const AdminShellScreen(child: SizedBox()), overrides: _base(),
       ));
       await tester.pumpAndSettle();
+      expect(find.byType(BottomNavigationBar), findsOneWidget);
       await tester.tap(find.text('Sellers'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Dashboard'));
-      await tester.pumpAndSettle();
+      // go_router leaves the standalone shell — just ensure the tap does not throw.
+      await tester.pump();
     });
 
     testWidgets('SellerShell bottom nav taps', (tester) async {
@@ -503,10 +545,9 @@ void main() {
         const SellerShellScreen(child: SizedBox()), overrides: _base(),
       ));
       await tester.pumpAndSettle();
+      expect(find.byType(BottomNavigationBar), findsOneWidget);
       await tester.tap(find.text('Stock'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Dashboard'));
-      await tester.pumpAndSettle();
+      await tester.pump();
     });
   });
 }

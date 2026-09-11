@@ -17,10 +17,11 @@ Method | HTTP request | Description
 [**apiSalesRentReturnPost**](SalesApi.md#apisalesrentreturnpost) | **POST** /api/sales/rent/return | Return rented battery — fee from deposit, refund rest
 [**apiSalesServicePost**](SalesApi.md#apisalesservicepost) | **POST** /api/sales/service | Create a service bill (no stock move)
 [**apiSalesTransactionIdGet**](SalesApi.md#apisalestransactionidget) | **GET** /api/sales/{transactionId} | Return a single sale&#39;s details by ID
+[**apiSalesTransactionIdPayPost**](SalesApi.md#apisalestransactionidpaypost) | **POST** /api/sales/{transactionId}/pay | Collect remaining credit on a unit sale
 
 
 # **apiSalesAdminHistoryGet**
-> AdminSaleHistoryResponse apiSalesAdminHistoryGet(page, limit, search, sellerId, fromDate, toDate, shipmentStatus)
+> AdminSaleHistoryResponse apiSalesAdminHistoryGet(page, limit, search, sellerId, locationId, saleType, paymentMode, unpaid, fromDate, toDate, shipmentStatus)
 
 Return all sales across all sellers with pagination, search, filters, and shipment tracing (Admin only)
 
@@ -33,12 +34,16 @@ final int page = 56; // int |
 final int limit = 56; // int | 
 final String search = search_example; // String | Search by customer name, seller name, shop name, product name, or serial number
 final int sellerId = 56; // int | Filter by specific seller ID
+final int locationId = 56; // int | Filter by shop location (seller.location_id)
+final String saleType = saleType_example; // String | Filter by bill type
+final String paymentMode = paymentMode_example; // String | Filter by payment
+final bool unpaid = true; // bool | CREDIT sales with remaining due
 final DateTime fromDate = 2013-10-20T19:20:30+01:00; // DateTime | 
 final DateTime toDate = 2013-10-20T19:20:30+01:00; // DateTime | 
 final String shipmentStatus = shipmentStatus_example; // String | 
 
 try {
-    final response = api.apiSalesAdminHistoryGet(page, limit, search, sellerId, fromDate, toDate, shipmentStatus);
+    final response = api.apiSalesAdminHistoryGet(page, limit, search, sellerId, locationId, saleType, paymentMode, unpaid, fromDate, toDate, shipmentStatus);
     print(response);
 } on DioException catch (e) {
     print('Exception when calling SalesApi->apiSalesAdminHistoryGet: $e\n');
@@ -53,6 +58,10 @@ Name | Type | Description  | Notes
  **limit** | **int**|  | [optional] [default to 10]
  **search** | **String**| Search by customer name, seller name, shop name, product name, or serial number | [optional] 
  **sellerId** | **int**| Filter by specific seller ID | [optional] 
+ **locationId** | **int**| Filter by shop location (seller.location_id) | [optional] 
+ **saleType** | **String**| Filter by bill type | [optional] 
+ **paymentMode** | **String**| Filter by payment | [optional] 
+ **unpaid** | **bool**| CREDIT sales with remaining due | [optional] 
  **fromDate** | **DateTime**|  | [optional] 
  **toDate** | **DateTime**|  | [optional] 
  **shipmentStatus** | **String**|  | [optional] 
@@ -109,7 +118,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiSalesHistoryGet**
-> SaleHistoryResponse apiSalesHistoryGet(page, limit, searchCustomer, searchSerial, fromDate, toDate, filter, date)
+> SaleHistoryResponse apiSalesHistoryGet(page, limit, searchCustomer, searchSerial, fromDate, toDate, filter, date, paymentMode, unpaid)
 
 Return seller's own sales history with pagination, search, and date filtering
 
@@ -126,9 +135,11 @@ final DateTime fromDate = 2013-10-20T19:20:30+01:00; // DateTime |
 final DateTime toDate = 2013-10-20T19:20:30+01:00; // DateTime | 
 final String filter = filter_example; // String | 
 final String date = date_example; // String | 
+final String paymentMode = paymentMode_example; // String | Filter by payment
+final bool unpaid = true; // bool | CREDIT sales with remaining due
 
 try {
-    final response = api.apiSalesHistoryGet(page, limit, searchCustomer, searchSerial, fromDate, toDate, filter, date);
+    final response = api.apiSalesHistoryGet(page, limit, searchCustomer, searchSerial, fromDate, toDate, filter, date, paymentMode, unpaid);
     print(response);
 } on DioException catch (e) {
     print('Exception when calling SalesApi->apiSalesHistoryGet: $e\n');
@@ -147,6 +158,8 @@ Name | Type | Description  | Notes
  **toDate** | **DateTime**|  | [optional] 
  **filter** | **String**|  | [optional] 
  **date** | **String**|  | [optional] 
+ **paymentMode** | **String**| Filter by payment | [optional] 
+ **unpaid** | **bool**| CREDIT sales with remaining due | [optional] 
 
 ### Return type
 
@@ -364,6 +377,49 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiSalesTransactionIdPayPost**
+> SaleDetailResponse apiSalesTransactionIdPayPost(transactionId, payCreditRequest)
+
+Collect remaining credit on a unit sale
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getSalesApi();
+final int transactionId = 56; // int | 
+final PayCreditRequest payCreditRequest = ; // PayCreditRequest | 
+
+try {
+    final response = api.apiSalesTransactionIdPayPost(transactionId, payCreditRequest);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling SalesApi->apiSalesTransactionIdPayPost: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **transactionId** | **int**|  | 
+ **payCreditRequest** | [**PayCreditRequest**](PayCreditRequest.md)|  | 
+
+### Return type
+
+[**SaleDetailResponse**](SaleDetailResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

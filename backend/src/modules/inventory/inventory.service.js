@@ -6,6 +6,11 @@ const { prisma } = require('../../config/db');
 const { httpError } = require('../../shared/utils/http-error');
 const { assertAccess } = require('../../shared/utils/access.util');
 const { isAdminLikeRole } = require('../../shared/utils/role.util');
+const {
+  resolveAdminShopScope,
+  isUserInShopScope,
+  isLocationInShopScope,
+} = require('../../shared/utils/shop-scope.util');
 const ROLES = require('../../shared/constants/roles');
 const shopsRepository = require('../shops/shops.repository');
 
@@ -95,10 +100,18 @@ class InventoryService {
    * Input: userId, productId
    * Output: Inventory item details
    */
-  async getInventoryItem(userId, role, productId, locationId) {
+  async getInventoryItem(userId, role, productId, locationId, actor) {
     const loc = (locationId != null && isAdminLikeRole(role))
       ? await shopsRepository.findLocationById(locationId)
       : null;
+    if (loc) {
+      assertAccess(actor || { id: userId, role, locationId }, {
+        kind: 'location',
+        locationId: Number(loc.id),
+        warehouseId:
+          loc.warehouseId != null ? Number(loc.warehouseId) : null,
+      });
+    }
     const unitScope = loc
       ? { currentLocationId: BigInt(loc.id) }
       : await resolveUnitScope(userId, role, locationId);
@@ -133,10 +146,9 @@ class InventoryService {
 
   /**
    * Adjust stock levels (Admin only).
-   * Input: payload containing product_id, user_id, and adjustment_quantity
-   * Output: adjustment result
+   * Body user_id names the owner target only — permission from actor (req.user).
    */
-  async adjustInventory({ product_id, user_id, adjustment_quantity }) {
+  async adjustInventory({ product_id, user_id, adjustment_quantity }, actor) {
     if (adjustment_quantity === 0) {
       return { success: true, message: 'No adjustment needed' };
     }
@@ -152,7 +164,13 @@ class InventoryService {
     // Never assign inventory ownership to EMPLOYEE / unknown roles
     const owner = await prisma.user.findUnique({
       where: { id: userIdBig },
-      select: { id: true, role: true },
+      select: {
+        id: true,
+        role: true,
+        parentId: true,
+        locationId: true,
+        location: { select: { warehouseId: true } },
+      },
     });
     if (
       !owner ||
@@ -163,6 +181,16 @@ class InventoryService {
       throw httpError(400, 'Adjustment target must be an ADMIN, SUPER_ADMIN, or SELLER user');
     }
 
+    // Body user_id = ownership target only; SA/Admin must still pass assertAccess
+    assertAccess(actor, { kind: 'user', target: owner });
+
+    const ownerType =
+      owner.role === 'SUPER_ADMIN'
+        ? 'SUPER_ADMIN'
+        : owner.role === 'SELLER'
+          ? 'SELLER'
+          : 'ADMIN';
+
     // Wrap in a transaction to ensure atomicity
     return prisma.$transaction(async (tx) => {
       if (adjustment_quantity > 0) {
@@ -172,6 +200,7 @@ class InventoryService {
         const unitsData = Array.from({ length: adjustment_quantity }).map(() => ({
           productId: productIdBig,
           ownerId: userIdBig,
+          ownerType,
           serialNumber: `ADJ-${Date.now()}-${crypto.randomUUID()}`,
           status: 'AVAILABLE',
           ...(locationId ? { currentLocationId: locationId } : {}),
@@ -181,12 +210,14 @@ class InventoryService {
         const auditLogs = createdUnits.map(unit => ({
           productUnitId: unit.id,
           toUserId: userIdBig,
-          action: 'RECEIVED', // Using RECEIVED as fallback for ADJUSTED_IN
+          action: 'ADJUSTED',
           ...(locationId ? { toLocationId: locationId } : {}),
         }));
         await inventoryRepository.createInventoryTransaction(auditLogs, tx);
       } else {
-        // Negative adjustment: decrease stock
+        // Negative adjustment: decrease stock (atomic claim AVAILABLE→DEFECTIVE)
+        // Qty path claims by ownerId=user_id (aligns with list when UI passes that owner).
+        // Serial-based scrap is removeUnit; adjust has no serials (Flutter C4).
         const decreaseAmount = Math.abs(adjustment_quantity);
         const availableUnits = await inventoryRepository.findAvailableUnits(userIdBig, productIdBig, decreaseAmount, tx);
 
@@ -195,15 +226,20 @@ class InventoryService {
         }
 
         const unitIds = availableUnits.map(u => u.id);
+        const claimed = await inventoryRepository.claimUnits(
+          unitIds,
+          { status: 'AVAILABLE', ownerId: userIdBig },
+          { status: 'DEFECTIVE' },
+          tx
+        );
+        if (claimed.count !== unitIds.length) {
+          throw httpError(409, 'Stock changed during adjustment. Retry.');
+        }
 
-        // Mark units as DEFECTIVE to simulate decrease (since ADJUSTED_OUT is not in schema)
-        await inventoryRepository.updateInventory(unitIds, { status: 'DEFECTIVE' }, tx);
-
-        // Create audit logs
         const auditLogs = unitIds.map(unitId => ({
           productUnitId: unitId,
           toUserId: userIdBig,
-          action: 'RETURNED' // Using RETURNED as fallback
+          action: 'ADJUSTED',
         }));
         await inventoryRepository.createInventoryTransaction(auditLogs, tx);
       }
@@ -212,146 +248,6 @@ class InventoryService {
     });
   }
 
-  /**
-   * Transfer inventory from Admin to Seller.
-   * Input: adminId, sellerId, array of products (with product_id, quantity)
-   * Output: shipment details
-   */
-  async transferInventory(adminId, sellerId, products) {
-    // Validate seller existence
-    const seller = await inventoryRepository.findSeller(sellerId);
-    if (!seller || seller.role !== 'SELLER') {
-      throw httpError(400, 'Invalid seller');
-    }
-
-    // Atomicity is required for inventory transfers to avoid partial stock updates
-    return prisma.$transaction(async (tx) => {
-      const unitIdsToTransfer = [];
-      const shipmentItemsData = [];
-      let totalProductsShipped = 0;
-
-      // Validate admin stock for each product
-      for (const item of products) {
-        const availableUnits = await inventoryRepository.findAvailableUnits(adminId, item.product_id, item.quantity, tx);
-
-        if (availableUnits.length < item.quantity) {
-          throw httpError(400, `Not enough stock for product ID: ${item.product_id}`);
-        }
-
-        const ids = availableUnits.map(u => u.id);
-        unitIdsToTransfer.push(...ids);
-
-        shipmentItemsData.push({
-          productId: item.product_id,
-          quantity: item.quantity
-        });
-
-        totalProductsShipped += item.quantity;
-      }
-
-      const fromLoc = await getDefaultWarehouseId(tx);
-      const toLoc = (await getUserLocationId(sellerId, tx)) || null;
-
-      // Ownership + location (seller location if set)
-      await inventoryRepository.updateInventory(
-        unitIdsToTransfer,
-        {
-          ownerId: sellerId,
-          ownerType: 'SELLER',
-          ...(toLoc ? { currentLocationId: toLoc } : {}),
-        },
-        tx
-      );
-
-      // Create shipment record
-      const shipment = await inventoryRepository.createShipment({
-        fromUserId: adminId,
-        toUserId: sellerId,
-        totalProductsShipped,
-        shipmentPrice: 0, // Simplified for now
-        status: 'SHIPPED',
-        shippedOn: new Date()
-      }, tx);
-
-      // Create shipment items
-      const itemsToCreate = shipmentItemsData.map(item => ({
-        shipmentId: shipment.id,
-        productId: item.productId,
-        quantity: item.quantity,
-        isShipmentRequested: false
-      }));
-      await inventoryRepository.createShipmentItem(itemsToCreate, tx);
-
-      // Create audit logs (InventoryTransaction)
-      const auditLogs = unitIdsToTransfer.map(unitId => ({
-        productUnitId: unitId,
-        fromUserId: adminId,
-        toUserId: sellerId,
-        action: 'TRANSFERRED',
-        ...(fromLoc ? { fromLocationId: fromLoc } : {}),
-        ...(toLoc ? { toLocationId: toLoc } : {}),
-      }));
-      await inventoryRepository.createInventoryTransaction(auditLogs, tx);
-
-      return {
-        shipment_id: Number(shipment.id),
-        total_products_shipped: totalProductsShipped,
-        status: shipment.status
-      };
-    });
-  }
-
-  /**
-   * Fetch inventory history (Audit logs).
-   * Input: userId, role, filters (from_date, to_date, product_id, seller_id, page, limit)
-   * Output: Array of history records
-   */
-  async getHistory(userId, role, { from_date, to_date, product_id, seller_id, page = 1, limit = 10 }) {
-    const filters = {};
-
-    // Apply role-based filtering (EMPLOYEE / unknown → no full-ledger dump)
-    if (role === 'SELLER') {
-      filters.OR = [
-        { fromUserId: userId },
-        { toUserId: userId }
-      ];
-    } else if (isAdminLikeRole(role)) {
-      if (seller_id) {
-        filters.OR = [
-          { fromUserId: seller_id },
-          { toUserId: seller_id }
-        ];
-      }
-    } else {
-      // EMPLOYEE must not see admin/seller ledger via this endpoint
-      return [];
-    }
-
-    // Apply product filter
-    if (product_id) {
-      filters.productUnit = { productId: product_id };
-    }
-
-    // Apply date filters
-    if (from_date || to_date) {
-      filters.timestamp = {};
-      if (from_date) filters.timestamp.gte = new Date(from_date);
-      if (to_date) filters.timestamp.lte = new Date(to_date);
-    }
-
-    const skip = (page - 1) * limit;
-    const history = await inventoryRepository.findHistory(filters, { skip, take: limit });
-
-    return history.map(record => ({
-      transaction_id: Number(record.id),
-      product_id: Number(record.productUnit.productId),
-      serial_number: record.productUnit.serialNumber,
-      action: record.action,
-      from_user: record.fromUser ? record.fromUser.userName : null,
-      to_user: record.toUser ? record.toUser.userName : null,
-      timestamp: record.timestamp
-    }));
-  }
 
   /**
    * Update stock (Admin / Super Admin).
@@ -422,24 +318,26 @@ class InventoryService {
       });
 
       if (!product) {
-        // Create new product with stockQuantity
         product = await tx.product.create({
           data: {
             productNameId: BigInt(productNameId),
             productModelId: BigInt(productModelId),
             minPrice: minSellPrice !== undefined ? minSellPrice : 0,
             onSale: onSale !== undefined ? onSale : false,
-            stockQuantity: addCount,
+            stockQuantity: 0,
             minUnitCountAdmin: minUnitCountAdmin !== undefined ? minUnitCountAdmin : 0,
             minUnitCountSeller: minUnitCountSeller !== undefined ? minUnitCountSeller : 0
           }
         });
-      } else {
-        // Update existing product - increment stockQuantity
+      } else if (
+        minSellPrice !== undefined ||
+        onSale !== undefined ||
+        minUnitCountAdmin !== undefined ||
+        minUnitCountSeller !== undefined
+      ) {
         product = await tx.product.update({
           where: { id: product.id },
           data: {
-            ...(addCount ? { stockQuantity: { increment: addCount } } : {}),
             ...(minSellPrice !== undefined ? { minPrice: minSellPrice } : {}),
             ...(onSale !== undefined ? { onSale } : {}),
             ...(minUnitCountAdmin !== undefined ? { minUnitCountAdmin } : {}),
@@ -449,6 +347,7 @@ class InventoryService {
       }
 
       let placedLocationId = resolvedLocationId;
+      const ownerType = role === 'SUPER_ADMIN' ? 'SUPER_ADMIN' : 'ADMIN';
       if (addCount > 0) {
         if (!placedLocationId) {
           placedLocationId =
@@ -468,6 +367,7 @@ class InventoryService {
           ? serials.map((serialNumber) => ({
               productId: product.id,
               ownerId: adminId,
+              ownerType,
               serialNumber,
               status: 'AVAILABLE',
               ...loc,
@@ -475,6 +375,7 @@ class InventoryService {
           : Array.from({ length: addCount }).map(() => ({
               productId: product.id,
               ownerId: adminId,
+              ownerType,
               serialNumber: `STK-${Date.now()}-${crypto.randomUUID()}`,
               status: 'AVAILABLE',
               ...loc,
@@ -499,10 +400,19 @@ class InventoryService {
         );
       }
 
+      const availableCount = await tx.productUnit.count({
+        where: {
+          productId: product.id,
+          ownerId: BigInt(adminId),
+          status: 'AVAILABLE',
+          ...(placedLocationId ? { currentLocationId: placedLocationId } : {}),
+        },
+      });
+
       return {
         productNameId,
         productModelId,
-        quantity: Number(product.stockQuantity),
+        quantity: availableCount,
         minSellPrice: Number(product.minPrice),
         minUnitCountAdmin: Number(product.minUnitCountAdmin),
         minUnitCountSeller: Number(product.minUnitCountSeller),
@@ -765,6 +675,26 @@ class InventoryService {
     if (!unit || unit.status !== 'AVAILABLE') {
       throw httpError(404, 'Available inventory unit not found for this serial number');
     }
+
+    let inShop = false;
+    if (actor.role === ROLES.ADMIN) {
+      const scope = resolveAdminShopScope(actor);
+      const owner = await prisma.user.findUnique({
+        where: { id: unit.ownerId },
+        select: {
+          id: true,
+          parentId: true,
+          locationId: true,
+          location: { select: { warehouseId: true } },
+        },
+      });
+      inShop = !!(owner && isUserInShopScope(owner, scope));
+      if (!inShop && unit.currentLocationId != null) {
+        const loc = await shopsRepository.findLocationById(unit.currentLocationId);
+        inShop = !!(loc && isLocationInShopScope(loc, scope));
+      }
+    }
+    assertAccess(actor, { kind: 'owned', ownerId: unit.ownerId, inShop });
 
     await inventoryRepository.removeUnit(unit.id, BigInt(actor.id));
     return { success: true, message: `Serial number ${cleanSerial} removed from inventory` };

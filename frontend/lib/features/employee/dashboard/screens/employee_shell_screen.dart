@@ -183,6 +183,15 @@ class _EmployeeDrawer extends StatelessWidget {
                     },
                   ),
                   _DrawerItem(
+                    icon: Icons.history_rounded,
+                    label: 'Sales history',
+                    isActive: _isActive('/employee/sales-history'),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      context.go('/employee/sales-history');
+                    },
+                  ),
+                  _DrawerItem(
                     icon: Icons.fingerprint,
                     label: 'Check-in / Check-out',
                     isActive: _isActive('/employee/attendance'),

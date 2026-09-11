@@ -1,6 +1,7 @@
 {
   "name": "friends-battery-workspace",
-  "version": "1.0.0",
+  "version": "1.1.3",
+  "private": true,
   "scripts": {
     "dev": ".\\dev.bat",
     "dev:backend": "cd backend && npm run dev",
@@ -8,12 +9,16 @@
     "gen": ".\\generate_api.bat",
     "build-models": "cd frontend/lib/api && dart pub get && dart run build_runner build --delete-conflicting-outputs",
     "tunnel": "node scripts/tunnel.js",
+    "backend": ".\\dev-tunnel.bat",
     "build-prod": "cd frontend && flutter build apk --release --split-per-abi --dart-define=ENV_FILE=.env.production",
     "build-local": "cd frontend && flutter build apk --release --split-per-abi --dart-define=ENV_FILE=.env.local",
     "migrate-prod": "cd backend && node scripts/migrate-prod.js",
-    "fresh": ".\\fresh.bat"
+    "fresh": ".\\fresh.bat",
+    "changeset": "changeset",
+    "changelog:release": "changeset version"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.31.1",
     "@ngrok/ngrok": "^1.7.0"
   }
 }

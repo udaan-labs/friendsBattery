@@ -4,9 +4,9 @@ import 'package:intl/intl.dart';
 final _dateTimeFmt = DateFormat('dd MMM yyyy, hh:mm a');
 final _dateFmt = DateFormat('dd MMM yyyy');
 
-String formatAppDateTime(DateTime date) => _dateTimeFmt.format(date);
+String formatAppDateTime(DateTime date) => _dateTimeFmt.format(date.toLocal());
 
-String formatAppDate(DateTime date) => _dateFmt.format(date);
+String formatAppDate(DateTime date) => _dateFmt.format(date.toLocal());
 
 /// Strips the common `Exception: ` prefix from thrown messages for UI display.
 String friendlyError(Object error) {

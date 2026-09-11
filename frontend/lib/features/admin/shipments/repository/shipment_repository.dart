@@ -90,20 +90,25 @@ class ShipmentDetailModel {
   });
 }
 
-/// Result of admin → seller serial transfer (OpenAPI inventory rows).
+class ScannedShipmentUnit {
+  final String serial;
+  final String productName;
+  final String productModel;
+
+  ScannedShipmentUnit({
+    required this.serial,
+    required this.productName,
+    required this.productModel,
+  });
+}
+
 class TransferResult {
   final int shipmentId;
-  final String shipmentNumber;
   final int transferredUnits;
-  final int sellerId;
-  final List<TransferInventoryCount> inventory;
 
   TransferResult({
     required this.shipmentId,
-    required this.shipmentNumber,
     required this.transferredUnits,
-    required this.sellerId,
-    required this.inventory,
   });
 }
 
@@ -116,7 +121,6 @@ class ShipmentRepository {
 
   ShipmentsApi get _shipments => _api.getShipmentsApi();
   ShopsApi get _shops => _api.getShopsApi();
-  ProductsApi get _products => _api.getProductsApi();
   InventoryApi get _inventory => _api.getInventoryApi();
 
   Future<List<ShipmentSummaryModel>> getShipments() async {
@@ -192,14 +196,31 @@ class ShipmentRepository {
         .toList();
   }
 
+  Future<ScannedShipmentUnit> scanSerial(String serialNumber) async {
+    final response = await _inventory.apiInventoryScanForSaleGet(
+      serialNumber: serialNumber,
+    );
+    final d = response.data?.data;
+    if (d == null) {
+      throw Exception(
+        response.data?.message ?? 'Product not found in your available inventory',
+      );
+    }
+    return ScannedShipmentUnit(
+      serial: serialNumber.trim(),
+      productName: d.productName ?? '',
+      productModel: d.productModel ?? '',
+    );
+  }
+
   /// Admin → seller serial transfer via generated client.
   Future<TransferResult> createShipment({
     required int sellerId,
-    required List<CreateShipmentItem> items,
+    required List<String> serialNumbers,
   }) async {
     final request = CreateShipmentRequest((b) {
       b.sellerId = sellerId;
-      b.items.replace(items);
+      b.serialNumbers.replace(serialNumbers);
     });
 
     final response = await _shipments.apiShipmentsPost(
@@ -207,43 +228,17 @@ class ShipmentRepository {
     );
     final data = response.data?.data;
     if (data == null) {
-      return TransferResult(
-        shipmentId: 0,
-        shipmentNumber: '',
-        transferredUnits: 0,
-        sellerId: sellerId,
-        inventory: const [],
-      );
+      throw Exception(response.data?.message ?? 'Failed to create shipment');
     }
 
     return TransferResult(
       shipmentId: data.shipmentId ?? 0,
-      shipmentNumber: data.shipmentNumber ?? '',
       transferredUnits: data.transferredUnits ?? 0,
-      sellerId: data.sellerId ?? sellerId,
-      inventory: data.inventory?.toList() ?? [],
     );
   }
 
-  /// Seller accept legacy PENDING shipment.
   Future<void> acceptShipment(int shipmentId) async {
     await _shipments.apiShipmentsShipmentIdAcceptPost(shipmentId: shipmentId);
   }
 
-  /// Products grouped by name for transfer form dropdowns.
-  Future<List<InventoryProductNameGroup>> getInventoryProducts() async {
-    final response = await _products.apiProductsInventoryProductsGet();
-    return response.data?.data?.toList() ?? [];
-  }
-
-  Future<List<String>> getAvailableSerials({
-    required int productNameId,
-    required int productModelId,
-  }) async {
-    final response = await _inventory.apiInventoryAvailableSerialsGet(
-      productNameId: productNameId,
-      productModelId: productModelId,
-    );
-    return response.data?.data?.toList() ?? [];
-  }
 }

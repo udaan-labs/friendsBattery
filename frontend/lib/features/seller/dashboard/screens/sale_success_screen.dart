@@ -30,9 +30,16 @@ class _SaleSuccessScreenState extends State<SaleSuccessScreen> {
 
   String _whatsAppMessage(SaleSuccessData data) {
     final dateStr = formatAppDate(data.saleDate);
+    final isReturn = data.invoiceNumber.startsWith('RET-');
+    final thanks = isReturn
+        ? 'Thank you for returning the battery to *Friends Battery*.'
+        : 'Thank you for purchasing from *Friends Battery*.';
+    final amountLine = data.isCredit
+        ? '• Paid now: ₹${data.paid}\n• Amount due (credit): ₹${data.due}'
+        : '• Amount Paid: ₹${data.sellPrice}';
     return '''Hello ${data.customerName},
 
-Thank you for purchasing from *Friends Battery*.
+$thanks
 
 🧾 Invoice No: ${data.invoiceNumber}
 📅 Date: $dateStr
@@ -40,7 +47,7 @@ Thank you for purchasing from *Friends Battery*.
 Battery Details
 • Product: ${data.productName}
 • Serial No: ${data.serialNumber}
-• Amount Paid: ₹${data.sellPrice}
+$amountLine
 
 Please keep this invoice for future warranty claims.
 
@@ -266,6 +273,8 @@ Thank you for choosing Friends Battery.''';
                         serialNumber: data.serialNumber,
                         sellingPrice: data.sellPrice,
                         sellerName: data.sellerName,
+                        paymentMode: data.paymentMode,
+                        amountPaid: data.paid,
                       ),
                     ),
                   ),

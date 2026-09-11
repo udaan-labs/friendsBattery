@@ -3,23 +3,61 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/utils/app_formatters.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
+import '../../../../shared/widgets/snackbar_helper.dart';
+import '../../../admin/sales/providers/admin_sales_history_provider.dart';
 import '../providers/seller_sales_provider.dart';
 import '../models/seller_sale.dart';
+import '../widgets/pay_credit_sheet.dart';
 
 class SellerSaleDetailsScreen extends ConsumerWidget {
   final int saleId;
+  final String historyPath;
+  final SellerSale? initial;
 
-  const SellerSaleDetailsScreen({super.key, required this.saleId});
+  const SellerSaleDetailsScreen({
+    super.key,
+    required this.saleId,
+    this.historyPath = '/seller/sales-history',
+    this.initial,
+  });
+
+  bool _isUnitSale(SellerSale s) {
+    final t = s.saleType.toUpperCase();
+    return t != 'SERVICE' && t != 'RENT';
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (initial != null && !_isUnitSale(initial!)) {
+      return _scaffold(context, ref, initial!);
+    }
+
     final saleAsyncValue = ref.watch(sellerSaleDetailsProvider(saleId));
 
+    return saleAsyncValue.when(
+      skipLoadingOnReload: true,
+      data: (sale) => _scaffold(context, ref, sale),
+      loading: () => initial != null
+          ? _scaffold(context, ref, initial!)
+          : _scaffold(context, ref, null, loading: true),
+      error: (error, _) => initial != null
+          ? _scaffold(context, ref, initial!)
+          : _scaffold(context, ref, null, error: error),
+    );
+  }
+
+  Widget _scaffold(
+    BuildContext context,
+    WidgetRef ref,
+    SellerSale? sale, {
+    bool loading = false,
+    Object? error,
+  }) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FB),
       appBar: AppBar(
         title: const Text(
-          'Sale Details',
+          'Bill Details',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         backgroundColor: Colors.white,
@@ -31,51 +69,55 @@ class SellerSaleDetailsScreen extends ConsumerWidget {
             if (context.canPop()) {
               context.pop();
             } else {
-              context.go('/seller/sales-history');
+              context.go(historyPath);
             }
           },
         ),
       ),
       body: SafeArea(
-        child: saleAsyncValue.when(
-          data: (sale) => _buildSaleDetails(context, sale),
-          loading: () => const Center(
-            child: CircularProgressIndicator(color: Color(0xFF006B2C)),
-          ),
-          error: (error, stack) => Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                const SizedBox(height: 16),
-                Text(
-                  'Failed to load sale details',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  error.toString(),
-                  style: const TextStyle(color: Colors.grey),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () => ref.refresh(sellerSaleDetailsProvider(saleId)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF006B2C),
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('Retry'),
-                ),
-              ],
-            ),
-          ),
-        ),
+        child: sale != null
+            ? _buildSaleDetails(context, ref, sale)
+            : loading
+                ? const Center(
+                    child: CircularProgressIndicator(color: Color(0xFF006B2C)),
+                  )
+                : _errorBody(ref, error),
       ),
     );
   }
 
-  Widget _buildSaleDetails(BuildContext context, SellerSale sale) {
+  Widget _errorBody(WidgetRef ref, Object? error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 48, color: Colors.red),
+          const SizedBox(height: 16),
+          const Text(
+            'Failed to load bill details',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '$error',
+            style: const TextStyle(color: Colors.grey),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () => ref.refresh(sellerSaleDetailsProvider(saleId)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF006B2C),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSaleDetails(BuildContext context, WidgetRef ref, SellerSale sale) {
     final formattedDate = formatAppDateTime(sale.soldAt);
 
     return SingleChildScrollView(
@@ -87,6 +129,39 @@ class SellerSaleDetailsScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildSummaryHeader(context, sale, formattedDate),
+              if (sale.hasCreditDue) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: FilledButton(
+                    onPressed: () async {
+                      final paid = await showPayCreditSheet(context, amountDue: sale.amountDue);
+                      if (paid == null) return;
+                      try {
+                        if (historyPath.startsWith('/admin')) {
+                          await ref.read(adminSalesHistoryProvider.notifier).collectCredit(
+                                saleId: sale.id,
+                                amount: paid,
+                              );
+                        } else {
+                          await ref.read(sellerSalesProvider.notifier).collectCredit(
+                                saleId: sale.id,
+                                amount: paid,
+                              );
+                        }
+                        ref.invalidate(sellerSaleDetailsProvider(saleId));
+                        if (context.mounted) {
+                          context.showSuccessSnackBar('Payment recorded');
+                        }
+                      } catch (e) {
+                        if (context.mounted) context.showFriendlyError(e);
+                      }
+                    },
+                    child: const Text('Collect payment'),
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
               _buildCustomerInfo(context, sale),
               const SizedBox(height: 16),
@@ -150,6 +225,11 @@ class SellerSaleDetailsScreen extends ConsumerWidget {
               color: Color(0xFF191C1E),
             ),
           ),
+          if (sale.paymentMode.toUpperCase() == 'CREDIT')
+            Text(
+              'Paid ₹${sale.amountPaid.toStringAsFixed(2)} · due ₹${sale.amountDue.toStringAsFixed(2)}',
+              style: const TextStyle(fontSize: 13, color: Color(0xFFC2410C)),
+            ),
           const SizedBox(height: 4),
           Text(
             formattedDate,
@@ -184,11 +264,9 @@ class SellerSaleDetailsScreen extends ConsumerWidget {
       title: 'Product Information',
       icon: Icons.battery_charging_full_outlined,
       children: [
-        _buildInfoRow('Brand', sale.productName),
+        _buildInfoRow('Product', '${sale.productName} -- ${sale.productModel}'),
         const Divider(height: 24, color: Color(0xFFF1F5F9)),
-        _buildInfoRow('Model', sale.productModel),
-        const Divider(height: 24, color: Color(0xFFF1F5F9)),
-        _buildInfoRow('Serial Number', sale.serialNumber),
+        _buildInfoRow(sale.hasUnitSerial ? 'Serial Number' : 'Vehicle', sale.serialNumber),
         const Divider(height: 24, color: Color(0xFFF1F5F9)),
         _buildInfoRow('Quantity', sale.quantity.toString()),
       ],
@@ -197,6 +275,10 @@ class SellerSaleDetailsScreen extends ConsumerWidget {
 
   Widget _buildSaleInfo(BuildContext context, SellerSale sale, String formattedDate) {
     final typeLabel = switch (sale.saleType.toUpperCase()) {
+      'SERVICE' => 'Service Bill',
+      'RENT' => sale.rentStatus?.toUpperCase() == 'RETURNED'
+          ? 'Rent Return'
+          : 'Battery Rent',
       'SCRAP' => 'Scrap Trade-in',
       'MECHANIC' => 'Mechanic (B2B)',
       _ => 'Normal Sale',
@@ -207,9 +289,11 @@ class SellerSaleDetailsScreen extends ConsumerWidget {
       title: 'Transaction Details',
       icon: Icons.receipt_long_outlined,
       children: [
-        _buildInfoRow('Sale ID', '#${sale.id}'),
+        _buildInfoRow('Bill', sale.billNumber),
         const Divider(height: 24, color: Color(0xFFF1F5F9)),
         _buildInfoRow('Bill Type', typeLabel),
+        const Divider(height: 24, color: Color(0xFFF1F5F9)),
+        _buildInfoRow('Payment', sale.paymentLabel),
         if (sale.scrapSerial != null && sale.scrapSerial!.isNotEmpty) ...[
           const Divider(height: 24, color: Color(0xFFF1F5F9)),
           _buildInfoRow('Scrap Serial', sale.scrapSerial!),

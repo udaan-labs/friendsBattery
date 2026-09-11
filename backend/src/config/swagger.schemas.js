@@ -74,29 +74,6 @@ module.exports = {
       data: { $ref: '#/components/schemas/LoginData' }
     }
   },
-  LoginOtpChallengeData: {
-    type: 'object',
-    properties: {
-      requires_otp: { type: 'boolean' },
-      challenge_id: { type: 'string' },
-      expires_in: { type: 'integer', description: 'Seconds until OTP expires' },
-      phone_masked: { type: 'string', nullable: true },
-      otp: {
-        type: 'string',
-        nullable: true,
-        description: 'Only when OTP_ECHO=1 (debug)',
-      },
-    },
-  },
-  LoginOtpChallengeResponse: {
-    type: 'object',
-    properties: {
-      success: { type: 'boolean' },
-      message: { type: 'string' },
-      data: { $ref: '#/components/schemas/LoginOtpChallengeData' },
-    },
-  },
-
   RegisterData: {
     type: 'object',
     properties: {
@@ -485,7 +462,24 @@ module.exports = {
         nullable: true,
         description: 'Old battery serial when sale_type=SCRAP',
       },
+      payment_mode: {
+        type: 'string',
+        enum: ['CASH', 'ONLINE', 'CREDIT'],
+        default: 'CASH',
+        description: 'CREDIT = unpaid or partial',
+      },
+      amount_paid: {
+        type: 'number',
+        description: 'Paid now when payment_mode is CREDIT (0..sell_price). Ignored for CASH/ONLINE.',
+      },
     }
+  },
+  PayCreditRequest: {
+    type: 'object',
+    required: ['amount'],
+    properties: {
+      amount: { type: 'number', description: 'Amount to collect against remaining due' },
+    },
   },
   CreateSaleResult: {
     type: 'object',
@@ -524,6 +518,11 @@ module.exports = {
         nullable: true,
         description: 'Required when service_type is JUMPSTART',
       },
+      payment_mode: {
+        type: 'string',
+        enum: ['CASH', 'ONLINE', 'CREDIT'],
+        default: 'CASH',
+      },
     },
   },
   CreateServiceBillResult: {
@@ -548,6 +547,11 @@ module.exports = {
       customer_name: { type: 'string' },
       customer_number: { type: 'string' },
       deposit: { type: 'number', example: 1000 },
+      payment_mode: {
+        type: 'string',
+        enum: ['CASH', 'ONLINE', 'CREDIT'],
+        default: 'CASH',
+      },
     },
   },
   CreateRentResult: {
@@ -586,6 +590,8 @@ module.exports = {
       deposit: { type: 'number' },
       rent_fee: { type: 'number' },
       refund_amount: { type: 'number' },
+      customer_name: { type: 'string', nullable: true },
+      customer_number: { type: 'string', nullable: true },
     },
   },
   ReturnRentResponse: {
@@ -630,6 +636,9 @@ module.exports = {
       serial_number: { type: 'string' },
       vehicle_number: { type: 'string', nullable: true },
       sale_type: { type: 'string', enum: ['NORMAL', 'SCRAP', 'MECHANIC', 'SERVICE', 'RENT'] },
+      payment_mode: { type: 'string', enum: ['CASH', 'ONLINE', 'CREDIT'] },
+      amount_paid: { type: 'number' },
+      amount_due: { type: 'number' },
       scrap_serial: { type: 'string', nullable: true },
       service_type: { type: 'string', nullable: true },
       rent_status: { type: 'string', nullable: true },
@@ -691,6 +700,9 @@ module.exports = {
       serial_number: { type: 'string' },
       vehicle_number: { type: 'string', nullable: true },
       sale_type: { type: 'string', enum: ['NORMAL', 'SCRAP', 'MECHANIC', 'SERVICE', 'RENT'] },
+      payment_mode: { type: 'string', enum: ['CASH', 'ONLINE', 'CREDIT'] },
+      amount_paid: { type: 'number' },
+      amount_due: { type: 'number' },
       scrap_serial: { type: 'string', nullable: true },
       service_type: { type: 'string', nullable: true },
       rent_status: { type: 'string', nullable: true },
@@ -1255,7 +1267,12 @@ module.exports = {
     required: ['serial_number', 'reason'],
     properties: {
       serial_number: { type: 'string' },
-      reason: { type: 'string' }
+      reason: { type: 'string' },
+      restock_as: {
+        type: 'string',
+        enum: ['AVAILABLE', 'DEFECTIVE'],
+        description: 'Restock status after return. Default AVAILABLE (sellable).',
+      },
     }
   },
   CreateReturnResult: {
@@ -1310,7 +1327,7 @@ module.exports = {
       productUnitId: { type: 'string' },
       fromUserId: { type: 'string', nullable: true },
       toUserId: { type: 'string' },
-      action: { type: 'string', enum: ['RECEIVED', 'SHIPPED', 'SOLD', 'RETURNED', 'TRANSFERRED'] },
+      action: { type: 'string', enum: ['RECEIVED', 'SHIPPED', 'SOLD', 'RETURNED', 'TRANSFERRED', 'RENTED', 'RENT_RETURNED', 'ADJUSTED'] },
       timestamp: { type: 'string', format: 'date-time' }
     }
   },
@@ -1425,41 +1442,18 @@ module.exports = {
   },
 
   // ── Admin → Seller serial transfer (POST /api/shipments) ─────────────────
-  CreateShipmentItem: {
+  CreateShipmentRequest: {
     type: 'object',
-    required: ['product_name_id', 'product_model_id', 'serial_numbers'],
+    required: ['sellerId', 'serial_numbers'],
     properties: {
-      product_name_id: { type: 'integer', minimum: 1 },
-      product_model_id: { type: 'integer', minimum: 1 },
+      sellerId: { type: 'integer', minimum: 1 },
       serial_numbers: {
         type: 'array',
         minItems: 1,
-        items: { type: 'string', minLength: 1 }
-      },
-      price_per_piece: { type: 'number', minimum: 0 }
-    }
-  },
-  CreateShipmentRequest: {
-    type: 'object',
-    required: ['sellerId', 'items'],
-    properties: {
-      sellerId: { type: 'integer', minimum: 1 },
-      items: {
-        type: 'array',
-        minItems: 1,
-        items: { $ref: '#/components/schemas/CreateShipmentItem' }
+        maxItems: 500,
+        items: { type: 'string', minLength: 1, maxLength: 100 },
+        description: 'Serials of AVAILABLE units owned by the admin. Product is resolved from each unit.'
       }
-    }
-  },
-  TransferInventoryCount: {
-    type: 'object',
-    properties: {
-      productId: { type: 'integer' },
-      productName: { type: 'string' },
-      productModel: { type: 'string' },
-      transferred: { type: 'integer' },
-      adminAvailable: { type: 'integer' },
-      sellerAvailable: { type: 'integer' }
     }
   },
   CreateShipmentResult: {
@@ -1469,11 +1463,7 @@ module.exports = {
       shipmentNumber: { type: 'string' },
       status: { type: 'string', enum: ['PENDING', 'ACCEPTED', 'REJECTED'] },
       transferredUnits: { type: 'integer' },
-      sellerId: { type: 'integer' },
-      inventory: {
-        type: 'array',
-        items: { $ref: '#/components/schemas/TransferInventoryCount' }
-      }
+      sellerId: { type: 'integer' }
     }
   },
   CreateShipmentResponse: {

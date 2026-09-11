@@ -9,14 +9,14 @@ All URIs are relative to *http://localhost:3000*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**apiReturnsGet**](ReturnsApi.md#apireturnsget) | **GET** /api/returns | List product returns (seller own, admin all)
-[**apiReturnsPost**](ReturnsApi.md#apireturnspost) | **POST** /api/returns | Process a product return (seller)
+[**apiReturnsGet**](ReturnsApi.md#apireturnsget) | **GET** /api/returns | List product returns (seller own, admin shop/all)
+[**apiReturnsPost**](ReturnsApi.md#apireturnspost) | **POST** /api/returns | Process a product return (seller or admin)
 
 
 # **apiReturnsGet**
 > ReturnsListResponse apiReturnsGet()
 
-List product returns (seller own, admin all)
+List product returns (seller own, admin shop/all)
 
 ### Example
 ```dart
@@ -53,7 +53,9 @@ This endpoint does not need any parameter.
 # **apiReturnsPost**
 > CreateReturnResponse apiReturnsPost(createReturnRequest)
 
-Process a product return (seller)
+Process a product return (seller or admin)
+
+Restocks the unit as AVAILABLE (default, sellable) or DEFECTIVE. Shop seller/admin may return sales by shop staff (including employees), not only self. 
 
 ### Example
 ```dart

@@ -21,7 +21,7 @@ class ReturnsApi {
 
   const ReturnsApi(this._dio, this._serializers);
 
-  /// List product returns (seller own, admin all)
+  /// List product returns (seller own, admin shop/all)
   /// 
   ///
   /// Parameters:
@@ -100,8 +100,8 @@ class ReturnsApi {
     );
   }
 
-  /// Process a product return (seller)
-  /// 
+  /// Process a product return (seller or admin)
+  /// Restocks the unit as AVAILABLE (default, sellable) or DEFECTIVE. Shop seller/admin may return sales by shop staff (including employees), not only self. 
   ///
   /// Parameters:
   /// * [createReturnRequest] 

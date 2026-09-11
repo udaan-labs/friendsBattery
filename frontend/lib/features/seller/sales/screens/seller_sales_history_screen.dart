@@ -2,13 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/widgets/responsive_helper.dart';
+import '../../../../shared/widgets/sales_view_toggle.dart';
 import '../../../../theme/app_theme.dart';
 import 'package:intl/intl.dart';
+import '../models/seller_sale.dart';
 import '../providers/seller_sales_provider.dart';
+import '../widgets/pay_credit_sheet.dart';
 import '../widgets/seller_sale_card.dart';
+import '../widgets/seller_sale_list_tile.dart';
 
 class SellerSalesHistoryScreen extends ConsumerStatefulWidget {
-  const SellerSalesHistoryScreen({super.key});
+  final String detailsPathPrefix;
+  final String homePath;
+  const SellerSalesHistoryScreen({
+    super.key,
+    this.detailsPathPrefix = '/seller/sales',
+    this.homePath = '/seller/dashboard',
+  });
 
   @override
   ConsumerState<SellerSalesHistoryScreen> createState() => _SellerSalesHistoryScreenState();
@@ -16,6 +26,7 @@ class SellerSalesHistoryScreen extends ConsumerStatefulWidget {
 
 class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScreen> {
   final TextEditingController _searchController = TextEditingController();
+  bool _cardView = true;
 
   @override
   void dispose() {
@@ -29,6 +40,26 @@ class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScr
 
   Future<void> _onRefresh() {
     return ref.read(sellerSalesProvider.notifier).fetchSales(isRefresh: true);
+  }
+
+  Future<void> _collect(SellerSale sale) async {
+    final paid = await showPayCreditSheet(context, amountDue: sale.amountDue);
+    if (paid == null || !mounted) return;
+    try {
+      await ref.read(sellerSalesProvider.notifier).collectCredit(
+            saleId: sale.id,
+            amount: paid,
+          );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Payment recorded')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      }
+    }
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -67,7 +98,7 @@ class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScr
       canPop: Navigator.of(context).canPop(),
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) {
-          context.go('/seller/dashboard');
+          context.go(widget.homePath);
         }
       },
       child: Scaffold(
@@ -86,10 +117,16 @@ class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScr
               if (Navigator.of(context).canPop()) {
                 Navigator.of(context).pop();
               } else {
-                context.go('/seller/dashboard');
+                context.go(widget.homePath);
               }
             },
           ),
+          actions: [
+            SalesViewToggle(
+              cardView: _cardView,
+              onChanged: (v) => setState(() => _cardView = v),
+            ),
+          ],
         ),
         body: SafeArea(
         child: Column(
@@ -128,13 +165,35 @@ class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScr
             Container(
               color: Colors.white,
               padding: EdgeInsets.fromLTRB(ResponsiveHelper.responsivePadding(context), 0, ResponsiveHelper.responsivePadding(context), 12),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildFilterChip('Today', 'today', state),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('All', 'all', state),
-                  const SizedBox(width: 8),
-                  _buildDateFilterChip(state),
+                  Row(
+                    children: [
+                      _buildFilterChip('Today', 'today', state),
+                      const SizedBox(width: 8),
+                      _buildFilterChip('All', 'all', state),
+                      const SizedBox(width: 8),
+                      _buildDateFilterChip(state),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildPayChip('All pay', null, state),
+                        const SizedBox(width: 8),
+                        _buildPayChip('Cash', 'CASH', state),
+                        const SizedBox(width: 8),
+                        _buildPayChip('Online', 'ONLINE', state),
+                        const SizedBox(width: 8),
+                        _buildPayChip('Credit', 'CREDIT', state),
+                        const SizedBox(width: 8),
+                        _buildPayChip('Due', 'CREDIT', state, unpaid: true),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -155,6 +214,23 @@ class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScr
         ),
       ),
     ),
+    );
+  }
+
+  Widget _buildPayChip(String label, String? value, SellerSalesState state, {bool unpaid = false}) {
+    final isSelected = state.paymentMode == value && state.unpaid == unpaid;
+    return ActionChip(
+      label: Text(label),
+      labelStyle: TextStyle(
+        color: isSelected ? Colors.white : const Color(0xFF545F73),
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        fontSize: 13,
+      ),
+      backgroundColor: isSelected ? const Color(0xFF16A34A) : const Color(0xFFF7F9FB),
+      side: BorderSide(
+        color: isSelected ? const Color(0xFF16A34A) : const Color(0xFFEEF0F2),
+      ),
+      onPressed: () => ref.read(sellerSalesProvider.notifier).setPaymentMode(value, unpaid: unpaid),
     );
   }
 
@@ -308,13 +384,37 @@ class _SellerSalesHistoryScreenState extends ConsumerState<SellerSalesHistoryScr
       );
     }
 
-    return ListView.builder(
+    return ListView.separated(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.fromLTRB(ResponsiveHelper.responsivePadding(context), 12, ResponsiveHelper.responsivePadding(context), 20),
+      padding: _cardView
+          ? EdgeInsets.fromLTRB(
+              ResponsiveHelper.responsivePadding(context),
+              12,
+              ResponsiveHelper.responsivePadding(context),
+              20,
+            )
+          : const EdgeInsets.only(bottom: 20),
       itemCount: state.sales.length,
+      separatorBuilder: (_, __) => _cardView
+          ? const SizedBox.shrink()
+          : const Divider(height: 1, color: Color(0xFFEEF0F2)),
       itemBuilder: (context, index) {
         final sale = state.sales[index];
-        return SellerSaleCard(sale: sale);
+        final onPay = sale.hasCreditDue ? () => _collect(sale) : null;
+        if (_cardView) {
+          return SellerSaleCard(
+            key: ValueKey(sale.billNumber),
+            sale: sale,
+            detailsPathPrefix: widget.detailsPathPrefix,
+            onPay: onPay,
+          );
+        }
+        return SellerSaleListTile(
+          key: ValueKey(sale.billNumber),
+          sale: sale,
+          detailsPathPrefix: widget.detailsPathPrefix,
+          onPay: onPay,
+        );
       },
     );
   }

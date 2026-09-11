@@ -6,7 +6,7 @@ class AuthRepository {
       where: { userId: userId },
       include: {
         location: {
-          select: { id: true, code: true, name: true, type: true },
+          select: { id: true, code: true, name: true, type: true, warehouseId: true },
         },
         employeeRole: {
           select: { id: true, name: true, description: true },

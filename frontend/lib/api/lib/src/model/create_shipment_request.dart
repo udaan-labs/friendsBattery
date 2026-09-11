@@ -4,7 +4,6 @@
 
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
-import 'package:friends_battery_api/src/model/create_shipment_item.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -14,14 +13,15 @@ part 'create_shipment_request.g.dart';
 ///
 /// Properties:
 /// * [sellerId] 
-/// * [items] 
+/// * [serialNumbers] - Serials of AVAILABLE units owned by the admin. Product is resolved from each unit.
 @BuiltValue()
 abstract class CreateShipmentRequest implements Built<CreateShipmentRequest, CreateShipmentRequestBuilder> {
   @BuiltValueField(wireName: r'sellerId')
   int get sellerId;
 
-  @BuiltValueField(wireName: r'items')
-  BuiltList<CreateShipmentItem> get items;
+  /// Serials of AVAILABLE units owned by the admin. Product is resolved from each unit.
+  @BuiltValueField(wireName: r'serial_numbers')
+  BuiltList<String> get serialNumbers;
 
   CreateShipmentRequest._();
 
@@ -51,10 +51,10 @@ class _$CreateShipmentRequestSerializer implements PrimitiveSerializer<CreateShi
       object.sellerId,
       specifiedType: const FullType(int),
     );
-    yield r'items';
+    yield r'serial_numbers';
     yield serializers.serialize(
-      object.items,
-      specifiedType: const FullType(BuiltList, [FullType(CreateShipmentItem)]),
+      object.serialNumbers,
+      specifiedType: const FullType(BuiltList, [FullType(String)]),
     );
   }
 
@@ -86,12 +86,12 @@ class _$CreateShipmentRequestSerializer implements PrimitiveSerializer<CreateShi
           ) as int;
           result.sellerId = valueDes;
           break;
-        case r'items':
+        case r'serial_numbers':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(BuiltList, [FullType(CreateShipmentItem)]),
-          ) as BuiltList<CreateShipmentItem>;
-          result.items.replace(valueDes);
+            specifiedType: const FullType(BuiltList, [FullType(String)]),
+          ) as BuiltList<String>;
+          result.serialNumbers.replace(valueDes);
           break;
         default:
           unhandled.add(key);

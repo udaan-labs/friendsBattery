@@ -63,6 +63,13 @@ function assertAccess(actor, claim) {
       if ((isSeller(actor) || isEmployee(actor)) && sameId(claim.sellerId, actor.id)) {
         return;
       }
+      if (
+        isEmployee(actor) &&
+        claim.locationId != null &&
+        sameId(claim.locationId, actor.locationId)
+      ) {
+        return;
+      }
       if (isAdmin(actor) && claim.inShop === true) return;
       deny('Forbidden: You cannot view this sale');
       return;

@@ -44,30 +44,23 @@ async function main() {
     const result = await shipmentsService.createShipment(
       {
         sellerId: Number(seller.id),
-        items: [
-          {
-            product_name_id: Number(product.productNameId),
-            product_model_id: Number(product.productModelId),
-            serial_numbers: [serial],
-          },
-        ],
+        serial_numbers: [serial],
       },
       actorAdminId
     );
 
     assert(result.transferredUnits === 1, 'transferredUnits === 1');
-    assert(Array.isArray(result.inventory), 'inventory array present');
+    assert(result.status === 'PENDING', 'status PENDING');
 
     const updated = await prisma.productUnit.findUnique({ where: { id: unit.id } });
-    assert(Number(updated.ownerId) === Number(seller.id), 'owner is seller');
-    assert(updated.ownerType === 'SELLER', 'ownerType SELLER');
-    assert(updated.status === 'AVAILABLE', 'status AVAILABLE');
+    assert(Number(updated.ownerId) === actorAdminId, 'owner still admin until accept');
+    assert(updated.status === 'IN_SHIPMENT', 'status IN_SHIPMENT');
 
     const tx = await prisma.inventoryTransaction.findFirst({
-      where: { productUnitId: unit.id, action: 'TRANSFERRED' },
+      where: { productUnitId: unit.id, action: 'SHIPPED' },
       orderBy: { id: 'desc' },
     });
-    assert(tx, 'inventory_transactions TRANSFERRED row exists');
+    assert(tx, 'inventory_transactions SHIPPED row exists');
 
     const sellerAfter = await prisma.productUnit.count({
       where: { productId: product.id, ownerId: seller.id, status: 'AVAILABLE' },
@@ -75,8 +68,8 @@ async function main() {
     const adminAfter = await prisma.productUnit.count({
       where: { productId: product.id, status: 'AVAILABLE', owner: { role: 'ADMIN' } },
     });
-    assert(sellerAfter === sellerBefore + 1, 'seller inventory +1');
-    assert(adminAfter === adminBefore - 1, 'admin inventory -1');
+    assert(sellerAfter === sellerBefore, 'seller inventory unchanged until accept');
+    assert(adminAfter === adminBefore - 1, 'admin available -1');
     console.log('   OK\n');
 
     console.log('2) Duplicate serial transfer (same serial again) → expect fail');
@@ -85,13 +78,7 @@ async function main() {
       await shipmentsService.createShipment(
         {
           sellerId: Number(seller.id),
-          items: [
-            {
-              product_name_id: Number(product.productNameId),
-              product_model_id: Number(product.productModelId),
-              serial_numbers: [serial],
-            },
-          ],
+          serial_numbers: [serial],
         },
         actorAdminId
       );
@@ -103,39 +90,7 @@ async function main() {
     assert(dupFailed, 'duplicate transfer must fail');
   }
 
-  console.log('3) More scanned serials than available units → expect fail (tx rollback)');
-  {
-    const product = await prisma.product.findFirst();
-    assert(product, 'need a product row');
-    const available = await prisma.productUnit.count({
-      where: { productId: product.id, status: 'AVAILABLE', ownerId: admin.id },
-    });
-    const stamp = Date.now();
-    const serials = Array.from({ length: available + 1 }, (_, i) => `DOES-NOT-EXIST-${stamp}-${i}`);
-    let failed = false;
-    try {
-      await shipmentsService.createShipment(
-        {
-          sellerId: Number(seller.id),
-          items: [
-            {
-              product_name_id: Number(product.productNameId),
-              product_model_id: Number(product.productModelId),
-              serial_numbers: serials,
-            },
-          ],
-        },
-        Number(admin.id)
-      );
-    } catch (e) {
-      failed = true;
-      assert(e.statusCode === 400, '400 for missing serial');
-      console.log(`   OK (${e.message})\n`);
-    }
-    assert(failed, 'over-scan must fail');
-  }
-
-  console.log('4) Invalid seller → expect fail');
+  console.log('3) Invalid seller → expect fail');
   {
     const unit2 = await prisma.productUnit.findFirst({
       where: { status: 'AVAILABLE', owner: { role: 'ADMIN' } },
@@ -149,13 +104,7 @@ async function main() {
         await shipmentsService.createShipment(
           {
             sellerId: 999999999,
-            items: [
-              {
-                product_name_id: Number(unit2.product.productNameId),
-                product_model_id: Number(unit2.product.productModelId),
-                serial_numbers: [unit2.serialNumber],
-              },
-            ],
+            serial_numbers: [unit2.serialNumber],
           },
           Number(admin.id)
         );
@@ -170,11 +119,11 @@ async function main() {
       const still = await prisma.productUnit.findUnique({ where: { id: unit2.id } });
       assert(still.status === 'AVAILABLE', 'unit still AVAILABLE after failed transfer');
       assert(still.ownerType === 'ADMIN' || Number(still.ownerId) === Number(admin.id), 'unit still admin-owned');
-      console.log('5) Rollback on failure — unit unchanged: OK\n');
+      console.log('   Rollback — unit unchanged: OK\n');
     }
   }
 
-  console.log('6) Unknown serial does not rewrite a STK- placeholder');
+  console.log('4) Unknown serial does not rewrite a STK- placeholder');
   {
     const product = await prisma.product.findFirst();
     assert(product, 'need a product row');
@@ -193,13 +142,7 @@ async function main() {
       await shipmentsService.createShipment(
         {
           sellerId: Number(seller.id),
-          items: [
-            {
-              product_name_id: Number(product.productNameId),
-              product_model_id: Number(product.productModelId),
-              serial_numbers: [fake],
-            },
-          ],
+          serial_numbers: [fake],
         },
         Number(placeholder.ownerId)
       );

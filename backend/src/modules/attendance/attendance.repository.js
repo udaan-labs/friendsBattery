@@ -140,16 +140,6 @@ class AttendanceRepository {
     });
   }
 
-  async logActivity({ employeeId, action, referenceId }) {
-    return prisma.employeeActivityLog.create({
-      data: {
-        employeeId: BigInt(employeeId),
-        action,
-        referenceId: referenceId != null ? BigInt(referenceId) : null,
-      },
-    });
-  }
-
   async findAttendanceHistory(employeeId, { take = 50 } = {}) {
     return prisma.employeeAttendance.findMany({
       where: { employeeId: BigInt(employeeId) },

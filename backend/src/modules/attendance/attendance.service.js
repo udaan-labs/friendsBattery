@@ -159,16 +159,6 @@ class AttendanceService {
       throw err;
     }
 
-    try {
-      await attendanceRepository.logActivity({
-        employeeId: user.id,
-        action: 'CHECK_IN',
-        referenceId: Number(row.id),
-      });
-    } catch (_) {
-      /* best-effort activity log */
-    }
-
     return mapAttendance(row);
   }
 
@@ -193,16 +183,6 @@ class AttendanceService {
       address: geoAddress,
     });
     if (!row) fail('Not checked in', 400);
-
-    try {
-      await attendanceRepository.logActivity({
-        employeeId: user.id,
-        action: 'CHECK_OUT',
-        referenceId: Number(row.id),
-      });
-    } catch (_) {
-      /* best-effort activity log */
-    }
 
     return mapAttendance(row);
   }

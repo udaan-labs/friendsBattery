@@ -11,6 +11,7 @@ import '../../../../shared/widgets/scanner_screen.dart';
 import '../../../../shared/providers/auth_provider.dart';
 import '../../sales/providers/seller_sales_provider.dart';
 import '../models/sale_success_data.dart';
+import '../widgets/bill_payment_mode_picker.dart';
 
 class CreateBillScreen extends ConsumerStatefulWidget {
   const CreateBillScreen({super.key});
@@ -27,9 +28,11 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
   final _vehicleNumberController = TextEditingController();
   final _sellPriceController = TextEditingController();
   final _scrapSerialController = TextEditingController();
+  final _creditPaidController = TextEditingController(text: '0');
 
   /// NORMAL | SCRAP | MECHANIC
   String _saleType = 'NORMAL';
+  String _paymentMode = 'CASH';
 
   bool _isFetchingDetails = false;
   bool _isSubmitting = false;
@@ -66,6 +69,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
     _vehicleNumberController.dispose();
     _sellPriceController.dispose();
     _scrapSerialController.dispose();
+    _creditPaidController.dispose();
     super.dispose();
   }
 
@@ -157,7 +161,10 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
       final vehicleRaw = _vehicleNumberController.text.trim();
 
       final scrapRaw = _scrapSerialController.text.trim();
-      await ref.read(sellerSalesRepositoryProvider).createSale(
+      final creditPaid = _paymentMode == 'CREDIT'
+          ? double.tryParse(_creditPaidController.text.trim()) ?? 0
+          : sellPrice;
+      final saleId = await ref.read(sellerSalesRepositoryProvider).createSale(
             productNameId: int.parse(_selectedProductNameId!),
             productModelId: int.parse(_selectedProductModelId!),
             serialNumber: serialValue,
@@ -166,6 +173,8 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
             vehicleNumber: vehicleRaw.isNotEmpty ? vehicleRaw.toUpperCase() : null,
             sellPrice: sellPrice,
             saleType: _saleType,
+            paymentMode: _paymentMode,
+            amountPaid: _paymentMode == 'CREDIT' ? creditPaid : null,
             scrapSerial: _saleType == 'SCRAP' ? scrapRaw : null,
           );
 
@@ -191,10 +200,11 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
             productName: '$_selectedProductName $_selectedProductModel',
             serialNumber: serialValue,
             sellPrice: sellPrice,
-            invoiceNumber:
-                'INV-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}',
+            invoiceNumber: 'SALE-$saleId',
             saleDate: DateTime.now(),
             sellerName: sellerLabel,
+            paymentMode: _paymentMode,
+            amountPaid: _paymentMode == 'CREDIT' ? creditPaid : sellPrice,
           ),
         );
       }
@@ -453,6 +463,33 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
                                 },
                               ),
                             ],
+                            const SizedBox(height: 16),
+                            BillPaymentModePicker(
+                              value: _paymentMode,
+                              onChanged: (v) => setState(() => _paymentMode = v),
+                              creditExtra: Padding(
+                                padding: const EdgeInsets.only(top: 12),
+                                child: TextFormField(
+                                  controller: _creditPaidController,
+                                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                                  ],
+                                  decoration: const InputDecoration(
+                                    labelText: 'Paid now',
+                                    hintText: '0 if unpaid',
+                                  ),
+                                  validator: (value) {
+                                    if (_paymentMode != 'CREDIT') return null;
+                                    final n = double.tryParse((value ?? '').trim()) ?? 0;
+                                    final price = double.tryParse(_sellPriceController.text.trim()) ?? 0;
+                                    if (n < 0) return 'Cannot be negative';
+                                    if (price > 0 && n > price) return 'Cannot exceed sell price';
+                                    return null;
+                                  },
+                                ),
+                              ),
+                            ),
                             if (_waiveMinPrice)
                               const Padding(
                                 padding: EdgeInsets.only(top: 8),

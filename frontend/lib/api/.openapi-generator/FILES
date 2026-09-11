@@ -22,7 +22,6 @@ doc/AdminSaleShipment.md
 doc/ApiAuthActivatePutRequest.md
 doc/ApiAuthLoginPostRequest.md
 doc/ApiAuthRegisterPostRequest.md
-doc/ApiAuthVerifyOtpPostRequest.md
 doc/ApiDashboardStatsGet200Response.md
 doc/ApiEmployeeAttendanceCheckInPost201Response.md
 doc/ApiEmployeeAttendanceCheckedInGet200Response.md
@@ -34,8 +33,6 @@ doc/ApiInventoryDetailsGet200ResponseDataCategoriesInner.md
 doc/ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner.md
 doc/ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner.md
 doc/ApiInventoryDetailsGet200ResponseDataPagination.md
-doc/ApiInventoryTransferPostRequest.md
-doc/ApiInventoryTransferPostRequestProductsInner.md
 doc/ApiSellerDashboardPendingShipmentsGet200Response.md
 doc/ApiSellerDashboardPendingShipmentsGet200ResponseData.md
 doc/ApiSellerDashboardStatsGet200Response.md
@@ -49,8 +46,6 @@ doc/ApiShipmentsIdGet200Response.md
 doc/ApiShipmentsIdGet200ResponseData.md
 doc/ApiShipmentsIdGet200ResponseDataItemsInner.md
 doc/ApiShipmentsIdGet200ResponseDataSeller.md
-doc/ApiTransfersPostRequest.md
-doc/ApiTransfersPostRequestItemsInner.md
 doc/AppApi.md
 doc/AppStatus.md
 doc/AppStatusResponse.md
@@ -84,7 +79,6 @@ doc/CreateSaleResult.md
 doc/CreateServiceBillRequest.md
 doc/CreateServiceBillResponse.md
 doc/CreateServiceBillResult.md
-doc/CreateShipmentItem.md
 doc/CreateShipmentRequest.md
 doc/CreateShipmentResponse.md
 doc/CreateShipmentResult.md
@@ -115,14 +109,13 @@ doc/ListProductsResponse.md
 doc/LocationItem.md
 doc/LocationsListResponse.md
 doc/LoginData.md
-doc/LoginOtpChallengeData.md
-doc/LoginOtpChallengeResponse.md
 doc/LoginResponse.md
 doc/LoginUser.md
 doc/LoginUserEmployeeRole.md
 doc/LoginUserLocation.md
 doc/NextEmployeeUserIdData.md
 doc/NextEmployeeUserIdResponse.md
+doc/PayCreditRequest.md
 doc/Product.md
 doc/ProductConfigItem.md
 doc/ProductCreated.md
@@ -185,8 +178,6 @@ doc/ShopStaffResponse.md
 doc/ShopsApi.md
 doc/TransferEmployeeRequest.md
 doc/TransferEmployeeResponse.md
-doc/TransferInventoryCount.md
-doc/TransfersApi.md
 doc/UpdateLocationRequest.md
 doc/UpdateLocationResponse.md
 doc/UpdateStockRequest.md
@@ -213,7 +204,6 @@ lib/src/api/returns_api.dart
 lib/src/api/sales_api.dart
 lib/src/api/shipments_api.dart
 lib/src/api/shops_api.dart
-lib/src/api/transfers_api.dart
 lib/src/api/users_api.dart
 lib/src/api_util.dart
 lib/src/auth/api_key_auth.dart
@@ -243,7 +233,6 @@ lib/src/model/admin_sale_shipment.dart
 lib/src/model/api_auth_activate_put_request.dart
 lib/src/model/api_auth_login_post_request.dart
 lib/src/model/api_auth_register_post_request.dart
-lib/src/model/api_auth_verify_otp_post_request.dart
 lib/src/model/api_dashboard_stats_get200_response.dart
 lib/src/model/api_employee_attendance_check_in_post201_response.dart
 lib/src/model/api_employee_attendance_checked_in_get200_response.dart
@@ -255,8 +244,6 @@ lib/src/model/api_inventory_details_get200_response_data_categories_inner.dart
 lib/src/model/api_inventory_details_get200_response_data_categories_inner_subcategories_inner.dart
 lib/src/model/api_inventory_details_get200_response_data_categories_inner_subcategories_inner_products_inner.dart
 lib/src/model/api_inventory_details_get200_response_data_pagination.dart
-lib/src/model/api_inventory_transfer_post_request.dart
-lib/src/model/api_inventory_transfer_post_request_products_inner.dart
 lib/src/model/api_seller_dashboard_pending_shipments_get200_response.dart
 lib/src/model/api_seller_dashboard_pending_shipments_get200_response_data.dart
 lib/src/model/api_seller_dashboard_stats_get200_response.dart
@@ -270,8 +257,6 @@ lib/src/model/api_shipments_id_get200_response.dart
 lib/src/model/api_shipments_id_get200_response_data.dart
 lib/src/model/api_shipments_id_get200_response_data_items_inner.dart
 lib/src/model/api_shipments_id_get200_response_data_seller.dart
-lib/src/model/api_transfers_post_request.dart
-lib/src/model/api_transfers_post_request_items_inner.dart
 lib/src/model/app_status.dart
 lib/src/model/app_status_response.dart
 lib/src/model/assigned_location.dart
@@ -302,7 +287,6 @@ lib/src/model/create_sale_result.dart
 lib/src/model/create_service_bill_request.dart
 lib/src/model/create_service_bill_response.dart
 lib/src/model/create_service_bill_result.dart
-lib/src/model/create_shipment_item.dart
 lib/src/model/create_shipment_request.dart
 lib/src/model/create_shipment_response.dart
 lib/src/model/create_shipment_result.dart
@@ -331,14 +315,13 @@ lib/src/model/list_products_response.dart
 lib/src/model/location_item.dart
 lib/src/model/locations_list_response.dart
 lib/src/model/login_data.dart
-lib/src/model/login_otp_challenge_data.dart
-lib/src/model/login_otp_challenge_response.dart
 lib/src/model/login_response.dart
 lib/src/model/login_user.dart
 lib/src/model/login_user_employee_role.dart
 lib/src/model/login_user_location.dart
 lib/src/model/next_employee_user_id_data.dart
 lib/src/model/next_employee_user_id_response.dart
+lib/src/model/pay_credit_request.dart
 lib/src/model/product.dart
 lib/src/model/product_config_item.dart
 lib/src/model/product_created.dart
@@ -395,7 +378,6 @@ lib/src/model/shop_staff_member.dart
 lib/src/model/shop_staff_response.dart
 lib/src/model/transfer_employee_request.dart
 lib/src/model/transfer_employee_response.dart
-lib/src/model/transfer_inventory_count.dart
 lib/src/model/update_location_request.dart
 lib/src/model/update_location_response.dart
 lib/src/model/update_stock_request.dart

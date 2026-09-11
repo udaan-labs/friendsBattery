@@ -17,8 +17,6 @@ class _$ApiAuthLoginPostRequest extends ApiAuthLoginPostRequest {
   final String? ipAddress;
   @override
   final String? appVersion;
-  @override
-  final String? firebaseToken;
 
   factory _$ApiAuthLoginPostRequest([
     void Function(ApiAuthLoginPostRequestBuilder)? updates,
@@ -30,7 +28,6 @@ class _$ApiAuthLoginPostRequest extends ApiAuthLoginPostRequest {
     this.deviceId,
     this.ipAddress,
     this.appVersion,
-    this.firebaseToken,
   }) : super._();
   @override
   ApiAuthLoginPostRequest rebuild(
@@ -49,8 +46,7 @@ class _$ApiAuthLoginPostRequest extends ApiAuthLoginPostRequest {
         password == other.password &&
         deviceId == other.deviceId &&
         ipAddress == other.ipAddress &&
-        appVersion == other.appVersion &&
-        firebaseToken == other.firebaseToken;
+        appVersion == other.appVersion;
   }
 
   @override
@@ -61,7 +57,6 @@ class _$ApiAuthLoginPostRequest extends ApiAuthLoginPostRequest {
     _$hash = $jc(_$hash, deviceId.hashCode);
     _$hash = $jc(_$hash, ipAddress.hashCode);
     _$hash = $jc(_$hash, appVersion.hashCode);
-    _$hash = $jc(_$hash, firebaseToken.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -73,8 +68,7 @@ class _$ApiAuthLoginPostRequest extends ApiAuthLoginPostRequest {
           ..add('password', password)
           ..add('deviceId', deviceId)
           ..add('ipAddress', ipAddress)
-          ..add('appVersion', appVersion)
-          ..add('firebaseToken', firebaseToken))
+          ..add('appVersion', appVersion))
         .toString();
   }
 }
@@ -104,11 +98,6 @@ class ApiAuthLoginPostRequestBuilder
   String? get appVersion => _$this._appVersion;
   set appVersion(String? appVersion) => _$this._appVersion = appVersion;
 
-  String? _firebaseToken;
-  String? get firebaseToken => _$this._firebaseToken;
-  set firebaseToken(String? firebaseToken) =>
-      _$this._firebaseToken = firebaseToken;
-
   ApiAuthLoginPostRequestBuilder() {
     ApiAuthLoginPostRequest._defaults(this);
   }
@@ -121,7 +110,6 @@ class ApiAuthLoginPostRequestBuilder
       _deviceId = $v.deviceId;
       _ipAddress = $v.ipAddress;
       _appVersion = $v.appVersion;
-      _firebaseToken = $v.firebaseToken;
       _$v = null;
     }
     return this;
@@ -157,7 +145,6 @@ class ApiAuthLoginPostRequestBuilder
           deviceId: deviceId,
           ipAddress: ipAddress,
           appVersion: appVersion,
-          firebaseToken: firebaseToken,
         );
     replace(_$result);
     return _$result;

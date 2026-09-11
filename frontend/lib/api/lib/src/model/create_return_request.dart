@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -13,6 +14,7 @@ part 'create_return_request.g.dart';
 /// Properties:
 /// * [serialNumber] 
 /// * [reason] 
+/// * [restockAs] - Restock status after return. Default AVAILABLE (sellable).
 @BuiltValue()
 abstract class CreateReturnRequest implements Built<CreateReturnRequest, CreateReturnRequestBuilder> {
   @BuiltValueField(wireName: r'serial_number')
@@ -20,6 +22,11 @@ abstract class CreateReturnRequest implements Built<CreateReturnRequest, CreateR
 
   @BuiltValueField(wireName: r'reason')
   String get reason;
+
+  /// Restock status after return. Default AVAILABLE (sellable).
+  @BuiltValueField(wireName: r'restock_as')
+  CreateReturnRequestRestockAsEnum? get restockAs;
+  // enum restockAsEnum {  AVAILABLE,  DEFECTIVE,  };
 
   CreateReturnRequest._();
 
@@ -54,6 +61,13 @@ class _$CreateReturnRequestSerializer implements PrimitiveSerializer<CreateRetur
       object.reason,
       specifiedType: const FullType(String),
     );
+    if (object.restockAs != null) {
+      yield r'restock_as';
+      yield serializers.serialize(
+        object.restockAs,
+        specifiedType: const FullType(CreateReturnRequestRestockAsEnum),
+      );
+    }
   }
 
   @override
@@ -91,6 +105,13 @@ class _$CreateReturnRequestSerializer implements PrimitiveSerializer<CreateRetur
           ) as String;
           result.reason = valueDes;
           break;
+        case r'restock_as':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CreateReturnRequestRestockAsEnum),
+          ) as CreateReturnRequestRestockAsEnum;
+          result.restockAs = valueDes;
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -118,5 +139,22 @@ class _$CreateReturnRequestSerializer implements PrimitiveSerializer<CreateRetur
     );
     return result.build();
   }
+}
+
+class CreateReturnRequestRestockAsEnum extends EnumClass {
+
+  /// Restock status after return. Default AVAILABLE (sellable).
+  @BuiltValueEnumConst(wireName: r'AVAILABLE')
+  static const CreateReturnRequestRestockAsEnum AVAILABLE = _$createReturnRequestRestockAsEnum_AVAILABLE;
+  /// Restock status after return. Default AVAILABLE (sellable).
+  @BuiltValueEnumConst(wireName: r'DEFECTIVE')
+  static const CreateReturnRequestRestockAsEnum DEFECTIVE = _$createReturnRequestRestockAsEnum_DEFECTIVE;
+
+  static Serializer<CreateReturnRequestRestockAsEnum> get serializer => _$createReturnRequestRestockAsEnumSerializer;
+
+  const CreateReturnRequestRestockAsEnum._(String name): super(name);
+
+  static BuiltSet<CreateReturnRequestRestockAsEnum> get values => _$createReturnRequestRestockAsEnumValues;
+  static CreateReturnRequestRestockAsEnum valueOf(String name) => _$createReturnRequestRestockAsEnumValueOf(name);
 }
 

@@ -35,7 +35,6 @@ import 'package:friends_battery_api/src/model/admin_sale_shipment.dart';
 import 'package:friends_battery_api/src/model/api_auth_activate_put_request.dart';
 import 'package:friends_battery_api/src/model/api_auth_login_post_request.dart';
 import 'package:friends_battery_api/src/model/api_auth_register_post_request.dart';
-import 'package:friends_battery_api/src/model/api_auth_verify_otp_post_request.dart';
 import 'package:friends_battery_api/src/model/api_dashboard_stats_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_employee_attendance_check_in_post201_response.dart';
 import 'package:friends_battery_api/src/model/api_employee_attendance_checked_in_get200_response.dart';
@@ -47,8 +46,6 @@ import 'package:friends_battery_api/src/model/api_inventory_details_get200_respo
 import 'package:friends_battery_api/src/model/api_inventory_details_get200_response_data_categories_inner_subcategories_inner.dart';
 import 'package:friends_battery_api/src/model/api_inventory_details_get200_response_data_categories_inner_subcategories_inner_products_inner.dart';
 import 'package:friends_battery_api/src/model/api_inventory_details_get200_response_data_pagination.dart';
-import 'package:friends_battery_api/src/model/api_inventory_transfer_post_request.dart';
-import 'package:friends_battery_api/src/model/api_inventory_transfer_post_request_products_inner.dart';
 import 'package:friends_battery_api/src/model/api_seller_dashboard_pending_shipments_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_seller_dashboard_pending_shipments_get200_response_data.dart';
 import 'package:friends_battery_api/src/model/api_seller_dashboard_stats_get200_response.dart';
@@ -62,8 +59,6 @@ import 'package:friends_battery_api/src/model/api_shipments_id_get200_response.d
 import 'package:friends_battery_api/src/model/api_shipments_id_get200_response_data.dart';
 import 'package:friends_battery_api/src/model/api_shipments_id_get200_response_data_items_inner.dart';
 import 'package:friends_battery_api/src/model/api_shipments_id_get200_response_data_seller.dart';
-import 'package:friends_battery_api/src/model/api_transfers_post_request.dart';
-import 'package:friends_battery_api/src/model/api_transfers_post_request_items_inner.dart';
 import 'package:friends_battery_api/src/model/app_status.dart';
 import 'package:friends_battery_api/src/model/app_status_response.dart';
 import 'package:friends_battery_api/src/model/assigned_location.dart';
@@ -94,7 +89,6 @@ import 'package:friends_battery_api/src/model/create_sale_result.dart';
 import 'package:friends_battery_api/src/model/create_service_bill_request.dart';
 import 'package:friends_battery_api/src/model/create_service_bill_response.dart';
 import 'package:friends_battery_api/src/model/create_service_bill_result.dart';
-import 'package:friends_battery_api/src/model/create_shipment_item.dart';
 import 'package:friends_battery_api/src/model/create_shipment_request.dart';
 import 'package:friends_battery_api/src/model/create_shipment_response.dart';
 import 'package:friends_battery_api/src/model/create_shipment_result.dart';
@@ -122,14 +116,13 @@ import 'package:friends_battery_api/src/model/list_products_response.dart';
 import 'package:friends_battery_api/src/model/location_item.dart';
 import 'package:friends_battery_api/src/model/locations_list_response.dart';
 import 'package:friends_battery_api/src/model/login_data.dart';
-import 'package:friends_battery_api/src/model/login_otp_challenge_data.dart';
-import 'package:friends_battery_api/src/model/login_otp_challenge_response.dart';
 import 'package:friends_battery_api/src/model/login_response.dart';
 import 'package:friends_battery_api/src/model/login_user.dart';
 import 'package:friends_battery_api/src/model/login_user_employee_role.dart';
 import 'package:friends_battery_api/src/model/login_user_location.dart';
 import 'package:friends_battery_api/src/model/next_employee_user_id_data.dart';
 import 'package:friends_battery_api/src/model/next_employee_user_id_response.dart';
+import 'package:friends_battery_api/src/model/pay_credit_request.dart';
 import 'package:friends_battery_api/src/model/product.dart';
 import 'package:friends_battery_api/src/model/product_config_item.dart';
 import 'package:friends_battery_api/src/model/product_created.dart';
@@ -186,7 +179,6 @@ import 'package:friends_battery_api/src/model/shop_staff_member.dart';
 import 'package:friends_battery_api/src/model/shop_staff_response.dart';
 import 'package:friends_battery_api/src/model/transfer_employee_request.dart';
 import 'package:friends_battery_api/src/model/transfer_employee_response.dart';
-import 'package:friends_battery_api/src/model/transfer_inventory_count.dart';
 import 'package:friends_battery_api/src/model/update_location_request.dart';
 import 'package:friends_battery_api/src/model/update_location_response.dart';
 import 'package:friends_battery_api/src/model/update_stock_request.dart';
@@ -223,7 +215,6 @@ part 'serializers.g.dart';
   ApiAuthActivatePutRequest,
   ApiAuthLoginPostRequest,
   ApiAuthRegisterPostRequest,
-  ApiAuthVerifyOtpPostRequest,
   ApiDashboardStatsGet200Response,
   ApiEmployeeAttendanceCheckInPost201Response,
   ApiEmployeeAttendanceCheckedInGet200Response,
@@ -235,8 +226,6 @@ part 'serializers.g.dart';
   ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInner,
   ApiInventoryDetailsGet200ResponseDataCategoriesInnerSubcategoriesInnerProductsInner,
   ApiInventoryDetailsGet200ResponseDataPagination,
-  ApiInventoryTransferPostRequest,
-  ApiInventoryTransferPostRequestProductsInner,
   ApiSellerDashboardPendingShipmentsGet200Response,
   ApiSellerDashboardPendingShipmentsGet200ResponseData,
   ApiSellerDashboardStatsGet200Response,
@@ -250,8 +239,6 @@ part 'serializers.g.dart';
   ApiShipmentsIdGet200ResponseData,
   ApiShipmentsIdGet200ResponseDataItemsInner,
   ApiShipmentsIdGet200ResponseDataSeller,
-  ApiTransfersPostRequest,
-  ApiTransfersPostRequestItemsInner,
   AppStatus,
   AppStatusResponse,
   AssignedLocation,
@@ -282,7 +269,6 @@ part 'serializers.g.dart';
   CreateServiceBillRequest,
   CreateServiceBillResponse,
   CreateServiceBillResult,
-  CreateShipmentItem,
   CreateShipmentRequest,
   CreateShipmentResponse,
   CreateShipmentResult,
@@ -310,14 +296,13 @@ part 'serializers.g.dart';
   LocationItem,
   LocationsListResponse,
   LoginData,
-  LoginOtpChallengeData,
-  LoginOtpChallengeResponse,
   LoginResponse,
   LoginUser,
   LoginUserEmployeeRole,
   LoginUserLocation,
   NextEmployeeUserIdData,
   NextEmployeeUserIdResponse,
+  PayCreditRequest,
   Product,
   ProductConfigItem,
   ProductCreated,
@@ -374,7 +359,6 @@ part 'serializers.g.dart';
   ShopStaffResponse,
   TransferEmployeeRequest,
   TransferEmployeeResponse,
-  TransferInventoryCount,
   UpdateLocationRequest,
   UpdateLocationResponse,
   UpdateStockRequest,

@@ -36,11 +36,7 @@ class AdminSalesPeriodChips extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(adminSalesHistoryProvider);
 
-    return Container(
-      color: Colors.white,
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
-      child: SingleChildScrollView(
+    return SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
@@ -72,7 +68,6 @@ class AdminSalesPeriodChips extends ConsumerWidget {
               ),
           ],
         ),
-      ),
     );
   }
 }

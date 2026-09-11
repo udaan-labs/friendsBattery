@@ -97,7 +97,7 @@ class LocationService {
         allowedRadiusMeters;
   }
 
-  /// Live updates while checked in (Android notification service / iOS background location).
+  /// Live updates while checked in only — caller must cancel on checkout (C8).
   Stream<DeviceLocation> watchShiftLocation() {
     return Geolocator.getPositionStream(locationSettings: _shiftSettings).map(
       (position) => DeviceLocation(

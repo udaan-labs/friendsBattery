@@ -28,8 +28,6 @@ async function main() {
   await del('shipments', () => prisma.newShipment.deleteMany());
   await del('transfer_items', () => prisma.shipmentItem.deleteMany());
   await del('transfers', () => prisma.shipment.deleteMany());
-  await del('stock_request_items', () => prisma.stockRequestItem.deleteMany());
-  await del('stock_requests', () => prisma.stockRequest.deleteMany());
   await del('product_units', () => prisma.productUnit.deleteMany());
   await del('product_catalog_events', () => prisma.productCatalogEvent.deleteMany());
   await del('org_events', () => prisma.orgEvent.deleteMany());
