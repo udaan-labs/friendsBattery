@@ -97,6 +97,7 @@ const authenticate = async (req, res, next) => {
       userName: userFromDb.userName,
       role: userFromDb.role,
       locationId: userFromDb.locationId != null ? Number(userFromDb.locationId) : null,
+      parentId: userFromDb.parentId != null ? Number(userFromDb.parentId) : null,
       employeeRoleId: userFromDb.employeeRoleId != null ? Number(userFromDb.employeeRoleId) : null,
       location: userFromDb.location
         ? {
