@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const { verifyProduct } = require('./product-units.controller');
+const { verifyProductSchema } = require('./product-units.validation');
 const { authenticate } = require('../../shared/middleware/auth.middleware');
+const { validateRequest } = require('../../shared/middleware/validation.middleware');
 
 /**
  * @swagger
@@ -31,6 +33,6 @@ const { authenticate } = require('../../shared/middleware/auth.middleware');
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/verify', authenticate, verifyProduct);
+router.post('/verify', authenticate, validateRequest(verifyProductSchema), verifyProduct);
 
 module.exports = router;
