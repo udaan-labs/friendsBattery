@@ -148,8 +148,11 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
     } catch (e) {
       if (mounted) {
         String errorMsg = 'Failed to verify product.';
-        if (e is DioException && e.response?.data != null) {
-          errorMsg = e.response?.data['message'] ?? errorMsg;
+        if (e is DioException) {
+          final data = e.response?.data;
+          if (data is Map && data['message'] != null) {
+            errorMsg = data['message'].toString();
+          }
         }
         context.showErrorSnackBar(errorMsg);
       }
@@ -201,8 +204,11 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
     } catch (e) {
       if (mounted) {
         String errorMsg = 'Failed to submit return. Please try again.';
-        if (e is DioException && e.response?.data != null) {
-          errorMsg = e.response?.data['message'] ?? errorMsg;
+        if (e is DioException) {
+          final data = e.response?.data;
+          if (data is Map && data['message'] != null) {
+            errorMsg = data['message'].toString();
+          }
         }
         context.showErrorSnackBar(errorMsg);
       }
