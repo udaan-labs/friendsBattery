@@ -261,7 +261,7 @@ class _SellersTabView extends ConsumerWidget {
                 color: Colors.transparent,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(16),
-                  onTap: sellerId != null ? () => context.push('/admin/seller/$sellerId') : null,
+                  onTap: sellerId != null ? () => context.push('/admin/sellers/$sellerId') : null,
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
