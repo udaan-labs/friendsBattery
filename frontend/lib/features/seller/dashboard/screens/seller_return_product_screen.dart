@@ -164,6 +164,7 @@ class _SellerReturnProductScreenState extends ConsumerState<SellerReturnProductS
   }
 
   Future<void> _submit() async {
+    if (_isSubmitting) return;
     if (!_formKey.currentState!.validate()) return;
     if (!_isVerifiedValid) {
       context.showErrorSnackBar('Please verify a valid sold product first.');
