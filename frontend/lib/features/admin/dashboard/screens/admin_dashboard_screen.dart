@@ -45,7 +45,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       _currentTab = tabId;
     });
     if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
-      context.pop(); // Close drawer
+      _scaffoldKey.currentState?.closeDrawer(); // Close drawer
     }
     // Do not force-refresh on every tab switch; pull-to-refresh covers intentional reloads.
   }
@@ -217,7 +217,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       title: 'Configure Product',
                       tabId: 'configure_product',
                       onTap: () {
-                        context.pop();
+                        _scaffoldKey.currentState?.closeDrawer();
                         context.push('/admin/add-product/configure');
                       },
                     ),
@@ -229,7 +229,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       title: 'View Stock',
                       tabId: 'view_stock',
                       onTap: () {
-                        context.pop(); // close drawer
+                        _scaffoldKey.currentState?.closeDrawer(); // close drawer
                         context.push('/admin/inventory');
                       },
                     ),
@@ -239,7 +239,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     title: 'Verify Product',
                     tabId: 'verify_product',
                     onTap: () {
-                      context.pop();
+                      _scaffoldKey.currentState?.closeDrawer();
                       context.push('/admin/verify-product');
                     },
                   ),
@@ -249,7 +249,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     title: 'Manage Sellers',
                     tabId: 'manage_sellers',
                     onTap: () {
-                      context.pop();
+                      _scaffoldKey.currentState?.closeDrawer();
                       context.go('/admin/sellers');
                     },
                   ),
@@ -259,7 +259,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     title: 'Sales',
                     tabId: 'sales',
                     onTap: () {
-                      context.pop();
+                      _scaffoldKey.currentState?.closeDrawer();
                       context.push('/admin/sales');
                     },
                   ),
@@ -270,7 +270,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       title: 'Stock Transfer',
                       tabId: 'stock_transfer',
                       onTap: () {
-                        context.pop();
+                        _scaffoldKey.currentState?.closeDrawer();
                         context.go('/admin/shipments');
                       },
                     ),
@@ -290,7 +290,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 ),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
                 onTap: () {
-                  context.pop(); // close drawer
+                  _scaffoldKey.currentState?.closeDrawer(); // close drawer
                   showLogoutConfirmationDialog(context, ref);
                 },
               ),
