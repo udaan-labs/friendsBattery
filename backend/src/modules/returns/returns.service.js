@@ -100,6 +100,7 @@ class ReturnsService {
       actorId: BigInt(actor.id),
       ownerType,
       restockStatus,
+      actorLocationId: actor.locationId ?? null,
     });
 
     return {

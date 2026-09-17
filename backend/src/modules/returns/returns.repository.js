@@ -36,6 +36,7 @@ class ReturnsRepository {
       actorId,
       ownerType,
       restockStatus,
+      actorLocationId,
     } = data;
 
     return prisma.$transaction(async (tx) => {
@@ -48,6 +49,9 @@ class ReturnsRepository {
           status: restockStatus,
           ownerId: actorId,
           ownerType,
+          ...(actorLocationId != null
+            ? { currentLocationId: BigInt(actorLocationId) }
+            : {}),
         },
       });
       if (claimed.count !== 1) {

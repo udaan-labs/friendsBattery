@@ -53,6 +53,7 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
   }
 
   Future<void> _submit() async {
+    if (_isSubmitting) return;
     if (!_formKey.currentState!.validate()) return;
     if (_selectedProductNameId == null || _selectedProductModelId == null) {
       context.showErrorSnackBar('Please select Product Name and Product Model');

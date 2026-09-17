@@ -1,6 +1,7 @@
 const inventoryService = require('./inventory.service');
 const { successResponse, errorResponse } = require('../../shared/utils/response');
 const { handleRouteError } = require('../../shared/utils/handle-route-error');
+const { isAdminLikeRole } = require('../../shared/utils/role.util');
 
 /**
  * Inventory Controller
@@ -46,7 +47,9 @@ class InventoryController {
     try {
       const userId = Number(req.user.id);
       const role = req.user.role;
-      const locationId = req.query.location_id ? Number(req.query.location_id) : (req.query.locationId ? Number(req.query.locationId) : (req.user.locationId ?? null));
+      const locationId = isAdminLikeRole(role)
+        ? (req.query.location_id ? Number(req.query.location_id) : (req.query.locationId ? Number(req.query.locationId) : (req.user.locationId ?? null)))
+        : (req.user.locationId ?? null);
       const { productId } = req.params;
 
       const inventoryItem = await inventoryService.getInventoryItem(

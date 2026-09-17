@@ -17,7 +17,8 @@ class VerifyProductScreen extends ConsumerStatefulWidget {
 class _VerifyProductScreenState extends ConsumerState<VerifyProductScreen> {
   final _searchController = TextEditingController();
   bool _isScanning = false;
-  
+  bool _isHandlingScan = false;
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -90,9 +91,11 @@ class _VerifyProductScreenState extends ConsumerState<VerifyProductScreen> {
       children: [
         MobileScanner(
           onDetect: (capture) {
+            if (_isHandlingScan) return;
             final List<Barcode> barcodes = capture.barcodes;
             if (barcodes.isNotEmpty && barcodes.first.rawValue != null) {
               final String code = barcodes.first.rawValue!;
+              _isHandlingScan = true;
               setState(() {
                 _isScanning = false;
                 _searchController.text = code;
@@ -181,7 +184,12 @@ class _VerifyProductScreenState extends ConsumerState<VerifyProductScreen> {
           ),
           const SizedBox(height: 24),
           OutlinedButton.icon(
-            onPressed: isLoading ? null : () => setState(() => _isScanning = true),
+            onPressed: isLoading
+                ? null
+                : () => setState(() {
+                      _isHandlingScan = false;
+                      _isScanning = true;
+                    }),
             icon: const Icon(Icons.qr_code_scanner),
             label: const Text('Scan QR Code'),
             style: OutlinedButton.styleFrom(

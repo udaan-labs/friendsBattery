@@ -95,6 +95,9 @@ class SalesRepository {
           fromUserId: ownerId,
           toUserId: ownerId,
           action: 'SOLD',
+          ...(saleData.claimByLocationId != null
+            ? { fromLocationId: BigInt(saleData.claimByLocationId) }
+            : {}),
         },
       });
 

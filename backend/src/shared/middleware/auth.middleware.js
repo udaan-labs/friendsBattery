@@ -19,9 +19,14 @@ const authenticate = async (req, res, next) => {
     return errorResponse(res, 401, 'Unauthorized: Authentication token is required');
   }
 
+  let decoded;
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    decoded = jwt.verify(token, JWT_SECRET);
+  } catch (err) {
+    return errorResponse(res, 401, 'Unauthorized: Invalid or expired token');
+  }
 
+  try {
     if (authId) {
       const decodedAuthIdStr = Buffer.from(authId, 'base64').toString('ascii');
       const [dbId] = decodedAuthIdStr.split(':');
@@ -97,6 +102,7 @@ const authenticate = async (req, res, next) => {
       userName: userFromDb.userName,
       role: userFromDb.role,
       locationId: userFromDb.locationId != null ? Number(userFromDb.locationId) : null,
+      parentId: userFromDb.parentId != null ? Number(userFromDb.parentId) : null,
       employeeRoleId: userFromDb.employeeRoleId != null ? Number(userFromDb.employeeRoleId) : null,
       location: userFromDb.location
         ? {
@@ -120,7 +126,8 @@ const authenticate = async (req, res, next) => {
 
     next();
   } catch (err) {
-    return errorResponse(res, 401, 'Unauthorized: Invalid token');
+    console.error('[AUTH_DB_ERROR]', err);
+    return errorResponse(res, 500, 'Internal server error');
   }
 };
 

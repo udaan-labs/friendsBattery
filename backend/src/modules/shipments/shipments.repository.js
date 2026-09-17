@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const { prisma } = require('../../config/db');
 const { getDefaultWarehouseId, getUserLocationId } = require('../../shared/utils/location.util');
 const { httpError } = require('../../shared/utils/http-error');
@@ -114,10 +115,10 @@ class ShipmentsRepository {
         );
       }
 
-      const count = await tx.newShipment.count();
+      const shipmentNumber = `SHP-${Date.now()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
       const shipment = await tx.newShipment.create({
         data: {
-          shipmentNumber: `SHP-${100 + count + 1}`,
+          shipmentNumber,
           sellerId: BigInt(sellerId),
           createdByAdminId: BigInt(adminId),
           status: 'PENDING',

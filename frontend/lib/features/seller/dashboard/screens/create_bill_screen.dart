@@ -118,10 +118,11 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
     } catch (e) {
       if (mounted) {
         if (e is DioException && e.response != null) {
-          final errorData = e.response!.data;
-          context.showErrorSnackBar(
-            errorData['message'] ?? 'Product not found in your available inventory',
-          );
+          final data = e.response!.data;
+          final errorMsg = (data is Map && data['message'] != null)
+              ? data['message'].toString()
+              : 'Product not found in your available inventory';
+          context.showErrorSnackBar(errorMsg);
         } else {
           context.showErrorSnackBar('Error: $e');
         }

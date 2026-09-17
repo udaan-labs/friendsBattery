@@ -76,7 +76,10 @@ class _AdminEditInventoryBottomSheetState extends ConsumerState<AdminEditInvento
       Navigator.of(context).pop();
     } on DioException catch (e) {
       if (mounted) {
-        final msg = e.response?.data?['message'] ?? 'Failed to update stock';
+        final data = e.response?.data;
+        final msg = (data is Map && data['message'] != null)
+            ? data['message'].toString()
+            : 'Failed to update stock';
         context.showErrorSnackBar(msg);
       }
     } catch (e) {

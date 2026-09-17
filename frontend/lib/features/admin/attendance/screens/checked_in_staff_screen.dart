@@ -204,7 +204,7 @@ class _CheckedInStaffScreenState extends ConsumerState<CheckedInStaffScreen> {
                     ),
                     subtitle: Text(
                       '$loc\nIn since $when'
-                      '${hasGps ? '\nGPS: ${r.checkInLat!.toStringAsFixed(5)}, ${r.checkInLng!.toStringAsFixed(5)}' : ''}',
+                      '${hasGps ? '\nGPS: ${r.mapLat!.toStringAsFixed(5)}, ${r.mapLng!.toStringAsFixed(5)}' : ''}',
                     ),
                     trailing: hasGps
                         ? TextButton.icon(
