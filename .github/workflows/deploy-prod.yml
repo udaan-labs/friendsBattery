@@ -44,7 +44,7 @@ jobs:
             echo "RAILWAY_TOKEN_PROD secret is required"
             exit 1
           fi
-          npx @railway/cli up --detach
+          npx @railway/cli up --detach --service friendsBattery
 
   frontend-prod:
     name: Flutter Prod Build & Firebase Distribution
