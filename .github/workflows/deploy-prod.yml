@@ -79,6 +79,7 @@ jobs:
             exit 1
           fi
           echo "$ENV_PROD_CONTENT" > .env.production
+          touch .env.local
 
       - name: Install Flutter Dependencies
         run: flutter pub get
