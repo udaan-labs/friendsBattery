@@ -1,4 +1,4 @@
-﻿-- Sale variants: scrap trade-in + mechanic B2B
+-- Sale variants: scrap trade-in + mechanic B2B
 CREATE TYPE "SaleType" AS ENUM ('NORMAL', 'SCRAP', 'MECHANIC');
 
 ALTER TABLE "sales_transactions"
