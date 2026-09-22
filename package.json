@@ -2,10 +2,6 @@
   "name": "friends-battery-workspace",
   "version": "1.2.0",
   "private": true,
-  "workspaces": [
-    "backend",
-    "frontend"
-  ],
   "scripts": {
     "dev": ".\\dev.bat",
     "dev:backend": "cd backend && npm run dev",

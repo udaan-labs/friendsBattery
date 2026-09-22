@@ -5,19 +5,25 @@ const path = require('path');
 console.log('📦 1. Running changeset version (generating changelog & removing changesets)...');
 execSync('npx changeset version', { stdio: 'inherit' });
 
-// 1. Read the newly bumped version from backend/package.json or frontend/package.json
-const backendPkgPath = path.join(__dirname, '../backend/package.json');
-const backendPkg = JSON.parse(fs.readFileSync(backendPkgPath, 'utf8'));
-const newVersion = backendPkg.version;
-console.log(`\n✨ New version: ${newVersion}`);
-
-// 2. Sync version to root package.json
+// 1. Read the newly bumped version from root package.json
 const rootPkgPath = path.join(__dirname, '../package.json');
-if (fs.existsSync(rootPkgPath)) {
-  const rootPkg = JSON.parse(fs.readFileSync(rootPkgPath, 'utf8'));
-  rootPkg.version = newVersion;
-  fs.writeFileSync(rootPkgPath, JSON.stringify(rootPkg, null, 2) + '\n', 'utf8');
-  console.log(`✅ Updated root package.json version to ${newVersion}`);
+const rootPkg = JSON.parse(fs.readFileSync(rootPkgPath, 'utf8'));
+const newVersion = rootPkg.version;
+console.log(`\n✨ New workspace version: ${newVersion}`);
+
+// 2. Sync version to backend/package.json
+const backendPkgPath = path.join(__dirname, '../backend/package.json');
+if (fs.existsSync(backendPkgPath)) {
+  const backendPkg = JSON.parse(fs.readFileSync(backendPkgPath, 'utf8'));
+  backendPkg.version = newVersion;
+  fs.writeFileSync(backendPkgPath, JSON.stringify(backendPkg, null, 2) + '\n', 'utf8');
+  console.log(`✅ Updated backend/package.json version to ${newVersion}`);
+
+  // Keep backend/package-lock.json in sync
+  try {
+    execSync('npm install --package-lock-only', { cwd: path.join(__dirname, '../backend'), stdio: 'ignore' });
+    console.log(`✅ Synced backend/package-lock.json to version ${newVersion}`);
+  } catch (_) {}
 }
 
 // 3. Sync version to frontend/pubspec.yaml
@@ -35,22 +41,9 @@ if (fs.existsSync(pubspecPath)) {
   console.log(`✅ Updated frontend/pubspec.yaml version to ${newPubspecVersion}`);
 }
 
-// 4. If root CHANGELOG.md is desired, combine or sync package changelogs
-const rootChangelogPath = path.join(__dirname, '../CHANGELOG.md');
-const backendChangelogPath = path.join(__dirname, '../backend/CHANGELOG.md');
-const frontendChangelogPath = path.join(__dirname, '../frontend/CHANGELOG.md');
-
-let changelogEntries = [];
-if (fs.existsSync(backendChangelogPath)) {
-  changelogEntries.push(fs.readFileSync(backendChangelogPath, 'utf8'));
-}
-if (fs.existsSync(frontendChangelogPath)) {
-  changelogEntries.push(fs.readFileSync(frontendChangelogPath, 'utf8'));
-}
-if (changelogEntries.length > 0) {
-  // Combine changelogs into root CHANGELOG.md
-  fs.writeFileSync(rootChangelogPath, changelogEntries.join('\n---\n\n'), 'utf8');
-  console.log(`✅ Updated root CHANGELOG.md`);
-}
+// Keep root package-lock.json in sync
+try {
+  execSync('npm install --package-lock-only', { cwd: path.join(__dirname, '..'), stdio: 'ignore' });
+} catch (_) {}
 
 console.log('\n🎉 All changesets consumed, changelog updated, and app versions synced across root, backend & Flutter pubspec!\n');
