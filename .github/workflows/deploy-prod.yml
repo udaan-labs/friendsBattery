@@ -84,7 +84,7 @@ jobs:
         run: flutter pub get
 
       - name: Build Android Release APK (Prod Environment)
-        run: flutter build apk --release --dart-define=ENV_FILE=.env.production
+        run: flutter build apk --release --android-skip-build-dependency-validation --dart-define=ENV_FILE=.env.production
 
       - name: Upload Prod APK to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1
