@@ -1,7 +1,11 @@
 {
   "name": "friends-battery-workspace",
-  "version": "1.1.3",
+  "version": "1.2.0",
   "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
   "scripts": {
     "dev": ".\\dev.bat",
     "dev:backend": "cd backend && npm run dev",
@@ -15,7 +19,8 @@
     "migrate-prod": "cd backend && node scripts/migrate-prod.js",
     "fresh": ".\\fresh.bat",
     "changeset": "changeset",
-    "changelog:release": "changeset version"
+    "release": "node scripts/version-release.js",
+    "changelog:release": "node scripts/version-release.js"
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.1",
