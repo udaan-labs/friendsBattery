@@ -27,6 +27,12 @@ class AuthRepository {
     });
   }
 
+  async countSuperAdmins() {
+    return await prisma.user.count({
+      where: { role: 'SUPER_ADMIN' },
+    });
+  }
+
   async createUser(userData) {
     return await prisma.user.create({
       data: userData,

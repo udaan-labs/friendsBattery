@@ -131,4 +131,16 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-module.exports = { authenticate };
+const optionalAuthenticate = async (req, res, next) => {
+  let token = req.headers['auth_key'] || req.headers['auth-key'];
+  if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+  if (!token) {
+    req.user = null;
+    return next();
+  }
+  return authenticate(req, res, next);
+};
+
+module.exports = { authenticate, optionalAuthenticate };

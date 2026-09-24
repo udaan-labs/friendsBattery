@@ -3,6 +3,23 @@ const { successResponse } = require('../../shared/utils/response');
 const { handleRouteError } = require('../../shared/utils/handle-route-error');
 
 class AuthController {
+  async registerSuperAdmin(req, res) {
+    try {
+      const { user_id, username, user_number, shop_name, password } = req.body;
+      const result = await authService.registerSuperAdmin({
+        user_id,
+        username,
+        user_number,
+        shop_name,
+        password,
+        actor: req.user,
+      });
+      return successResponse(res, 201, 'Super Admin created successfully', result);
+    } catch (error) {
+      return handleRouteError(res, error, 'Register Super Admin Error:');
+    }
+  }
+
   async register(req, res) {
     try {
       const { user_id, username, user_number, shop_name, password, location_id } = req.body;

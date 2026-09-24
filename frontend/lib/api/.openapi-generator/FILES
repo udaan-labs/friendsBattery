@@ -22,6 +22,7 @@ doc/AdminSaleShipment.md
 doc/ApiAuthActivatePutRequest.md
 doc/ApiAuthLoginPostRequest.md
 doc/ApiAuthRegisterPostRequest.md
+doc/ApiAuthRegisterSuperadminPostRequest.md
 doc/ApiDashboardStatsGet200Response.md
 doc/ApiEmployeeAttendanceCheckInPost201Response.md
 doc/ApiEmployeeAttendanceCheckedInGet200Response.md
@@ -233,6 +234,7 @@ lib/src/model/admin_sale_shipment.dart
 lib/src/model/api_auth_activate_put_request.dart
 lib/src/model/api_auth_login_post_request.dart
 lib/src/model/api_auth_register_post_request.dart
+lib/src/model/api_auth_register_superadmin_post_request.dart
 lib/src/model/api_dashboard_stats_get200_response.dart
 lib/src/model/api_employee_attendance_check_in_post201_response.dart
 lib/src/model/api_employee_attendance_checked_in_get200_response.dart
@@ -391,3 +393,6 @@ lib/src/model/verify_product_response.dart
 lib/src/model/verify_product_unit.dart
 lib/src/serializers.dart
 pubspec.yaml
+test/api_auth_register_superadmin_post_request_test.dart
+test/transfer_employee_request_test.dart
+test/transfer_employee_response_test.dart

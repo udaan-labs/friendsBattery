@@ -30,6 +30,17 @@ const activateSchema = z.object({
   is_verified: z.boolean()
 });
 
+const registerSuperAdminSchema = z.object({
+  user_id: z
+    .string()
+    .min(1)
+    .refine((s) => !/\s/.test(s.trim()), { message: 'User ID cannot contain spaces' }),
+  username: z.string().min(1),
+  user_number: z.string().regex(/^\d{10}$/, 'Mobile number must be exactly 10 digits'),
+  shop_name: z.string().optional().nullable(),
+  password: strongPassword,
+});
+
 const validateRegister = (req, res, next) => {
   try {
     registerSchema.parse(req.body);
@@ -42,6 +53,22 @@ const validateRegister = (req, res, next) => {
       msg && (msg.includes('digits') || msg.includes('Password'))
         ? msg
         : 'user_id, username, user_number, shop_name and password are required',
+    );
+  }
+};
+
+const validateRegisterSuperAdmin = (req, res, next) => {
+  try {
+    registerSuperAdminSchema.parse(req.body);
+    next();
+  } catch (error) {
+    const msg = error.issues?.[0]?.message;
+    return errorResponse(
+      res,
+      400,
+      msg && (msg.includes('digits') || msg.includes('Password') || msg.includes('spaces'))
+        ? msg
+        : 'user_id, username, user_number and password are required',
     );
   }
 };
@@ -66,6 +93,7 @@ const validateActivate = (req, res, next) => {
 
 module.exports = {
   validateRegister,
+  validateRegisterSuperAdmin,
   validateLogin,
   validateActivate,
 };

@@ -14,6 +14,7 @@ Method | HTTP request | Description
 [**apiAuthLogoutPost**](AuthApi.md#apiauthlogoutpost) | **POST** /api/auth/logout | End session (closes employee_sessions for EMPLOYEE)
 [**apiAuthRegisterAdminPost**](AuthApi.md#apiauthregisteradminpost) | **POST** /api/auth/register-admin | Super Admin creates a shop or warehouse Admin
 [**apiAuthRegisterPost**](AuthApi.md#apiauthregisterpost) | **POST** /api/auth/register | Register a new seller
+[**apiAuthRegisterSuperadminPost**](AuthApi.md#apiauthregistersuperadminpost) | **POST** /api/auth/register-superadmin | Register a Super Admin
 
 
 # **apiAuthActivatePut**
@@ -203,6 +204,49 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **apiAuthRegisterPostRequest** | [**ApiAuthRegisterPostRequest**](ApiAuthRegisterPostRequest.md)|  | 
+
+### Return type
+
+[**RegisterResponse**](RegisterResponse.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiAuthRegisterSuperadminPost**
+> RegisterResponse apiAuthRegisterSuperadminPost(apiAuthRegisterSuperadminPostRequest)
+
+Register a Super Admin
+
+Creates a new SUPER_ADMIN user. If no SUPER_ADMIN exists in the system yet, this acts as the initial bootstrap endpoint. If a SUPER_ADMIN already exists, this endpoint requires authentication as an existing SUPER_ADMIN. 
+
+### Example
+```dart
+import 'package:friends_battery_api/api.dart';
+
+final api = FriendsBatteryApi().getAuthApi();
+final ApiAuthRegisterSuperadminPostRequest apiAuthRegisterSuperadminPostRequest = ; // ApiAuthRegisterSuperadminPostRequest | 
+
+try {
+    final response = api.apiAuthRegisterSuperadminPost(apiAuthRegisterSuperadminPostRequest);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling AuthApi->apiAuthRegisterSuperadminPost: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **apiAuthRegisterSuperadminPostRequest** | [**ApiAuthRegisterSuperadminPostRequest**](ApiAuthRegisterSuperadminPostRequest.md)|  | 
 
 ### Return type
 

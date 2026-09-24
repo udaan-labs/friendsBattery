@@ -32,6 +32,7 @@ Serializers _$serializers =
           ..add(ApiAuthActivatePutRequest.serializer)
           ..add(ApiAuthLoginPostRequest.serializer)
           ..add(ApiAuthRegisterPostRequest.serializer)
+          ..add(ApiAuthRegisterSuperadminPostRequest.serializer)
           ..add(ApiDashboardStatsGet200Response.serializer)
           ..add(ApiEmployeeAttendanceCheckInPost201Response.serializer)
           ..add(ApiEmployeeAttendanceCheckedInGet200Response.serializer)

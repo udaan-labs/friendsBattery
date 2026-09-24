@@ -3,15 +3,81 @@ const router = express.Router();
 const authController = require('./auth.controller');
 const {
   validateRegister,
+  validateRegisterSuperAdmin,
   validateLogin,
   validateActivate,
 } = require('./auth.validation');
-const { authenticate } = require('../../shared/middleware/auth.middleware');
+const { authenticate, optionalAuthenticate } = require('../../shared/middleware/auth.middleware');
 const {
   requireSuperAdminOrAdmin,
   requireRole,
 } = require('../../shared/middleware/role.middleware');
 const ROLES = require('../../shared/constants/roles');
+
+/**
+ * @swagger
+ * /api/auth/register-superadmin:
+ *   post:
+ *     summary: Register a Super Admin
+ *     description: |
+ *       Creates a new SUPER_ADMIN user.
+ *       If no SUPER_ADMIN exists in the system yet, this acts as the initial bootstrap endpoint.
+ *       If a SUPER_ADMIN already exists, this endpoint requires authentication as an existing SUPER_ADMIN.
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - user_id
+ *               - username
+ *               - user_number
+ *               - password
+ *             properties:
+ *               user_id:
+ *                 type: string
+ *                 example: superadmin1
+ *               username:
+ *                 type: string
+ *                 example: Super Admin
+ *               user_number:
+ *                 type: string
+ *                 pattern: '^\\d{10}$'
+ *                 description: Exactly 10 digits
+ *                 example: "9000000009"
+ *               shop_name:
+ *                 type: string
+ *                 example: Friends Battery HQ
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 minLength: 8
+ *                 description: Min 8 characters, one uppercase, one special character
+ *                 example: Passw0rd!
+ *     responses:
+ *       201:
+ *         description: Super Admin created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RegisterResponse'
+ *       400:
+ *         description: Validation error
+ *       403:
+ *         description: Forbidden (Super Admin already exists and caller is not Super Admin)
+ *       409:
+ *         description: User ID / username / number already exists
+ */
+router.post(
+  '/register-superadmin',
+  optionalAuthenticate,
+  validateRegisterSuperAdmin,
+  authController.registerSuperAdmin
+);
 
 /**
  * @swagger

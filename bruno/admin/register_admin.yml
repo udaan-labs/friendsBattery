@@ -1,0 +1,31 @@
+info:
+  name: register_admin
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{baseurl}}/auth/register-admin"
+  headers:
+    - name: auth-id
+      value: "{{superAdminAuthId}}"
+    - name: auth-key
+      value: "{{superAdminAuthKey}}"
+  body:
+    type: json
+    data: |-
+      {
+        "user_id": "ADMIN002",
+        "username": "New Shop Admin",
+        "user_number": "9876543212",
+        "shop_name": "Main Shop Admin",
+        "password": "Passw0rd!",
+        "location_id": 1
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

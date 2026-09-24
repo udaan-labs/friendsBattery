@@ -1,0 +1,31 @@
+info:
+  name: register_superadmin
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{baseurl}}/auth/register-superadmin"
+  headers:
+    - name: auth-id
+      value: "{{superAdminAuthId}}"
+    - name: auth-key
+      value: "{{superAdminAuthKey}}"
+  body:
+    type: json
+    data: |-
+      {
+        "user_id": "sd1",
+        "username": "Super Admin Test ",
+        "user_number": "9000000009",
+        "shop_name": "Friends Battery HQ",
+        "password": "Qwerty#123"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true

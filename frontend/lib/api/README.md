@@ -75,6 +75,7 @@ Class | Method | HTTP request | Description
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthLogoutPost**](doc/AuthApi.md#apiauthlogoutpost) | **POST** /api/auth/logout | End session (closes employee_sessions for EMPLOYEE)
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthRegisterAdminPost**](doc/AuthApi.md#apiauthregisteradminpost) | **POST** /api/auth/register-admin | Super Admin creates a shop or warehouse Admin
 [*AuthApi*](doc/AuthApi.md) | [**apiAuthRegisterPost**](doc/AuthApi.md#apiauthregisterpost) | **POST** /api/auth/register | Register a new seller
+[*AuthApi*](doc/AuthApi.md) | [**apiAuthRegisterSuperadminPost**](doc/AuthApi.md#apiauthregistersuperadminpost) | **POST** /api/auth/register-superadmin | Register a Super Admin
 [*DashboardApi*](doc/DashboardApi.md) | [**apiDashboardActivityHistoryGet**](doc/DashboardApi.md#apidashboardactivityhistoryget) | **GET** /api/dashboard/activity-history | Get paginated activity history (Admin only)
 [*DashboardApi*](doc/DashboardApi.md) | [**apiDashboardRecentActivityGet**](doc/DashboardApi.md#apidashboardrecentactivityget) | **GET** /api/dashboard/recent-activity | Get recent activity feed (Admin only)
 [*DashboardApi*](doc/DashboardApi.md) | [**apiDashboardStatsGet**](doc/DashboardApi.md#apidashboardstatsget) | **GET** /api/dashboard/stats | Get dashboard statistics
@@ -158,6 +159,7 @@ Class | Method | HTTP request | Description
  - [ApiAuthActivatePutRequest](doc/ApiAuthActivatePutRequest.md)
  - [ApiAuthLoginPostRequest](doc/ApiAuthLoginPostRequest.md)
  - [ApiAuthRegisterPostRequest](doc/ApiAuthRegisterPostRequest.md)
+ - [ApiAuthRegisterSuperadminPostRequest](doc/ApiAuthRegisterSuperadminPostRequest.md)
  - [ApiDashboardStatsGet200Response](doc/ApiDashboardStatsGet200Response.md)
  - [ApiEmployeeAttendanceCheckInPost201Response](doc/ApiEmployeeAttendanceCheckInPost201Response.md)
  - [ApiEmployeeAttendanceCheckedInGet200Response](doc/ApiEmployeeAttendanceCheckedInGet200Response.md)

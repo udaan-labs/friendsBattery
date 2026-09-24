@@ -35,6 +35,7 @@ import 'package:friends_battery_api/src/model/admin_sale_shipment.dart';
 import 'package:friends_battery_api/src/model/api_auth_activate_put_request.dart';
 import 'package:friends_battery_api/src/model/api_auth_login_post_request.dart';
 import 'package:friends_battery_api/src/model/api_auth_register_post_request.dart';
+import 'package:friends_battery_api/src/model/api_auth_register_superadmin_post_request.dart';
 import 'package:friends_battery_api/src/model/api_dashboard_stats_get200_response.dart';
 import 'package:friends_battery_api/src/model/api_employee_attendance_check_in_post201_response.dart';
 import 'package:friends_battery_api/src/model/api_employee_attendance_checked_in_get200_response.dart';
@@ -215,6 +216,7 @@ part 'serializers.g.dart';
   ApiAuthActivatePutRequest,
   ApiAuthLoginPostRequest,
   ApiAuthRegisterPostRequest,
+  ApiAuthRegisterSuperadminPostRequest,
   ApiDashboardStatsGet200Response,
   ApiEmployeeAttendanceCheckInPost201Response,
   ApiEmployeeAttendanceCheckedInGet200Response,

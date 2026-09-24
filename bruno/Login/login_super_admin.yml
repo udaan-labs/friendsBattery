@@ -1,0 +1,35 @@
+info:
+  name: login_super_admin
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{baseurl}}/auth/login"
+  body:
+    type: json
+    data: |-
+      {
+        "user_id": "superadmin1",
+        "password": "123"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const body = res.body;
+
+        if (body && body.data) {
+          bru.setEnvVar("authId", body.data.auth_id);
+          bru.setEnvVar("authKey", body.data.auth_key);
+          bru.setEnvVar("superAdminAuthId", body.data.auth_id);
+          bru.setEnvVar("superAdminAuthKey", body.data.auth_key);
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

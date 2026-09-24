@@ -14,6 +14,84 @@ const ACTIVATE_TARGET_ROLES = new Set([ROLES.ADMIN, ROLES.SELLER, ROLES.EMPLOYEE
 
 class AuthService {
   /**
+   * Register Super Admin:
+   * Bootstraps the first SUPER_ADMIN if none exists, or requires SUPER_ADMIN actor to create another.
+   */
+  async registerSuperAdmin({ user_id, username, user_number, shop_name, password, actor }) {
+    username = titleName(username);
+    if (user_id) {
+      user_id = user_id.trim();
+      if (/\s/.test(user_id)) {
+        throw httpError(400, 'User ID cannot contain spaces (must be a single word)');
+      }
+    }
+
+    const count = await authRepository.countSuperAdmins();
+    if (count > 0) {
+      if (!actor || actor.role !== ROLES.SUPER_ADMIN) {
+        throw httpError(403, 'Only Super Admin can create another Super Admin');
+      }
+    }
+
+    const existingUserId = await authRepository.findUserByUserId(user_id);
+    if (existingUserId) {
+      throw httpError(409, 'User ID already exists');
+    }
+
+    const existingUsername = await authRepository.findUserByUsername(username);
+    if (existingUsername) {
+      throw httpError(409, 'Username already exists');
+    }
+
+    const existingUserNumber = await authRepository.findUserByNumber(user_number);
+    if (existingUserNumber) {
+      throw httpError(409, 'Mobile number already exists');
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const newUser = await authRepository.createUser({
+      userId: user_id,
+      userName: username,
+      userNumber: user_number,
+      shopName: shop_name || null,
+      passwordHash,
+      role: ROLES.SUPER_ADMIN,
+      locationId: null,
+      parentId: null,
+      isActive: true,
+      isVerified: true,
+      loginAttempt: 0,
+    });
+
+    if (actor) {
+      await orgEventsRepository.create({
+        action: 'SUPER_ADMIN_CREATED',
+        actorId: actor.id,
+        entityType: 'user',
+        entityId: newUser.id,
+        payload: {
+          username: newUser.userName,
+        },
+      });
+    }
+
+    return {
+      id: Number(newUser.id),
+      user_id: newUser.userId,
+      username: newUser.userName,
+      user_number: newUser.userNumber,
+      shop_name: newUser.shopName,
+      location_id: null,
+      parent_id: null,
+      role: 'super_admin',
+      is_active: newUser.isActive,
+      is_verified: newUser.isVerified,
+      created_at: newUser.createdAt,
+    };
+  }
+
+  /**
    * Super Admin only: create an ADMIN under this SA (shop or warehouse).
    * parent_id = SA; optional SHOP|WAREHOUSE location; active + verified.
    */
