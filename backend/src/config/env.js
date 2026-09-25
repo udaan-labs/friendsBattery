@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const requiredEnvVars = ['PORT', 'DATABASE_URL', 'JWT_SECRET', 'JWT_EXPIRES_IN'];
+const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET'];
 
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
@@ -13,12 +13,14 @@ function parseBool(value, defaultValue = false) {
   return ['1', 'true', 'yes', 'on'].includes(String(value).trim().toLowerCase());
 }
 
+const port = process.env.PORT || 3000;
+
 module.exports = {
-  PORT: process.env.PORT,
+  PORT: port,
   DATABASE_URL: process.env.DATABASE_URL,
   JWT_SECRET: process.env.JWT_SECRET,
-  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN,
-  BASE_URL: process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`,
+  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '30d',
+  BASE_URL: process.env.BASE_URL || `http://localhost:${port}`,
   // App gate (version + maintenance) — optional; safe defaults for local dev
   APP_LATEST_VERSION: process.env.APP_LATEST_VERSION || '1.1.3',
   APP_MAINTENANCE: parseBool(process.env.APP_MAINTENANCE, false),
