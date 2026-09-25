@@ -3,6 +3,7 @@
   "version": "1.2.0",
   "private": true,
   "scripts": {
+    "start": "npm --prefix backend start",
     "dev": ".\\dev.bat",
     "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "cd frontend && flutter run --dart-define=ENV_FILE=.env.local",

@@ -3,10 +3,13 @@ const { PORT } = require('./config/env');
 const { prisma, testConnection } = require('./config/db');
 
 const startServer = async () => {
-  await testConnection();
-
   const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on port ${PORT} across all network interfaces (0.0.0.0)`);
+  });
+
+  // Verify DB connection asynchronously without blocking port listening
+  testConnection().catch((err) => {
+    console.error('Initial DB connection check error:', err.message);
   });
 
   const shutdown = async (signal) => {
