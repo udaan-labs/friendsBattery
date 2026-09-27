@@ -8,16 +8,16 @@ http:
   url: "{{baseurl}}/auth/register-superadmin"
   headers:
     - name: auth-id
-      value: "{{superAdminAuthId}}"
+      value: "{{authId}}"
     - name: auth-key
-      value: "{{superAdminAuthKey}}"
+      value: "{{authKey}}"
   body:
     type: json
     data: |-
       {
-        "user_id": "sd1",
-        "username": "Super Admin Test ",
-        "user_number": "9000000009",
+        "user_id": "sd2",
+        "username": "Super Admin Test2 ",
+        "user_number": "9000000001",
         "shop_name": "Friends Battery HQ",
         "password": "Qwerty#123"
       }

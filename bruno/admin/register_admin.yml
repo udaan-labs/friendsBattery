@@ -8,9 +8,9 @@ http:
   url: "{{baseurl}}/auth/register-admin"
   headers:
     - name: auth-id
-      value: "{{superAdminAuthId}}"
+      value: "{{authId}}"
     - name: auth-key
-      value: "{{superAdminAuthKey}}"
+      value: "{{authKey}}"
   body:
     type: json
     data: |-
