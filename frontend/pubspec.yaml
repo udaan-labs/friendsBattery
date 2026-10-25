@@ -42,3 +42,4 @@ flutter:
   assets:
     - .env.local
     - .env.production
+    - shorebird.yaml
