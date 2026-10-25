@@ -87,6 +87,7 @@ class _CreateBillScreenState extends ConsumerState<CreateBillScreen> {
 
   Future<void> _fetchProductDetails(String serial) async {
     if (serial.trim().isEmpty) return;
+    if (_isFetchingDetails) return;
 
     setState(() {
       _isFetchingDetails = true;

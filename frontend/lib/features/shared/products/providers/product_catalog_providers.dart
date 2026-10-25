@@ -16,7 +16,7 @@ final productNamesProvider = FutureProvider<List<CatalogItem>>((ref) async {
 
 /// Product models for a given product name id.
 final productModelsProvider =
-    FutureProvider.family<List<CatalogItem>, int>((ref, productNameId) async {
+    FutureProvider.autoDispose.family<List<CatalogItem>, int>((ref, productNameId) async {
   return ref.watch(productCatalogRepositoryProvider).getProductModels(productNameId);
 });
 
@@ -38,7 +38,7 @@ final productCatalogCombosProvider =
 
 /// Existing pricing/units config for a name+model combo (null if not configured).
 final productConfigProvider =
-    FutureProvider.family<ProductConfigItem?, ({int nameId, int modelId})>(
+    FutureProvider.autoDispose.family<ProductConfigItem?, ({int nameId, int modelId})>(
   (ref, params) async {
     return ref.watch(productCatalogRepositoryProvider).getProductConfig(
           productNameId: params.nameId,
@@ -49,7 +49,7 @@ final productConfigProvider =
 
 /// Live product stock/price snapshot for Add Stock form.
 final productStockDetailsProvider =
-    FutureProvider.family<({int stock, num minPrice}), ({int nameId, int modelId})>(
+    FutureProvider.autoDispose.family<({int stock, num minPrice}), ({int nameId, int modelId})>(
   (ref, params) async {
     return ref.watch(productCatalogRepositoryProvider).getProductStockDetails(
           productNameId: params.nameId,

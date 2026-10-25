@@ -18,6 +18,7 @@ class ProductLookupNotifier extends StateNotifier<AsyncValue<VerifyProductPayloa
   }
 
   Future<void> lookupProduct(String identifier) async {
+    if (state.isLoading) return;
     state = const AsyncValue.loading();
     try {
       final body = VerifyProductRequest((b) => b.identifier = identifier);
