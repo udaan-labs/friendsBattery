@@ -47,6 +47,10 @@ jobs:
             echo "VERCEL_TOKEN, VERCEL_ORG_ID, and VERCEL_PROJECT_ID secrets are required"
             exit 1
           fi
+          # TEAM_ACCESS_REQUIRED: Vercel blocks the build when the commit
+          # author is not on the team. Drop checkout metadata so the token
+          # account owns this deployment. .vercelignore cannot hide .git.
+          rm -rf .git
           npx --yes vercel deploy --prod --yes --token="$VERCEL_TOKEN"
 
   frontend-prod:
