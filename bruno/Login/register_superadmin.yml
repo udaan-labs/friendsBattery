@@ -15,7 +15,7 @@ http:
     type: json
     data: |-
       {
-        "user_id": "sd2",
+        "user_id": "sd4",
         "username": "Super Admin Test2 ",
         "user_number": "9000000001",
         "shop_name": "Friends Battery HQ",

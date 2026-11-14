@@ -10,9 +10,13 @@ http:
     type: json
     data: |-
       {
-        "user_id": "seller3",
-        "password": "123"
+        "user_id": "sd1",
+        "password": "Qwerty#123"
       }
+      // {
+      //   "user_id": "sd2",
+      //   "password": "Qwerty#123"
+      // }
   auth: inherit
 
 runtime:
@@ -31,3 +35,4 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+  forwardAuthorizationHeader: true

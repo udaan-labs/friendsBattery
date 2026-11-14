@@ -2,34 +2,23 @@ name: prod
 variables:
   - name: baseurl
     value: https://friendsbattery-productio-live.up.railway.app/api
-    description: ""
   - name: authId
-    value: ""
-    description: ""
+    value: MTo2N2QwZDJhNTM5ODNiZTA0
   - name: authKey
-    value: ""
-    description: ""
+    value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcklkIjoic2QxIiwidXNlcl9pZCI6InNkMSIsInJvbGUiOiJTVVBFUl9BRE1JTiIsImp0aSI6ImI2OWE0OTZiLWMyY2EtNGFkZi1hY2RkLWFlYTYzZTRiYTNhYyIsImlhdCI6MTc5MDQ4MzUyNiwiZXhwIjoxNzkxMDg4MzI2fQ.d9HU3QyLrdOQQaRfVziXSMeOiJAdMsPtPQ7wNH-6lCk
   - name: authToken
     value: ""
-    description: ""
   - name: adminAuthId
     value: ""
-    description: ""
   - name: adminAuthKey
     value: ""
-    description: ""
   - name: employeeAuthId
     value: ""
-    description: ""
   - name: employeeAuthKey
     value: ""
-    description: ""
   - name: employeeSessionId
     value: ""
-    description: ""
   - name: superAdminAuthId
     value: ""
-    description: ""
   - name: superAdminAuthKey
     value: ""
-    description: ""
