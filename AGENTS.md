@@ -149,7 +149,7 @@ Detail docs (mandatory when relevant — see **Required docs** at top): `docs/OP
 | API models | OpenAPI-generated types in `friends_battery_api` — not hand-rolled Dio/JSON maps |
 | API client | OpenAPI-generated package at `frontend/lib/api/` (`friends_battery_api`) |
 | API tests | OpenCollection YAML under `apiTesting/` |
-| Deploy notes | Backend on Railway; DB is PostgreSQL (Prisma `DATABASE_URL` / `DIRECT_URL`) |
+| Deploy notes | Backend on Vercel (`friends-battery.vercel.app`); DB is PostgreSQL (Prisma `DATABASE_URL` / `DIRECT_URL`). Prod GitHub Action migrates, then `vercel deploy --prod`. |
 
 ## Repository layout
 

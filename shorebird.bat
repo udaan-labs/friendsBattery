@@ -68,6 +68,8 @@ if /i "%ACTION%"=="patch" goto patch
 exit /b 1
 
 :release
+call :pin_shorebird_sdk
+if errorlevel 1 exit /b 1
 echo ==============================================
 echo Shorebird RELEASE android ^(%ENV_LABEL%^)
 echo ENV_FILE=%ENV_FILE%
@@ -77,6 +79,8 @@ shorebird release android --artifact apk -- --dart-define=ENV_FILE=%ENV_FILE%
 exit /b %errorlevel%
 
 :patch
+call :pin_shorebird_sdk
+if errorlevel 1 exit /b 1
 echo ==============================================
 echo Shorebird PATCH android ^(%ENV_LABEL%^)
 echo ENV_FILE=%ENV_FILE%
@@ -84,3 +88,24 @@ echo app yaml=%YAML_SRC%
 echo ==============================================
 shorebird patch android -- --dart-define=ENV_FILE=%ENV_FILE%
 exit /b %errorlevel%
+
+:pin_shorebird_sdk
+REM Gradle loads Flutter from android\local.properties. If that still points
+REM at the system Flutter 3.35 SDK, it compiles Shorebird's 3.47 framework
+REM and fails with: Undefined name 'Tristate'.
+for /f "tokens=5" %%R in ('shorebird --version ^| findstr /B /C:"Flutter "') do set "SB_REV=%%R"
+if not defined SB_REV (
+  echo [ERROR] Could not read the Shorebird Flutter revision.
+  exit /b 1
+)
+set "SB_FLUTTER=%USERPROFILE%\.shorebird\bin\cache\flutter\%SB_REV%"
+if not exist "%SB_FLUTTER%\bin\flutter.bat" (
+  echo [ERROR] Shorebird Flutter not found: %SB_FLUTTER%
+  echo Run: shorebird upgrade
+  exit /b 1
+)
+if exist ".dart_tool\version" del /f /q ".dart_tool\version"
+powershell -NoProfile -Command "$sdk=$env:SB_FLUTTER.Replace('\','\\'); $p='android\local.properties'; $lines=@(Get-Content $p | ForEach-Object { if ($_ -like 'flutter.sdk=*') { 'flutter.sdk=' + $sdk } else { $_ } }); if (-not ($lines -match '^flutter\.sdk=')) { $lines += 'flutter.sdk=' + $sdk }; Set-Content -Path $p -Value $lines -Encoding ascii"
+if errorlevel 1 exit /b 1
+if exist "android\gradlew.bat" call android\gradlew.bat --stop >nul 2>&1
+exit /b 0
