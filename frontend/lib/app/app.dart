@@ -11,7 +11,7 @@ class BatteryApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Wire once: Dio 401 → local logout (router redirect handles /login)
-    SessionGuard.handleUnauthorized ??= () async {
+    SessionGuard.handleUnauthorized = () async {
       await ref.read(authProvider.notifier).logout();
     };
 

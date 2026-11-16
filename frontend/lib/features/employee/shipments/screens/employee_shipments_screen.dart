@@ -34,7 +34,7 @@ class EmployeeShipmentsScreen extends ConsumerWidget {
         ),
         body: SafeArea(
           child: RefreshIndicator(
-            onRefresh: () => ref.refresh(employeeShipmentsProvider.future),
+            onRefresh: () => ref.read(employeeShipmentsProvider.notifier).reload(),
             child: shipmentsAsync.when(
               data: (shipments) {
                 if (shipments.isEmpty) {
@@ -156,7 +156,7 @@ class EmployeeShipmentsScreen extends ConsumerWidget {
                     const SizedBox(height: 16),
                     const Text('Failed to load shipments'),
                     TextButton(
-                      onPressed: () => ref.refresh(employeeShipmentsProvider.future),
+                      onPressed: () => ref.read(employeeShipmentsProvider.notifier).reload(),
                       child: const Text('Retry'),
                     ),
                   ],

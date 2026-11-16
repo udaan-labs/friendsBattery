@@ -13,17 +13,16 @@ class ApiInterceptor extends Interceptor {
     return path.contains('/auth/login');
   }
 
-  /// Public endpoints that must not wait on FlutterSecureStorage.
-  /// Splash hits /app/status in parallel with session restore; concurrent
-  /// Keystore reads on Android can hang and pin the UI on splash.
+  /// Public endpoints that must not wait on the local session load.
+  /// Splash hits /app/status in parallel with session restore.
   static bool _isPublicNoTokenPath(String path) {
     return _isPublicAuthPath(path) || path.contains('/app/status');
   }
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    // Prefer in-memory tokens (sync). Cold path loads secure storage once.
-    // Public paths skip secure storage so Android cannot hang the first request.
+    // Prefer in-memory tokens (sync). Cold path loads Hive once.
+    // Public paths skip that load so the first request is not blocked.
     final path = options.path;
     final isPublicNoToken = _isPublicNoTokenPath(path);
 

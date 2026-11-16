@@ -1,11 +1,14 @@
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter/foundation.dart';
 
-/// In-memory auth credentials so Dio does not hit [FlutterSecureStorage]
-/// on every HTTP request (secure storage is often 50–200ms+ per read on device).
+import 'local_store.dart';
+
+/// In-memory auth credentials so Dio does not hit Hive on every HTTP request.
 class AuthTokenCache {
   AuthTokenCache._();
 
-  static const _storage = FlutterSecureStorage();
+  static const authIdKey = 'auth_id';
+  static const authKeyKey = 'auth_key';
+  static const roleKey = 'role';
 
   static String? authId;
   static String? authKey;
@@ -38,7 +41,17 @@ class AuthTokenCache {
     _loading = null;
   }
 
-  /// Load once from secure storage (parallel reads). Safe to call repeatedly.
+  /// Drop memory so the next [ensureLoaded] reads Hive again.
+  @visibleForTesting
+  static void debugUnload() {
+    authId = null;
+    authKey = null;
+    role = null;
+    _loaded = false;
+    _loading = null;
+  }
+
+  /// Load once from Hive. Safe to call repeatedly.
   static Future<void> ensureLoaded() async {
     if (_loaded) return;
     if (_loading != null) {
@@ -54,14 +67,9 @@ class AuthTokenCache {
   }
 
   static Future<void> _load() async {
-    final results = await Future.wait([
-      _storage.read(key: 'auth_id'),
-      _storage.read(key: 'auth_key'),
-      _storage.read(key: 'role'),
-    ]);
-    authId = results[0];
-    authKey = results[1];
-    role = results[2];
+    authId = LocalStore.getString(authIdKey);
+    authKey = LocalStore.getString(authKeyKey);
+    role = LocalStore.getString(roleKey);
     _loaded = true;
   }
 }

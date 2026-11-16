@@ -10,6 +10,7 @@ import 'package:frontend/features/auth/screens/login_screen.dart';
 import 'package:frontend/features/auth/screens/register_screen.dart';
 import 'package:frontend/features/admin/dashboard/screens/admin_shell_screen.dart';
 import 'package:frontend/features/admin/dashboard/screens/admin_dashboard_screen.dart';
+import 'package:frontend/core/storage/swr_notifier.dart';
 import 'package:frontend/features/admin/dashboard/providers/dashboard_providers.dart';
 import 'package:frontend/features/admin/locations/providers/locations_providers.dart';
 import 'package:frontend/features/admin/sales/screens/admin_sales_screen.dart';
@@ -175,10 +176,18 @@ void main() {
       await setTestSurface(tester, const Size(800, 1400));
       await tester.pumpWidget(createTestApp(const AdminDashboardScreen(),
           overrides: [..._base(), ..._emptyCatalog(),
-            kpiProvider.overrideWithProvider(
-                FutureProvider<AdminDashboardStats>((ref) async => mockDashboardStats())),
-            recentActivityProvider.overrideWithProvider(
-                FutureProvider<List<ActivityItem>>((ref) async => [])),
+            kpiProvider.overrideWith((ref) => SwrNotifier<AdminDashboardStats>(
+                  key: 'test.admin.kpi',
+                  encode: (_) => <String, Object?>{},
+                  decode: (_) => mockDashboardStats(),
+                  fetch: () async => mockDashboardStats(),
+                )),
+            recentActivityProvider.overrideWith((ref) => SwrNotifier<List<ActivityItem>>(
+                  key: 'test.admin.activity',
+                  encode: (_) => <Object?>[],
+                  decode: (_) => <ActivityItem>[],
+                  fetch: () async => <ActivityItem>[],
+                )),
           ]));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
@@ -395,14 +404,27 @@ void main() {
         ..._base(),
         sellerProfileProvider.overrideWithProvider(
             Provider<SellerProfile>((ref) => mockSellerProfile())),
-        sellerKpiProvider.overrideWithProvider(
-            FutureProvider<SellerKpiStats>((ref) async => mockSellerKpiStats())),
-        sellerRecentInventoryProvider.overrideWithProvider(
-            FutureProvider<List<RecentInventoryItem>>((ref) async => mockRecentInventoryItems())),
-        sellerAllShipmentsProvider.overrideWithProvider(
-            FutureProvider<List<ApiSellerShipmentsGet200ResponseDataInner>>((ref) async => [])),
-        sellerPendingShipmentsProvider.overrideWithProvider(
-            FutureProvider<List<ApiSellerShipmentsGet200ResponseDataInner>>((ref) async => [])),
+        sellerKpiProvider.overrideWith((ref) => SwrNotifier<SellerKpiStats>(
+              key: 'test.seller.kpi',
+              encode: (_) => <String, Object?>{},
+              decode: (_) => mockSellerKpiStats(),
+              fetch: () async => mockSellerKpiStats(),
+            )),
+        sellerRecentInventoryProvider.overrideWith((ref) => SwrNotifier<List<RecentInventoryItem>>(
+              key: 'test.seller.inventory',
+              encode: (_) => <Object?>[],
+              decode: (_) => mockRecentInventoryItems(),
+              fetch: () async => mockRecentInventoryItems(),
+            )),
+        sellerAllShipmentsProvider.overrideWith(
+            (ref) => SwrNotifier<List<ApiSellerShipmentsGet200ResponseDataInner>>(
+                  key: 'test.seller.shipments',
+                  encode: (_) => <Object?>[],
+                  decode: (_) => <ApiSellerShipmentsGet200ResponseDataInner>[],
+                  fetch: () async => <ApiSellerShipmentsGet200ResponseDataInner>[],
+                )),
+        sellerPendingShipmentsProvider.overrideWith(
+            (ref) => const AsyncData(<ApiSellerShipmentsGet200ResponseDataInner>[])),
       ]));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
@@ -417,8 +439,13 @@ void main() {
       await setTestSurface(tester, const Size(800, 1400));
       await tester.pumpWidget(createTestApp(const SellerReceivedShipmentsScreen(), overrides: [
         ..._base(),
-        sellerAllShipmentsProvider.overrideWithProvider(
-            FutureProvider<List<ApiSellerShipmentsGet200ResponseDataInner>>((ref) async => [])),
+        sellerAllShipmentsProvider.overrideWith(
+            (ref) => SwrNotifier<List<ApiSellerShipmentsGet200ResponseDataInner>>(
+                  key: 'test.seller.shipments.empty',
+                  encode: (_) => <Object?>[],
+                  decode: (_) => <ApiSellerShipmentsGet200ResponseDataInner>[],
+                  fetch: () async => <ApiSellerShipmentsGet200ResponseDataInner>[],
+                )),
       ]));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
@@ -430,9 +457,13 @@ void main() {
     testWidgets('SellerReceivedShipmentsScreen shows data', (tester) async {
       await tester.pumpWidget(createTestApp(const SellerReceivedShipmentsScreen(), overrides: [
         ..._base(),
-        sellerAllShipmentsProvider.overrideWithProvider(
-            FutureProvider<List<ApiSellerShipmentsGet200ResponseDataInner>>(
-                (ref) async => [mockApiShipment()])),
+        sellerAllShipmentsProvider.overrideWith(
+            (ref) => SwrNotifier<List<ApiSellerShipmentsGet200ResponseDataInner>>(
+                  key: 'test.seller.shipments.data',
+                  encode: (_) => <Object?>[],
+                  decode: (_) => [mockApiShipment()],
+                  fetch: () async => [mockApiShipment()],
+                )),
       ]));
       await tester.pumpAndSettle();
       expect(find.text('SHP-001'), findsOneWidget);

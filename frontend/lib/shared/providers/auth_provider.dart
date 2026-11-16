@@ -65,7 +65,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       await _restoreSession().timeout(const Duration(seconds: 8));
     } catch (e) {
-      // Timeout / Keystore hang / storage error → stay guest; user can log in.
+      // Timeout or storage error → stay guest; user can log in.
     }
   }
 
@@ -76,7 +76,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return;
     }
 
-    // Parallel secure reads + populate memory cache for Dio.
+    // Load Hive session into the memory cache Dio reads.
     final sessionData = await SessionManager.getSessionData();
     final authId = sessionData['auth_id'];
     final authKey = sessionData['auth_key'];
@@ -92,13 +92,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isAuthenticated: true, role: role);
   }
 
-  /// Local session kill only (tokens + state). Call API logout first when online.
+  /// Local session kill. Wipes Hive and restarts the provider tree.
+  /// Call API logout first when online.
   Future<void> logout() async {
+    final restarting = SessionManager.restartTick.value;
     try {
       await SessionManager.clearSession();
     } catch (_) {}
+    // A running app listens to [SessionManager.restartTick] and drops this notifier.
+    if (SessionManager.restartTick.value != restarting) return;
     AuthTokenCache.clear();
-    state = AuthState(); // Reset to guest
+    state = AuthState();
   }
 }
 

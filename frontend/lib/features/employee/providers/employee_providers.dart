@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:friends_battery_api/friends_battery_api.dart';
 import '../../../core/network/api_client_provider.dart';
+import '../../../core/storage/swr_notifier.dart';
 import '../../../shared/models/session_profile.dart';
 import '../../shared/inventory/providers/inventory_provider.dart';
 import '../attendance/attendance_repository.dart';
@@ -21,32 +22,61 @@ final employeeShipmentsRepositoryProvider = Provider<EmployeeShipmentsRepository
   return EmployeeShipmentsRepository(api: ref.watch(apiClientProvider));
 });
 
-final employeeAttendanceStatusProvider = FutureProvider<AttendanceStatusData>((ref) async {
-  return ref.watch(employeeAttendanceRepositoryProvider).getStatus();
+final employeeAttendanceStatusProvider = StateNotifierProvider<
+    SwrNotifier<AttendanceStatusData>, AsyncValue<AttendanceStatusData>>((ref) {
+  final repo = ref.watch(employeeAttendanceRepositoryProvider);
+  return SwrNotifier(
+    key: 'employee.attendance',
+    encode: (status) => standardSerializers.serializeWith(AttendanceStatusData.serializer, status),
+    decode: (json) => standardSerializers.deserializeWith(AttendanceStatusData.serializer, json),
+    fetch: repo.getStatus,
+  );
 });
 
-final employeeShipmentsProvider = FutureProvider<List<SellerShipmentListItem>>((ref) async {
-  return ref.watch(employeeShipmentsRepositoryProvider).listShipments();
+final employeeShipmentsProvider = StateNotifierProvider<
+    SwrNotifier<List<SellerShipmentListItem>>,
+    AsyncValue<List<SellerShipmentListItem>>>((ref) {
+  final repo = ref.watch(employeeShipmentsRepositoryProvider);
+  return SwrNotifier(
+    key: 'employee.shipments',
+    encode: (items) => encodeBuiltList(
+      items,
+      (item) => standardSerializers.serializeWith(SellerShipmentListItem.serializer, item),
+    ),
+    decode: (json) => decodeBuiltList(
+      json,
+      (item) => standardSerializers.deserializeWith(SellerShipmentListItem.serializer, item),
+    ),
+    fetch: repo.listShipments,
+  );
 });
 
 /// Stock units count from shared inventory (location-scoped API).
-final employeeStockCountProvider = FutureProvider<int>((ref) async {
-  final inv = await ref.watch(sharedInventoryProvider.future);
-  return inv.items.fold<int>(0, (sum, item) => sum + item.quantity);
+final employeeStockCountProvider =
+    StateNotifierProvider<SwrNotifier<int>, AsyncValue<int>>((ref) {
+  final notifier = SwrNotifier<int>(
+    key: 'employee.stock',
+    encode: (count) => count,
+    decode: (json) => json is num ? json.toInt() : null,
+    fetch: () async {
+      final inv = await ref.read(sharedInventoryProvider.future);
+      return inv.items.fold<int>(0, (sum, item) => sum + item.quantity);
+    },
+  );
+  ref.listen(sharedInventoryProvider, (_, next) {
+    final page = next.valueOrNull;
+    if (page == null) return;
+    notifier.adopt(page.items.fold<int>(0, (sum, item) => sum + item.quantity));
+  });
+  return notifier;
 });
 
 Future<void> refreshEmployeeDashboard(WidgetRef ref) async {
-  ref.invalidate(employeeAttendanceStatusProvider);
-  ref.invalidate(employeeShipmentsProvider);
   ref.invalidate(sharedInventoryProvider);
-  ref.invalidate(employeeStockCountProvider);
-  try {
-    await ref.read(employeeAttendanceStatusProvider.future);
-  } catch (_) {}
-  try {
-    await ref.read(employeeShipmentsProvider.future);
-  } catch (_) {}
-  try {
-    await ref.read(sharedInventoryProvider.future);
-  } catch (_) {}
+  await Future.wait([
+    ref.read(employeeAttendanceStatusProvider.notifier).reload(),
+    ref.read(employeeShipmentsProvider.notifier).reload(),
+    ref.read(employeeStockCountProvider.notifier).reload(),
+    ref.read(sharedInventoryProvider.future).then((_) {}, onError: (_) {}),
+  ]);
 }

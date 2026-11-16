@@ -10,6 +10,7 @@ import '../../features/seller/dashboard/providers/seller_dashboard_providers.dar
 import '../../features/seller/sales/providers/seller_sales_provider.dart';
 import '../../features/shared/inventory/providers/inventory_provider.dart';
 import '../../features/shared/products/providers/product_catalog_providers.dart';
+import '../storage/swr_notifier.dart';
 
 /// Central post-mutation cache invalidation for shared Riverpod sources of truth.
 ///
@@ -40,8 +41,8 @@ class DataSync {
     await Future.wait([
       _safeFuture(ref, sharedInventoryProvider),
       _safeFuture(ref, adminStockDetailsProvider),
-      _safeFuture(ref, kpiProvider),
-      _safeFuture(ref, recentActivityProvider),
+      _reload(ref, kpiProvider),
+      _reload(ref, recentActivityProvider),
     ]);
   }
 
@@ -61,8 +62,15 @@ class DataSync {
     // Warm catalog + KPI so Super Admin home updates after pop.
     await Future.wait([
       _safeFuture(ref, productNamesProvider),
-      _safeFuture(ref, kpiProvider),
+      _reload(ref, kpiProvider),
     ]);
+  }
+
+  static Future<void> _reload<T>(
+    WidgetRef ref,
+    StateNotifierProvider<SwrNotifier<T>, AsyncValue<T>> provider,
+  ) {
+    return ref.read(provider.notifier).reload();
   }
 
   static Future<void> _safeFuture(WidgetRef ref, FutureProvider provider) async {

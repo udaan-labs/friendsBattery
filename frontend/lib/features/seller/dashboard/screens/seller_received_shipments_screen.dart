@@ -41,7 +41,7 @@ class SellerReceivedShipmentsScreen extends ConsumerWidget {
       ),
       body: SafeArea(
         child: RefreshIndicator(
-        onRefresh: () => ref.refresh(sellerAllShipmentsProvider.future),
+        onRefresh: () => ref.read(sellerAllShipmentsProvider.notifier).reload(),
         child: shipmentsAsync.when(
           data: (shipments) {
             if (shipments.isEmpty) {
@@ -150,7 +150,7 @@ class SellerReceivedShipmentsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 TextButton(
-                  onPressed: () => ref.refresh(sellerAllShipmentsProvider.future),
+                  onPressed: () => ref.read(sellerAllShipmentsProvider.notifier).reload(),
                   child: const Text('Retry'),
                 ),
               ],
